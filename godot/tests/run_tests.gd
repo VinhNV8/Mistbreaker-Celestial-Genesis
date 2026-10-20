@@ -127,6 +127,7 @@ func _init() -> void:
 	_run("M5-T4 lính khiên quay chậm 120°/giây: chạy vòng đánh được vào hông", _test_m5_shield_turn)
 	_run("M5-T5 nhịp EXP: số quái tới cấp 10/20, tỉ lệ nguồn EXP theo kịch bản", _test_m5_exp_budget)
 	_run("M5-T6 bản đồ nhỏ: ảnh sương theo map, đổi cỡ, cập nhật khi khám phá", _test_m5_minimap)
+	_run("M5-T7 cỡ chữ: lưu trong cài đặt, dựng lại theme theo hệ số", _test_m5_font_scale)
 	_run("PACE-T1 nhịp lên cấp 1 → 20 chỉ bằng đánh quái (bot cày, đo phút)", _test_pace_mobs)
 	for c in Classes.ORDER:
 		_run("PACE-T2 %s cấp 10 → 20 vùng 2" % c, _test_pace_r2.bind(c))
@@ -2611,3 +2612,15 @@ func _test_m5_minimap() -> void:
 	mm.toggle_size()
 	_check(is_equal_approx(mm.size.x, Minimap.LARGE_W), "phím V: cỡ lớn")
 	mm.free()
+
+
+func _test_m5_font_scale() -> void:
+	var UiTheme = load("res://scripts/ui/ui_theme.gd")
+	var Settings = load("res://scripts/core/settings.gd")
+	_check(Settings.DEFAULTS.has("font_scale") and is_equal_approx(float(Settings.DEFAULTS.font_scale), 1.0), "mặc định cỡ chữ 1,0")
+	var base: int = UiTheme.set_font_scale(1.0).default_font_size
+	var big: int = UiTheme.set_font_scale(1.3).default_font_size
+	_check(big == roundi(base * 1.3), "Rất lớn: cỡ chữ ×1,3 (%d → %d)" % [base, big])
+	_check(UiTheme.fs(20) == 26, "fs() nhân hệ số cho chỗ tự đặt cỡ chữ")
+	UiTheme.set_font_scale(1.0)
+	_check(UiTheme.fs(20) == 20, "về Vừa")

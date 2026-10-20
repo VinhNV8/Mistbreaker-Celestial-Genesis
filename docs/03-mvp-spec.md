@@ -796,7 +796,7 @@ Phần lớn hạng mục M5 trong lộ trình ban đầu (thoại, nhiệm vụ
 | M5-02 | Nhịp lên cấp: Spec_Notes đợt 3 "nhân vật lên level nhanh quá" — nghiên cứu nhịp ARPG, chỉnh hệ số EXP (NV-20) | ✅ |
 | M5-03 | Bản đồ nhỏ theo thời gian thực (Spec_Notes đợt 3) | ✅ |
 | M5-04 | KP-04: chinh phục ô Di tích bằng câu đố | ⬜ |
-| M5-05 | KT-07: cài đặt cỡ chữ (hook `UiTheme.set_font_scale` đã có) | ⬜ |
+| M5-05 | KT-07: cài đặt cỡ chữ (hook `UiTheme.set_font_scale` đã có) | ✅ |
 | M5-06 | KT-06: build .exe | ⬜ phiên game-bc làm |
 
 ### 8.2. M5-01 — Bạch Hổ Phong Vân
@@ -874,7 +874,11 @@ Spec_Notes đợt 3: "cần thêm bản đồ real-time để tiện theo dõi �
 - **Không lộ thông tin:** quái ở chỗ chưa khám phá và quái đang tàng hình (Tinh Linh Sương ở Lõi Sương) không hiện.
 - **Hiệu năng:** sương là ảnh 1 pixel/ô (tối đa 70 × 40), chỉ dựng lại khi có ô mới mở.
 
-### 8.5. Kiểm thử
+### 8.5. M5-05 — Cỡ chữ
+
+Esc → Cài đặt → dòng **Cỡ chữ** có 4 mức: Nhỏ (×0,9) · Vừa (×1,0) · Lớn (×1,15) · Rất lớn (×1,3). Đổi là áp ngay: `main.gd` dựng lại theme bằng `UiTheme.set_font_scale(k)` và gán cho cây UI. Hệ số lưu trong `user://settings.cfg` (`font_scale`, tách khỏi save game) và được áp ngay khi mở game. Phạm vi: mọi chữ lấy cỡ từ theme. Chỗ code tự đặt cỡ chữ chỉ đổi theo khi dùng `UiTheme.fs()`. Phần chữ vẽ tay trên bản đồ nhỏ và thanh kỹ năng giữ cỡ cố định.
+
+### 8.6. Kiểm thử
 
 | Mã | Nội dung |
 | --- | --- |
@@ -884,6 +888,7 @@ Spec_Notes đợt 3: "cần thêm bản đồ real-time để tiện theo dõi �
 | M5-T4 | Lính khiên quay tối đa 2° mỗi khung hình; đánh sau lưng không bị chặn; sau 1,5 giây quay lại đối mặt |
 | M5-T5 | Chỉ đánh quái: cấp 10 cần 500–700 quái, cấp 20 cần 2.000–2.700 quái; nhiệm vụ 18–32% EXP mỗi chương; boss + boss hiếm 15–30% |
 | M5-T6 | Bản đồ nhỏ: ảnh sương đúng số ô của map, cỡ đúng tỉ lệ, dựng lại khi khám phá thêm, phím V đổi cỡ |
+| M5-T7 | Cỡ chữ: mặc định 1,0; "Rất lớn" nhân cỡ chữ theme ×1,3; `fs()` theo hệ số |
 | PACE-T1, T2 | Đo nhịp (chạy riêng `--only=PACE`, vài phút): bot cày từ cấp 1 và từ cấp 10, in phút tới từng mốc cấp, số quái, số lần chết theo map |
 
 ## Phụ lục A — Yêu cầu thay đổi (CR)

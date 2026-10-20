@@ -24,6 +24,7 @@ const DialogBox = preload("res://scripts/ui/dialog_box.gd")
 const GiftCode = preload("res://scripts/core/gift_code.gd")
 const ShopPanel = preload("res://scripts/ui/shop_panel.gd")
 const PauseMenu = preload("res://scripts/ui/pause_menu.gd")
+const Settings = preload("res://scripts/core/settings.gd")
 const AudioManager = preload("res://scripts/audio/audio_manager.gd")
 
 ## Phím mặc định. Nếu đã khai báo action cùng tên trong Project Settings > Input Map thì dùng bản đó.
@@ -127,7 +128,9 @@ func _ready() -> void:
 	ui_layer.layer = 2
 	add_child(ui_layer)
 	_ui = Control.new()
-	_ui.theme = UiTheme.get_theme()
+	# M5-05: cỡ chữ người chơi chọn (settings.cfg) áp ngay từ đầu.
+	Settings.load_settings()
+	_ui.theme = UiTheme.set_font_scale(float(Settings.values.get("font_scale", 1.0)))
 	_ui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_ui.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	ui_layer.add_child(_ui)
@@ -730,6 +733,7 @@ func _open_pause(settings_only := false) -> void:
 	_pause = PauseMenu.new()
 	_pause.settings_only = settings_only
 	_pause.resume.connect(_close_pause)
+	_pause.font_scale_changed.connect(func(k: float): _ui.theme = UiTheme.set_font_scale(k))
 	_pause.quit_to_title.connect(func():
 		_close_pause()
 		_go_title())

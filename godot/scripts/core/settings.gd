@@ -2,7 +2,9 @@ extends RefCounted
 ## C1-42 (KT-07): cài đặt người chơi — lưu user://settings.cfg (tách khỏi save game).
 
 const PATH := "user://settings.cfg"
-const DEFAULTS := {"master": 0.8, "music": 0.6, "sfx": 0.8, "fullscreen": false}
+const DEFAULTS := {"master": 0.8, "music": 0.6, "sfx": 0.8, "fullscreen": false, "font_scale": 1.0}
+## M5-05 (KT-07): các mức cỡ chữ trong Cài đặt. Theme dựng lại ở main.gd (UiTheme.set_font_scale).
+const FONT_SCALES := [[0.9, "Nhỏ"], [1.0, "Vừa"], [1.15, "Lớn"], [1.3, "Rất lớn"]]
 
 static var values := DEFAULTS.duplicate()
 static var _loaded := false

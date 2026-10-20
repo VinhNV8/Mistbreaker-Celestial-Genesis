@@ -1,11 +1,13 @@
 extends ColorRect
-## C1-42 (KT-07): menu tạm dừng (Esc) — Tiếp tục · Cài đặt · Về màn hình chính. Cài đặt: âm lượng, toàn màn hình.
+## C1-42 (KT-07): menu tạm dừng (Esc) — Tiếp tục · Cài đặt · Về màn hình chính. Cài đặt: âm lượng, toàn màn hình, cỡ chữ (M5-05).
 
 const UiTheme = preload("res://scripts/ui/ui_theme.gd")
 const Settings = preload("res://scripts/core/settings.gd")
 
 signal resume
 signal quit_to_title
+## M5-05: người chơi đổi cỡ chữ — main.gd dựng lại theme.
+signal font_scale_changed(k: float)
 
 var _box: VBoxContainer
 var settings_only := false
@@ -80,6 +82,21 @@ func show_settings() -> void:
 	fs.button_pressed = bool(Settings.values.fullscreen)
 	fs.toggled.connect(func(on): Settings.set_value("fullscreen", on))
 	_box.add_child(fs)
+	var frow := UiTheme.hbox(6)
+	var fl := UiTheme.label("Cỡ chữ")
+	fl.custom_minimum_size.x = 150
+	frow.add_child(fl)
+	var cur := float(Settings.values.get("font_scale", 1.0))
+	for opt in Settings.FONT_SCALES:
+		var b := UiTheme.button(str(opt[1]), is_equal_approx(float(opt[0]), cur))
+		b.name = "Font_%d" % roundi(float(opt[0]) * 100.0)
+		var k: float = opt[0]
+		b.pressed.connect(func():
+			Settings.set_value("font_scale", k)
+			font_scale_changed.emit(k)
+			show_settings())
+		frow.add_child(b)
+	_box.add_child(frow)
 	_box.add_child(UiTheme.label("Đổi phím: Project Settings → Input Map (xem tài liệu 02 mục 4).", "Small", 380))
 	var back := UiTheme.button("Xong", true)
 	back.pressed.connect(func():
