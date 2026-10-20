@@ -7,7 +7,7 @@
 | Mục tiêu | Chương 1 đủ để **mời người chơi thử**: có cốt truyện, hướng dẫn, đủ 3 map con, boss hiếm, âm thanh, file chạy Windows |
 | Thứ tự | Làm **trước M4** (đổi lộ trình 20/10/2026). M4 bắt đầu khi C1 xong |
 | Quy trình | Spec (file này) → code → test → cập nhật 01/02/03/04 và mục Kết quả cuối file |
-| Trạng thái | ✅ **Xong 20/10/2026** — trừ C1-50 (cần tải export templates 1,28 GB, chờ chủ dự án đồng ý) |
+| Trạng thái | ✅ **Xong 20/10/2026** (C1-50 xong sau, khi đã cài export templates) |
 
 Ký hiệu: ✅ xong · 🟡 một phần · ⬜ chưa làm. Cột **Nguồn**: `N1…N7` = dòng trong Spec_Notes; mã khác = hạng mục trong 04.
 
@@ -160,7 +160,7 @@ Kịch bản: 35 / 25 / 12 / 10 / 8 / 7 (Cổng dungeon — Alpha, dồn sang T�
 | C | C1-20 … C1-24 | ✅ | `1939bcc` (lưới), `40135f6` |
 | D | C1-30 … C1-34 | ✅ | `4da0721` |
 | E | C1-40 … C1-42 | ✅ | phần E |
-| F | C1-50 | 🟡 Preset + script xong; chưa có `.exe` vì máy chưa có export templates | phần F |
+| F | C1-50 | ✅ `build/ThienPhuKhaiGioi.exe` (111 MB); chạy thử smoke 21 ảnh từ file exe | phần F |
 | F | C1-51 | 🟡 Đã đo bằng bot (mục 5); chỉnh số chờ playtest người thật | — |
 
 ## 5. Kết quả (20/10/2026)

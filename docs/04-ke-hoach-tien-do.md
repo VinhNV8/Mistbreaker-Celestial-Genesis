@@ -308,7 +308,7 @@ Khi có art, chỉ cần thay `scripts/view/world_view.gd` (vẽ) và theme UI; 
 | KT-03 | Lưu game cục bộ, chuyển đổi save cũ | ✅ | M1 / M2 | Save v3 |
 | KT-04 | Test tự động headless | ✅ | Proto → C1 | 64 test; chạy một phần bằng `-- --only=<tên>` |
 | KT-05 | Quản lý mã nguồn bằng Git | ✅ | 20/10/2026 | Nhánh `main`, remote GitHub `VinhNV8/Mistbreaker-Celestial-Genesis`; `.gitignore` bỏ `.godot/`, `node_modules/`, log công cụ |
-| KT-06 | Build file chạy Windows (.exe) | 🟡 | C1 | Preset `godot/export_presets.cfg` + `tools/build_windows.sh` xong; cần cài export templates 4.7.2 (1,28 GB) |
+| KT-06 | Build file chạy Windows (.exe) | ✅ | C1 | `bash tools/build_windows.sh` → `build/ThienPhuKhaiGioi.exe` (111 MB, 1 file, gói dữ liệu nằm trong exe). Templates 4.7.2 đã cài (chỉ Windows x86_64) 20/10/2026; bản build từ commit 96613e0 chạy đủ smoke 21 ảnh |
 | KT-07 | Cài đặt: âm lượng, đổi phím, cỡ chữ | 🟡 | C1 | Âm lượng tổng/nhạc/hiệu ứng, toàn màn hình (Esc → Cài đặt); đổi phím qua Input Map; chưa có cỡ chữ |
 | KT-08 | Điều khiển tay cầm / cảm ứng | ⬜ | Alpha | Phụ thuộc quyết định PC hay Mobile |
 | KT-09 | Backend: tài khoản, lưu đám mây, bảng xếp hạng | ⬜ | Alpha / Beta | Bảng xếp hạng có trong phạm vi Alpha |
@@ -367,7 +367,8 @@ Mỗi đợt theo quy trình: **viết spec → duyệt → code → test → c�
 - [ ] M5-02, NV-20: nhịp lên cấp — Spec_Notes đợt 3 "lên level nhanh quá" (nghiên cứu ARPG, chỉnh hệ số EXP)
 - [ ] M5-03: bản đồ nhỏ theo thời gian thực (Spec_Notes đợt 3)
 - [ ] M5-04, KP-04: chinh phục Di tích bằng câu đố
-- [ ] KT-06, KT-07: build .exe (game-bc), cỡ chữ (M5-05)
+- [x] KT-06: build .exe (game-bc, 20/10/2026)
+- [ ] KT-07: cỡ chữ (M5-05; hook `UiTheme.set_font_scale` đã có)
 
 ### G — Đồ hoạ và âm thanh
 

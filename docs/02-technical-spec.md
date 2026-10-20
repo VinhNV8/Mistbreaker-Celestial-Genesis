@@ -143,6 +143,7 @@ Main (Node, main.gd)
 1. Cài export templates Godot 4.7.2 **một lần** (1,28 GB): Godot editor → *Editor → Manage Export Templates → Download and Install*, hoặc giải nén `Godot_v4.7.2-stable_export_templates.tpz` vào `%APPDATA%\Godot\export_templates\4.7.2.stable\`.
 2. `bash tools/build_windows.sh` → `build/ThienPhuKhaiGioi.exe` (pck nhúng trong exe; thư mục `build/` không commit).
 3. Preset ở `godot/export_presets.cfg` (đã bỏ khỏi `.gitignore`): x86_64, loại `tests/*`, kèm `assets/*.json` (manifest hình đọc bằng `FileAccess`).
+4. Máy này đã cài (20/10/2026) chỉ 5 file Windows x86_64 + `version.txt` từ gói `.tpz` (khoảng 200 MB thay vì 1,28 GB). Kết quả: 1 file exe 111 MB. Muốn build không dính phần đang sửa dở, build từ `git worktree` của commit cần phát hành. Kiểm thử bản build: `build/ThienPhuKhaiGioi.exe -- --smoke=<thư mục>`.
 
 ### 2.3.1. Quy trình sinh hình (G1)
 
