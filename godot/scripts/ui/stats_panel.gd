@@ -81,6 +81,14 @@ func _render(content: VBoxContainer) -> void:
 		world.respec()
 		refresh())
 	content.add_child(respec)
+	# C1-34: tự cộng điểm theo lớp
+	var auto := UiTheme.button("Tự cộng điểm (%s)" % ("3 AGI : 1 VIT : 1 LUK" if p.class_id == "tho-san" else "3 STR : 2 VIT"), true)
+	auto.name = "AutoAllocate"
+	auto.disabled = p.unspent <= 0
+	auto.pressed.connect(func():
+		world.auto_allocate()
+		refresh())
+	content.add_child(auto)
 
 
 func _allocate(stat: String) -> void:

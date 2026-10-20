@@ -91,6 +91,9 @@ func _init() -> void:
 	_run("C1-T5 Lõi Sương: khoá, cấp 7–10, sương che Tinh Linh", _test_c1_core_map)
 	_run("C1-T7 boss hiếm Lão Thụ: chỉ số, Rễ Trói, Rừng Thức Tỉnh, rơi đồ, lịch 12 giờ", _test_c1_rare_boss)
 	_run("C1-T8 vũng độc Nấm Độc, Lao sương", _test_c1_mob_mechanics)
+	_run("C1-T9 Xưởng Rèn, Vườn Thảo Dược", _test_c1_forge_garden)
+	_run("C1-T10 cửa hàng, bán đồ, Thương nhân lữ hành", _test_c1_shop)
+	_run("C1-T11 Tự đánh, tự cộng điểm", _test_c1_auto)
 
 	print("")
 	if _failed.is_empty():
@@ -1483,3 +1486,86 @@ func _test_c1_mob_mechanics() -> void:
 	w2._perform_attack(wisp)
 	_check(wisp.pos.distance_to(w2.player.pos) < 40.0, "Lao sương: lao tới chỗ người chơi")
 	_check(w2.player.hp < hp1 or w2.player.hp == hp1, "Lao sương chạy được")
+
+
+func _test_c1_forge_garden() -> void:
+	var w := _world("kiem-tam")
+	var p = w.profile
+	p.level = 5
+	p.gold = 1_000_000.0
+	p.stones = 100_000
+	_check(not w.forge_craft("helm").ok, "chưa xây Xưởng Rèn thì không chế được")
+	p.buildings["forge"] = 0.0
+	var counts := {"green": 0, "blue": 0, "purple": 0}
+	var n := 3000
+	for i in n:
+		p.inventory = []
+		var res := w.forge_craft("helm")
+		counts[res.item.rarity] += 1
+		_check(res.item.slot == "helm" and int(res.item.level) == 5, "") if i == 0 else null
+	print("       (Xưởng Rèn: %s)" % str(counts))
+	_check(absf(counts.green / float(n) - 0.6) < 0.04 and absf(counts.purple / float(n) - 0.05) < 0.02, "tỉ lệ 60/35/5")
+	var gold0: float = p.gold
+	var st0: int = p.stones
+	p.inventory = []
+	w.forge_craft("ring")
+	_check(is_equal_approx(gold0 - p.gold, 60.0 + 15.0 * 5) and st0 - p.stones == 3, "giá 60 + 15 × cấp vàng, 3 Đá")
+	# Vườn Thảo Dược: cả khi offline
+	var q := _profile("kiem-tam")
+	q.herbs = 0
+	Explore.tick_garden(q, 600.0)
+	_check(q.herbs == 0, "chưa xây Vườn thì không sinh")
+	q.buildings["garden"] = 0.0
+	q.last_seen = 0.0
+	var off := SaveSystem.apply_offline(q, 3600.0)
+	_check(q.herbs == 20 and int(off.herbs) == 20, "1 giờ offline = 20 thảo dược (%d)" % q.herbs)
+
+
+func _test_c1_shop() -> void:
+	var w := _world("kiem-tam")
+	var p = w.profile
+	p.gold = 100.0
+	p.potions = 4
+	_check(w.shop_buy("potion").ok and p.potions == 5 and is_equal_approx(p.gold, 70.0), "mua bình máu 30 vàng")
+	_check(not w.shop_buy("potion").ok, "tối đa 5 bình")
+	_check(w.shop_buy("stone").ok and is_equal_approx(p.gold, 45.0), "mua Đá 25 vàng")
+	var it := Items.new_item(p, 4, "blue", RngUtil.make(2), "helm")
+	Items.add_item(p, it)
+	var price := GameWorld.sell_price(it)
+	_check(price == 5 * 4 * 4, "giá bán = 5 × cấp × phẩm chất")
+	_check(w.sell_item(int(it.id)).ok and is_equal_approx(p.gold, 45.0 + price) and p.inventory.is_empty(), "bán đồ lấy vàng")
+	_check(w.in_village(), "đứng ở làng thì mở được cửa hàng")
+	# Thương nhân lữ hành 1 giờ
+	w.debug_now = 5000.0
+	w._open_merchant()
+	_check(w.merchant_active() and p.merchant.items.size() == 3, "thương nhân bán 3 món")
+	p.gold = 1_000_000.0
+	_check(w.buy_merchant(0).ok and p.merchant.items.size() == 2, "mua đồ của thương nhân")
+	var back := Profile.new()
+	back.load_dict(JSON.parse_string(JSON.stringify(p.to_dict())))
+	_check(back.merchant.items.size() == 2 and int(back.merchant.items[0].price) > 0, "hàng thương nhân được lưu")
+	w.debug_now = 5000.0 + 3601.0
+	_check(not w.merchant_active(), "sau 1 giờ thương nhân rời đi")
+
+
+func _test_c1_auto() -> void:
+	var w := _world("kiem-tam")
+	w.player.pos = Vector2(900, 800)
+	var e := _dummy(w, "wolf", 1, w.player.pos + Vector2(200, 0))
+	w.toggle_auto()
+	_check(w.auto_fight, "bật Tự đánh")
+	for i in 120:
+		w.update(1.0 / 60.0, _idle(w))
+	_check(e.hp < e.max_hp, "Tự đánh tự tới quái và đánh")
+	w.spawn_enemy("boss", GameWorld.BOSS_LEVEL, GameWorld.ARENA_POS, {"role": "boss"})
+	w.update(1.0 / 60.0, _idle(w))
+	_check(not w.auto_fight, "boss xuất hiện thì Tự đánh tắt")
+	# tự cộng điểm
+	for pair in [["kiem-khach", {"str": 6, "vit": 4}], ["tho-san", {"agi": 6, "vit": 2, "luk": 2}]]:
+		var x := _m3_world(pair[0])
+		x.profile.unspent = 10
+		x.auto_allocate()
+		var ok: bool = x.profile.unspent == 0
+		for k in pair[1]:
+			ok = ok and int(x.profile.points[k]) == int(pair[1][k])
+		_check(ok, "%s: tự cộng điểm đúng tỉ lệ %s" % [pair[0], str(x.profile.points)])

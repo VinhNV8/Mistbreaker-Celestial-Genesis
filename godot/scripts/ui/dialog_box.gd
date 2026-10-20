@@ -35,6 +35,9 @@ class Portrait:
 
 
 var auto_advance := false
+## Đang mở bảng phủ: thoại chờ, đóng bảng rồi mới hiện.
+var hold := false
+var _current: Array = []
 var _lines: Array = []
 var _shown := 0.0
 var _name: Label
@@ -80,7 +83,7 @@ func is_open() -> bool:
 func push(dialog_id: String) -> void:
 	for line in Story.DIALOGS.get(dialog_id, []):
 		_lines.append(line)
-	if not visible and not _lines.is_empty():
+	if not visible and not _lines.is_empty() and not hold:
 		_show_next()
 
 
@@ -89,6 +92,7 @@ func _show_next() -> void:
 		visible = false
 		return
 	var line: Array = _lines.pop_front()
+	_current = line
 	var who := str(line[0])
 	var is_hero := who == "{name}"
 	_name.text = _player_name if is_hero else who
@@ -108,7 +112,13 @@ func _layout() -> void:
 
 
 func _process(delta: float) -> void:
+	if hold and visible:
+		_lines.push_front(_current)
+		visible = false
+		return
 	if not visible:
+		if not hold and not _lines.is_empty():
+			_show_next()
 		return
 	var full := str(_text.get_meta("full", ""))
 	_shown += delta * CHARS_PER_SEC

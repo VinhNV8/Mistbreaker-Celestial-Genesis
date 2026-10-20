@@ -16,7 +16,8 @@ const CONTROLS := [
 	["Space", "Né lăn — bất tử 0,3 giây"],
 	["L", "Kỹ năng Thiên phú (nếu có)"],
 	["Q", "Uống bình máu"],
-	["M · I · C · T", "Bản đồ · Túi đồ · Chỉ số · Thiên phú"],
+	["M · N · I · C · T", "Khai phá · Lục địa · Túi đồ · Chỉ số · Thiên phú"],
+	["E · Z", "Cửa hàng (ở làng) · Tự đánh"],
 ]
 
 

@@ -337,6 +337,8 @@ var blasts: Array = []
 var hazards: Array = []
 ## Giờ Unix (test đặt để giả lập thời gian thực; < 0 = đồng hồ máy).
 var debug_now := -1.0
+## C1-33: tự đánh (phím Z).
+var auto_fight := false
 var combo := 0
 var time := 0.0
 
@@ -640,6 +642,7 @@ func update(dt: float, input: Dictionary) -> void:
 	if _combo_timer <= 0.0:
 		combo = 0
 
+	input = _auto_input(input)
 	var aim: Vector2 = input.aim
 	_aim = aim
 	_face_lock -= dt
@@ -2001,7 +2004,10 @@ func claim_tile(id: int) -> Dictionary:
 		return busy
 	var tile := Explore.find_tile(profile, id)
 	var is_relic: bool = not tile.is_empty() and tile.event == "relic"
+	var is_merchant: bool = not tile.is_empty() and tile.event == "merchant"
 	var res := Explore.claim_tile(profile, id)
+	if res.ok and is_merchant:
+		_open_merchant()
 	if res.ok and res.exp > 0:
 		add_exp(res.exp, false)
 	if res.ok and is_relic:
@@ -2458,3 +2464,185 @@ func _update_player_effects(dt: float, input: Dictionary) -> void:
 		p.still = 0.0
 	if has_unique("lao_thu_bark") and p.still >= BARK_STILL:
 		p.hp = minf(max_hp, p.hp + BARK_REGEN * max_hp * dt)
+
+
+# ------------------------------------------------------------------ C1-30…34: cửa hàng, thương nhân, Xưởng Rèn, tự đánh, tự cộng điểm
+
+const SHOP_POTION := 30
+const SHOP_STONE := 25
+const SELL_MULT := {"white": 1, "green": 2, "blue": 4, "purple": 8, "orange": 20}
+const MERCHANT_TIME := 3600.0
+const FORGE_STONES := 3
+const FORGE_RATES := {"green": 60.0, "blue": 35.0, "purple": 5.0}
+const AUTO_RANGE := 400.0
+
+
+func in_village() -> bool:
+	return map_id == "1-1" and player.pos.distance_to(safe_pos) < safe_r + 20.0
+
+
+func _shop_result(ok: bool, msg: String) -> Dictionary:
+	_message(msg, "good" if ok else "bad")
+	return {"ok": ok, "message": msg}
+
+
+func shop_buy(kind: String) -> Dictionary:
+	match kind:
+		"potion":
+			if profile.potions >= POTION_MAX:
+				return _shop_result(false, "Đã mang tối đa %d bình máu." % POTION_MAX)
+			if profile.gold < SHOP_POTION:
+				return _shop_result(false, "Cần %d vàng." % SHOP_POTION)
+			profile.gold -= SHOP_POTION
+			profile.potions += 1
+			return _shop_result(true, "Mua 1 bình máu (%d/%d)." % [profile.potions, POTION_MAX])
+		"stone":
+			if profile.gold < SHOP_STONE:
+				return _shop_result(false, "Cần %d vàng." % SHOP_STONE)
+			profile.gold -= SHOP_STONE
+			profile.stones += 1
+			return _shop_result(true, "Mua 1 Đá Cường Hoá.")
+	return _shop_result(false, "Không có món này.")
+
+
+static func sell_price(item: Dictionary) -> int:
+	return 5 * maxi(1, int(item.level)) * int(SELL_MULT.get(item.rarity, 1)) * (1 + int(item.plus) / 3)
+
+
+func sell_item(item_id: int) -> Dictionary:
+	var i := Items.find_in_bag(profile, item_id)
+	if i < 0:
+		return _shop_result(false, "Chỉ bán được đồ trong túi (tháo ra trước).")
+	var item: Dictionary = profile.inventory[i]
+	var price := sell_price(item)
+	profile.inventory.remove_at(i)
+	profile.gold += price
+	return _shop_result(true, "Bán %s: +%d vàng." % [Items.display_name(item), price])
+
+
+## C1-32: Thương nhân lữ hành — 3 món Xanh dương/Tím trong 1 giờ thực.
+func _open_merchant() -> void:
+	var items: Array = []
+	for r in ["blue", "blue", "purple"]:
+		var it := Items.new_item(profile, maxi(1, profile.level), r, _rng)
+		it["price"] = sell_price(it) * 4
+		items.append(it)
+	profile.merchant = {"until": now_unix() + MERCHANT_TIME, "items": items}
+	say("merchant")
+
+
+func merchant_active() -> bool:
+	return profile.merchant.has("until") and now_unix() < float(profile.merchant.until) and not profile.merchant.items.is_empty()
+
+
+func merchant_left() -> float:
+	return maxf(0.0, float(profile.merchant.get("until", 0.0)) - now_unix())
+
+
+func buy_merchant(index: int) -> Dictionary:
+	if not merchant_active():
+		return _shop_result(false, "Thương nhân lữ hành đã rời đi.")
+	var items: Array = profile.merchant.items
+	if index < 0 or index >= items.size():
+		return _shop_result(false, "Không có món này.")
+	var it: Dictionary = items[index]
+	if profile.gold < int(it.price):
+		return _shop_result(false, "Cần %d vàng." % int(it.price))
+	if profile.inventory.size() >= ItemData.BAG_SIZE:
+		return _shop_result(false, "Túi đồ đã đầy.")
+	profile.gold -= int(it.price)
+	items.remove_at(index)
+	var item := it.duplicate()
+	item.erase("price")
+	Items.add_item(profile, item)
+	return _shop_result(true, "Mua %s." % Items.display_name(item))
+
+
+## C1-30: Xưởng Rèn — chế 1 món cho ô chọn, cấp = cấp nhân vật.
+func forge_cost() -> int:
+	return 60 + 15 * profile.level
+
+
+func forge_craft(slot: String) -> Dictionary:
+	if not Explore.is_built(profile, "forge"):
+		return _shop_result(false, "Cần xây Xưởng Rèn trước (Bản đồ khai phá, phím M).")
+	if profile.gold < forge_cost() or profile.stones < FORGE_STONES:
+		return _shop_result(false, "Cần %d vàng và %d Đá Cường Hoá." % [forge_cost(), FORGE_STONES])
+	if profile.inventory.size() >= ItemData.BAG_SIZE:
+		return _shop_result(false, "Túi đồ đã đầy.")
+	profile.gold -= forge_cost()
+	profile.stones -= FORGE_STONES
+	var rarity: String = RngUtil.pick_weighted(FORGE_RATES.keys(), func(k): return FORGE_RATES[k], _rng)
+	var item := Items.new_item(profile, maxi(1, profile.level), rarity, _rng, slot)
+	Items.add_item(profile, item)
+	_events.append({"type": "item", "text": "Xưởng Rèn: chế được %s." % Items.display_name(item), "rarity": rarity})
+	return {"ok": true, "message": Items.display_name(item), "item": item}
+
+
+## C1-34: tự cộng điểm theo lớp (Kiếm Khách 3 STR : 2 VIT; Thợ Săn 3 AGI : 1 VIT : 1 LUK).
+func auto_allocate() -> int:
+	var pattern: Array = ["agi", "agi", "agi", "vit", "luk"] if is_hunter() else ["str", "str", "str", "vit", "vit"]
+	var n := 0
+	while profile.unspent > 0:
+		allocate(pattern[n % pattern.size()])
+		n += 1
+	if n > 0:
+		_message("Tự cộng %d điểm tiềm năng." % n, "good")
+	return n
+
+
+func toggle_auto() -> void:
+	if not auto_fight and auto_blocked() != "":
+		_message(auto_blocked(), "bad")
+		return
+	auto_fight = not auto_fight
+	_message("Tự đánh: BẬT (Z để tắt; di chuyển để tạm nhường)." if auto_fight else "Tự đánh: TẮT.", "info")
+
+
+## Kịch bản mục 5: boss luôn phải đánh tay.
+func auto_blocked() -> String:
+	if boss() != null or rare_boss() != null:
+		return "Boss phải đánh tay — Tự đánh tắt."
+	if map.arena != null and player.pos.distance_to(arena_pos) < arena_r:
+		return "Trong hang boss không dùng được Tự đánh."
+	return ""
+
+
+func _auto_input(input: Dictionary) -> Dictionary:
+	if not auto_fight:
+		return input
+	if auto_blocked() != "":
+		auto_fight = false
+		_message(auto_blocked(), "bad")
+		return input
+	var mv: Vector2 = input.get("move", Vector2.ZERO)
+	if mv.length() > 0.01 or player.dead_timer > 0.0:
+		return input
+	var target: Enemy = null
+	var best := INF
+	for e in enemies:
+		if e.dead or is_hidden(e):
+			continue
+		var d: float = e.pos.distance_to(player.pos)
+		if d < AUTO_RANGE and d < best:
+			best = d
+			target = e
+	var out := input.duplicate()
+	if target == null:
+		return out
+	var gap: float = best - target.radius
+	var dir: Vector2 = (target.pos - player.pos).normalized()
+	if is_hunter():
+		out.move = -dir if gap < 150.0 else (dir if gap > 320.0 else Vector2.ZERO)
+	else:
+		out.move = Vector2.ZERO if gap < 50.0 else dir
+	out.aim = target.pos
+	out.attack = true
+	for i in 4:
+		var key := "skill_%d" % (i + 1)
+		var sk: Dictionary = Classes.skill(profile.class_id, i)
+		var useful: bool = sk.mul > 0.0 and gap < (380.0 if is_hunter() else 160.0)
+		if useful and player.skill_cds[i] <= 0.0 and player.mp >= float(sk.mp) + 10.0:
+			out[key] = true
+			break
+	return out

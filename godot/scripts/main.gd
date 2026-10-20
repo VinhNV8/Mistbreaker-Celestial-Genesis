@@ -21,6 +21,7 @@ const UiTheme = preload("res://scripts/ui/ui_theme.gd")
 const IntroScreen = preload("res://scripts/ui/intro_screen.gd")
 const CreateScreen = preload("res://scripts/ui/create_screen.gd")
 const DialogBox = preload("res://scripts/ui/dialog_box.gd")
+const ShopPanel = preload("res://scripts/ui/shop_panel.gd")
 
 ## Phím mặc định. Nếu đã khai báo action cùng tên trong Project Settings > Input Map thì dùng bản đó.
 const KEY_ACTIONS := {
@@ -41,6 +42,8 @@ const KEY_ACTIONS := {
 	"toggle_inventory": [KEY_I, KEY_B],
 	"toggle_talent": [KEY_T],
 	"toggle_world": [KEY_N],
+	"interact": [KEY_E],
+	"auto_fight": [KEY_Z],
 	"potion": [KEY_Q],
 	"close_panel": [KEY_ESCAPE],
 }
@@ -65,6 +68,7 @@ var _ui: Control
 var _screen: Control
 var _victory: Control
 var dialog: DialogBox
+var shop_panel: ShopPanel
 ## Sau khi đóng thoại, bỏ qua phím 0,2 giây (Space vừa dùng để tắt thoại không thành né lăn).
 var _dialog_cool := 0.0
 var _save_timer := 0.0
@@ -162,6 +166,22 @@ func _input(event: InputEvent) -> void:
 		_last_mouse_move = Time.get_ticks_msec()
 	if world == null or _victory != null:
 		return
+	if event.is_action_pressed("auto_fight") and not _any_panel_open():
+		world.toggle_auto()
+		get_viewport().set_input_as_handled()
+		return
+	# C1-32: phím E mở cửa hàng khi đứng trong làng.
+	if event.is_action_pressed("interact"):
+		if shop_panel.is_open():
+			shop_panel.close()
+		elif world.in_village():
+			for panel in _panels():
+				panel.close()
+			shop_panel.open(world)
+		else:
+			hud.log_message("Cửa hàng ở Làng Thanh Thạch — đứng trong làng rồi bấm E.", "info")
+		get_viewport().set_input_as_handled()
+		return
 	for pair in [["toggle_stats", stats_panel], ["toggle_map", map_panel], ["toggle_inventory", inventory_panel], ["toggle_talent", talent_panel], ["toggle_world", world_panel]]:
 		if event.is_action_pressed(pair[0]):
 			var target = pair[1]
@@ -177,7 +197,7 @@ func _input(event: InputEvent) -> void:
 
 
 func _panels() -> Array:
-	return [stats_panel, map_panel, inventory_panel, talent_panel, world_panel]
+	return [stats_panel, map_panel, inventory_panel, talent_panel, world_panel, shop_panel]
 
 
 func _any_panel_open() -> bool:
@@ -192,6 +212,7 @@ func _process(delta: float) -> void:
 		return
 	var dt := minf(delta, 0.05)
 	dialog.auto_advance = bot.is_valid()
+	dialog.hold = _any_panel_open() or _victory != null
 	if dialog.is_open():
 		_dialog_cool = 0.2
 	else:
@@ -389,6 +410,8 @@ func _start_world(p: Profile) -> void:
 	_ui.add_child(talent_panel)
 	world_panel = WorldMapPanel.new()
 	_ui.add_child(world_panel)
+	shop_panel = ShopPanel.new()
+	_ui.add_child(shop_panel)
 	dialog = DialogBox.new()
 	_ui.add_child(dialog)
 	dialog.setup(p.name, p.class_id, p.look)
@@ -401,7 +424,7 @@ func _start_world(p: Profile) -> void:
 
 func _end_session() -> void:
 	_close_victory()
-	for n in [hud, stats_panel, map_panel, inventory_panel, talent_panel, world_panel, dialog]:
+	for n in [hud, stats_panel, map_panel, inventory_panel, talent_panel, world_panel, dialog, shop_panel]:
 		if n != null:
 			n.queue_free()
 	hud = null
@@ -411,6 +434,7 @@ func _end_session() -> void:
 	talent_panel = null
 	world_panel = null
 	dialog = null
+	shop_panel = null
 	world = null
 	_view.world = null
 	_view.visible = false
@@ -573,6 +597,15 @@ func _run_smoke(dir: String) -> void:
 	await _wait(0.3)
 	await _shot(dir, "05e-map-buildings")
 	map_panel.close()
+	# C1-32: cửa hàng làng + Thương nhân lữ hành + Xưởng Rèn
+	pp.buildings["forge"] = 0.0
+	world._open_merchant()
+	await _wait(1.0)
+	world.player.pos = world.safe_pos
+	shop_panel.open(world)
+	await _wait(0.3)
+	await _shot(dir, "05f-shop")
+	shop_panel.close()
 
 	var p = world.profile
 	p.level = 5

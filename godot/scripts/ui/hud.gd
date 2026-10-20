@@ -342,7 +342,7 @@ func update_from(w: GameWorld) -> void:
 	var need := Formulas.exp_to_next(p.level)
 	_exp_bar.value = minf(1.0, float(p.xp) / need)
 	_exp_text.text = "EXP %d / %d" % [p.xp, need]
-	_power.text = "Lực chiến %d" % w.combat_power()
+	_power.text = "Lực chiến %d%s" % [w.combat_power(), "   ·   TỰ ĐÁNH (Z)" if w.auto_fight else ""]
 	_points.visible = p.unspent > 0
 	_points.text = "+%d điểm tiềm năng — nhấn C" % p.unspent
 
