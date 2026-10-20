@@ -32,12 +32,12 @@ File này liệt kê **mọi hạng mục trong kịch bản**: trạng thái hi
 | Nhân vật, chỉ số (mục 4) | 26 | 19 | 2 | 5 | 0 |
 | Chiến đấu, quái (mục 5) | 23 | 19 | 1 | 2 | 1 |
 | Bản đồ, vượt map (mục 6) | 13 | 9 | 0 | 4 | 0 |
-| Khai phá, lãnh địa (mục 7) | 22 | 14 | 1 | 7 | 0 |
+| Khai phá, lãnh địa (mục 7) | 22 | 15 | 1 | 6 | 0 |
 | Trang bị, kinh tế (mục 8) | 17 | 13 | 2 | 1 | 1 |
 | 30 phút đầu (mục 9) | 9 | 9 | 0 | 0 | 0 |
 | Đồ hoạ, âm thanh | 13 | 13 | 0 | 0 | 0 |
-| Kỹ thuật, phát hành | 10 | 4 | 3 | 3 | 0 |
-| **Tổng** | **188** | **134** (71%) | **16** (9%) | **36** (19%) | **2** |
+| Kỹ thuật, phát hành | 10 | 5 | 2 | 3 | 0 |
+| **Tổng** | **188** | **136** (72%) | **15** (8%) | **35** (19%) | **2** |
 
 ### Các giai đoạn
 
@@ -50,7 +50,7 @@ File này liệt kê **mọi hạng mục trong kịch bản**: trạng thái hi
 | MVP — C1 | **Hoàn chỉnh Chương 1**: tạo nhân vật, sửa hướng đánh, cốt truyện + hướng dẫn, 3 map con + 40 ô, boss hiếm, Xưởng Rèn, cửa hàng, âm thanh — [08](08-chuong-1-hoan-chinh.md) | ✅ Xong 20/10/2026 (còn .exe chờ tải templates) |
 | MVP — M4 | Chương 2: Đồng Bằng Gió Hú, boss Huyền Ảnh, Thành Biên Đài, bản đồ lục địa, di chuyển giữa vùng | ✅ Xong 20/10/2026 (M4.1 phiên game-bc · M4.2, M4.3) |
 | MVP — SN2 | **Spec_Notes đợt 2**: lớp Pháp Sư, phân rã/bán nhanh có bộ lọc, chuyển cấp cường hoá khi mặc đồ, map ×1,6, sương che bản đồ — [09](09-spec-notes-dot-2.md) | ✅ Xong 20/10/2026 (phiên game-bc) |
-| MVP — M5 | Cốt truyện có thoại, hướng dẫn, nhiệm vụ, boss hiếm, Xưởng Rèn, cân bằng 1 → 20 | 🟡 Đang làm — [03 mục 8](03-mvp-spec.md). Phần lớn đã xong sớm ở C1; M5-01 Bạch Hổ xong 20/10/2026 |
+| MVP — M5 | Cốt truyện có thoại, hướng dẫn, nhiệm vụ, boss hiếm, Xưởng Rèn, cân bằng 1 → 20 | ✅ Xong 20/10/2026 — [03 mục 8](03-mvp-spec.md): Bạch Hổ, nhịp EXP mới, bản đồ nhỏ, câu đố Di tích, cỡ chữ, .exe. Còn chờ playtest người thật để chỉnh nhịp |
 | MVP — G | Đồ hoạ nhân vật, quái, bản đồ, hiệu ứng, âm thanh cho chương 1–2 | 🟡 G1 (hình chương 1, sinh bằng code) xong 20/10/2026 — [07](07-do-hoa-ke-hoach.md); còn âm thanh, khung giao diện, vùng 2 |
 | Thử nghiệm kín | 50–100 người chơi (kịch bản mục 9) | ⬜ Cần M3–M5 + G |
 | Alpha | 4 lớp, chương 1–5, chuyển chức 1–2, dungeon cổng ngẫu nhiên, bảng xếp hạng | ⬜ |
@@ -221,7 +221,7 @@ Chi tiết 9 vùng × 3 map con, cơ chế môi trường có số liệu, bộ 
 | KP-01 | Lưới ô lục giác bị sương mù che | ✅ | C1 | C1-T6 | Vùng 1: 40 ô (C1-21) |
 | KP-02 | Đuốc Khai Giới, tối đa 10, hồi 1 cái/20 phút | 🟡 | Proto | EXP-03 | Đang hồi 2 phút/cái để test nhanh; quyết định giá trị thật sau playtest |
 | KP-03 | Do thám → khám phá sự kiện → chinh phục | ✅ | Proto | EXP-02, 05 | |
-| KP-04 | Chinh phục bằng giải câu đố | ⬜ | M5 | — | Hiện chỉ chinh phục bằng đánh quái |
+| KP-04 | Chinh phục bằng giải câu đố | ✅ | M5 | M5-T8 | Ô Di tích: Trận Đèn Cổ 3 × 3 hoặc câu hỏi cổ thư (cốt truyện, ngũ hành); giải được thưởng ×2 + 1 Đá Cường Hoá, sai khoá 30 giây; vẫn có "Phá khoá" thưởng thường (M5-04, `core/puzzle.gd`) |
 | KP-05 | Xây công trình theo địa hình: rừng → Xưởng Gỗ | ✅ | Proto / M2 | EXP-04, TL-F | |
 | KP-06 | Núi → Mỏ, sông → Bến Cá | ✅ | M4.3 | KP-T1b | Mỏ 4 Đá + 2 Sắt/phút; Bến Cá +3% HP mỗi cái (tối đa 15%) |
 | KP-07 | Phòng thủ: Triều Hư Vô mỗi 24 giờ chiếm lại công trình không được bảo vệ | ⬜ | Alpha | — | Cần Doanh Trại (KP-17) |
@@ -366,7 +366,7 @@ Mỗi đợt theo quy trình: **viết spec → duyệt → code → test → c�
 - [x] CB-02: Tự đánh; NV-26: tự cộng điểm (xong ở C1)
 - [x] M5-02, NV-20: nhịp lên cấp — Spec_Notes đợt 3 "lên level nhanh quá" (nghiên cứu ARPG, chỉnh hệ số EXP); lính khiên quay chậm (F-M5-1)
 - [x] M5-03: bản đồ nhỏ theo thời gian thực (Spec_Notes đợt 3) — `ui/minimap.gd`, phím V
-- [ ] M5-04, KP-04: chinh phục Di tích bằng câu đố
+- [x] M5-04, KP-04: chinh phục Di tích bằng câu đố
 - [x] KT-06: build .exe (game-bc, 20/10/2026)
 - [x] KT-07: cỡ chữ (M5-05) — Esc → Cài đặt, 4 mức
 

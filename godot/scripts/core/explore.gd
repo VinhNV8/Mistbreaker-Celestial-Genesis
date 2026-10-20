@@ -319,7 +319,8 @@ static func reveal_tile(p, id: int) -> Dictionary:
 	return _result(true, "Sương mù tan: phát hiện %s." % ", ".join(names), exp_gain)
 
 
-static func claim_tile(p, id: int) -> Dictionary:
+## bonus: ô Di tích mở bằng cách giải câu đố (M5-04) — thưởng gấp đôi + 1 Đá Cường Hoá.
+static func claim_tile(p, id: int, bonus := false) -> Dictionary:
 	var tile := find_tile(p, id)
 	if tile.is_empty() or tile.status != "revealed":
 		return _result(false, "Ô đất này chưa thể chiếm.")
@@ -342,9 +343,15 @@ static func claim_tile(p, id: int) -> Dictionary:
 			return _result(true, "Bắt đầu xây %s (%d giây)." % [def.name, roundi(build_time(p, tile.event))])
 		"relic":
 			var opened := count_owned(p.tiles, "relic")
-			p.gold += 80
+			var mult := 2 if bonus else 1
+			var gold := 80 * mult
+			p.gold += gold
+			if bonus:
+				p.stones += 1
 			tile.status = "owned"
-			return _result(true, "Mở rương: +80 vàng. %s" % RELIC_LORE[opened % RELIC_LORE.size()], 150)
+			var head := ("Giải được câu đố! Rương mở: +%d vàng, +1 Đá Cường Hoá." % gold) if bonus else ("Phá khoá rương: +%d vàng." % gold)
+			# M5-02: EXP theo cấp (cũ: cố định 150).
+			return _result(true, "%s %s" % [head, RELIC_LORE[opened % RELIC_LORE.size()]], Formulas.explore_exp(int(p.level)) * 2 * mult)
 		"survivor":
 			tile.status = "owned"
 			return _result(true, "Một người sống sót gia nhập Trại Khai Giới: +10% sản lượng.")

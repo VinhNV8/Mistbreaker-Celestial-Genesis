@@ -10,7 +10,7 @@ const HexMap = preload("res://scripts/ui/hex_map.gd")
 const CLAIM_LABEL := {
 	"resource": "Xây Xưởng Gỗ (%d vàng)",
 	"nest": "Chinh phục (gọi quái tinh anh ra)",
-	"relic": "Mở rương di tích",
+	"relic": "Phá khoá rương (thưởng thường)",
 	"survivor": "Mời gia nhập lãnh địa",
 	"wonder": "Chiếm Kỳ quan",
 	"merchant": "Mời thương nhân về làng",
@@ -139,6 +139,8 @@ func _tile_info(info: VBoxContainer, t: Dictionary) -> void:
 	if world.nest_active(int(t.id)):
 		info.add_child(_warn("Quái tinh anh đang chờ bạn ngoài Rừng Sương."))
 		return
+	if t.event == "relic":
+		_relic_ui(info, int(t.id))
 	var label: String = CLAIM_LABEL.get(t.event, "Chiếm")
 	if t.event == "resource":
 		label = label % Config.LUMBER_COST_GOLD
@@ -146,6 +148,49 @@ func _tile_info(info: VBoxContainer, t: Dictionary) -> void:
 	claim.size_flags_horizontal = SIZE_SHRINK_BEGIN
 	claim.pressed.connect(_on_claim)
 	info.add_child(claim)
+
+
+## M5-04 (KP-04): câu đố mở rương Di tích — giải được thì thưởng gấp đôi + 1 Đá Cường Hoá.
+func _relic_ui(info: VBoxContainer, id: int) -> void:
+	var pz: Dictionary = world.relic_puzzle(id)
+	info.add_child(HSeparator.new())
+	if pz.kind == "lights":
+		info.add_child(UiTheme.label("TRẬN ĐÈN CỔ", "Eyebrow"))
+		info.add_child(UiTheme.label("Bấm một bùa thì nó và các bùa kề bên đảo sáng/tối. Thắp đủ 9 bùa để mở rương (thưởng ×2).", "Muted", 330))
+		var grid := GridContainer.new()
+		grid.columns = 3
+		grid.add_theme_constant_override("h_separation", 6)
+		grid.add_theme_constant_override("v_separation", 6)
+		for i in pz.cells.size():
+			var lit: bool = pz.cells[i]
+			var b := UiTheme.button("✦" if lit else "·", lit)
+			b.name = "Rune_%d" % i
+			b.custom_minimum_size = Vector2(56, 44)
+			var idx: int = i
+			b.pressed.connect(func():
+				world.relic_press(id, idx)
+				refresh())
+			grid.add_child(b)
+		info.add_child(grid)
+		info.add_child(UiTheme.label("Đã bấm %d lần" % int(pz.moves), "Small"))
+	else:
+		info.add_child(UiTheme.label("CÂU HỎI CỔ THƯ", "Eyebrow"))
+		info.add_child(UiTheme.label(str(pz.q), "", 330))
+		var lock: float = world.relic_locked(id)
+		for k in pz.options.size():
+			var b := UiTheme.button(str(pz.options[k]))
+			b.name = "Answer_%d" % k
+			b.disabled = lock > 0.0
+			b.size_flags_horizontal = SIZE_FILL
+			var choice: int = k
+			b.pressed.connect(func():
+				world.relic_answer(id, choice)
+				refresh())
+			info.add_child(b)
+		if lock > 0.0:
+			info.add_child(_warn("Cơ quan rương đang khoá: còn %d giây." % ceili(lock)))
+		else:
+			info.add_child(UiTheme.label("Trả lời đúng: thưởng ×2. Sai: rương khoá 30 giây.", "Small", 330))
 
 
 func _on_claim() -> void:

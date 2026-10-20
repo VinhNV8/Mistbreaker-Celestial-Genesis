@@ -128,6 +128,7 @@ func _init() -> void:
 	_run("M5-T5 nhịp EXP: số quái tới cấp 10/20, tỉ lệ nguồn EXP theo kịch bản", _test_m5_exp_budget)
 	_run("M5-T6 bản đồ nhỏ: ảnh sương theo map, đổi cỡ, cập nhật khi khám phá", _test_m5_minimap)
 	_run("M5-T7 cỡ chữ: lưu trong cài đặt, dựng lại theme theo hệ số", _test_m5_font_scale)
+	_run("M5-T8 câu đố Di tích: Trận Đèn Cổ, câu hỏi cổ thư, thưởng ×2, khoá khi sai, phá khoá", _test_m5_relic_puzzle)
 	_run("PACE-T1 nhịp lên cấp 1 → 20 chỉ bằng đánh quái (bot cày, đo phút)", _test_pace_mobs)
 	for c in Classes.ORDER:
 		_run("PACE-T2 %s cấp 10 → 20 vùng 2" % c, _test_pace_r2.bind(c))
@@ -2624,3 +2625,76 @@ func _test_m5_font_scale() -> void:
 	_check(UiTheme.fs(20) == 26, "fs() nhân hệ số cho chỗ tự đặt cỡ chữ")
 	UiTheme.set_font_scale(1.0)
 	_check(UiTheme.fs(20) == 20, "về Vừa")
+
+
+func _test_m5_relic_puzzle() -> void:
+	var Puzzle = load("res://scripts/core/puzzle.gd")
+	# sinh cố định; Trận Đèn Cổ không bao giờ đã giải sẵn và luôn giải được trong ≤ 3 bước
+	var kinds := {}
+	var max_steps := 0
+	var bad_region := false
+	for id in 60:
+		var a: Dictionary = Puzzle.make("Lâm Phong", 1, id)
+		_check(a == Puzzle.make("Lâm Phong", 1, id), "") if id == 0 else null
+		kinds[a.kind] = true
+		if a.kind == "lights":
+			_check(not Puzzle.solved(a), "Trận Đèn Cổ mới sinh chưa giải (ô %d)" % id)
+			var best := 99
+			for mask in 512:
+				var t := a.duplicate(true)
+				var n := 0
+				for i in 9:
+					if mask & (1 << i):
+						Puzzle.press(t, i)
+						n += 1
+				if Puzzle.solved(t):
+					best = mini(best, n)
+			max_steps = maxi(max_steps, best)
+		else:
+			var r: Dictionary = Puzzle.RIDDLES.filter(func(x): return x.q == a.q)[0]
+			_check(a.options[a.answer] == r.a[0], "đáp án đúng nằm ở vị trí answer")
+			bad_region = bad_region or int(r.region) > 1
+	_check(kinds.has("lights") and kinds.has("riddle"), "có cả 2 loại câu đố")
+	_check(max_steps >= 1 and max_steps <= Puzzle.SCRAMBLE, "Trận Đèn Cổ giải được trong ≤ 3 bước (%d)" % max_steps)
+	_check(not bad_region, "vùng 1 không hỏi chuyện chương 2")
+	# câu ngũ hành khớp bảng khắc của quái
+	var names := {"kim": "Kim", "moc": "Mộc", "tho": "Thổ", "thuy": "Thủy", "hoa": "Hỏa"}
+	for el in Monsters.COUNTERS:
+		var q := "Theo ngũ hành, %s khắc hệ nào?" % names[el]
+		var r2: Array = Puzzle.RIDDLES.filter(func(x): return x.q == q)
+		_check(r2.size() == 1 and r2[0].a[0] == names[Monsters.COUNTERS[el]], "câu ngũ hành %s đúng bảng khắc" % names[el])
+	# luồng trong game
+	var w := _world("tay-nhanh")
+	w.debug_now = 1000.0
+	var p = w.profile
+	var relics: Array = p.tiles.filter(func(t): return t.event == "relic")
+	var t1: Dictionary = relics[0]
+	var t2: Dictionary = relics[1]
+	t1.status = "revealed"
+	t2.status = "revealed"
+	# Trận Đèn Cổ còn 1 bước
+	var lights := {"kind": "lights", "cells": [true, true, true, true, true, true, true, true, true], "moves": 0}
+	Puzzle.press(lights, 4)
+	lights.moves = 0
+	w.relic_puzzles[w._relic_key(int(t1.id))] = lights
+	var gold0: float = p.gold
+	var st0: int = p.stones
+	var r1: Dictionary = w.relic_press(int(t1.id), 4)
+	_check(r1.get("solved", false) and t1.status == "owned", "thắp đủ 9 bùa: chiếm ô Di tích")
+	_check(is_equal_approx(p.gold, gold0 + 160.0) and p.stones == st0 + 1, "giải câu đố: +160 vàng (×2), +1 Đá Cường Hoá")
+	# câu hỏi cổ thư: sai thì khoá 30 giây
+	w.relic_puzzles[w._relic_key(int(t2.id))] = {"kind": "riddle", "q": "?", "options": ["a", "b", "c"], "answer": 1}
+	w.relic_answer(int(t2.id), 0)
+	_check(t2.status == "revealed" and w.relic_locked(int(t2.id)) > 29.0, "trả lời sai: rương khoá 30 giây")
+	w.relic_answer(int(t2.id), 1)
+	_check(t2.status == "revealed", "đang khoá thì không trả lời được")
+	w.debug_now = 1031.0
+	var gold1: float = p.gold
+	var ra: Dictionary = w.relic_answer(int(t2.id), 1)
+	_check(ra.get("solved", false) and t2.status == "owned" and is_equal_approx(p.gold, gold1 + 160.0), "hết khoá, trả lời đúng: chiếm ô, thưởng ×2")
+	# phá khoá: thưởng thường
+	var t3: Dictionary = p.tiles.filter(func(t): return t.event == "relic" and t.status != "owned")[0]
+	t3.status = "revealed"
+	var gold2: float = p.gold
+	w.claim_tile(int(t3.id))
+	_check(t3.status == "owned" and is_equal_approx(p.gold, gold2 + 80.0), "phá khoá: +80 vàng (thưởng thường)")

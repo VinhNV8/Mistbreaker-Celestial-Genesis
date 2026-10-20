@@ -795,9 +795,9 @@ Phần lớn hạng mục M5 trong lộ trình ban đầu (thoại, nhiệm vụ
 | M5-01 | Boss hiếm vùng 2 **Bạch Hổ Phong Vân** ở Mắt Bão (06 vùng 2), rơi **Vuốt Bạch Hổ** | ✅ |
 | M5-02 | Nhịp lên cấp: Spec_Notes đợt 3 "nhân vật lên level nhanh quá" — nghiên cứu nhịp ARPG, chỉnh hệ số EXP (NV-20) | ✅ |
 | M5-03 | Bản đồ nhỏ theo thời gian thực (Spec_Notes đợt 3) | ✅ |
-| M5-04 | KP-04: chinh phục ô Di tích bằng câu đố | ⬜ |
+| M5-04 | KP-04: chinh phục ô Di tích bằng câu đố | ✅ |
 | M5-05 | KT-07: cài đặt cỡ chữ (hook `UiTheme.set_font_scale` đã có) | ✅ |
-| M5-06 | KT-06: build .exe | ⬜ phiên game-bc làm |
+| M5-06 | KT-06: build .exe | ✅ (phiên game-bc, c1046bc) |
 
 ### 8.2. M5-01 — Bạch Hổ Phong Vân
 
@@ -878,7 +878,20 @@ Spec_Notes đợt 3: "cần thêm bản đồ real-time để tiện theo dõi �
 
 Esc → Cài đặt → dòng **Cỡ chữ** có 4 mức: Nhỏ (×0,9) · Vừa (×1,0) · Lớn (×1,15) · Rất lớn (×1,3). Đổi là áp ngay: `main.gd` dựng lại theme bằng `UiTheme.set_font_scale(k)` và gán cho cây UI. Hệ số lưu trong `user://settings.cfg` (`font_scale`, tách khỏi save game) và được áp ngay khi mở game. Phạm vi: mọi chữ lấy cỡ từ theme. Chỗ code tự đặt cỡ chữ chỉ đổi theo khi dùng `UiTheme.fs()`. Phần chữ vẽ tay trên bản đồ nhỏ và thanh kỹ năng giữ cỡ cố định.
 
-### 8.6. Kiểm thử
+### 8.6. M5-04 — Câu đố Di tích (KP-04)
+
+Kịch bản mục 7: "Chinh phục: hạ quái canh giữ **hoặc giải câu đố** để chiếm ô"; Di tích (12%): "câu đố, rương báu, trang sách cốt truyện".
+
+- Chọn ô Di tích đã dọn sương trong bảng khai phá (M) thì hiện câu đố của ô đó. Có 2 loại:
+  - **Trận Đèn Cổ:** lưới 3 × 3 bùa; bấm một bùa thì nó và các bùa kề trên/dưới/trái/phải đảo sáng/tối; thắp đủ 9 bùa là giải được. Đề sinh bằng cách bấm 3 bùa khác nhau từ trạng thái đã giải. Bài Lights Out 3 × 3 luôn có nghiệm duy nhất, nên đề không bao giờ đã giải sẵn và luôn giải được trong ≤ 3 bước.
+  - **Câu hỏi cổ thư:** 1 câu, 3 lựa chọn, về cốt truyện và mẹo chơi (Đuốc, Phá Thế, né Hoàn hảo, ngũ hành tương khắc khớp `Monsters.COUNTERS`). Câu về chương 2 chỉ hỏi ở vùng 2.
+- **Giải được:** chiếm ô, **thưởng ×2**: 160 vàng, EXP khai phá ×4 (`explore_exp × 2 × 2`), **+1 Đá Cường Hoá**, cộng món Xanh dương và trang sách cốt truyện như cũ.
+- **Trả lời sai:** cơ quan rương khoá **30 giây** (giờ thực), sau đó trả lời lại được. Trận Đèn Cổ không bị phạt.
+- **Phá khoá (thưởng thường):** vẫn mở ngay được như trước (80 vàng, EXP ×2), để người chơi không bị kẹt.
+- **Không đổi save:** câu đố sinh cố định theo (tên nhân vật, vùng, id ô), mở lại vẫn là câu cũ. Trạng thái giải dở chỉ giữ trong phiên chơi.
+- EXP Di tích đổi từ cố định 150 thành theo cấp (M5-02).
+
+### 8.7. Kiểm thử
 
 | Mã | Nội dung |
 | --- | --- |
@@ -889,6 +902,7 @@ Esc → Cài đặt → dòng **Cỡ chữ** có 4 mức: Nhỏ (×0,9) · Vừa
 | M5-T5 | Chỉ đánh quái: cấp 10 cần 500–700 quái, cấp 20 cần 2.000–2.700 quái; nhiệm vụ 18–32% EXP mỗi chương; boss + boss hiếm 15–30% |
 | M5-T6 | Bản đồ nhỏ: ảnh sương đúng số ô của map, cỡ đúng tỉ lệ, dựng lại khi khám phá thêm, phím V đổi cỡ |
 | M5-T7 | Cỡ chữ: mặc định 1,0; "Rất lớn" nhân cỡ chữ theme ×1,3; `fs()` theo hệ số |
+| M5-T8 | Câu đố: sinh cố định, đủ 2 loại; Trận Đèn Cổ chưa giải sẵn và giải được trong ≤ 3 bước (thử hết 512 tổ hợp); đáp án đúng vị trí; vùng 1 không hỏi chuyện chương 2; câu ngũ hành khớp bảng khắc; giải được +160 vàng +1 Đá; sai khoá 30 giây; phá khoá +80 vàng |
 | PACE-T1, T2 | Đo nhịp (chạy riêng `--only=PACE`, vài phút): bot cày từ cấp 1 và từ cấp 10, in phút tới từng mốc cấp, số quái, số lần chết theo map |
 
 ## Phụ lục A — Yêu cầu thay đổi (CR)

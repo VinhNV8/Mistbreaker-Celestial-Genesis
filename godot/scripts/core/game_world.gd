@@ -5,6 +5,7 @@ extends RefCounted
 const Config = preload("res://scripts/core/config.gd")
 const Explore = preload("res://scripts/core/explore.gd")
 const Formulas = preload("res://scripts/core/formulas.gd")
+const Puzzle = preload("res://scripts/core/puzzle.gd")
 const Stats = preload("res://scripts/core/stats.gd")
 const Talents = preload("res://scripts/data/talents.gd")
 const Monsters = preload("res://scripts/data/monsters.gd")
@@ -2644,7 +2645,7 @@ func reveal_tile(id: int) -> Dictionary:
 	return res
 
 
-func claim_tile(id: int) -> Dictionary:
+func claim_tile(id: int, bonus := false) -> Dictionary:
 	if nest_active(id):
 		var busy := {"ok": false, "message": "Quái tinh anh của ổ này vẫn đang chờ bạn ngoài Rừng Sương.", "start_nest": false}
 		_message(busy.message, "info")
@@ -2652,7 +2653,7 @@ func claim_tile(id: int) -> Dictionary:
 	var tile := Explore.find_tile(profile, id)
 	var is_relic: bool = not tile.is_empty() and tile.event == "relic"
 	var is_merchant: bool = not tile.is_empty() and tile.event == "merchant"
-	var res := Explore.claim_tile(profile, id)
+	var res := Explore.claim_tile(profile, id, bonus)
 	if res.ok and is_merchant:
 		_open_merchant()
 	if res.ok and res.exp > 0:
@@ -2666,6 +2667,61 @@ func claim_tile(id: int) -> Dictionary:
 	elif res.ok:
 		_events.append({"type": "tile", "tile_id": id})
 	_message(res.message, "good" if res.ok else "bad")
+	return res
+
+
+# ------------------------------------------------------------------ M5-04 (KP-04): câu đố Di tích
+
+## Trạng thái câu đố đang giải dở (chỉ trong phiên chơi; câu đố sinh lại giống hệt từ tên nhân vật + ô).
+var relic_puzzles := {}
+## Giờ Unix hết khoá sau khi trả lời sai.
+var relic_lock := {}
+
+
+func _relic_key(id: int) -> String:
+	return "%d_%d" % [int(profile.tiles_region), id]
+
+
+func relic_puzzle(id: int) -> Dictionary:
+	var key := _relic_key(id)
+	if not relic_puzzles.has(key):
+		relic_puzzles[key] = Puzzle.make(str(profile.name), int(profile.tiles_region), id)
+	return relic_puzzles[key]
+
+
+func relic_locked(id: int) -> float:
+	return maxf(0.0, float(relic_lock.get(_relic_key(id), 0.0)) - now_unix())
+
+
+## Trận Đèn Cổ: bấm bùa i; thắp đủ 9 bùa thì mở rương (thưởng câu đố).
+func relic_press(id: int, i: int) -> Dictionary:
+	var pz := relic_puzzle(id)
+	if pz.kind != "lights" or Puzzle.solved(pz):
+		return {"ok": false, "solved": false}
+	Puzzle.press(pz, i)
+	if not Puzzle.solved(pz):
+		return {"ok": false, "solved": false}
+	relic_puzzles.erase(_relic_key(id))
+	var res := claim_tile(id, true)
+	res["solved"] = true
+	return res
+
+
+## Câu hỏi cổ thư: chọn đáp án; sai thì rương khoá 30 giây.
+func relic_answer(id: int, choice: int) -> Dictionary:
+	var pz := relic_puzzle(id)
+	if pz.kind != "riddle":
+		return {"ok": false, "solved": false}
+	if relic_locked(id) > 0.0:
+		_message("Rương còn khoá %d giây." % ceili(relic_locked(id)), "bad")
+		return {"ok": false, "solved": false}
+	if choice != int(pz.answer):
+		relic_lock[_relic_key(id)] = now_unix() + Puzzle.WRONG_LOCK
+		_message("Sai rồi — cơ quan rương khoá lại %d giây." % roundi(Puzzle.WRONG_LOCK), "bad")
+		return {"ok": false, "solved": false}
+	relic_puzzles.erase(_relic_key(id))
+	var res := claim_tile(id, true)
+	res["solved"] = true
 	return res
 
 
