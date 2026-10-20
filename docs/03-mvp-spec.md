@@ -30,7 +30,7 @@ Thứ tự được chọn theo phụ thuộc: nhiều Thiên phú trong danh s�
 | --- | --- | --- | --- | --- |
 | **M1** | Trang bị: rơi đồ, túi đồ, mặc/tháo, affix, bộ trang bị, cường hoá, phân rã, Lực chiến | 4, 5, 8 | — | ✅ Đã xong 20/10/2026 — kết quả ở mục 3.12 |
 | **M2** | Đủ 20 Thiên phú (bể quay 7 hạng) + luyện cấp Thiên phú bằng Tinh Hoa + Đền Thiên Phú | 3, 7 | M1 | ✅ Đã xong 20/10/2026 — kết quả ở mục 4.11 |
-| M3 | Lớp Thợ Săn (đánh xa) + chọn lớp lúc tạo nhân vật | 4, 9 | — | Chưa viết spec |
+| M3 | Lớp Thợ Săn (đánh xa) + chọn lớp lúc tạo nhân vật, 4 kỹ năng mỗi lớp, MP, né tránh, công thức chỉ số quái mới | 4, 5, 9 | M2 | 🟡 Spec ở mục 5, đang code |
 | M4 | Chương 2: Đồng Bằng Gió Hú, gió đẩy lùi, boss Tướng Gián Điệp Huyền Ảnh, Thành Biên Đài, di chuyển giữa các vùng | 2, 5, 6 | M1 | Chưa viết spec |
 | M5 | Cốt truyện có thoại, nhiệm vụ chính, boss hiếm, cân bằng lại 1 → 20 cho thử nghiệm kín | 2, 5, 9 | M1–M4 | Chưa viết spec |
 
@@ -414,6 +414,148 @@ F và S chênh **7%**, đạt nguyên tắc. Không Thiên phú nào chết lầ
 | F4 | Kiếm Tâm nhanh hơn trung bình khoảng 28% nhờ Nhất Kiếm Đoạn (hồi 15 giây) | Theo dõi khi playtest; nếu quá mạnh, tăng hồi chiêu lên 20 giây |
 | F5 | 3 Thiên phú SS/SSS không giúp gì trong trận boss (Thiên Mệnh, Long Mạch chưa xây, Đạo Tặc chưa sao chép) | Đúng thiết kế ("hiệu ứng lên bản đồ / lãnh địa"), nhưng người quay trúng hạng hiếm có thể thất vọng ở chương 1. Hỏi cảm nhận khi playtest |
 | F6 | Bot chỉ bấm L liên tục, không dùng bình máu, không xây Long Mạch | Số liệu cân bằng là cận dưới; người chơi thật dùng Thiên phú khéo hơn |
+
+## 5. Đợt M3 — Lớp Thợ Săn, 4 kỹ năng mỗi lớp, cân bằng theo công thức mới
+
+### 5.1. Mục tiêu
+
+Kịch bản mục 4–5: có **Kiếm Khách** (cận chiến, STR) và **Thợ Săn** (đánh xa, cơ động, AGI), chọn lớp khi tạo nhân vật; combat đủ *"đánh thường + 4 kỹ năng + 1 kỹ năng Thiên phú + né lăn"*. Đồng thời áp các quyết định đã chốt Q17, Q22, Q23 (tài liệu 04 mục 13.1) để chỉ cân bằng một lần.
+
+**Ngoài phạm vi M3:** Pháp Sư, Hộ Vệ, chuyển chức; kháng hệ (M4); Tự đánh (M5); boss hiếm (M5); vũng độc của Nấm Độc, Lao sương của Tinh Linh Sương (M4 khi làm lại vùng 1 theo 3 map con).
+
+### 5.2. Lớp nhân vật
+
+| Mã | Yêu cầu | Tiêu chí nghiệm thu |
+| --- | --- | --- |
+| CL-01 | Sau Lễ Thức Tỉnh hiện màn hình **Chọn lớp**: Kiếm Khách / Thợ Săn, mỗi lớp có mô tả, chỉ số chính, 4 kỹ năng | Smoke test chụp `02b-class` |
+| CL-02 | Lớp lưu trong save (`class_id`). Save cũ (v3) → Kiếm Khách | TL-H, CL-T5 |
+| CL-03 | Không đổi lớp giữa chừng (chỉ khi bắt đầu hành trình mới) | — |
+| CL-04 | Hình nhân vật theo lớp (`hero-kiem-khach`, `hero-tho-san`) | Smoke test |
+| CL-05 | Vũ khí dùng chung ô Vũ khí; món sinh ra khi đang là Thợ Săn tên là **Cung**, Kiếm Khách tên **Kiếm** (chỉ số như nhau) | CL-T2 |
+
+**Chỉ số theo lớp:**
+
+| | Kiếm Khách | Thợ Săn |
+| --- | --- | --- |
+| Tấn công | 10 + 2/cấp + **2/STR** | 10 + 2/cấp + **2/AGI** + 1/STR |
+| HP | 100 + 15/cấp + 12/VIT | **90** + 13/cấp + 12/VIT |
+| Né tránh gốc | 0% | **5%** |
+| Đánh thường | Chém vòng cung 8 m, 60°, 0,5 giây/đòn, trúng mọi quái trong cung | **Bắn tên** 45 m, 0,6 giây/đòn, trúng quái đầu tiên trên đường bay (tên bay 70 m/s) |
+
+### 5.3. Chỉ số mới
+
+| Mã | Chỉ số | Công thức | Nguồn |
+| --- | --- | --- | --- |
+| ST-01 | **INT** (Trí tuệ), cộng điểm được | +6 MP tối đa, +0,05 MP/giây, +0,5% sát thương kỹ năng (1–4) mỗi điểm | Kịch bản mục 4; CR-01 cần INT |
+| ST-02 | **LUK** (May mắn), cộng điểm được | +0,3% chí mạng, +0,2 điểm % tỉ lệ rơi đồ của quái thường (tối đa +10) mỗi điểm | Kịch bản mục 4 (chưa nói tác dụng) |
+| ST-03 | **MP** | Tối đa `50 + 5/cấp + 6/INT`; hồi `3 + 0,05/INT` mỗi giây; đầy lại khi lên cấp, hồi sinh | Kịch bản mục 4 |
+| ST-04 | **Né tránh** | `gốc lớp + 0,3%/AGI`, tối đa 30%. Mỗi đòn của quái (cả đạn, Vồ) có tỉ lệ này bị né: hiện "Né!", không mất máu, không mất combo | Kịch bản mục 4 |
+| ST-05 | Tẩy điểm (trước cấp 30) trả lại cả INT, LUK | — | NV-13 |
+
+### 5.4. Kỹ năng (phím 1–4)
+
+Phím **1–4** dùng kỹ năng; **K / chuột phải** vẫn là kỹ năng 1 (giữ thói quen cũ). Mỗi kỹ năng có hồi chiêu và tốn MP; thiếu MP thì không dùng được (hiện "Thiếu MP"). Sát thương kỹ năng nhân thêm thưởng INT (ST-01).
+
+**Kiếm Khách**
+
+| # | Kỹ năng | Hiệu ứng | Hồi | MP |
+| --- | --- | --- | --- | --- |
+| 1 | **Xoáy Kiếm** (đã có) | Chém vòng quanh 12,5 m, ×1,8 | 6 giây (bộ Thợ Săn Sương 6 món: 4) | 15 |
+| 2 | **Đột Kích** | Lao 18 m theo hướng ngắm trong 0,2 giây, chém mọi quái trên đường ×1,5; bất tử khi lao | 8 giây | 20 |
+| 3 | **Kiếm Khí** | Phóng luồng kiếm khí bay thẳng 40 m, **xuyên** mọi quái, ×2,0 | 5 giây | 15 |
+| 4 | **Thiết Bích** | 4 giây giảm 50% sát thương nhận vào, đòn đánh +50% sát thương vào thanh Phá Thế | 20 giây | 25 |
+
+**Thợ Săn**
+
+| # | Kỹ năng | Hiệu ứng | Hồi | MP |
+| --- | --- | --- | --- | --- |
+| 1 | **Mưa Tên** | Vùng 9 m tại điểm ngắm (tầm tối đa 40 m): 5 đợt trong 1,5 giây, mỗi đợt ×0,6 (tổng ×3,0) | 8 giây | 25 |
+| 2 | **Tên Xuyên Phá** | 1 mũi tên xuyên mọi quái, 60 m, ×2,5 | 6 giây | 15 |
+| 3 | **Bẫy Gai** | Đặt bẫy tại chỗ (tối đa 2, tồn tại 20 giây). Quái chạm vào: nổ vòng 6 m ×2,0 và trói 2 giây | 10 giây | 20 |
+| 4 | **Ưng Nhãn** | 6 giây: +30% tốc đánh, +15% chí mạng | 25 giây | 30 |
+
+**Thiên phú với 2 lớp** (05 mục 5): Kiếm Tâm, Nanh Sói Chúa tính theo **đòn đánh thường** (chém hoặc bắn). Ngũ Hành Bộc Phá kích hoạt bằng **kỹ năng 1** (Xoáy Kiếm / Mưa Tên). Hấp Huyết, Huyết Chiến áp dụng mọi đòn.
+
+### 5.5. Chiến đấu
+
+| Mã | Yêu cầu | Tiêu chí |
+| --- | --- | --- |
+| CB-04 | **Né Hoàn hảo**: một đòn của quái bị chặn trong **0,15 giây đầu** của né lăn → hiện "Hoàn hảo!", quái và đạn chậm còn 30% tốc độ trong **1 giây** (người chơi không chậm). Mỗi lần né chỉ kích hoạt 1 lần | CB-T3 |
+| CB-07 | **Phá Thế cho quái tinh anh**: thanh = 30% HP tối đa; phá → choáng **3 giây**, nhận +50% sát thương; hồi đầy khi hết choáng. Thanh Phá Thế hiện dưới thanh máu | CB-T4 |
+| CB-12 | **Kỹ năng riêng của tinh anh** (06 vùng 1): **Sói Đầu Đàn** — *Hú gọi* (hồi 15 giây, khi đang đuổi): gọi 2 Sói Sương cùng cấp; cả bầy +20% tốc chạy 6 giây. **Nấm Mẹ** — *Sinh sôi* (mỗi 8 giây khi đang đuổi): đẻ 2 Nấm Con lao tới, tự nổ sau 3 giây hoặc khi chạm người chơi (vòng 3 m, ×1,5, báo hiệu 0,5 giây) | CB-T5 |
+| CB-13 | Quái tinh anh vùng 1 chỉ còn 2 loại: Sói Sương tinh anh = **Sói Đầu Đàn** (từ cấp 3), Nấm Độc tinh anh = **Nấm Mẹ** (từ cấp 5); thủ lĩnh Ổ quái chọn trong 2 loại này | CB-T5 |
+| MC-01 | Quái mới **Mộc Tinh** (06): loại Giáp, hệ Mộc, cấp 6 trở lên; *Dậm đất*: báo hiệu 1,0 giây, vòng 6 m quanh nó, ×1,4 | CB-T6 |
+
+### 5.6. Chỉ số quái theo công thức (Q22, Q23)
+
+| Mã | Yêu cầu |
+| --- | --- |
+| CB-21 | Chỉ số quái tính bằng `Formulas.mob_stats(cấp, bậc, loại)` — **đúng công thức tài liệu 06 mục 1** (cùng cách tính với `tools/gen_world_doc.py`). Bỏ bảng nhân theo cấp cũ. Bậc: quái thường, quái Ổ quái → *thường*; tinh anh, thủ lĩnh Ổ → *tinh anh*; Sói Chúa → *boss* (tính với người chơi chuẩn cấp 5) |
+| CB-22 | Boss chương 1 = **90 đòn**; Phá Thế = HP/6; EXP boss = 0,3 × EXP lên cấp 6 |
+| — | Loại quái: Sói Sương *Nhanh*, Nấm Độc *Xa*, Tinh Linh Sương *Phép*, Mộc Tinh *Giáp*, Sói Đầu Đàn *Nhanh*, Nấm Mẹ *Lì*, Nấm Con *Bầy* (ATK ×2,5 khi nổ như *Tự nổ*) |
+| — | Test so khớp: Sói Sương cấp 1 = 18 HP, cấp 7 = 188 HP / 36 ATK; Sói Chúa = 4.023 HP / 43 ATK / 24 DEF (bảng 06) |
+
+Công thức giả định **người chơi chuẩn mặc đồ đúng vùng** (06 mục 1.1). Bot trong test cân bằng vì vậy được mặc đồ (`_gear_up`), như người chơi thật ở phút thứ 20.
+
+### 5.7. Thiên phú (Q17, TP-30, TP-40)
+
+| Mã | Yêu cầu |
+| --- | --- |
+| TP-41 | **Hiệu ứng chính mạnh dần theo Lv**: mỗi giá trị trong bảng 05 mục 2.1 nội suy tuyến tính từ Lv1 tới Lv10 (`Talents.lv_value(v1, v10, lv)`). Bảng Thiên phú hiện giá trị ở cấp hiện tại và cấp kế tiếp |
+| TP-30 | Thuần Thú Sư thu phục được cả **quái Ổ quái** (không gồm thủ lĩnh); ngưỡng 10% → 15% HP theo Lv; thú cưng +0% → +50% tấn công theo Lv |
+| TP-40 | **Đạo Tặc — Cướp Thuộc Tính** đúng CR-01.1 (DT-01…08) với mặc định Q13–Q16: hạ quái có tỉ lệ cướp (thường 3%, tinh anh 30%, thủ lĩnh Ổ 100%, boss 100% × 3 điểm), loại thuộc tính theo bảng đặc trưng của quái (06), giới hạn 1 × cấp, đầy thì bỏ điểm cũ nhất; quái thấp hơn quá 5 cấp không cướp được (boss luôn được); tỉ lệ ×1,0 → ×1,5 theo Lv. Điểm cướp cộng thẳng vào chỉ số, không bị tẩy điểm, hiện riêng trong bảng Chỉ số; thông báo *"Cướp +1 AGI từ Sói Sương (12/15)"* |
+
+### 5.8. Giao diện
+
+| Mã | Yêu cầu |
+| --- | --- |
+| UI-01 | HUD: thanh MP dưới thanh HP; thanh kỹ năng 8 ô: Đánh thường · 1 · 2 · 3 · 4 · Né · L · Q, mỗi ô có icon, hồi chiêu; ô thiếu MP tô xanh mờ |
+| UI-02 | Nhật ký dời lên trên thanh kỹ năng để không đè ở 1366 × 768 |
+| UI-03 | Bảng Chỉ số: 5 chỉ số gốc (STR, AGI, INT, VIT, LUK) + phần cướp được (Đạo Tặc), MP, Né tránh; mô tả tác dụng theo lớp |
+| UI-04 | Màn hình tiêu đề, phím điều khiển cập nhật phím 1–4 |
+| UI-05 | Vẽ: tên bay (Thợ Săn), kiếm khí, mưa tên, bẫy, khiên Thiết Bích, thanh Phá Thế tinh anh, vòng báo hiệu Dậm đất / Nấm Con nổ |
+| UI-06 | Hình mới (skill `game-art`): 8 icon kỹ năng, mũi tên, kiếm khí, bẫy, Nấm Con |
+
+### 5.9. Thay đổi save (version 3 → 4)
+
+| Trường | Kiểu | Mặc định khi chuyển từ v3 |
+| --- | --- | --- |
+| `class_id` | `"kiem-khach"` \| `"tho-san"` | `"kiem-khach"` |
+| `points` | thêm `int`, `luk` | `0`, `0` |
+| `stolen` | Điểm Đạo Tặc cướp được, theo thứ tự cũ → mới, ví dụ `["agi", "str"]` | `[]` |
+
+### 5.10. Kiểm thử tự động cần có
+
+| # | Nội dung |
+| --- | --- |
+| CL-T1 | Chỉ số theo lớp: Thợ Săn lấy Tấn công từ AGI, HP thấp hơn, né gốc 5%; INT tăng MP, LUK tăng chí mạng |
+| CL-T2 | Thợ Săn bắn tên trúng quái ở 30 m, không trúng quái sau lưng quái đầu tiên; vũ khí rơi tên "Cung" |
+| CL-T3 | 8 kỹ năng: dùng được, đúng hồi chiêu, trừ MP, thiếu MP thì bị từ chối; Kiếm Khí/Tên Xuyên Phá xuyên quái; Bẫy trói; Thiết Bích giảm 50% |
+| CL-T4 | Né tránh: AGI 100 → 30% (trần), mô phỏng 2.000 đòn lệch < 3 điểm % |
+| CL-T5 | Save v3 → v4: lớp Kiếm Khách, INT/LUK = 0; lưu/nạp v4 giữ lớp, điểm cướp |
+| CB-T1 | Chỉ số quái khớp bảng 06 (Sói Sương cấp 1/7, Sói Chúa) |
+| CB-T3 | Né Hoàn hảo: chặn đòn trong 0,15 giây đầu → làm chậm 1 giây; né muộn thì không |
+| CB-T4 | Phá Thế tinh anh: đủ sát thương → choáng 3 giây, +50% sát thương |
+| CB-T5 | Sói Đầu Đàn gọi 2 sói; Nấm Mẹ đẻ Nấm Con, Nấm Con nổ |
+| CB-T6 | Mộc Tinh xuất hiện từ cấp 6, Dậm đất trúng người đứng trong 6 m |
+| TP-T1 | Hiệu ứng theo Lv: Thân Thể Lv10 = +12% HP; Ngưng Đọng Lv10 = 4,5 giây |
+| TP-T2 | Thuần Thú thu phục quái Ổ quái |
+| TP-T3 | Đạo Tặc: boss cho 3 điểm; giới hạn 1 × cấp, đầy thì thay điểm cũ nhất; quái thấp hơn 6 cấp không cướp được; điểm cướp không bị tẩy |
+| TL-B | **Cân bằng** chạy cho **2 lớp × 20 Thiên phú**: tất cả hạ được Sói Chúa; F và S chênh ≤ 25% trong từng lớp; 2 lớp chênh nhau ≤ 25% |
+
+### 5.11. Điểm cần duyệt
+
+M3 code theo **mặc định** dưới đây. **Trạng thái: chưa duyệt.**
+
+| # | Câu hỏi | Mặc định | Lý do |
+| --- | --- | --- | --- |
+| Q28 | Tên và hiệu ứng 8 kỹ năng (mục 5.4) | Như bảng | Kịch bản không có danh sách kỹ năng; thiết kế theo vai trò lớp (cận chiến cân bằng / xa cơ động) và hướng chuyển chức (Huyết Kiếm, Thợ Bẫy) |
+| Q29 | Phím kỹ năng | 1–4; K/chuột phải = kỹ năng 1 | Phím số là chuẩn ARPG PC; giữ K cho người đã quen |
+| Q30 | Tác dụng INT, LUK cho 2 lớp hiện có | Mục 5.3 | INT có ích cho mọi lớp qua MP và sát thương kỹ năng; LUK cho người cày đồ |
+| Q31 | Né tránh 0,3%/AGI, trần 30%, Thợ Săn gốc 5% | Như vậy | Trần 30% để boss vẫn nguy hiểm |
+| Q32 | MP: 50 + 5/cấp, hồi 3/giây | Như vậy | Đủ dùng xoay vòng 4 kỹ năng ở chương 1, thiếu nếu bấm liên tục |
+| Q33 | Tinh anh vùng 1 chỉ còn Sói Đầu Đàn, Nấm Mẹ (thay "… Tinh Anh") | Có | Đúng tài liệu 06 (2 loại tinh anh mỗi map, kịch bản mục 5) |
+| Q34 | Không đổi lớp giữa chừng | Không đổi được | Đổi lớp sẽ đi cùng chuyển chức (Alpha) |
 
 ## Phụ lục A — Yêu cầu thay đổi (CR)
 
