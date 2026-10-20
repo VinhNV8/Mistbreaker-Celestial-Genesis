@@ -299,7 +299,7 @@ Khi có art, chỉ cần thay `scripts/view/world_view.gd` (vẽ) và theme UI; 
 | KT-02 | Dữ liệu tách khỏi logic (designer chỉnh không sửa code) | 🟡 | Proto | Dữ liệu nằm trong `scripts/data/*.gd`; kịch bản đề xuất JSON/Resource. Chuyển khi có designer |
 | KT-03 | Lưu game cục bộ, chuyển đổi save cũ | ✅ | M1 / M2 | Save v3 |
 | KT-04 | Test tự động headless | ✅ | Proto → M3 | 52 test; chạy một phần bằng `-- --only=<tên>` |
-| KT-05 | Quản lý mã nguồn bằng Git | ✅ | 20/10/2026 | Repo cục bộ nhánh `main` (chưa có remote); `.gitignore` bỏ `.godot/`, `node_modules/`, log công cụ |
+| KT-05 | Quản lý mã nguồn bằng Git | ✅ | 20/10/2026 | Nhánh `main`, remote GitHub `VinhNV8/Mistbreaker-Celestial-Genesis`; `.gitignore` bỏ `.godot/`, `node_modules/`, log công cụ |
 | KT-06 | Build file chạy Windows (.exe) | ⬜ | M5 | Cần cài export templates 4.7.2 |
 | KT-07 | Cài đặt: âm lượng, đổi phím, cỡ chữ | ⬜ | M5 | |
 | KT-08 | Điều khiển tay cầm / cảm ứng | ⬜ | Alpha | Phụ thuộc quyết định PC hay Mobile |
