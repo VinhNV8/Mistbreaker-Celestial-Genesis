@@ -47,6 +47,7 @@ const KEY_ACTIONS := {
 	"toggle_world": [KEY_N],
 	"interact": [KEY_E],
 	"auto_fight": [KEY_Z],
+	"toggle_minimap": [KEY_V],
 	"potion": [KEY_Q],
 	"close_panel": [KEY_ESCAPE],
 }
@@ -181,6 +182,10 @@ func _input(event: InputEvent) -> void:
 		return
 	if event.is_action_pressed("auto_fight") and not _any_panel_open():
 		world.toggle_auto()
+		get_viewport().set_input_as_handled()
+		return
+	if event.is_action_pressed("toggle_minimap") and not _any_panel_open():
+		hud.toggle_minimap()
 		get_viewport().set_input_as_handled()
 		return
 	# C1-32, M4.3: phím E — nói chuyện với NPC gần nhất, hoặc mở cửa hàng khi đứng trong làng/thành.

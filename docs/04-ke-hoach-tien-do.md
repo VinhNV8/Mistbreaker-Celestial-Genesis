@@ -365,7 +365,7 @@ Mỗi đợt theo quy trình: **viết spec → duyệt → code → test → c�
 - [x] KP-09, TB-12: Thương nhân lữ hành, mua bán (xong ở C1)
 - [x] CB-02: Tự đánh; NV-26: tự cộng điểm (xong ở C1)
 - [x] M5-02, NV-20: nhịp lên cấp — Spec_Notes đợt 3 "lên level nhanh quá" (nghiên cứu ARPG, chỉnh hệ số EXP); lính khiên quay chậm (F-M5-1)
-- [ ] M5-03: bản đồ nhỏ theo thời gian thực (Spec_Notes đợt 3)
+- [x] M5-03: bản đồ nhỏ theo thời gian thực (Spec_Notes đợt 3) — `ui/minimap.gd`, phím V
 - [ ] M5-04, KP-04: chinh phục Di tích bằng câu đố
 - [x] KT-06: build .exe (game-bc, 20/10/2026)
 - [ ] KT-07: cỡ chữ (M5-05; hook `UiTheme.set_font_scale` đã có)

@@ -794,7 +794,7 @@ Phần lớn hạng mục M5 trong lộ trình ban đầu (thoại, nhiệm vụ
 | --- | --- | --- |
 | M5-01 | Boss hiếm vùng 2 **Bạch Hổ Phong Vân** ở Mắt Bão (06 vùng 2), rơi **Vuốt Bạch Hổ** | ✅ |
 | M5-02 | Nhịp lên cấp: Spec_Notes đợt 3 "nhân vật lên level nhanh quá" — nghiên cứu nhịp ARPG, chỉnh hệ số EXP (NV-20) | ✅ |
-| M5-03 | Bản đồ nhỏ theo thời gian thực (Spec_Notes đợt 3) | ⬜ |
+| M5-03 | Bản đồ nhỏ theo thời gian thực (Spec_Notes đợt 3) | ✅ |
 | M5-04 | KP-04: chinh phục ô Di tích bằng câu đố | ⬜ |
 | M5-05 | KT-07: cài đặt cỡ chữ (hook `UiTheme.set_font_scale` đã có) | ⬜ |
 | M5-06 | KT-06: build .exe | ⬜ phiên game-bc làm |
@@ -865,7 +865,16 @@ Bot đánh nhanh hơn người (không đi lạc, không mở bảng, không đ�
 
 **Phát hiện F-M5-1, lính khiên:** khi người chơi ngang cấp quái (trước đây người chơi luôn cao cấp hơn nên không lộ ra), Kiếm Khách chết **52 lần** trên chặng 10 → 20. Lính Đánh Thuê luôn quay mặt về người chơi ngay lập tức, nên lời dặn "đánh từ bên hông hoặc sau lưng" không làm được, và cận chiến luôn bị khiên chặn 70%. Sửa: lính khiên quay tối đa 120°/giây, chạy vòng thì đánh được vào hông. Bot Kiếm Khách được dạy chạy vòng. Kết quả: Kiếm Khách chết **16 lần**, mất 86 phút, ngang lớp đánh xa. TL-B, TL-B2 và M5-T3 không đổi.
 
-### 8.4. Kiểm thử
+### 8.4. M5-03 — Bản đồ nhỏ
+
+Spec_Notes đợt 3: "cần thêm bản đồ real-time để tiện theo dõi đang đứng ở đâu".
+
+- **Vị trí:** góc phải HUD, dưới bảng nhiệm vụ. Rộng 230 px, cao theo tỉ lệ map. **Phím V** đổi sang cỡ lớn 460 px và ngược lại. Dòng combo dời xuống dưới bản đồ.
+- **Nội dung:** tiêu đề "tên map · % khám phá"; đất tô màu theo vùng; **chỗ chưa khám phá phủ tối**, cùng dữ liệu với sương che SN-31, nên giữ được cảm giác "đi tới đâu thấy tới đó"; làng/thành/trạm (vàng); hang boss (vòng đỏ); tường sương trước hang khi chưa mở (vạch tím); NPC (chấm vàng); quái thường (chấm đỏ nhỏ), tinh anh (cam); boss và boss hiếm (to, nhấp nháy); nhân vật là mũi tên trắng theo hướng nhìn.
+- **Không lộ thông tin:** quái ở chỗ chưa khám phá và quái đang tàng hình (Tinh Linh Sương ở Lõi Sương) không hiện.
+- **Hiệu năng:** sương là ảnh 1 pixel/ô (tối đa 70 × 40), chỉ dựng lại khi có ô mới mở.
+
+### 8.5. Kiểm thử
 
 | Mã | Nội dung |
 | --- | --- |
@@ -874,6 +883,7 @@ Bot đánh nhanh hơn người (không đi lạc, không mở bảng, không đ�
 | M5-T3 | 3 lớp cấp 20 hạ Bạch Hổ không chết lần nào, tối đa 3 bình máu |
 | M5-T4 | Lính khiên quay tối đa 2° mỗi khung hình; đánh sau lưng không bị chặn; sau 1,5 giây quay lại đối mặt |
 | M5-T5 | Chỉ đánh quái: cấp 10 cần 500–700 quái, cấp 20 cần 2.000–2.700 quái; nhiệm vụ 18–32% EXP mỗi chương; boss + boss hiếm 15–30% |
+| M5-T6 | Bản đồ nhỏ: ảnh sương đúng số ô của map, cỡ đúng tỉ lệ, dựng lại khi khám phá thêm, phím V đổi cỡ |
 | PACE-T1, T2 | Đo nhịp (chạy riêng `--only=PACE`, vài phút): bot cày từ cấp 1 và từ cấp 10, in phút tới từng mốc cấp, số quái, số lần chết theo map |
 
 ## Phụ lục A — Yêu cầu thay đổi (CR)

@@ -126,6 +126,7 @@ func _init() -> void:
 	_run("M5-T3 cân bằng: 3 lớp cấp 20 hạ Bạch Hổ", _test_m5_bach_ho_balance)
 	_run("M5-T4 lính khiên quay chậm 120°/giây: chạy vòng đánh được vào hông", _test_m5_shield_turn)
 	_run("M5-T5 nhịp EXP: số quái tới cấp 10/20, tỉ lệ nguồn EXP theo kịch bản", _test_m5_exp_budget)
+	_run("M5-T6 bản đồ nhỏ: ảnh sương theo map, đổi cỡ, cập nhật khi khám phá", _test_m5_minimap)
 	_run("PACE-T1 nhịp lên cấp 1 → 20 chỉ bằng đánh quái (bot cày, đo phút)", _test_pace_mobs)
 	for c in Classes.ORDER:
 		_run("PACE-T2 %s cấp 10 → 20 vùng 2" % c, _test_pace_r2.bind(c))
@@ -2594,3 +2595,19 @@ func _test_m5_exp_budget() -> void:
 	var b2: float = GameWorld.boss_exp(18) + 0.5 * Formulas.exp_to_next(20)
 	print("       boss + boss hiếm: chương 1 %.0f%%, chương 2 %.0f%%" % [b1 / ch1 * 100.0, b2 / ch2 * 100.0])
 	_check(b1 / ch1 >= 0.15 and b1 / ch1 <= 0.3 and b2 / ch2 >= 0.15 and b2 / ch2 <= 0.3, "boss + boss hiếm ≈ 20% EXP mỗi chương")
+
+
+func _test_m5_minimap() -> void:
+	var Minimap = load("res://scripts/ui/minimap.gd")
+	var w := _world("tay-nhanh")
+	var mm = Minimap.new()
+	mm.update_from(w)
+	_check(mm._fog_tex != null and mm._fog_tex.get_width() == w.fog.w and mm._fog_tex.get_height() == w.fog.h, "ảnh sương 1 pixel/ô (%d × %d)" % [w.fog.w, w.fog.h])
+	_check(is_equal_approx(mm.size.x, Minimap.SMALL_W) and absf((mm.size.y - Minimap.HEADER) / mm.size.x - w.world_size.y / w.world_size.x) < 0.01, "cỡ nhỏ đúng tỉ lệ map")
+	var v0: int = mm._fog_version
+	w.fog.reveal(w.player.pos + Vector2(900, 0), 300.0)
+	mm.update_from(w)
+	_check(mm._fog_version != v0, "khám phá thêm thì vẽ lại sương")
+	mm.toggle_size()
+	_check(is_equal_approx(mm.size.x, Minimap.LARGE_W), "phím V: cỡ lớn")
+	mm.free()

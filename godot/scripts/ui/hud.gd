@@ -2,6 +2,7 @@ extends Control
 ## HUD khi đang chơi. Dựng bằng code; cập nhật mỗi khung hình từ GameWorld.
 
 const Config = preload("res://scripts/core/config.gd")
+const Minimap = preload("res://scripts/ui/minimap.gd")
 const Explore = preload("res://scripts/core/explore.gd")
 const Formulas = preload("res://scripts/core/formulas.gd")
 const GameWorld = preload("res://scripts/core/game_world.gd")
@@ -62,6 +63,8 @@ var _map_name: Label
 var _obj_title: Label
 var _travel: ColorRect
 var _travel_label: Label
+## M5-03: bản đồ nhỏ (phím V đổi cỡ).
+var _minimap: Minimap
 
 
 func _ready() -> void:
@@ -124,6 +127,9 @@ func _ready() -> void:
 	trv.add_child(_map_name)
 	_tr.add_child(trv)
 	add_child(_tr)
+
+	_minimap = Minimap.new()
+	add_child(_minimap)
 
 	_obj = PanelContainer.new()
 	_obj.custom_minimum_size.x = 290
@@ -265,7 +271,12 @@ func banner(text: String) -> void:
 	tw.tween_property(_banner, "modulate:a", 0.0, 0.6)
 
 
+func toggle_minimap() -> void:
+	_minimap.toggle_size()
+
+
 func update_from(w: GameWorld) -> void:
+	_minimap.update_from(w)
 	var p = w.profile
 	var pl := w.player
 	var s := w.stats
@@ -441,13 +452,14 @@ func _layout() -> void:
 	_tr.reset_size()
 	_tr.position = Vector2(sz.x - _tr.size.x - 12, 12)
 	_obj.position = Vector2(sz.x - _obj.size.x - 12, _tr.position.y + _tr.size.y + 8)
+	_minimap.position = Vector2(sz.x - _minimap.size.x - 12, _obj.position.y + _obj.size.y + 8)
 	var boss_w := clampf(sz.x - 680.0, 260.0, 520.0)
 	_boss_box.size = Vector2(boss_w, 0)
 	_boss_box.position = Vector2((sz.x - boss_w) / 2.0, 14)
 	_wind.reset_size()
 	_wind.position = Vector2((sz.x - _wind.size.x) / 2.0, 92.0 if _boss_box.visible else 18.0)
 	_combo.reset_size()
-	_combo.position = Vector2(sz.x - _combo.size.x - 24, sz.y / 2.0)
+	_combo.position = Vector2(sz.x - _combo.size.x - 24, maxf(sz.y / 2.0, _minimap.position.y + _minimap.size.y + 8.0))
 	_skills.position = Vector2((sz.x - _skills.size.x) / 2.0, sz.y - _skills.size.y - 14)
 	# UI-02: nhật ký nằm trên thanh kỹ năng.
 	_log.reset_size()

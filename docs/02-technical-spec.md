@@ -114,6 +114,7 @@ Main (Node, main.gd)
 | `scripts/ui/frame_box.gd` | StyleBox tự vẽ khung trang trí (nền gỗ, viền vàng 2 lớp, hoa văn góc) — `SolidPanel` khung lớn, `PanelContainer` khung nhỏ (DH-11) |
 | `assets/fonts/` | Be Vietnam Pro Medium + ExtraBold, giấy phép SIL OFL 1.1 (`OFL.txt`) |
 | `scripts/ui/hud.gd` | HUD khi chơi |
+| `scripts/ui/minimap.gd` | Bản đồ nhỏ góc phải HUD (M5-03): ảnh sương 1 pixel/ô dựng lại khi `fog.version` đổi, vẽ làng, hang boss, tường sương, NPC, quái ở vùng đã thấy, boss/boss hiếm nhấp nháy, mũi tên nhân vật; phím V đổi cỡ 230 ↔ 460 px |
 | `scripts/ui/skill_bar.gd` | Thanh kỹ năng 8 ô có khung trang trí, tự vẽ bằng `_draw`: icon cắt tròn, hồi chiêu quét tròn, nhãn phím, tên + dòng phụ; HUD gọi `set_slot(i, {...})` mỗi khung hình (DH-11) |
 | `scripts/ui/modal.gd` | Lớp cha của bảng phủ |
 | `scripts/ui/stats_panel.gd` | Bảng chỉ số |
