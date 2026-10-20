@@ -31,7 +31,7 @@ Thứ tự được chọn theo phụ thuộc: nhiều Thiên phú trong danh s�
 | **M1** | Trang bị: rơi đồ, túi đồ, mặc/tháo, affix, bộ trang bị, cường hoá, phân rã, Lực chiến | 4, 5, 8 | — | ✅ Đã xong 20/10/2026 — kết quả ở mục 3.12 |
 | **M2** | Đủ 20 Thiên phú (bể quay 7 hạng) + luyện cấp Thiên phú bằng Tinh Hoa + Đền Thiên Phú | 3, 7 | M1 | ✅ Đã xong 20/10/2026 — kết quả ở mục 4.11 |
 | **M3** | Lớp Thợ Săn (đánh xa) + chọn lớp lúc tạo nhân vật, 4 kỹ năng mỗi lớp, MP, né tránh, công thức chỉ số quái mới | 4, 5, 9 | M2 | ✅ Đã xong 20/10/2026 — kết quả ở mục 5.12 |
-| M4 | Chương 2: Đồng Bằng Gió Hú, gió đẩy lùi, boss Tướng Gián Điệp Huyền Ảnh, Thành Biên Đài, di chuyển giữa các vùng | 2, 5, 6 | M1 | Chưa viết spec |
+| M4 | Chương 2: Đồng Bằng Gió Hú, gió đẩy lùi, boss Tướng Gián Điệp Huyền Ảnh, Thành Biên Đài, di chuyển giữa các vùng | 2, 5, 6, 7 | M1–M3 | 🟡 Spec ở mục 6 (3 đợt con M4.1–M4.3), đang code |
 | M5 | Cốt truyện có thoại, nhiệm vụ chính, boss hiếm, cân bằng lại 1 → 20 cho thử nghiệm kín | 2, 5, 9 | M1–M4 | Chưa viết spec |
 
 ## 3. Đợt M1 — Trang bị và cường hoá
@@ -601,6 +601,156 @@ Hoàn thành 20/10/2026. Kiểm thử: **13 test tự động mới** (CL-T1…T
 | F8 | Người chơi **không mặc đồ** gần như không thể thắng boss ở cấp 5 | Hướng dẫn (M5) phải nhắc mặc đồ; xem xét cho Trưởng làng tặng 1 vũ khí Xanh lá |
 | F9 | Kiếm Tâm vẫn nhanh nhất (22–26 giây, khoảng 20% nhanh hơn trung bình) | Như F4: theo dõi playtest |
 | F10 | Quái cấp 1–2 yếu hơn trước (Sói Sương 40 → 18 HP) nên 5 phút đầu nhanh hơn | Đúng ý đồ "30 phút đầu trơn tru"; đo lại nhịp lên cấp khi playtest (NV-20) |
+
+## 6. Đợt M4 — Chương 2: Đồng Bằng Gió Hú, Thành Biên Đài
+
+### 6.1. Mục tiêu
+
+Kịch bản mục 2 (chương 2: *"Gia nhập Liên minh, nhận lãnh địa đầu tiên — Phát hiện gián điệp Hư Vô Giáo trong thành"*), mục 6 (vùng 2, gió đổi hướng đẩy lùi, quy tắc vượt map), mục 7 (lưới 40–60 ô, núi → mỏ, sông → bến cá). Nội dung quái/boss theo [06](06-ban-do-quai-boss.md) vùng 2.
+
+Phạm vi lớn nên chia **3 đợt con**, mỗi đợt có test và commit riêng:
+
+| Đợt con | Nội dung | Hạng mục 04 |
+| --- | --- | --- |
+| **M4.1** Nhiều bản đồ | Kiến trúc bản đồ dữ liệu hoá; **bản đồ lục địa**, di chuyển giữa map, điểm dịch chuyển; **Lõi Sương** (map 1-3); thử thách vượt ải; cảnh kết chương 1 | BD-06, BD-07, BD-08, BD-09, TN-09, TP-23 |
+| **M4.2** Vùng 2 chiến đấu | 3 map vùng 2 (Cửa Gió, Thảo Nguyên Hú, Mắt Bão); **gió**; 4 quái thường + 2 tinh anh; **boss Tướng Gián Điệp Huyền Ảnh**; kháng hệ; phạt EXP quái thấp cấp; bộ Phong Hành, Mặt Nạ Huyền Ảnh; Đạo Tặc học Phân Thân | BD-02, CB-10, CB-18, NV-17, NV-25, TB-04, TP-39 |
+| **M4.3** Thành và lãnh địa vùng 2 | **Thành Biên Đài** (NPC, thoại, nhiệm vụ chính chương 2, gián điệp Hư Vô Giáo); lưới khai phá vùng 2 **45 ô** theo tỉ lệ kịch bản; Mỏ, Bến Cá, Đá, Sắt; Khứu Giác Di tích; EXP offline; bộ cộng hưởng Thiên phú | CT-04, CT-07, CT-10, KP-01, KP-06, KP-11, TB-05, TB-11, TP-26, NV-24 |
+
+**Ngoài phạm vi M4:** boss hiếm Bạch Hổ (M5), cửa hàng mua bán (M5), Xưởng Rèn (M5), vùng 3 (Alpha).
+
+### 6.2. M4.1 — Nhiều bản đồ
+
+**Bản đồ** (`scripts/data/maps.gd`): mỗi map là dữ liệu — kích thước, cấp quái theo vị trí, vùng an toàn (làng/thành/trạm), hang boss (nếu có), tường sương mù, bảng quái, môi trường, nền đất.
+
+| Map | Vùng | Cấp | Nội dung | Mở khi |
+| --- | --- | --- | --- | --- |
+| 1-1 Rừng Sương (gộp Bìa Rừng + Rừng Sâu) | 1 | 1–6 | Làng Thanh Thạch, Hang Sói Chúa — **map hiện có, giữ nguyên** | Bắt đầu |
+| 1-3 Lõi Sương | 1 | 7–10 | Trạm Gác (an toàn), Tinh Linh Sương, Mộc Tinh, Sói Sương cấp 7+, tinh anh; sương dày hơn | Hạ Sói Chúa |
+| 2-1 Cửa Gió | 2 | 10–13 | Thành Biên Đài (an toàn) ở rìa tây | Cấp 10 + hạ Sói Chúa + khai phá vùng 1 ≥ 60% (kịch bản mục 6, 3 điều kiện) |
+| 2-2 Thảo Nguyên Hú | 2 | 13–17 | | Đã tới Cửa Gió |
+| 2-3 Mắt Bão | 2 | 17–20 | Gió đổi mỗi 8 giây; dungeon **Phủ Huyền Ảnh** (boss cấp 18) | Đã tới Thảo Nguyên Hú |
+
+| Mã | Yêu cầu | Tiêu chí |
+| --- | --- | --- |
+| MP-01 | `GameWorld` chạy trên 1 map (`map_id`); mọi vị trí (làng, hang, tường) đọc từ dữ liệu map. Map 1-1 giữ đúng toạ độ cũ (test cũ không đổi) | Test cũ qua |
+| MP-02 | **Bản đồ lục địa** (phím **N**): 9 vùng, vùng đã mở sáng lên, vùng chưa mở ghi điều kiện; trong vùng liệt kê map con + trạng thái + nút **Lên đường** | Smoke `08-world-map` |
+| MP-03 | Di chuyển giữa map: chỉ khi **không giao chiến** (3 giây) và không có boss; mất **4 giây đi đường** (màn hình chờ); Chân Không Biết Mỏi giảm 10% → 15% (TP-23) | MP-T1 |
+| MP-04 | **Điểm dịch chuyển** (BD-08): vào map lần đầu thì mở điểm dịch chuyển ở vùng an toàn của map đó; lên đường tới map đã mở đến thẳng vùng an toàn | MP-T1 |
+| MP-05 | **Thử thách vượt ải** (BD-09): được vào map có cấp tối thiểu cao hơn cấp nhân vật tối đa 5 cấp, có cảnh báo; hạ quái **cao hơn mình từ 5 cấp** được **EXP ×2** | MP-T2 |
+| MP-06 | Cảnh kết chương 1 (TN-09): bấm "Tiếp tục khám phá" ở màn hình chiến thắng → mở bản đồ lục địa, vùng 2 sáng lên kèm dòng *"Phía đông, Đồng Bằng Gió Hú đang chờ…"* | Smoke |
+| MP-07 | Mỗi map tự sinh quái theo bảng của map; hồi sinh tại vùng an toàn của map đang đứng | MP-T1 |
+| MP-08 | Save lưu `map_id`, các map đã mở (`unlocked_maps`); vào game tiếp tục ở map cũ | MP-T3 |
+
+### 6.3. M4.2 — Vùng 2 chiến đấu
+
+**Gió** (BD-02, 06 vùng 2):
+
+| Mã | Yêu cầu |
+| --- | --- |
+| GI-01 | Gió có 8 hướng, đổi mỗi **12 giây** (Mắt Bão **8 giây**), báo trước **2 giây** bằng mũi tên trên HUD |
+| GI-02 | Gió đẩy người chơi **6 m/giây**; chạy ngược gió −30% tốc chạy, xuôi gió +20% |
+| GI-03 | Đạn, mũi tên (của người chơi và quái) lệch tối đa **15°** về hướng gió khi bắn |
+| GI-04 | Né lăn và Đột Kích không bị gió đẩy |
+
+**Quái vùng 2** (chỉ số bằng công thức 06; hình mới bằng skill `game-art`):
+
+| Quái | Loại · Hệ | Đòn/kỹ năng trong game |
+| --- | --- | --- |
+| Ưng Gió | Nhanh · Kim | **Bổ nhào**: bay lên 0,6 giây (vòng báo hiệu tại chỗ người chơi) rồi lao tới, vòng 3 m ×1,3 |
+| Lính Đánh Thuê Hư Vô | Giáp · Kim | **Khiên chặn**: giảm 70% sát thương đến từ phía trước (±60° hướng nó nhìn); nó **không quay người** khi đang vung đòn — đánh từ bên/sau. **Đâm** ×1,2 |
+| Cung Thủ Thảo Nguyên | Xa · Mộc | **Bắn ba mũi**: nón 30°, mỗi mũi ×0,7 |
+| Lốc Xoáy Con | Phép · Kim | **Hút**: 2 giây kéo người chơi trong 8 m về phía nó 3 m/giây, rồi nổ vòng 4 m ×1,5 |
+| *Đội Trưởng Đánh Thuê* (tinh anh của Lính Đánh Thuê) | Giáp · Kim | Khiên chặn + **Chém xoáy** (hồi 10 giây): 3 vòng chém 5 m, mỗi vòng ×1,6, cách nhau 0,5 giây |
+| *Phù Thuỷ Gió* (tinh anh của Lốc Xoáy) | Phép · Kim | **Nghịch Phong** (hồi 14 giây): đổi hướng gió ngay, gió mạnh ×2 trong 6 giây |
+
+**Boss chương 2 — Tướng Gián Điệp Huyền Ảnh** (cấp 18, kịch bản: *"Phân thân 3 bản, chỉ bản thật có bóng"*):
+
+| Giai đoạn | Kỹ năng |
+| --- | --- |
+| 1 (100% → 60%) | **Ám tiễn**: 3 phi tiêu nón 40°, mỗi phi tiêu ×0,8 · **Thoắt ẩn** (hồi 6 giây): dịch chuyển ra sau lưng người chơi, vung 0,4 giây, ×1,5 |
+| 2 (60% → 25%) | **Phân thân**: 2 bản sao (mỗi bản 8% HP boss, đánh ×0,5, **không có bóng**). Đánh chết bản sao: nó nổ vòng 4 m ×0,8 |
+| 3 (dưới 25%) | **Vạn Ảnh**: 4 bản sao; boss và bản sao **đổi chỗ cho nhau mỗi 6 giây** |
+
+Rơi: 1 đồ Tím, 15% **Mặt Nạ Huyền Ảnh**, 3 Tinh Hoa, 1 Tinh Kim. Thanh Phá Thế = HP/6. Hang khoá như Sói Chúa (CB-23). Hạ lần đầu → màn hình **"Chương 2 hoàn thành"**.
+
+| Mã | Yêu cầu |
+| --- | --- |
+| NV-17 | **Kháng 5 hệ**: 5 affix mới *Kháng Kim/Mộc/Thủy/Hỏa/Thổ* (`3% + 0,2%/cấp`), giảm % sát thương nhận từ quái hệ đó, tối đa 50%. Mọi quái đánh mang hệ của nó |
+| NV-25 | Quái thấp hơn người chơi **từ 10 cấp** chỉ cho **10% EXP** (kịch bản mục 4) |
+| TB-04 | **Bộ Phong Hành** (vùng 2): 2 món +8% tốc chạy · 4 món +8% tốc đánh · 6 món né lăn hồi 3 → 2 giây. Đồ Tím vùng 2 có 25% thuộc bộ này |
+| TB-04 | **Mặt Nạ Huyền Ảnh** (mũ Cam): né lăn để lại 1 **phân thân hút đòn** 2 giây |
+| TP-39 | **Đạo Tặc** hạ Huyền Ảnh → học **Phân Thân**: tạo 2 ảo ảnh hút đòn 6 giây. Có ≥ 2 kỹ năng sao chép thì chọn kỹ năng dùng bằng phím L trong bảng Thiên phú |
+| — | **Ảo ảnh hút đòn**: quái trong 30 m đổi mục tiêu sang ảo ảnh gần nhất cho tới khi ảo ảnh hết giờ |
+| — | Rơi đồ theo vùng: đồ Tím vùng 1 → Bộ Thợ Săn Sương, vùng 2 → Bộ Phong Hành |
+
+### 6.4. M4.3 — Thành Biên Đài và lãnh địa vùng 2
+
+| Mã | Yêu cầu |
+| --- | --- |
+| CT-10 | **Thành Biên Đài**: vùng an toàn lớn ở rìa tây Cửa Gió; tường thành, nhà đá; quái không vào. 3 NPC đứng yên, đến gần bấm **E** để nói chuyện: **Đội trưởng Liên minh Lạc Phong** (nhiệm vụ chính), **Thợ rèn Thiết Ngưu** (đổi nguyên liệu), **Thương nhân Mạc Tam** (về sau lộ là gián điệp) |
+| CT-04 | **Liên minh Khai Giới**: nhiệm vụ chính chương 2 (bảng dưới) và **hạng Khai Giới Giả** Đồng → Bạc → Vàng theo số ô đất chiếm được ở vùng 2 (0 / 10 / 25), hiện trong thoại và HUD |
+| CT-07 | **Gián điệp Hư Vô Giáo**: bước 4 của nhiệm vụ — nói chuyện với Mạc Tam sau khi chiếm 6 ô → Mạc Tam lộ mặt, bỏ chạy về Phủ Huyền Ảnh; Thương nhân biến khỏi thành |
+| KP-01 | **Lưới khai phá riêng cho vùng 2: 45 ô** (vòng 1–3 = 36 ô + 9 ô vòng 4), trung tâm là Thành Biên Đài (đã chiếm sẵn). Bản đồ khai phá (M) hiện lưới của vùng đang đứng |
+| KP-11 | Sự kiện ô vùng 2 theo **tỉ lệ kịch bản**: Tài nguyên 35 · Ổ quái 25 · Di tích 12 · Người sống sót 10 · Thương nhân 8 · Cổng dungeon 7 · Kỳ quan 3. Thương nhân và Cổng dungeon **chưa có ở MVP** → tạm tính là Tài nguyên (ghi chú). Tài nguyên chia: Rừng thưa (Xưởng Gỗ) · **Núi đá (Mỏ)** · **Suối (Bến Cá)** |
+| KP-06 | **Mỏ**: 40 vàng + 40 gỗ, 90 giây; sản xuất **Đá** 4/phút và **Sắt** 2/phút. **Bến Cá**: 30 vàng + 30 gỗ, 60 giây; +3% HP tối đa mỗi Bến Cá, tối đa +15% (Q26) |
+| TB-11 | Tài nguyên **Đá, Sắt** hiện trên HUD khi có. Dùng ở Thợ rèn Thiết Ngưu: **10 Đá → 1 Đá Cường Hoá**, **20 Đá + 10 Sắt → 1 Tinh Kim** |
+| TP-26 | **Khứu Giác Kho Báu**: ô Di tích ở lưới mới 12% → **20%** (Lv10 30%) |
+| NV-24 | **EXP offline từ lãnh địa** (kịch bản: 5% nguồn EXP): mỗi công trình sản xuất (Xưởng Gỗ, Mỏ) cho **1 × cấp EXP mỗi phút** khi offline, cùng giới hạn 12 giờ |
+| TB-05 | **Bộ cộng hưởng Thiên phú**: mặc ≥ 4 món của 1 bộ và Thiên phú thuộc nhóm hợp bộ → thêm hiệu ứng *"Người Khai Hoang"*: Bộ Thợ Săn Sương + nhóm Chiến đấu: +5% chí mạng; Bộ Phong Hành + nhóm Khai phá: +10% tốc chạy và +1 Đuốc tối đa |
+| — | Sản lượng lãnh địa cộng **mọi vùng** (Xưởng Gỗ vùng 1 vẫn chạy khi đang ở vùng 2) |
+
+**Nhiệm vụ chính chương 2** (HUD góc phải thay mục tiêu chương 1 khi đang ở vùng 2):
+
+| Bước | Mục tiêu | Thoại/kết quả |
+| --- | --- | --- |
+| 1 | Tới Thành Biên Đài, nói chuyện với Lạc Phong | Gia nhập Liên minh, nhận **lãnh địa đầu tiên** (lưới vùng 2), +200 vàng |
+| 2 | Hạ 30 quái ở vùng 2 | +1 món Xanh dương |
+| 3 | Chiếm 6 ô đất vùng 2 | Hạng Bạc khi đủ 10 ô (về sau) |
+| 4 | Hỏi Mạc Tam về tin đồn | Mạc Tam lộ là gián điệp Hư Vô Giáo, chạy về Phủ Huyền Ảnh |
+| 5 | Hạ Tướng Gián Điệp Huyền Ảnh ở Mắt Bão | Chương 2 hoàn thành |
+
+### 6.5. Thay đổi save (version 4 → 5)
+
+| Trường | Kiểu | Mặc định khi chuyển từ v4 |
+| --- | --- | --- |
+| `map_id` | Map đang đứng | `"1-1"` |
+| `unlocked_maps` | Map đã mở điểm dịch chuyển | `["1-1"]`, thêm `"1-3"` nếu đã hạ Sói Chúa |
+| `grids` | `{vùng: [ô]}` lưới của các vùng **không** đang đứng (`tiles` vẫn là lưới vùng hiện tại) | `{}` |
+| `bosses` | Boss đã hạ: `{id: true}`; `boss_defeated` giữ cho Sói Chúa | `{"boss": boss_defeated}` |
+| `ore`, `iron` | Đá, Sắt | `0` |
+| `quest` | Bước nhiệm vụ chính chương 2, số quái đã hạ ở vùng 2 | `{"ch2": 0, "kills2": 0}` |
+| `active_copy` | Kỹ năng sao chép đang dùng (Đạo Tặc) | kỹ năng cuối cùng |
+
+### 6.6. Kiểm thử tự động cần có
+
+| # | Nội dung |
+| --- | --- |
+| MP-T1 | Di chuyển: bị chặn khi đang giao chiến/có boss; 4 giây đi đường (Chân Không 3,6 giây); tới vùng an toàn map mới; mở điểm dịch chuyển; hồi sinh ở vùng an toàn của map |
+| MP-T2 | Điều kiện mở map (3 điều kiện vùng 2); thử thách vượt ải ≤ 5 cấp; EXP ×2 với quái cao hơn ≥ 5 cấp |
+| MP-T3 | Save v4 → v5; lưu/nạp giữ map, map đã mở, lưới vùng 2, Đá/Sắt, bước nhiệm vụ |
+| GI-T1 | Gió: đẩy đúng 60 đơn vị/giây; ngược −30%, xuôi +20%; đổi hướng đúng chu kỳ; đạn lệch ≤ 15° |
+| CB-T7 | Quái vùng 2 khớp bảng 06 (Ưng Gió cấp 10, Huyền Ảnh 18.804 HP); khiên chặn giảm 70% từ trước, không giảm từ sau; Hút kéo người chơi; Bổ nhào trúng |
+| CB-T8 | Huyền Ảnh: giai đoạn 2 có 2 bản sao không bóng, giai đoạn 3 có 4; bản sao chết thì nổ; đổi chỗ mỗi 6 giây; hạ → chương 2 hoàn thành |
+| CB-T9 | Kháng hệ giảm đúng %; NV-25 quái thấp 10 cấp cho 10% EXP |
+| TB-T1 | Bộ Phong Hành 2/4/6; Mặt Nạ tạo phân thân khi né; ảo ảnh hút đòn; Đạo Tặc học Phân Thân |
+| KP-T1 | Lưới vùng 2: 45 ô, tỉ lệ sự kiện (mô phỏng 2.000 lưới); Khứu Giác Di tích 20%; Mỏ ra Đá/Sắt; Bến Cá +3% HP; sản lượng cộng mọi vùng; EXP offline |
+| KP-T2 | Nhiệm vụ chương 2 đi đủ 5 bước; Mạc Tam biến mất sau bước 4; thợ rèn đổi đúng; hạng Khai Giới Giả |
+| TL-B2 | Cân bằng vùng 2: bot cấp 17, mặc bộ đồ chuẩn cấp 17, 2 lớp × 20 Thiên phú hạ được Huyền Ảnh; F/S ≤ 25%, 2 lớp ≤ 25% |
+
+### 6.7. Điểm cần duyệt
+
+M4 code theo **mặc định** dưới đây. **Trạng thái: chưa duyệt.**
+
+| # | Câu hỏi | Mặc định | Lý do |
+| --- | --- | --- | --- |
+| Q35 | Gộp Bìa Rừng + Rừng Sâu thành map 1-1 hiện có (vùng 1 = 2 map + hang) | Gộp | Map 1-1 đã cân bằng và có test; tách đôi không thêm nội dung mới |
+| Q36 | Di chuyển giữa map qua bản đồ lục địa, 4 giây đi đường, không đi được khi giao chiến | Như vậy | Đơn giản, tránh thoát boss bằng cách đổi map |
+| Q37 | Thành Biên Đài là vùng an toàn trong Cửa Gió (không phải map riêng) | Như vậy | Ít màn chờ; giống Làng Thanh Thạch ở vùng 1 |
+| Q38 | Tên NPC (Lạc Phong, Thiết Ngưu, Mạc Tam) và nội dung 5 bước nhiệm vụ | Như bảng | Kịch bản chỉ ghi diễn biến 1 dòng |
+| Q39 | Đá/Sắt dùng ở Thợ rèn (đổi Đá Cường Hoá, Tinh Kim) cho tới khi có Xưởng Rèn (M5) và nâng Trấn (Alpha) | Như vậy | Cần chỗ tiêu ngay để tài nguyên mới có ý nghĩa (Q26) |
+| Q40 | Kháng hệ đến từ affix trang bị | Như vậy | Kịch bản chỉ liệt kê chỉ số; khảm ngọc (Alpha) sẽ thêm nguồn kháng |
+| Q41 | Thương nhân, Cổng dungeon trên lưới vùng 2 tạm tính là Tài nguyên | Như vậy | 2 hệ thống này ở M5/Alpha |
+| Q42 | EXP offline = 1 × cấp mỗi phút mỗi công trình sản xuất | Như vậy | Kịch bản chỉ ghi "5% nguồn EXP"; cần playtest |
 
 ## Phụ lục A — Yêu cầu thay đổi (CR)
 
