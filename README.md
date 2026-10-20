@@ -10,7 +10,6 @@ Trạng thái: prototype Chương 1 chạy được trên Godot 4.7.2. Đang là
 | --- | --- |
 | [docs/](docs/) | Tài liệu: kịch bản, đặc tả yêu cầu, đặc tả kỹ thuật |
 | [godot/](godot/) | Project Godot — bản đang phát triển |
-| [web-prototype/](web-prototype/) | Prototype web đầu tiên (TypeScript), chỉ để tham khảo |
 
 ## Tài liệu
 

@@ -1,7 +1,5 @@
 tools/art/_preview/
 __pycache__/
-web-prototype/node_modules/
-web-prototype/dist/
 .claude/settings.local.json
 .claude/logs/
 **/.claude/logs/

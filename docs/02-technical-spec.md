@@ -277,7 +277,7 @@ Chạy bot trên nhiều seed, có né và không né, rồi chỉnh HP/ATK boss
 
 | # | Quyết định | Lý do | Hệ quả |
 | --- | --- | --- | --- |
-| D1 | Chuyển từ prototype web (TypeScript + Vite) sang Godot 4 | Người dùng chọn Godot làm engine chính; tránh làm prototype rồi viết lại | Bản web giữ ở `web-prototype/` để tham khảo, không phát triển tiếp |
+| D1 | Chuyển từ prototype web (TypeScript + Vite) sang Godot 4 | Người dùng chọn Godot làm engine chính; tránh làm prototype rồi viết lại | Bản web đã xoá khỏi repo (2026-10-20); xem lại trong lịch sử Git nếu cần |
 | D2 | Logic là `RefCounted` thuần, tách khỏi Node | Test headless được, logic không phụ thuộc cách vẽ | Đổi sang sprite/TileMap chỉ phải sửa `view/` |
 | D3 | Dùng `preload()` vào hằng số, **không dùng `class_name`** | `class_name` cần editor dựng cache lớp toàn cục; chạy test từ dòng lệnh khi chưa import sẽ lỗi | Mỗi file khai báo `const X = preload(...)` cho script nó cần |
 | D4 | RNG truyền vào dạng `Callable` trả `float [0,1)` | Test cố định seed, hoặc truyền `func(): return 0.0` để ép kết quả | Mọi hàm có ngẫu nhiên đều nhận tham số `rng` |
@@ -327,7 +327,7 @@ Ghi lại để không lặp lại khi viết thêm code.
 
 ## 8. Hạn chế và việc cần làm
 
-- Chưa có Git: nên khởi tạo repo để lưu mốc (bỏ `.godot/` và `web-prototype/node_modules/`).
+- Repo Git: https://github.com/VinhNV8/Mistbreaker-Celestial-Genesis (nhánh `main`; `.godot/` không commit).
 - Chưa có export preset: thêm khi cần build `.exe` (Project → Export → Windows Desktop; cần tải export templates 4.7.2).
 - Va chạm là hình tròn và cây chỉ để trang trí, nhân vật đi xuyên qua cây được.
 - Mới test thủ công 2 phân giải (1366 × 768 và màn hình HiDPI 2880 × 1694).
@@ -337,5 +337,4 @@ Ghi lại để không lặp lại khi viết thêm code.
 
 - Kịch bản game: [kich-ban-game-thien-phu-khai-gioi.md](kich-ban-game-thien-phu-khai-gioi.md)
 - Đặc tả yêu cầu: [01-requirement-spec.md](01-requirement-spec.md)
-- Prototype web cũ (tham khảo): [../web-prototype/](../web-prototype/)
 - Godot 4.7.2 release: https://github.com/godotengine/godot/releases/tag/4.7.2-stable
