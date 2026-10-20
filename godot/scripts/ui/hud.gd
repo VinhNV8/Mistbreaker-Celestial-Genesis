@@ -406,8 +406,8 @@ func _update_quest(w: GameWorld) -> void:
 	if q.is_empty() and int(p.quest.ch2) >= Story.DONE2:
 		_obj_title.text = "CHƯƠNG 2 · HOÀN THÀNH ✓"
 		_set_obj(0, "Hạng Liên minh: %s (Bạc 10 ô, Vàng 25 ô vùng 2)" % w.alliance_rank(), UiTheme.TEXT)
-		_set_obj(1, "Chương 3: Sa Mạc Xích Sa — sắp mở (cần Lực chiến 5.000)", UiTheme.MUTED)
-		_set_obj(2, "", UiTheme.MUTED)
+		_set_obj(1, "Săn boss hiếm Bạch Hổ Phong Vân ở Mắt Bão — xuất hiện 2 lần mỗi ngày", UiTheme.MUTED)
+		_set_obj(2, "Chương 3: Sa Mạc Xích Sa — sắp mở (cần Lực chiến 5.000)", UiTheme.MUTED)
 		return
 	if q.is_empty():
 		_obj_title.text = "CHƯƠNG 1 · HOÀN THÀNH ✓"

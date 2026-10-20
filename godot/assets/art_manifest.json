@@ -1722,6 +1722,49 @@
    "name": "Lão Thụ Sương Mù",
    "size_mul": 2.2
   },
+  "bach-ho": {
+   "path": "res://assets/sprites/bach-ho.png",
+   "w": 48,
+   "h": 48,
+   "origin": [
+    24,
+    44
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Bạch Hổ Phong Vân",
+   "size_mul": 1.2
+  },
   "goc-re": {
    "path": "res://assets/sprites/goc-re.png",
    "w": 24,
@@ -2337,6 +2380,7 @@
   "item-wolf_fang": "res://assets/icons/item-wolf_fang.png",
   "item-lao_thu_bark": "res://assets/icons/item-lao_thu_bark.png",
   "item-huyen_anh_mask": "res://assets/icons/item-huyen_anh_mask.png",
+  "item-bach_ho_claw": "res://assets/icons/item-bach_ho_claw.png",
   "res-gold": "res://assets/icons/res-gold.png",
   "res-wood": "res://assets/icons/res-wood.png",
   "res-stone": "res://assets/icons/res-stone.png",

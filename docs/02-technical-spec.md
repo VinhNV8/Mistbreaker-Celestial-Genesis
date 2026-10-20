@@ -192,7 +192,7 @@ Giai đoạn `windup` là cửa sổ để người chơi né; `world_view.gd` v
 | Trên Windows | `%APPDATA%\Godot\app_userdata\Thiên Phú Khai Giới\save.json` |
 | Smoke test | `user://smoke_save.json` (tự xoá sau khi chạy, không đụng save thật) |
 | Định dạng | JSON một dòng |
-| Phiên bản hiện tại | **7** (M1 trang bị · M2 Thiên phú, công trình · M3 lớp, INT/LUK, điểm cướp · v5 M4.1 nhiều bản đồ · v6 C1: tên, ngoại hình, nhiệm vụ/thoại chương 1, lưới 40 ô, boss hiếm, Thương nhân, Vườn · **v7 SN2**: sương che từng map, thưởng khám phá, bộ lọc phân rã/bán nhanh). Save v1–v6 được chuyển đổi tự động khi nạp |
+| Phiên bản hiện tại | **7** (M1 trang bị · M2 Thiên phú, công trình · M3 lớp, INT/LUK, điểm cướp · v5 M4.1 nhiều bản đồ · v6 C1: tên, ngoại hình, nhiệm vụ/thoại chương 1, lưới 40 ô, boss hiếm, Thương nhân, Vườn · v7 SN2: sương che từng map, thưởng khám phá, bộ lọc phân rã/bán nhanh · **v8 M5**: `rare_at` = lịch riêng từng boss hiếm, thay `rare_boss_at`). Save v1–v7 được chuyển đổi tự động khi nạp |
 
 ```json
 {
@@ -353,6 +353,8 @@ Chạy bot trên nhiều seed, có né và không né, rồi chỉnh HP/ATK boss
 | D30 | Sương che là bitset trong `core/fog.gd`, view dựng lại texture khi `fog.version` đổi | Logic test được headless; texture nhỏ (≤ 70 × 40) dựng lại rẻ | Mép sương mờ theo ô 64 px, không mịn theo bán kính |
 | D31 | Chuyển cường hoá = **đổi** cấp giữa 2 món khi đồ cũ cao hơn (Q47) | Không bao giờ mất cấp; mặc lại đồ cũ thì về như cũ | Đồ trong túi có thể mang cấp thấp hơn lúc nhặt |
 | D32 | Test cân bằng boss (TL-B, TL-B2) tắt sinh quái thường (`GameWorld.field_spawn = false`) | Map ×1,6 có tới 40 quái: test chậm > 10 phút và số đo nhiễu theo RNG | Số đo chỉ phản ánh trận boss, không tính quái lạc vào hang |
+| D33 | Boss hiếm khai báo bằng bảng `GameWorld.RARE_BOSSES` (map → loại, cấp, boss vùng phải ngã trước, đồ Cam, thoại); lịch lưu theo loại boss (`profile.rare_at`) | Thêm boss hiếm vùng mới = 1 dòng bảng + nhánh AI | Kỹ năng riêng của từng boss vẫn viết tay trong `_update_rare` / `_perform_attack` |
+| D34 | Test cân bằng boss hiếm (M5-T3) cho bot mang 3 bình máu, uống khi dưới 40% HP | Boss hiếm khó hơn boss chương (200 đòn); người chơi thật luôn mang bình | Số đo không so trực tiếp được với TL-B/TL-B2 (không dùng bình) |
 | D16 | Đồng hồ xây riêng (`build_clock`) thay vì giờ thực | Không phụ thuộc đồng hồ máy (người chơi chỉnh giờ để gian lận); vẫn chạy offline qua `apply_offline` | Phải nhớ cộng `build_clock` ở cả `update()` và `apply_offline()` |
 
 ## 7. Lỗi đã gặp và cách xử lý

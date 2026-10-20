@@ -113,6 +113,20 @@ const DEFS := {
 		"color": "#4f6a52",
 		"steal": {"str": 30, "vit": 50, "int": 20},
 	},
+	## M5-01: boss hiếm Mắt Bão (06 vùng 2). Kỹ năng: Hổ Vồ, Gầm Gió, Cưỡi Gió (game_world._update_rare).
+	"bach-ho": {
+		"element": "kim",
+		"name": "Bạch Hổ Phong Vân",
+		"arch": "nhanh",
+		"speed": 105.0,
+		"radius": 34.0,
+		"range": 34.0,
+		"windup": 0.6,
+		"recover": 1.2,
+		"attack": "melee",
+		"color": "#e8e6dc",
+		"steal": {"str": 40, "agi": 60},
+	},
 	## Gốc Rễ: đứng yên; còn gốc rễ thì Lão Thụ hồi máu.
 	"goc-re": {
 		"element": "moc",

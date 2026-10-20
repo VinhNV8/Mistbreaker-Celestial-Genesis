@@ -158,6 +158,30 @@ const PUDDLE_R := 30.0
 const PUDDLE_TIME := 3.0
 const RARE_HEAL := 0.01
 const RARE_SKILL_CD := 3.5
+## M5-01: boss hiếm theo map (06 vùng 1–2). after = boss vùng phải ngã trước; purple = có rơi thêm 1 đồ Tím.
+const RARE_BOSSES := {
+	"1-3": {"kind": "lao-thu", "level": 9, "after": "boss", "unique": "lao_thu_bark", "purple": true,
+		"say": "rare_boss", "down": "rare_boss_down", "intro": "Lão Thụ Sương Mù thức giấc giữa Lõi Sương! (boss hiếm)"},
+	"2-3": {"kind": "bach-ho", "level": 20, "after": "huyen-anh", "unique": "bach_ho_claw", "purple": false,
+		"say": "rare_bach_ho", "down": "rare_bach_ho_down", "intro": "Bạch Hổ Phong Vân lao ra từ Mắt Bão! (boss hiếm)"},
+}
+## Bạch Hổ: Hổ Vồ (chuỗi 3 cú, vòng 6 m ×1,4), Gầm Gió (vòng 10 m: đẩy 8 m, choáng 1 giây), dưới 50% Cưỡi Gió (tốc ×1,5).
+const TIGER_SKILL_CD := 4.0
+const ROAR_CD := 9.0
+const TIGER_WINDUP := 0.7
+const TIGER_GAP := 0.4
+const TIGER_CHAIN := 3
+const TIGER_R := 60.0
+const TIGER_MUL := 1.4
+const TIGER_REACH := 220.0
+const ROAR_WINDUP := 0.8
+const ROAR_R := 100.0
+const ROAR_PUSH := 80.0
+const ROAR_STUN := 1.0
+const RIDE_SPEED := 1.5
+## Vuốt Bạch Hổ: chí mạng gây chảy máu ×0,3 mỗi giây trong 4 giây.
+const BLEED_TIME := 4.0
+const BLEED_MUL := 0.3
 const BARK_STILL := 1.0
 const BARK_REGEN := 0.02
 const FOG_SIGHT := 200.0
@@ -220,6 +244,8 @@ class PlayerState:
 	# C1-23: Rễ Trói, Lá Độc
 	var root_timer := 0.0
 	var poison_timer := 0.0
+	## M5-01: Gầm Gió — choáng: không đi, không đánh, không né.
+	var stun_timer := 0.0
 	var still := 0.0
 	var guard_time := 0.0
 	var eagle_time := 0.0
@@ -270,6 +296,11 @@ class Enemy:
 	var fuse := -1.0
 	## M4.2: hướng nhìn (khiên chặn); đứng yên khi đang vung đòn.
 	var face := 0.0
+	## M5-01: số cú Hổ Vồ còn lại trong chuỗi; chảy máu (Vuốt Bạch Hổ).
+	var chain_left := 0
+	var bleed_timer := 0.0
+	var bleed_dmg := 0.0
+	var bleed_tick := 0.0
 
 
 ## Đạn của người chơi: tên, kiếm khí, tên xuyên phá.
@@ -842,14 +873,14 @@ func update(dt: float, input: Dictionary) -> void:
 	if aim.distance_to(p.pos) > 0.5 and _face_lock <= 0.0:
 		p.facing = (aim - p.pos).angle()
 	_move_player(dt, input)
-	var busy := p.dodge_time > 0.0 or p.dash_time > 0.0
+	var busy := p.dodge_time > 0.0 or p.dash_time > 0.0 or p.stun_timer > 0.0
 	if input.attack and p.attack_cd <= 0.0 and not busy:
 		_basic_attack()
 	for i in 4:
 		# K / chuột phải ("skill") là kỹ năng 1 (Q29).
 		if not busy and (input.get("skill_%d" % (i + 1), false) or (i == 0 and input.get("skill", false))):
 			use_skill(i)
-	if input.talent:
+	if input.talent and p.stun_timer <= 0.0:
 		_use_talent()
 	if input.get("potion", false):
 		drink_potion()
@@ -887,7 +918,7 @@ func update(dt: float, input: Dictionary) -> void:
 func _move_player(dt: float, input: Dictionary) -> void:
 	var p := player
 	var move: Vector2 = input.move
-	if input.dodge and p.dodge_cd <= 0.0 and p.dodge_time <= 0.0 and p.root_timer <= 0.0:
+	if input.dodge and p.dodge_cd <= 0.0 and p.dodge_time <= 0.0 and p.root_timer <= 0.0 and p.stun_timer <= 0.0:
 		p.dodge_dir = move.normalized() if move.length() > 0.01 else Vector2.from_angle(p.facing)
 		p.dodge_time = DODGE_TIME
 		quest_event("dodge")
@@ -899,7 +930,7 @@ func _move_player(dt: float, input: Dictionary) -> void:
 		p.perfect_used = false
 
 	var vel := Vector2.ZERO
-	if p.root_timer > 0.0:
+	if p.root_timer > 0.0 or p.stun_timer > 0.0:
 		p.dodge_time = 0.0
 		p.dash_time = 0.0
 	elif p.dash_time > 0.0:
@@ -911,7 +942,7 @@ func _move_player(dt: float, input: Dictionary) -> void:
 	elif move.length() > 0.0:
 		vel = move / maxf(1.0, move.length()) * move_speed() * wind_factor(move)
 	# GI-02/04: gió đẩy (không đẩy khi né lăn, Đột Kích, bị trói).
-	if wind_dir != Vector2.ZERO and p.dodge_time <= 0.0 and p.dash_time <= 0.0 and p.root_timer <= 0.0:
+	if wind_dir != Vector2.ZERO and p.dodge_time <= 0.0 and p.dash_time <= 0.0 and p.root_timer <= 0.0 and p.stun_timer <= 0.0:
 		vel += wind_dir * WIND_PUSH * wind_power()
 	p.pos = (p.pos + vel * dt).clamp(Vector2.ONE * PLAYER_RADIUS, world_size - Vector2.ONE * PLAYER_RADIUS)
 	_enforce_gate()
@@ -1848,6 +1879,12 @@ func _hit_enemy(e: Enemy, skill_mul: float, force_crit := false) -> void:
 		_tame(e)
 		return
 	_apply_damage(e, dmg, crit, true)
+	# M5-01: Vuốt Bạch Hổ — chí mạng gây chảy máu.
+	if crit and not e.dead and has_unique("bach_ho_claw"):
+		if e.bleed_timer <= 0.0:
+			e.bleed_tick = 0.0
+		e.bleed_timer = BLEED_TIME
+		e.bleed_dmg = Formulas.compute_damage(stats.atk, e.def, BLEED_MUL)
 
 
 ## TL-S6: Ngũ Hành Linh Căn đánh hệ khắc +30% (Phép thuật cấp 5: +40%).
@@ -1896,6 +1933,7 @@ func _damage_poise(e: Enemy, dmg: float) -> void:
 		e.poise = 0.0
 		e.broken = true
 		e.state = "stunned"
+		e.chain_left = 0
 		if e.role == "boss":
 			e.timer = BOSS_STUN
 			_message("Phá Thế! Sói Chúa choáng 5 giây và nhận thêm 50% sát thương.", "good")
@@ -2055,8 +2093,10 @@ func _on_boss_killed(e: Enemy) -> void:
 ## EQ-04/05/06: rơi trang bị và Đá Cường Hoá.
 func _drop_loot(e: Enemy) -> void:
 	if e.role == "rare":
-		_drop_item(e.pos, e.level, "purple")
-		_drop_item(e.pos + Vector2(24, 0), e.level, "orange", "lao_thu_bark")
+		var rd := _rare_def(e.kind)
+		if rd.get("purple", true):
+			_drop_item(e.pos, e.level, "purple")
+		_drop_item(e.pos + Vector2(24, 0), e.level, "orange", str(rd.get("unique", "lao_thu_bark")))
 		return
 	if e.role == "boss":
 		_drop_item(e.pos, e.level, "purple")
@@ -2099,6 +2139,14 @@ func _update_enemy(e: Enemy, dt: float) -> void:
 	var d := e.pos.distance_to(p.pos)
 	e.root_timer -= dt
 	e.haste_timer -= dt
+	if e.bleed_timer > 0.0:
+		e.bleed_timer -= dt
+		e.bleed_tick += dt
+		if e.bleed_tick >= 1.0:
+			e.bleed_tick -= 1.0
+			_apply_damage(e, maxi(1, roundi(e.bleed_dmg)), false, false)
+			if e.dead:
+				return
 	if e.role == "rare":
 		_update_rare(e, dt)
 	# M4.2: hướng nhìn (khiên chặn) — không quay người khi đang vung đòn.
@@ -2173,7 +2221,20 @@ func _update_enemy(e: Enemy, dt: float) -> void:
 					_begin_attack(e, "pounce", 0.85)
 					e.pounce_cd = 5.0
 					return
-			if e.role == "rare":
+			if e.role == "rare" and e.kind == "bach-ho":
+				e.skill_cd -= dt
+				e.pounce_cd -= dt
+				# Đứng sát thì thỉnh thoảng Gầm Gió hất ra (hồi 9 giây); còn lại Hổ Vồ đuổi theo.
+				if e.pounce_cd <= 0.0 and d < ROAR_R:
+					e.pounce_cd = ROAR_CD
+					_begin_attack(e, "roar", ROAR_WINDUP)
+					return
+				if e.skill_cd <= 0.0:
+					e.skill_cd = TIGER_SKILL_CD
+					e.chain_left = TIGER_CHAIN
+					_begin_attack(e, "tiger", TIGER_WINDUP)
+					return
+			if e.role == "rare" and e.kind == "lao-thu":
 				e.skill_cd -= dt
 				if e.skill_cd <= 0.0:
 					e.skill_cd = RARE_SKILL_CD
@@ -2194,8 +2255,11 @@ func _update_enemy(e: Enemy, dt: float) -> void:
 			e.timer -= dt
 			if e.timer <= 0.0:
 				_perform_attack(e)
-				e.state = "recover"
-				e.timer = def.recover
+				if e.chain_left > 0 and not e.dead and e.state == "windup":
+					_begin_attack(e, e.attack_kind, TIGER_GAP)
+				else:
+					e.state = "recover"
+					e.timer = def.recover
 		"recover":
 			e.timer -= dt
 			if e.timer <= 0.0:
@@ -2210,6 +2274,8 @@ func _begin_attack(e: Enemy, kind: String, windup: float) -> void:
 	e.target = player.pos
 	if e.role == "boss":
 		e.target = _clamp_to_arena(e.target, e.radius)
+	if kind == "tiger":
+		e.target = (e.pos + (e.target - e.pos).limit_length(TIGER_REACH)).clamp(Vector2(40, 40), world_size - Vector2(40, 40))
 
 
 func _perform_attack(e: Enemy) -> void:
@@ -2289,6 +2355,26 @@ func _perform_attack(e: Enemy) -> void:
 			if to_p.length() <= LEAF_RANGE + e.radius + PLAYER_RADIUS and absf(angle_difference(dir.angle(), to_p.angle())) <= LEAF_ARC:
 				if _damage_player(e.atk, 1.0):
 					p.poison_timer = POISON_TIME
+		"tiger":
+			# Bạch Hổ — Hổ Vồ: vồ tới chỗ đánh dấu, vòng 6 m ×1,4.
+			e.pos = e.target
+			e.chain_left -= 1
+			_blast(e.pos, TIGER_R, Color("#e8e6dc"))
+			if e.pos.distance_to(p.pos) <= TIGER_R + PLAYER_RADIUS:
+				_incoming_el = "kim"
+				_damage_player(e.atk, TIGER_MUL)
+		"roar":
+			# Bạch Hổ — Gầm Gió: vòng 10 m, đẩy lùi 8 m, choáng 1 giây (né lăn tránh được).
+			_blast(e.pos, ROAR_R, Color("#dce6f2"))
+			_sfx("boss_roar")
+			if e.pos.distance_to(p.pos) <= ROAR_R + PLAYER_RADIUS and p.dodge_time <= 0.0 and p.dash_time <= 0.0 and p.dead_timer <= 0.0:
+				var away := (p.pos - e.pos).normalized() if p.pos.distance_to(e.pos) > 1.0 else Vector2.RIGHT
+				p.pos = (p.pos + away * ROAR_PUSH).clamp(Vector2.ONE * PLAYER_RADIUS, world_size - Vector2.ONE * PLAYER_RADIUS)
+				_enforce_gate()
+				_enforce_arena_lock()
+				p.stun_timer = ROAR_STUN
+				_last_combat = time
+				_text(p.pos + Vector2(0, -40), "Choáng!", Color("#dce6f2"), true)
 		"none":
 			pass
 		"explode":
@@ -2942,23 +3028,47 @@ func rare_boss() -> Enemy:
 	return null
 
 
-## Lần đầu vào Lõi Sương, sau đó mỗi 12 giờ thực (2 lần/ngày).
+func _rare_def(kind: String) -> Dictionary:
+	for m in RARE_BOSSES:
+		if RARE_BOSSES[m].kind == kind:
+			return RARE_BOSSES[m]
+	return {}
+
+
+func _boss_down(kind: String) -> bool:
+	return bool(profile.bosses.get(kind, false)) or (kind == "boss" and profile.boss_defeated)
+
+
+## Lần đầu vào map boss hiếm (sau khi boss vùng đã ngã), sau đó mỗi 12 giờ thực (2 lần/ngày).
 func rare_boss_ready() -> bool:
-	return map_id == "1-3" and now_unix() >= profile.rare_boss_at
+	if not RARE_BOSSES.has(map_id):
+		return false
+	var rd: Dictionary = RARE_BOSSES[map_id]
+	return _boss_down(str(rd.after)) and now_unix() >= float(profile.rare_at.get(rd.kind, 0.0))
 
 
 func _check_rare_boss() -> void:
 	if not rare_boss_ready() or rare_boss() != null:
 		return
+	var rd: Dictionary = RARE_BOSSES[map_id]
 	var pos := (player.pos + Vector2(520, 0)).clamp(Vector2(400, 200), world_size - Vector2(200, 200))
-	var b := spawn_enemy("lao-thu", 9, pos, {"role": "rare"})
+	if map.arena != null and pos.distance_to(arena_pos) < arena_r + 150.0:
+		pos = (player.pos - Vector2(520, 0)).clamp(Vector2(200, 200), world_size - Vector2(200, 200))
+	var b := spawn_enemy(str(rd.kind), int(rd.level), pos, {"role": "rare"})
 	b.skill_cd = 2.0
-	_message("Lão Thụ Sương Mù thức giấc giữa Lõi Sương! (boss hiếm)", "bad")
-	say("rare_boss")
+	_message(str(rd.intro), "bad")
+	say(str(rd.say))
 	_sfx("boss_roar")
 
 
 func _update_rare(e: Enemy, dt: float) -> void:
+	if e.kind == "bach-ho":
+		# Dưới 50% HP: Cưỡi Gió — tốc ×1,5.
+		if e.phase == 1 and e.hp <= e.max_hp * 0.5:
+			e.phase = 2
+			e.speed *= RIDE_SPEED
+			_message("Bạch Hổ Cưỡi Gió — nhanh hơn hẳn! Canh vòng báo trước mà né lăn.", "bad")
+		return
 	# Dưới 40% HP: Rừng Thức Tỉnh — gọi 2 Mộc Tinh + 3 Gốc Rễ.
 	if e.phase == 1 and e.hp <= e.max_hp * 0.4:
 		e.phase = 2
@@ -2978,20 +3088,22 @@ func _update_rare(e: Enemy, dt: float) -> void:
 
 
 func _on_rare_killed(e: Enemy) -> void:
-	profile.rare_boss_at = now_unix() + Config.RARE_BOSS_PERIOD
+	var rd := _rare_def(e.kind)
+	profile.rare_at[e.kind] = now_unix() + Config.RARE_BOSS_PERIOD
 	profile.essence += 5
 	profile.evo_essence += 1
 	for m in enemies:
 		if m.role == "rareMinion":
 			m.dead = true
-	_message("Lão Thụ Sương Mù đã ngã! +5 Thiên Phú Tinh Hoa, +1 Tinh Hoa Tiến Hoá. Nó sẽ trở lại sau 12 giờ.", "good")
-	say("rare_boss_down")
+	_message("%s đã ngã! +5 Thiên Phú Tinh Hoa, +1 Tinh Hoa Tiến Hoá. Nó sẽ trở lại sau 12 giờ." % e.name, "good")
+	say(str(rd.get("down", "rare_boss_down")))
 	_events.append({"type": "rare_boss", "kind": e.kind})
 
 
 func _update_player_effects(dt: float, input: Dictionary) -> void:
 	var p := player
 	p.root_timer -= dt
+	p.stun_timer -= dt
 	var max_hp := float(stats.max_hp)
 	var hurt := 0.0
 	if p.poison_timer > 0.0:

@@ -119,6 +119,10 @@ func _init() -> void:
 	_run("SN-T4 chuyển cấp cường hoá khi mặc đồ", _test_sn_transfer)
 	_run("SN-T5 map ×1,6, sương che, % khám phá, thưởng", _test_sn_fog)
 	_run("SN-T6 save v7", _test_sn_save)
+	# M5 — boss hiếm Bạch Hổ, chuẩn bị thử nghiệm kín (03-mvp-spec mục 7)
+	_run("M5-T1 Bạch Hổ: điều kiện, chỉ số, Hổ Vồ, Gầm Gió, Cưỡi Gió, rơi đồ, lịch riêng, save v8", _test_m5_bach_ho)
+	_run("M5-T2 Vuốt Bạch Hổ: chí mạng gây chảy máu", _test_m5_claw)
+	_run("M5-T3 cân bằng: 3 lớp cấp 20 hạ Bạch Hổ", _test_m5_bach_ho_balance)
 
 	print("")
 	if _failed.is_empty():
@@ -327,10 +331,18 @@ func _bot(w: GameWorld) -> Dictionary:
 		target = b
 		best = b.pos.distance_to(p.pos)
 	var threat := false
+	var flee := Vector2.ZERO
 	for e in w.enemies:
 		if e.state == "windup" and e.timer < 0.2 and e.pos.distance_to(p.pos) < 140.0:
 			threat = true
+		# M5: Hổ Vồ đánh vào vòng đỏ ở chỗ đánh dấu — né lăn, hoặc chạy khỏi vòng nếu né còn hồi.
+		if e.state == "windup" and e.attack_kind == "tiger" and e.target.distance_to(p.pos) < GameWorld.TIGER_R + 30.0:
+			if e.timer < 0.2:
+				threat = true
+			flee = (p.pos - e.target).normalized() if p.pos.distance_to(e.target) > 1.0 else Vector2.DOWN
 	var dir: Vector2 = (target.pos - p.pos).sign()
+	if flee != Vector2.ZERO and (p.dodge_cd > 0.0 or not threat):
+		return {"move": flee, "aim": target.pos, "attack": true, "talent": true, "dodge": threat}
 	if w.is_mage():
 		var gap_m: float = best - target.radius
 		var mv_m := Vector2.ZERO
@@ -1304,7 +1316,7 @@ func _test_c1_save_v6() -> void:
 	var p := _profile("kiem-tam")
 	var d := p.to_dict()
 	d.version = 5
-	for k in ["name", "look", "quest_step", "quest_progress", "seen_dialogs", "rare_boss_at", "evo_essence", "herb_timer", "merchant"]:
+	for k in ["name", "look", "quest_step", "quest_progress", "seen_dialogs", "rare_at", "evo_essence", "herb_timer", "merchant"]:
 		d.erase(k)
 	# save cũ chỉ có lưới 10 ô
 	d.tiles = d.tiles.slice(0, 11)
@@ -1491,7 +1503,7 @@ func _test_c1_rare_boss() -> void:
 	var bark := w.pickups.filter(func(pk): return pk.kind == "item" and pk.item.unique == "lao_thu_bark")
 	_check(bark.size() == 1, "rơi Vỏ Lão Thụ")
 	_check(w.profile.essence == ess + 5 and w.profile.evo_essence == 1, "+5 Tinh Hoa, +1 Tinh Hoa Tiến Hoá")
-	_check(is_equal_approx(w.profile.rare_boss_at, 1000.0 + Config.RARE_BOSS_PERIOD), "hẹn 12 giờ sau")
+	_check(is_equal_approx(float(w.profile.rare_at["lao-thu"]), 1000.0 + Config.RARE_BOSS_PERIOD), "hẹn 12 giờ sau")
 	w.enemies = []
 	w._check_rare_boss()
 	_check(w.rare_boss() == null, "chưa tới giờ thì chưa xuất hiện lại")
@@ -2249,7 +2261,7 @@ func _test_sn_save() -> void:
 	f.only_weaker = false
 	w.set_bulk_filter(f)
 	var d: Dictionary = JSON.parse_string(JSON.stringify(w.profile.to_dict()))
-	_check(int(d.version) == 7, "save version 7")
+	_check(int(d.version) >= 7, "save version 7")
 	var back := Profile.new()
 	_check(back.load_dict(d), "nạp save v7")
 	_check(back.fog.get("1-1", "") == w.profile.fog["1-1"] and back.fog_rewards == {"1-1": [50]} and back.bulk_filter.only_weaker == false, "giữ sương, thưởng, bộ lọc")
@@ -2262,3 +2274,165 @@ func _test_sn_save() -> void:
 	d.erase("bulk_filter")
 	var old := Profile.new()
 	_check(old.load_dict(d) and old.fog.is_empty() and Items.normalize_filter(old.bulk_filter) == Items.default_filter(), "save v6 nạp được: sương trống, bộ lọc mặc định")
+
+
+# ------------------------------------------------------------------ M5 — boss hiếm Bạch Hổ Phong Vân (03-mvp-spec mục 7)
+
+
+func _test_m5_bach_ho() -> void:
+	var w := _region2_world("2-3", "kiem-khach", "tay-nhanh", 20)
+	w.debug_now = 1000.0
+	w._check_rare_boss()
+	_check(w.rare_boss() == null, "Huyền Ảnh chưa ngã thì Bạch Hổ chưa xuất hiện")
+	w.profile.bosses["huyen-anh"] = true
+	w.player.pos = w.arena_pos + Vector2(-400, 0)
+	w._check_rare_boss()
+	var b := w.rare_boss()
+	_check(b != null and b.kind == "bach-ho" and b.level == 20, "hạ Huyền Ảnh rồi vào Mắt Bão: Bạch Hổ xuất hiện")
+	_check(int(b.max_hp) == 42640 and int(b.atk) == 159 and int(b.def) == 53, "chỉ số theo 06 (%d HP, %d Tấn công, %d Phòng thủ)" % [b.max_hp, b.atk, b.def])
+	_check(b.pos.distance_to(w.arena_pos) >= w.arena_r + 150.0, "không xuất hiện trong Phủ Huyền Ảnh")
+	# Hổ Vồ: chuỗi 3 cú
+	w.player.pos = b.pos + Vector2(-200, 0)
+	w.player.hp = w.stats.max_hp
+	b.chain_left = GameWorld.TIGER_CHAIN
+	w._begin_attack(b, "tiger", 0.05)
+	_check(b.target.distance_to(b.pos) <= GameWorld.TIGER_REACH + 0.5, "Hổ Vồ vồ xa tối đa 22 m")
+	var pounces := 0
+	var last := b.chain_left
+	for i in 90:
+		w._update_enemy(b, 1.0 / 60.0)
+		if b.chain_left < last:
+			pounces += 1
+			last = b.chain_left
+	_check(pounces == 3 and b.state != "windup", "Hổ Vồ: chuỗi đúng 3 cú rồi nghỉ")
+	_check(w.player.hp < w.stats.max_hp, "Hổ Vồ trúng thì mất máu")
+	# Gầm Gió (đứng phía tây để cú đẩy không chạm cổng Phủ Huyền Ảnh)
+	w.player.dead_timer = 0.0
+	w.player.hp = w.stats.max_hp
+	w.player.pos = b.pos + Vector2(-50, 0)
+	w.player.dodge_time = 0.0
+	w.player.dash_time = 0.0
+	b.attack_kind = "roar"
+	w._perform_attack(b)
+	_check(w.player.pos.distance_to(b.pos) >= 129.0 and w.player.stun_timer > 0.9, "Gầm Gió: đẩy lùi 8 m, choáng 1 giây")
+	b.state = "stunned"
+	b.timer = 99.0
+	var before := w.player.pos
+	var acd := w.player.attack_cd
+	_tick(w, {"move": Vector2.RIGHT, "attack": true, "dodge": true}, 20)
+	_check(w.player.pos.distance_to(before) < 1.0 and w.player.swing <= 0.0 and w.player.dodge_time <= 0.0, "đang choáng: không đi, không đánh, không né")
+	_tick(w, {}, 60)
+	w.player.pos = b.pos + Vector2(-50, 0)
+	w.player.dodge_time = 0.2
+	w._perform_attack(b)
+	_check(w.player.stun_timer <= 0.0, "né lăn tránh được Gầm Gió")
+	w.player.dodge_time = 0.0
+	# Phá Thế ngắt chuỗi Hổ Vồ
+	b.state = "windup"
+	b.broken = false
+	b.chain_left = 2
+	w._damage_poise(b, b.max_poise + 1.0)
+	_check(b.chain_left == 0 and b.state == "stunned", "Phá Thế ngắt chuỗi Hổ Vồ")
+	# Cưỡi Gió
+	var sp0 := b.speed
+	b.hp = b.max_hp * 0.45
+	w._update_rare(b, 0.1)
+	_check(b.phase == 2 and is_equal_approx(b.speed, sp0 * GameWorld.RIDE_SPEED), "dưới 50%: Cưỡi Gió, tốc ×1,5")
+	# hạ Bạch Hổ
+	var ess: int = w.profile.essence
+	var evo: int = w.profile.evo_essence
+	w.profile.rare_at["lao-thu"] = 777.0
+	w.pickups = []
+	w._kill_enemy(b)
+	var items := w.pickups.filter(func(pk): return pk.kind == "item")
+	_check(items.size() == 1 and items[0].item.unique == "bach_ho_claw" and items[0].item.slot == "gloves", "rơi Vuốt Bạch Hổ (găng Cam)")
+	_check(w.profile.essence == ess + 5 and w.profile.evo_essence == evo + 1, "+5 Tinh Hoa, +1 Tinh Hoa Tiến Hoá")
+	_check(is_equal_approx(float(w.profile.rare_at["bach-ho"]), 1000.0 + Config.RARE_BOSS_PERIOD) and is_equal_approx(float(w.profile.rare_at["lao-thu"]), 777.0),
+		"lịch 12 giờ riêng cho từng boss hiếm")
+	w.enemies = []
+	w._check_rare_boss()
+	_check(w.rare_boss() == null, "chưa tới giờ thì chưa xuất hiện lại")
+	# save v8; save v7 chuyển rare_boss_at sang lịch của Lão Thụ
+	var d: Dictionary = JSON.parse_string(JSON.stringify(w.profile.to_dict()))
+	_check(int(d.version) == 8, "save version 8")
+	var back := Profile.new()
+	back.load_dict(d)
+	_check(is_equal_approx(float(back.rare_at["bach-ho"]), 1000.0 + Config.RARE_BOSS_PERIOD), "save giữ lịch boss hiếm")
+	d.version = 7
+	d.erase("rare_at")
+	d["rare_boss_at"] = 5000.0
+	var old := Profile.new()
+	_check(old.load_dict(d) and is_equal_approx(float(old.rare_at["lao-thu"]), 5000.0) and not old.rare_at.has("bach-ho"), "save v7: rare_boss_at thành lịch Lão Thụ")
+
+
+func _test_m5_claw() -> void:
+	var w := _region2_world("2-2", "kiem-khach", "tay-nhanh", 20)
+	w.field_spawn = false
+	var it := Items.new_item(w.profile, 20, "orange", RngUtil.make(1), "", "", "bach_ho_claw")
+	Items.add_item(w.profile, it)
+	w.equip(int(it.id))
+	_check(w.has_unique("bach_ho_claw"), "mặc Vuốt Bạch Hổ")
+	var e := w.spawn_enemy("linh-danh-thue", 20, w.player.pos + Vector2(40, 0))
+	e.max_hp = 1000000.0
+	e.hp = e.max_hp
+	w._hit_enemy(e, 1.0, true)
+	_check(is_equal_approx(e.bleed_timer, GameWorld.BLEED_TIME) and e.bleed_dmg > 0.0, "chí mạng: chảy máu 4 giây")
+	_check(is_equal_approx(e.bleed_dmg, Formulas.compute_damage(w.stats.atk, e.def, GameWorld.BLEED_MUL)), "chảy máu = 30% Tấn công mỗi giây")
+	var hp1 := e.hp
+	for i in 20:
+		w._update_enemy(e, 0.25)
+	_check(is_equal_approx(hp1 - e.hp, 4.0 * roundi(e.bleed_dmg)) and e.bleed_timer <= 0.0, "chảy máu 4 lần rồi hết (%.0f)" % (hp1 - e.hp))
+	# không mặc thì chí mạng không gây chảy máu
+	w.unequip("gloves")
+	var e2 := w.spawn_enemy("linh-danh-thue", 20, w.player.pos + Vector2(40, 0))
+	w._hit_enemy(e2, 1.0, true)
+	_check(e2.bleed_timer <= 0.0, "không mặc Vuốt thì không chảy máu")
+
+
+func _test_m5_bach_ho_balance() -> void:
+	for class_id in Classes.ORDER:
+		var lines := PackedStringArray()
+		for seed_value in [5, 11]:
+			var res := _bach_ho_fight(class_id, "tay-nhanh", seed_value)
+			lines.append("%.0fs/%d chết/%d bình" % [res[0], res[1], res[3]])
+			_check(res[2] and int(res[1]) == 0, "%s hạ được Bạch Hổ không chết lần nào, tối đa 3 bình máu (seed %d)" % [class_id, seed_value])
+		print("       [%s] Bạch Hổ: %s" % [class_id, " · ".join(lines)])
+
+
+## Bot cấp 20, bộ đồ chuẩn cấp 20 (như _r2_fight) đánh Bạch Hổ. Trả về [giây, số lần chết, thắng].
+func _bach_ho_fight(class_id: String, talent_id: String, seed_value: int) -> Array:
+	var w := _region2_world("2-3", class_id, talent_id, 20, seed_value)
+	w.field_spawn = false
+	var p = w.profile
+	p.bosses["huyen-anh"] = true
+	p.points = _class_points(class_id)
+	for k in p.points:
+		p.points[k] = int(p.points[k]) * 5
+	var rng := RngUtil.make(77)
+	for pair in [["weapon", "blue"], ["armor", "blue"], ["helm", "green"], ["boots", "green"], ["gloves", "green"]]:
+		var it := Items.new_item(p, 20, pair[1], rng, pair[0])
+		Items.add_item(p, it)
+		w.equip(int(it.id))
+	w.player.hp = w.stats.max_hp
+	w.player.mp = w.stats.max_mp
+	w.player.pos = w.arena_pos + Vector2(-700, 0)
+	w.debug_now = 1000.0
+	p.potions = 3
+	var deaths := 0
+	var seconds := 0.0
+	var killed := false
+	while seconds < 600.0 and not killed:
+		for ev in w.drain_events():
+			if ev.type == "death":
+				deaths += 1
+			if ev.type == "rare_boss":
+				killed = true
+		var b := w.rare_boss()
+		if b != null and w.player.dead_timer <= 0.0 and w.player.pos.distance_to(b.pos) > 800.0:
+			w.player.pos = b.pos + Vector2(-300, 0)
+		# Người chơi đánh boss hiếm mang theo bình máu: uống khi dưới 40% HP.
+		var inp := _bot(w)
+		inp["potion"] = w.player.hp < w.stats.max_hp * 0.4
+		w.update(1.0 / 60.0, inp)
+		seconds += 1.0 / 60.0
+	return [seconds, deaths, killed, 3 - int(p.potions)]

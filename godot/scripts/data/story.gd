@@ -40,6 +40,8 @@ const DIALOGS := {
 	"core": [["{name}", "Sương ở đây đặc quá… Có thứ gì đó cổ xưa đang thở giữa rừng."]],
 	"rare_boss": [["Lão Thụ Sương Mù", "Kẻ… nào… dám giẫm lên… rễ của ta?"]],
 	"rare_boss_down": [["Lão Thụ Sương Mù", "Rễ… khô rồi… Hạt giống… trao cho… kẻ mạnh…"]],
+	"rare_bach_ho": [["Bạch Hổ Phong Vân", "Gràoo! Gió Mắt Bão là của ta — kẻ yếu bị thổi bay như lá!"]],
+	"rare_bach_ho_down": [["Bạch Hổ Phong Vân", "Gió… đã đổi chiều… Ngươi… xứng với nanh vuốt của ta…"]],
 	"merchant": [["Thương nhân lữ hành", "Ha ha, khách quý! Lều ta dựng ở làng một canh giờ thôi, hàng tốt không chờ ai đâu."]],
 	"done": [[ELDER, "Chương 1 khép lại. Đồng Bằng Gió Hú đang chờ — nhưng hãy cứ luyện thêm ở Lõi Sương đã."]],
 	# ---------------------------------------------------------------- chương 2 (03-mvp-spec mục 6.4)

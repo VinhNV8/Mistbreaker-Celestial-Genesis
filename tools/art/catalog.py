@@ -58,6 +58,9 @@ SPRITES.update(_custom_sprites())
 # C1-23: boss hiếm Lão Thụ Sương Mù (cây cổ thụ, lá tím sương) và Gốc Rễ — dáng treant, phóng to bằng size_mul
 SPRITES["lao-thu"] = {"builder": "treant", "name": "Lão Thụ Sương Mù", "size_mul": 2.2,
                       "spec": {"bark": "bark", "leaf": "purple", "eye": "#ff5470"}}
+# M5-01: boss hiếm Bạch Hổ Phong Vân (Mắt Bão) — hổ trắng bờm thép, mắt xanh gió, hào quang trắng
+SPRITES["bach-ho"] = {"builder": "quadruped", "name": "Bạch Hổ Phong Vân", "size_mul": 1.2,
+                      "spec": {"size": 48, "fur": "white", "mane": "steel", "eye": "#4fc3ff", "aura": "#dce6f2", "stripes": "#3c4454"}}
 SPRITES["goc-re"] = {"builder": "treant", "name": "Gốc Rễ", "size_mul": 0.8,
                      "spec": {"bark": "wood", "leaf": "leaf", "eye": "#c878ff"}}
 # M4.2: quái vùng 2 Đồng Bằng Gió Hú (06 vùng 2) — hệ Kim: trắng bạc, thép

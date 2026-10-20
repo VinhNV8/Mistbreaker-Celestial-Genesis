@@ -103,7 +103,7 @@ REGIONS = [
    steal="**Phân Thân**: tạo 2 ảo ảnh hút đòn của quái trong 6 giây", steal_code="⬜",
    drop="1 đồ Tím · 15% **Mặt Nạ Huyền Ảnh** (mũ Cam: né lăn để lại 1 phân thân hút đòn trong 2 giây)"),
   rare=dict(name="Bạch Hổ Phong Vân", lv=20, el="Kim", arch="Nhanh", where="Mắt Bão",
-   skills="**Hổ Vồ** (chuỗi 3 cú vồ liên tiếp, mỗi cú vòng 6 m, ×1,4) · **Gầm Gió** (vòng 10 m: đẩy lùi 8 m, choáng 1 giây). Dưới 50%: **Cưỡi Gió** — luôn xuôi gió, tốc ×1,5",
+   skills="**Hổ Vồ** (chuỗi 3 cú vồ liên tiếp, mỗi cú vòng 6 m, ×1,4) · **Gầm Gió** (vòng 10 m: đẩy lùi 8 m, choáng 1 giây). Dưới 50%: **Cưỡi Gió** — luôn xuôi gió, tốc ×1,5. *Code (M5-01): Hổ Vồ mỗi 4 giây, Gầm Gió hồi riêng 9 giây khi đứng sát; đòn cắn thường vung 0,6 s, nghỉ 1,2 s; chỉ xuất hiện sau khi hạ Huyền Ảnh*",
    drop="**Vuốt Bạch Hổ** (găng Cam: đòn chí mạng gây chảy máu ×0,3 mỗi giây trong 4 giây) · 1 Tinh Hoa Tiến Hoá · 5 Thiên Phú Tinh Hoa")),
 
  dict(n=3, name="Sa Mạc Xích Sa", lv=(20, 32), el="Thổ", unlock="Lực chiến 5.000 (kịch bản)",
@@ -401,7 +401,7 @@ w("""
 | # | Vùng | Cấp | Hệ chủ đạo | Mở khoá (kịch bản) | Boss chương | Boss hiếm | Trạng thái |
 | --- | --- | --- | --- | --- | --- | --- | --- |""")
 for R in REGIONS:
-    st = "🟡 1/3 map" if R["n"] == 1 else ("⬜ M4" if R["n"] == 2 else ("⬜ Alpha" if R["n"] <= 5 else "⬜ Beta"))
+    st = "✅ C1" if R["n"] == 1 else ("✅ M4–M5" if R["n"] == 2 else ("⬜ Alpha" if R["n"] <= 5 else "⬜ Beta"))
     w(f"| {R['n']} | {R['name']} | {R['lv'][0]}–{R['lv'][1]} | {R['el']} | {R['unlock']} | {R['boss']['name']} (cấp {R['boss']['lv']}) | {R['rare']['name']} (cấp {R['rare']['lv']}) | {st} |")
 
 w("""

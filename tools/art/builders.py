@@ -219,6 +219,7 @@ def quadruped(spec):
     mane = spec.get("mane")
     mane = R[mane] if isinstance(mane, str) else mane
     aura = spec.get("aura")
+    stripes = spec.get("stripes")
 
     def frame(bob=0.0, legs=(0, 0, 0, 0), crouch=0.0, lunge=0.0, mouth=False, tail=0.0):
         cv = Canvas(size, size)
@@ -242,6 +243,10 @@ def quadruped(spec):
         # thân
         cv.shade_ellipse(S(bx), S(by), S(7.2 + lunge * 0.25), S(4.2 - crouch * 0.3), fur)
         cv.shade_ellipse(S(bx + 0.5), S(by + 2.2), S(5.5), S(1.4), [fur[2]] * 4)
+        if stripes:
+            for i in range(4):
+                x = bx - 4.5 + i * 2.6 + lunge * 0.25
+                cv.line(S(x), S(by - 3.6), S(x - 0.9), S(by + 0.8), hexc(stripes), S(0.8))
         if mane:
             for i in range(5):
                 x = bx + 2 - i * 2.2

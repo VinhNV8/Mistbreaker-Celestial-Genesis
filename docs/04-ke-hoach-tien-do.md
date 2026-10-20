@@ -50,7 +50,7 @@ File này liệt kê **mọi hạng mục trong kịch bản**: trạng thái hi
 | MVP — C1 | **Hoàn chỉnh Chương 1**: tạo nhân vật, sửa hướng đánh, cốt truyện + hướng dẫn, 3 map con + 40 ô, boss hiếm, Xưởng Rèn, cửa hàng, âm thanh — [08](08-chuong-1-hoan-chinh.md) | ✅ Xong 20/10/2026 (còn .exe chờ tải templates) |
 | MVP — M4 | Chương 2: Đồng Bằng Gió Hú, boss Huyền Ảnh, Thành Biên Đài, bản đồ lục địa, di chuyển giữa vùng | ✅ Xong 20/10/2026 (M4.1 phiên game-bc · M4.2, M4.3) |
 | MVP — SN2 | **Spec_Notes đợt 2**: lớp Pháp Sư, phân rã/bán nhanh có bộ lọc, chuyển cấp cường hoá khi mặc đồ, map ×1,6, sương che bản đồ — [09](09-spec-notes-dot-2.md) | ✅ Xong 20/10/2026 (phiên game-bc) |
-| MVP — M5 | Cốt truyện có thoại, hướng dẫn, nhiệm vụ, boss hiếm, Xưởng Rèn, cân bằng 1 → 20 | ⬜ |
+| MVP — M5 | Cốt truyện có thoại, hướng dẫn, nhiệm vụ, boss hiếm, Xưởng Rèn, cân bằng 1 → 20 | 🟡 Đang làm — [03 mục 8](03-mvp-spec.md). Phần lớn đã xong sớm ở C1; M5-01 Bạch Hổ xong 20/10/2026 |
 | MVP — G | Đồ hoạ nhân vật, quái, bản đồ, hiệu ứng, âm thanh cho chương 1–2 | 🟡 G1 (hình chương 1, sinh bằng code) xong 20/10/2026 — [07](07-do-hoa-ke-hoach.md); còn âm thanh, khung giao diện, vùng 2 |
 | Thử nghiệm kín | 50–100 người chơi (kịch bản mục 9) | ⬜ Cần M3–M5 + G |
 | Alpha | 4 lớp, chương 1–5, chuyển chức 1–2, dungeon cổng ngẫu nhiên, bảng xếp hạng | ⬜ |
@@ -184,7 +184,7 @@ Chỉ số, kỹ năng từng quái/boss và công thức sức mạnh theo cấ
 | CB-12 | Quái tinh anh có 1 kỹ năng đặc biệt riêng | ✅ | M3 | CB-T5 | Sói Đầu Đàn: Hú gọi · Nấm Mẹ: Sinh sôi (Nấm Con tự nổ) (Q33) |
 | CB-13 | Thủ lĩnh cứ điểm canh ô đất | ✅ | Proto | EXP-05 | Dạng Ổ quái |
 | CB-14 | Boss vùng 2–3 giai đoạn, rơi Tinh Hoa | ✅ | Proto / M2 | MOB-06…10, TL-G | |
-| CB-15 | Boss hiếm, xuất hiện 2 lần/ngày, rơi đồ Cam | ✅ | C1 | C1-T7 | Lão Thụ Sương Mù ở Lõi Sương, mỗi 12 giờ thực; rơi Vỏ Lão Thụ (C1-23) |
+| CB-15 | Boss hiếm, xuất hiện 2 lần/ngày, rơi đồ Cam | ✅ | C1 / M5 | C1-T7, M5-T1…T3 | Lão Thụ Sương Mù ở Lõi Sương (C1-23, rơi Vỏ Lão Thụ); Bạch Hổ Phong Vân ở Mắt Bão (M5-01, rơi Vuốt Bạch Hổ). Mỗi boss có lịch 12 giờ riêng |
 | CB-16 | Boss thế giới (cả server) | ⛔ | Beta | — | Cần online; xem lại khi có backend |
 | CB-17 | Boss chương 1 Sói Chúa Hư Vô | ✅ | Proto | MOB-06…10 | |
 | CB-18 | Boss chương 2 Tướng Gián Điệp Huyền Ảnh (phân thân 3, bản thật có bóng) | ✅ | M4.2 | CB-T8, TL-B2 | 18.804 HP; Ám tiễn, Thoắt ẩn, 2 → 4 bản sao không bóng, đổi chỗ mỗi 6 giây |
@@ -356,16 +356,18 @@ Mỗi đợt theo quy trình: **viết spec → duyệt → code → test → c�
 
 ### M5 — Cốt truyện, hướng dẫn, chuẩn bị thử nghiệm kín
 
-- [ ] Viết spec M5
-- [ ] TN-01, CT-01…03: cutscene mở đầu, thoại chương 1–2
-- [ ] TN-04: hướng dẫn combat; TP-43: cây tiến hoá hiện trong bảng Thiên phú (Q20)
-- [ ] NV-22: nhiệm vụ cốt truyện
-- [ ] CB-15: boss hiếm
-- [ ] KP-15, KP-16: Xưởng Rèn, Vườn Thảo Dược
-- [ ] KP-09, TB-12: Thương nhân lữ hành, mua bán
-- [ ] CB-02: Tự đánh; NV-26: tự cộng điểm
-- [ ] NV-20: cân bằng nhịp độ 1 → 20 từ dữ liệu playtest (chỉ chỉnh hệ số công thức CB-21, không đổi công thức)
-- [ ] KT-06, KT-07: build .exe, màn hình cài đặt
+- [x] Viết spec M5 ([03 mục 8](03-mvp-spec.md))
+- [x] TN-01, CT-01…03: cutscene mở đầu, thoại chương 1–2 (xong ở C1, M4.3)
+- [x] TN-04: hướng dẫn combat; TP-43: cây tiến hoá hiện trong bảng Thiên phú (Q20) (xong ở C1)
+- [x] NV-22: nhiệm vụ cốt truyện (chương 1 ở C1, chương 2 ở M4.3)
+- [x] CB-15: boss hiếm — Lão Thụ (C1), **Bạch Hổ Phong Vân (M5-01)**
+- [x] KP-15, KP-16: Xưởng Rèn, Vườn Thảo Dược (xong ở C1)
+- [x] KP-09, TB-12: Thương nhân lữ hành, mua bán (xong ở C1)
+- [x] CB-02: Tự đánh; NV-26: tự cộng điểm (xong ở C1)
+- [ ] M5-02, NV-20: nhịp lên cấp — Spec_Notes đợt 3 "lên level nhanh quá" (nghiên cứu ARPG, chỉnh hệ số EXP)
+- [ ] M5-03: bản đồ nhỏ theo thời gian thực (Spec_Notes đợt 3)
+- [ ] M5-04, KP-04: chinh phục Di tích bằng câu đố
+- [ ] KT-06, KT-07: build .exe (game-bc), cỡ chữ (M5-05)
 
 ### G — Đồ hoạ và âm thanh
 

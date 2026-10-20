@@ -9,7 +9,7 @@ const Explore = preload("res://scripts/core/explore.gd")
 ## v5: MVP M4 thêm nhiều bản đồ, lưới từng vùng, boss theo id, Đá/Sắt, nhiệm vụ chương 2 (mục 6.5).
 ## v6: đợt C1 thêm tên, ngoại hình, nhiệm vụ/thoại chương 1, lưới vùng 1 40 ô, boss hiếm, công trình mới (08 mục 3.3).
 ## v7: đợt SN2 thêm sương che bản đồ, thưởng khám phá, bộ lọc phân rã/bán nhanh (09 mục 3).
-const VERSION := 7
+const VERSION := 8
 
 var talent := ""
 var level := 1
@@ -85,8 +85,8 @@ var quest_step := 1
 var quest_progress := 0
 ## Mốc thoại đã xem (không lặp lại).
 var seen_dialogs: Array = []
-## Boss hiếm Lão Thụ: giờ Unix xuất hiện lần tới (0 = khi vào Lõi Sương lần đầu).
-var rare_boss_at := 0.0
+## M5-01: boss hiếm → giờ Unix xuất hiện lần tới (thiếu = xuất hiện ngay lần đầu vào map). Save v7 trở về trước: rare_boss_at của Lão Thụ.
+var rare_at := {}
 var evo_essence := 0
 ## Vườn Thảo Dược: giây tích luỹ tới thảo dược kế tiếp.
 var herb_timer := 0.0
@@ -161,7 +161,7 @@ func to_dict() -> Dictionary:
 		"quest_step": quest_step,
 		"quest_progress": quest_progress,
 		"seen_dialogs": seen_dialogs,
-		"rare_boss_at": rare_boss_at,
+		"rare_at": rare_at,
 		"evo_essence": evo_essence,
 		"herb_timer": herb_timer,
 		"merchant": merchant,
@@ -284,7 +284,12 @@ func load_dict(d: Dictionary) -> bool:
 	seen_dialogs = []
 	for k in d.get("seen_dialogs", []):
 		seen_dialogs.append(str(k))
-	rare_boss_at = float(d.get("rare_boss_at", 0.0))
+	rare_at = {}
+	var ra: Dictionary = d.get("rare_at", {})
+	for k in ra:
+		rare_at[str(k)] = float(ra[k])
+	if d.has("rare_boss_at") and float(d.rare_boss_at) > 0.0:
+		rare_at["lao-thu"] = float(d.rare_boss_at)
 	evo_essence = int(d.get("evo_essence", 0))
 	gift_code = str(d.get("gift_code", ""))
 	herb_timer = float(d.get("herb_timer", 0.0))

@@ -427,8 +427,21 @@ def g_huyen_mask(cv):
     cv.line(8, 22, 24, 22, R["gold"][1])
 
 
+def g_tiger_claw(cv):
+    """Vuốt Bạch Hổ (găng Cam, M5-01)."""
+    glow(cv, 16, 16, 15, hexc("#ff9a3c"), 60)
+    g_gloves(cv)
+    cv.shade_poly([(9, 27), (9, 16), (11, 8), (14, 8), (14, 14), (15, 6), (18, 6), (18, 13), (19, 7), (22, 7), (22, 14), (24, 12), (26, 14), (23, 22), (22, 27)], R["white"])
+    for x in (12, 16, 20):
+        cv.shade_poly([(x - 1, 8), (x + 1, 8), (x + 2, 2), (x, 4)], R["steel"])
+    cv.line(11, 20, 21, 17, R["steel"][1])
+    cv.line(11, 23, 21, 20, R["steel"][1])
+    cv.rect(8, 24, 23, 28, R["gold"][2])
+
+
 ITEMS = {"weapon": g_sword, "helm": g_helm, "armor": g_armor, "gloves": g_gloves, "boots": g_boots,
-         "necklace": g_necklace, "ring": g_ring, "amulet": g_amulet, "wolf_fang": g_wolf_fang, "lao_thu_bark": g_bark, "huyen_anh_mask": g_huyen_mask}
+         "necklace": g_necklace, "ring": g_ring, "amulet": g_amulet, "wolf_fang": g_wolf_fang, "lao_thu_bark": g_bark, "huyen_anh_mask": g_huyen_mask,
+         "bach_ho_claw": g_tiger_claw}
 RESOURCES = {"gold": g_gold, "wood": g_wood, "stone": g_stone, "essence": g_essence, "tinh_kim": g_tinh_kim,
              "torch": g_torch, "herb": g_herb, "potion": g_potion, "ore": g_ore, "iron": g_iron}
 # ---------------------------------------------------------------------- kỹ năng M3 (03-mvp-spec mục 5.4)

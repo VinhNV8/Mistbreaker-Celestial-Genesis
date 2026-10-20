@@ -11,6 +11,7 @@ const PORTRAITS := {
 	"Thương nhân lữ hành": "npc-merchant",
 	"Sói Chúa Hư Vô": "boss",
 	"Lão Thụ Sương Mù": "lao-thu",
+	"Bạch Hổ Phong Vân": "bach-ho",
 	"Đội trưởng Lạc Phong": "npc-lac-phong",
 	"Thương nhân Mạc Tam": "npc-mac-tam",
 	"Thợ rèn Thiết Ngưu": "npc-thiet-nguu",

@@ -78,8 +78,8 @@ Trước M3, code dùng công thức cũ của prototype (`HP × (1 + 0,35·(L�
 
 | # | Vùng | Cấp | Hệ chủ đạo | Mở khoá (kịch bản) | Boss chương | Boss hiếm | Trạng thái |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Rừng Sương | 1–10 | Mộc | Bắt đầu game | Sói Chúa Hư Vô (cấp 6) | Lão Thụ Sương Mù (cấp 9) | 🟡 1/3 map |
-| 2 | Đồng Bằng Gió Hú | 10–20 | Kim | Hạ Sói Chúa (kịch bản) | Tướng Gián Điệp Huyền Ảnh (cấp 18) | Bạch Hổ Phong Vân (cấp 20) | ⬜ M4 |
+| 1 | Rừng Sương | 1–10 | Mộc | Bắt đầu game | Sói Chúa Hư Vô (cấp 6) | Lão Thụ Sương Mù (cấp 9) | ✅ C1 |
+| 2 | Đồng Bằng Gió Hú | 10–20 | Kim | Hạ Sói Chúa (kịch bản) | Tướng Gián Điệp Huyền Ảnh (cấp 18) | Bạch Hổ Phong Vân (cấp 20) | ✅ M4–M5 |
 | 3 | Sa Mạc Xích Sa | 20–32 | Thổ | Lực chiến 5.000 (kịch bản) | Bọ Cạp Sa Hoàng (cấp 30) | Nhân Sư Đá (cấp 32) | ⬜ Alpha |
 | 4 | Đầm Lầy U Minh | 32–45 | Thủy | Chuyển chức 1 (kịch bản) | Nữ Vương Phệ Mộng (cấp 43) | Thuỷ Quái Thất Đầu (cấp 45) | ⬜ Alpha |
 | 5 | Núi Viêm Long | 45–60 | Hỏa | Thiên phú tiến hoá 1 lần (kịch bản) | Viêm Long (cấp 58) | Phượng Hoàng Tro (cấp 60) | ⬜ Alpha |
@@ -215,7 +215,7 @@ Mỗi vùng gồm 3 map con (Ngoài rìa → Trung tâm → Lõi) và 1 dungeon 
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 20 | Kim | Nhanh | 42.640 | 159 | 53 | 38.411 | 1.600 |
 
-- **Kỹ năng:** **Hổ Vồ** (chuỗi 3 cú vồ liên tiếp, mỗi cú vòng 6 m, ×1,4) · **Gầm Gió** (vòng 10 m: đẩy lùi 8 m, choáng 1 giây). Dưới 50%: **Cưỡi Gió** — luôn xuôi gió, tốc ×1,5
+- **Kỹ năng:** **Hổ Vồ** (chuỗi 3 cú vồ liên tiếp, mỗi cú vòng 6 m, ×1,4) · **Gầm Gió** (vòng 10 m: đẩy lùi 8 m, choáng 1 giây). Dưới 50%: **Cưỡi Gió** — luôn xuôi gió, tốc ×1,5. *Code (M5-01): Hổ Vồ mỗi 4 giây, Gầm Gió hồi riêng 9 giây khi đứng sát; đòn cắn thường vung 0,6 s, nghỉ 1,2 s; chỉ xuất hiện sau khi hạ Huyền Ảnh*
 - **Rơi:** **Vuốt Bạch Hổ** (găng Cam: đòn chí mạng gây chảy máu ×0,3 mỗi giây trong 4 giây) · 1 Tinh Hoa Tiến Hoá · 5 Thiên Phú Tinh Hoa
 
 ### Vùng 3 — Sa Mạc Xích Sa (cấp 20–32, hệ Thổ)

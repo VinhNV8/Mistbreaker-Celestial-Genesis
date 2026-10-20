@@ -797,6 +797,16 @@ func _draw_telegraph(e: GameWorld.Enemy) -> void:
 			draw_arc(e.pos, GameWorld.PULL_R * (1.0 - progress * 0.6), 0.0, TAU, 32, Color(0.9, 0.95, 1.0, 0.7), 2.0, true)
 		"blink":
 			draw_circle(e.pos, 60.0, Color(0.7, 0.4, 1.0, 0.12 + progress * 0.25))
+		"tiger":
+			# M5-01: Hổ Vồ — vòng 6 m ở chỗ sẽ vồ tới, vạch nối từ hổ
+			draw_line(e.pos, e.target, Color(0.95, 0.95, 0.9, 0.15 + progress * 0.3), 3.0, true)
+			draw_circle(e.target, GameWorld.TIGER_R, Color(1, 0.24, 0.31, 0.12))
+			draw_circle(e.target, GameWorld.TIGER_R * progress, Color(1, 0.24, 0.31, 0.32))
+			draw_arc(e.target, GameWorld.TIGER_R, 0.0, TAU, 40, Color(1, 0.24, 0.31, 0.7), 2.0, true)
+		"roar":
+			draw_circle(e.pos, GameWorld.ROAR_R, Color(0.86, 0.9, 0.95, 0.08 + progress * 0.12))
+			draw_arc(e.pos, GameWorld.ROAR_R * progress, 0.0, TAU, 48, Color(0.86, 0.9, 0.95, 0.7), 3.0, true)
+			draw_arc(e.pos, GameWorld.ROAR_R, 0.0, TAU, 48, Color(0.86, 0.9, 0.95, 0.5), 2.0, true)
 		"roots":
 			for k in 3:
 				var c: Vector2 = e.target + Vector2.from_angle(k * TAU / 3.0) * GameWorld.ROOT_R * 0.9

@@ -784,6 +784,56 @@ Thay đổi so với spec các đợt trước:
 | EQ-10 — mặc đồ, đồ cũ về túi | Đồ cũ cường hoá cao hơn thì 2 món đổi cấp (SN-20) |
 | TL-B, TL-B2 — có quái thường | Tắt sinh quái thường trong trận đo; TL-B2 lấy trung bình 4 trận; so lớp nhanh nhất với lớp chậm nhất (3 lớp) |
 
+## 8. Đợt M5 — Chuẩn bị thử nghiệm kín
+
+### 8.1. Phạm vi
+
+Phần lớn hạng mục M5 trong lộ trình ban đầu (thoại, nhiệm vụ cốt truyện, hướng dẫn, Xưởng Rèn, Vườn Thảo Dược, Thương nhân lữ hành, cửa hàng, Tự đánh, tự cộng điểm, boss hiếm vùng 1) **đã làm sớm ở đợt C1** ([08](08-chuong-1-hoan-chinh.md)). M5 còn lại:
+
+| Mã | Nội dung | Trạng thái |
+| --- | --- | --- |
+| M5-01 | Boss hiếm vùng 2 **Bạch Hổ Phong Vân** ở Mắt Bão (06 vùng 2), rơi **Vuốt Bạch Hổ** | ✅ |
+| M5-02 | Nhịp lên cấp: Spec_Notes đợt 3 "nhân vật lên level nhanh quá" — nghiên cứu nhịp ARPG, chỉnh hệ số EXP (NV-20) | ⬜ đang làm |
+| M5-03 | Bản đồ nhỏ theo thời gian thực (Spec_Notes đợt 3) | ⬜ |
+| M5-04 | KP-04: chinh phục ô Di tích bằng câu đố | ⬜ |
+| M5-05 | KT-07: cài đặt cỡ chữ (hook `UiTheme.set_font_scale` đã có) | ⬜ |
+| M5-06 | KT-06: build .exe | ⬜ phiên game-bc làm |
+
+### 8.2. M5-01 — Bạch Hổ Phong Vân
+
+- **Xuất hiện:** ở map 2-3 Mắt Bão, **sau khi đã hạ Huyền Ảnh**. Lần đầu vào map sau mốc đó thì xuất hiện ngay, sau đó mỗi 12 giờ thực (2 lần/ngày, như Lão Thụ). Lão Thụ cũng chỉ xuất hiện sau khi hạ boss vùng (Lõi Sương mở sau Sói Chúa). Boss không xuất hiện trong Phủ Huyền Ảnh.
+- **Chỉ số:** theo công thức 06, bậc "hiem", loại "nhanh", cấp 20: 42.640 HP · 159 Tấn công · 53 Phòng thủ. Có thanh Phá Thế (HP/6).
+- **Kỹ năng:**
+
+| Kỹ năng | Spec 06 | Code |
+| --- | --- | --- |
+| Hổ Vồ | Chuỗi 3 cú vồ, mỗi cú vòng 6 m ×1,4 | Mỗi 4 giây; vung 0,7 s, giữa 2 cú 0,4 s; mỗi cú vồ xa tối đa 22 m tới chỗ người chơi đang đứng; vòng đỏ báo trước. Phá Thế ngắt chuỗi |
+| Gầm Gió | Vòng 10 m: đẩy lùi 8 m, choáng 1 giây | Chỉ dùng khi người chơi đứng trong 10 m, hồi riêng 9 giây; vung 0,8 s; né lăn tránh được. Choáng: không đi, không đánh, không né, gió không đẩy |
+| Cưỡi Gió | Dưới 50%: luôn xuôi gió, tốc ×1,5 | Tốc chạy ×1,5 (quái không chịu gió nên "luôn xuôi gió" không cần xử lý thêm) |
+| Đòn cắn thường | — | Vung 0,6 s, nghỉ 1,2 s (thú vồ, không đánh tay đôi liên tục) |
+
+- **Rơi:** Vuốt Bạch Hổ (găng Cam) · 1 Tinh Hoa Tiến Hoá · 5 Thiên Phú Tinh Hoa · 1.600 vàng. Theo 06, không rơi thêm đồ Tím (Lão Thụ thì có).
+- **Vuốt Bạch Hổ:** đòn chí mạng gây chảy máu, mỗi giây một lần, 4 lần; mỗi lần = sát thương của 30% Tấn công qua Phòng thủ quái. Chí mạng lại thì làm mới thời gian.
+- **Save v8:** `rare_at` = {loại boss: giờ Unix lần tới}. Save v7 trở về trước: `rare_boss_at` chuyển thành lịch của Lão Thụ.
+
+**Cân bằng (M5-T3, bot cấp 20, bộ đồ chuẩn cấp 20, 3 bình máu, 2 seed):**
+
+| Lớp | Thời gian | Chết | Bình máu dùng |
+| --- | --- | --- | --- |
+| Kiếm Khách | 81–85 giây | 0 | 2–3 |
+| Thợ Săn | 52–55 giây | 0 | 0 |
+| Pháp Sư | 73–121 giây | 0 | 0 |
+
+Lúc đầu Gầm Gió dùng chung nhịp 3,2 giây với Hổ Vồ: Kiếm Khách bị đẩy ra và choáng gần một nửa thời gian, chết 17 lần trong 600 giây. Sau khi tách Gầm Gió ra hồi riêng 9 giây và cho đòn cắn thường nghỉ 1,2 giây, Kiếm Khách thắng mà không chết lần nào. Lớp cận chiến vẫn chậm hơn lớp đánh xa khoảng 50%. Chấp nhận được với boss hiếm, xem lại khi có playtest.
+
+### 8.3. Kiểm thử
+
+| Mã | Nội dung |
+| --- | --- |
+| M5-T1 | Bạch Hổ: chưa hạ Huyền Ảnh thì không xuất hiện; chỉ số 06; không xuất hiện trong Phủ; Hổ Vồ đúng 3 cú, tầm 22 m; Gầm Gió đẩy 8 m + choáng (không đi/đánh/né); né lăn tránh được; Phá Thế ngắt chuỗi; Cưỡi Gió ×1,5; rơi Vuốt (không Tím); lịch riêng từng boss; save v8 và chuyển đổi v7 |
+| M5-T2 | Vuốt Bạch Hổ: chí mạng → chảy máu 4 giây, 30% Tấn công mỗi giây; không mặc thì không chảy máu |
+| M5-T3 | 3 lớp cấp 20 hạ Bạch Hổ không chết lần nào, tối đa 3 bình máu |
+
 ## Phụ lục A — Yêu cầu thay đổi (CR)
 
 Thay đổi do chủ dự án yêu cầu sau khi kịch bản đã viết. Mỗi CR ghi nguồn, đề xuất, trạng thái duyệt, và đợt sẽ làm.

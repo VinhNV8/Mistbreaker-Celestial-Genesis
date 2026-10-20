@@ -108,6 +108,12 @@ const UNIQUES := {
 		"slot": "amulet",
 		"text": "Đứng yên 1 giây thì hồi 2% HP mỗi giây.",
 	},
+	## M5-01: rơi từ boss hiếm Bạch Hổ Phong Vân.
+	"bach_ho_claw": {
+		"name": "Vuốt Bạch Hổ",
+		"slot": "gloves",
+		"text": "Đòn chí mạng gây chảy máu: 30% Tấn công mỗi giây trong 4 giây.",
+	},
 }
 const BOSS_UNIQUE := "wolf_fang"
 
