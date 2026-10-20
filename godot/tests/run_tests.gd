@@ -94,6 +94,7 @@ func _init() -> void:
 	_run("C1-T9 Xưởng Rèn, Vườn Thảo Dược", _test_c1_forge_garden)
 	_run("C1-T10 cửa hàng, bán đồ, Thương nhân lữ hành", _test_c1_shop)
 	_run("C1-T11 Tự đánh, tự cộng điểm", _test_c1_auto)
+	_run("C1-T12 đủ hình ngoại hình, NPC, boss hiếm và âm thanh", _test_c1_assets)
 
 	print("")
 	if _failed.is_empty():
@@ -1569,3 +1570,20 @@ func _test_c1_auto() -> void:
 		for k in pair[1]:
 			ok = ok and int(x.profile.points[k]) == int(pair[1][k])
 		_check(ok, "%s: tự cộng điểm đúng tỉ lệ %s" % [pair[0], str(x.profile.points)])
+
+
+func _test_c1_assets() -> void:
+	for cid in Classes.ORDER:
+		for g in Looks.GENDERS:
+			for sk in Looks.SKIN_NAMES.size():
+				var look := {"gender": g, "skin": sk, "hair_style": "ngan", "hair_color": 0}
+				_check(SpriteLib.has_sprite(Looks.base_sprite(cid, look)), "thân %s" % Looks.base_sprite(cid, look))
+		for st in Looks.HAIR_STYLES:
+			_check(SpriteLib.has_sprite(Looks.hair_sprite(cid, {"hair_style": st})), "tóc %s %s" % [cid, st])
+	for id in ["npc-elder", "npc-merchant", "lao-thu", "goc-re"]:
+		_check(SpriteLib.has_sprite(id), "có sprite %s" % id)
+	for id in ["slash", "shot", "hit", "crit", "enemy_die", "player_hurt", "dodge", "perfect", "pickup_gold", "pickup_item",
+			"levelup", "skill", "ui_click", "boss_roar", "explode", "heal"]:
+		_check(ResourceLoader.exists("res://assets/audio/sfx/%s.wav" % id), "có âm thanh %s" % id)
+	for id in ["village", "forest", "core", "boss"]:
+		_check(ResourceLoader.exists("res://assets/audio/music/%s.wav" % id), "có nhạc %s" % id)

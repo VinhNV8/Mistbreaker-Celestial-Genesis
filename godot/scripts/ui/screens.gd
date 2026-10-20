@@ -109,7 +109,7 @@ static func _buttons(col: VBoxContainer) -> HBoxContainer:
 	return row
 
 
-static func title(has_save: bool, on_new: Callable, on_continue: Callable) -> Control:
+static func title(has_save: bool, on_new: Callable, on_continue: Callable, on_settings := Callable()) -> Control:
 	var page := _page()
 	var col: VBoxContainer = page[1]
 	col.add_child(_centered("MISTBREAKER: CELESTIAL GENESIS", "Eyebrow"))
@@ -125,6 +125,11 @@ static func title(has_save: bool, on_new: Callable, on_continue: Callable) -> Co
 	b_cont.disabled = not has_save
 	b_cont.pressed.connect(on_continue)
 	row.add_child(b_cont)
+	if on_settings.is_valid():
+		var b_set := UiTheme.button("Cài đặt")
+		b_set.name = "SettingsButton"
+		b_set.pressed.connect(on_settings)
+		row.add_child(b_set)
 	var grid := GridContainer.new()
 	grid.columns = 2
 	grid.add_theme_constant_override("h_separation", 24)

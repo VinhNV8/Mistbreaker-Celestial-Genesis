@@ -22,6 +22,8 @@ const IntroScreen = preload("res://scripts/ui/intro_screen.gd")
 const CreateScreen = preload("res://scripts/ui/create_screen.gd")
 const DialogBox = preload("res://scripts/ui/dialog_box.gd")
 const ShopPanel = preload("res://scripts/ui/shop_panel.gd")
+const PauseMenu = preload("res://scripts/ui/pause_menu.gd")
+const AudioManager = preload("res://scripts/audio/audio_manager.gd")
 
 ## Phím mặc định. Nếu đã khai báo action cùng tên trong Project Settings > Input Map thì dùng bản đó.
 const KEY_ACTIONS := {
@@ -69,6 +71,8 @@ var _screen: Control
 var _victory: Control
 var dialog: DialogBox
 var shop_panel: ShopPanel
+var audio: AudioManager
+var _pause: PauseMenu
 ## Sau khi đóng thoại, bỏ qua phím 0,2 giây (Space vừa dùng để tắt thoại không thành né lăn).
 var _dialog_cool := 0.0
 var _save_timer := 0.0
@@ -80,6 +84,12 @@ var _kb_dir := Vector2.RIGHT
 func _ready() -> void:
 	_setup_input()
 	RenderingServer.set_default_clear_color(UiTheme.BG)
+	# C1-40/41/42: âm thanh + cài đặt
+	audio = AudioManager.new()
+	add_child(audio)
+	get_tree().node_added.connect(func(n):
+		if n is BaseButton:
+			(n as BaseButton).pressed.connect(func(): audio.play("ui_click", 0.0)))
 
 	_view = WorldView.new()
 	_view.visible = false
@@ -166,6 +176,8 @@ func _input(event: InputEvent) -> void:
 		_last_mouse_move = Time.get_ticks_msec()
 	if world == null or _victory != null:
 		return
+	if _pause != null and not event.is_action_pressed("close_panel"):
+		return
 	if event.is_action_pressed("auto_fight") and not _any_panel_open():
 		world.toggle_auto()
 		get_viewport().set_input_as_handled()
@@ -192,8 +204,14 @@ func _input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			return
 	if event.is_action_pressed("close_panel"):
-		for panel in _panels():
-			panel.close()
+		if _pause != null:
+			_close_pause()
+		elif _any_panel_open():
+			for panel in _panels():
+				panel.close()
+		else:
+			_open_pause()
+		get_viewport().set_input_as_handled()
 
 
 func _panels() -> Array:
@@ -217,7 +235,7 @@ func _process(delta: float) -> void:
 		_dialog_cool = 0.2
 	else:
 		_dialog_cool -= delta
-	var paused := _victory != null or _any_panel_open() or dialog.is_open() or _dialog_cool > 0.0
+	var paused := _victory != null or _any_panel_open() or dialog.is_open() or _dialog_cool > 0.0 or _pause != null
 	if not paused:
 		world.update(dt, bot.call(world) if bot.is_valid() else _read_input())
 	for ev in world.drain_events():
@@ -226,6 +244,10 @@ func _process(delta: float) -> void:
 	_vignette.modulate.a = 0.45 + 0.35 * world.player.pos.x / world.world_size.x
 	_freeze_tint.visible = world.freeze_timer > 0.0
 	hud.update_from(world)
+	for id in world.sfx:
+		audio.play(str(id))
+	world.sfx.clear()
+	audio.music(_music_for(world))
 	_save_timer += delta
 	if _save_timer > 5.0:
 		_save_timer = 0.0
@@ -330,7 +352,8 @@ func _set_screen(c: Control) -> void:
 func _go_title() -> void:
 	_persist()
 	_end_session()
-	_set_screen(Screens.title(SaveSystem.has_save(), _on_new_game, _on_continue))
+	_set_screen(Screens.title(SaveSystem.has_save(), _on_new_game, _on_continue, _open_settings))
+	audio.music("village")
 
 
 func _on_new_game() -> void:
@@ -628,6 +651,48 @@ func _run_smoke(dir: String) -> void:
 	Engine.time_scale = 1.0
 	await _wait(0.5)
 	await _shot(dir, "07-victory")
+	_close_victory()
+	_open_pause()
+	_pause.show_settings()
+	await _wait(0.3)
+	await _shot(dir, "08-settings")
+	_close_pause()
+	print("SMOKE audio music=%s" % audio.current_music())
 	print("SMOKE done: boss_defeated=%s level=%d kills=%d" % [p.boss_defeated, p.level, p.kills])
 	SaveSystem.clear_save()
 	get_tree().quit()
+
+
+# ------------------------------------------------------------------ C1-41, C1-42: nhạc nền, menu tạm dừng, cài đặt
+
+
+func _music_for(w: GameWorld) -> String:
+	if w.big_enemy() != null:
+		return "boss"
+	if w.map_id == "1-3":
+		return "core"
+	if w.player.pos.distance_to(w.safe_pos) < w.safe_r + 250.0:
+		return "village"
+	return "forest"
+
+
+func _open_pause(settings_only := false) -> void:
+	if _pause != null:
+		return
+	_pause = PauseMenu.new()
+	_pause.settings_only = settings_only
+	_pause.resume.connect(_close_pause)
+	_pause.quit_to_title.connect(func():
+		_close_pause()
+		_go_title())
+	_ui.add_child(_pause)
+
+
+func _open_settings() -> void:
+	_open_pause(true)
+
+
+func _close_pause() -> void:
+	if _pause != null:
+		_pause.queue_free()
+		_pause = null

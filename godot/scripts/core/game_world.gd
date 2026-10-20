@@ -339,6 +339,8 @@ var hazards: Array = []
 var debug_now := -1.0
 ## C1-33: tự đánh (phím Z).
 var auto_fight := false
+## C1-40: id âm thanh phát trong khung hình này (main.gd chuyển cho AudioManager rồi xoá).
+var sfx: Array = []
 var combo := 0
 var time := 0.0
 
@@ -698,6 +700,7 @@ func _move_player(dt: float, input: Dictionary) -> void:
 		p.dodge_dir = move.normalized() if move.length() > 0.01 else Vector2.from_angle(p.facing)
 		p.dodge_time = DODGE_TIME
 		quest_event("dodge")
+		_sfx("dodge")
 		p.dodge_cd = DODGE_CD
 		p.perfect_used = false
 
@@ -724,6 +727,7 @@ func _move_player(dt: float, input: Dictionary) -> void:
 		b.state = "chase"
 		_message("%s xuất hiện! Đánh vào thanh Phá Thế để làm nó choáng." % b.name, "bad")
 		if b.kind == "boss":
+			_sfx("boss_roar")
 			say("boss")
 
 
@@ -853,6 +857,7 @@ func _shoot() -> void:
 	p.attack_cd = SHOT_INTERVAL / atk_speed()
 	p.swing = 0.16
 	p.swing_kind = "shot"
+	_sfx("shot")
 	var m := _basic_mul()
 	_fire(SHOT_SPEED, SHOT_RANGE, m[0], false, "arrow", m[1])
 
@@ -897,6 +902,7 @@ func _slash() -> void:
 	p.attack_cd = SLASH_INTERVAL / atk_speed()
 	p.swing = 0.16
 	p.swing_kind = "slash"
+	_sfx("slash")
 	var m := _basic_mul()
 	var mul: float = m[0]
 	var empowered: bool = m[1]
@@ -967,6 +973,7 @@ func use_skill(i: int) -> bool:
 			p.eagle_time = EAGLE_TIME
 			_text(p.pos + Vector2(0, -40), "Ưng Nhãn!", Color("#ffc940"), true)
 	quest_event("skill")
+	_sfx("skill")
 	return true
 
 
@@ -1066,6 +1073,7 @@ func _update_traps(dt: float) -> void:
 			continue
 		t.ttl = 0.0
 		_blast(t.pos, TRAP_RADIUS, Color("#ffc940"))
+		_sfx("explode")
 		for e in enemies:
 			if not e.dead and e.pos.distance_to(t.pos) <= TRAP_RADIUS + e.radius:
 				e.root_timer = TRAP_ROOT
@@ -1196,6 +1204,7 @@ func drink_potion() -> void:
 		return
 	var heal := potion_heal()
 	profile.potions -= 1
+	_sfx("heal")
 	p.potion_cd = POTION_CD
 	p.hp = minf(float(stats.max_hp), p.hp + heal)
 	_text(p.pos + Vector2(0, -30), "+%d HP" % roundi(heal), Color("#5bd16a"), true)
@@ -1301,6 +1310,7 @@ func add_exp(amount: float, from_combat: bool) -> void:
 		player.hp = stats.max_hp
 		player.mp = stats.max_mp
 		_events.append({"type": "levelup", "level": profile.level})
+		_sfx("levelup")
 		_message(
 			"Lên cấp %d! +%d điểm tiềm năng (C), +1 Đuốc Khai Giới." % [profile.level, Config.POINTS_PER_LEVEL], "good"
 		)
@@ -1317,6 +1327,7 @@ func _damage_player(atk: float, mul: float) -> bool:
 		# CB-04: chặn đòn trong 0,15 giây đầu của né lăn = Hoàn hảo.
 		if not p.perfect_used and DODGE_TIME - p.dodge_time <= PERFECT_WINDOW:
 			p.perfect_used = true
+			_sfx("perfect")
 			slowmo_timer = SLOWMO_TIME
 			_text(p.pos + Vector2(0, -40), "Hoàn hảo!", Color("#ffc940"), true)
 		else:
@@ -1330,6 +1341,7 @@ func _damage_player(atk: float, mul: float) -> bool:
 	_last_combat = time
 	p.hp -= dmg
 	p.hurt = 0.2
+	_sfx("player_hurt")
 	combo = 0
 	_text(p.pos + Vector2(0, -26), "-%d" % dmg, Color("#ff5470"), false)
 	if p.hp <= 0.0:
@@ -1406,6 +1418,8 @@ func _apply_damage(e: Enemy, dmg: int, crit: bool, by_player: bool) -> void:
 	e.hit_flash = 0.12
 	var color := (Color("#ffc940") if crit else Color.WHITE) if by_player else Color("#c9b6ff")
 	_text(e.pos + Vector2(0, -e.radius - 8), ("%d!" if crit else "%d") % dmg, color, crit)
+	if by_player:
+		_sfx("crit" if crit else "hit")
 	if e.state == "idle":
 		e.state = "chase"
 
@@ -1449,6 +1463,7 @@ func _boss_phase_two(e: Enemy) -> void:
 
 func _kill_enemy(e: Enemy) -> void:
 	e.dead = true
+	_sfx("enemy_die")
 	profile.kills += 1
 	if e.role == "quest":
 		quest_event("kill_quest")
@@ -1752,6 +1767,7 @@ func _perform_attack(e: Enemy) -> void:
 			pass
 		"explode":
 			_blast(e.pos, EXPLODE_R, Color("#ff9a3c"))
+			_sfx("explode")
 			if e.pos.distance_to(p.pos) <= EXPLODE_R + PLAYER_RADIUS:
 				_damage_player(e.atk, 1.5)
 			# Tự nổ: chết, không cho EXP/đồ.
@@ -1845,12 +1861,14 @@ func _update_pickups(dt: float) -> void:
 				var gold: float = pk.value * (1.1 if Talents.has_sub(profile.talent, profile.talent_level, "economy", 1) else 1.0)
 				profile.gold += gold
 				_text(p.pos + Vector2(0, -30), "+%d vàng" % int(gold), Color("#ffc940"), false)
+				_sfx("pickup_gold")
 			elif pk.kind == "stone":
 				profile.stones += int(pk.value)
 				_text(p.pos + Vector2(0, -30), "+1 Đá Cường Hoá", Color("#9ec8ff"), false)
 			elif pk.kind == "item":
 				var res := Items.add_item(profile, pk.item)
 				_text(p.pos + Vector2(0, -44), Items.display_name(pk.item), Items.rarity_color(pk.item), true)
+				_sfx("pickup_item")
 				_events.append({"type": "item", "text": res.message, "rarity": pk.item.rarity})
 			else:
 				var heal := int(round(float(stats.max_hp) * pk.value))
@@ -2404,6 +2422,7 @@ func _check_rare_boss() -> void:
 	b.skill_cd = 2.0
 	_message("Lão Thụ Sương Mù thức giấc giữa Lõi Sương! (boss hiếm)", "bad")
 	say("rare_boss")
+	_sfx("boss_roar")
 
 
 func _update_rare(e: Enemy, dt: float) -> void:
@@ -2646,3 +2665,8 @@ func _auto_input(input: Dictionary) -> Dictionary:
 			out[key] = true
 			break
 	return out
+
+
+func _sfx(id: String) -> void:
+	if sfx.size() < 32:
+		sfx.append(id)
