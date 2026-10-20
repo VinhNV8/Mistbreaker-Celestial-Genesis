@@ -6,7 +6,8 @@ const Explore = preload("res://scripts/core/explore.gd")
 
 ## v1: prototype Chương 1. v2: MVP M1 thêm trang bị (EQ-20). v3: MVP M2 thêm Thiên phú, công trình (mục 4.8).
 ## v4: MVP M3 thêm lớp nhân vật, INT/LUK, điểm Đạo Tặc cướp (mục 5.9).
-const VERSION := 4
+## v5: MVP M4 thêm nhiều bản đồ, lưới từng vùng, boss theo id, Đá/Sắt, nhiệm vụ chương 2 (mục 6.5).
+const VERSION := 5
 
 var talent := ""
 var level := 1
@@ -55,6 +56,24 @@ var class_id := "kiem-khach"
 ## Thuộc tính Đạo Tặc cướp được, cũ → mới (DT-04: đầy thì bỏ phần tử đầu).
 var stolen: Array = []
 
+# --- v5: nhiều bản đồ (M4)
+var map_id := "1-1"
+## Map đã mở điểm dịch chuyển (MP-04).
+var unlocked_maps: Array = ["1-1"]
+## Lưới khai phá của các vùng KHÔNG đang đứng: {"<vùng>": [ô]}. `tiles` luôn là lưới của vùng hiện tại.
+var grids := {}
+## Vùng của lưới `tiles` hiện tại.
+var tiles_region := 1
+## Boss đã hạ (ngoài Sói Chúa dùng boss_defeated): {id: true}; mốc hồi sinh {id: play_seconds}.
+var bosses := {}
+var boss_respawn := {}
+var ore := 0.0
+var iron := 0.0
+## Nhiệm vụ chính chương 2: bước (0 = chưa nhận), số quái vùng 2 đã hạ.
+var quest := {"ch2": 0, "kills2": 0}
+## Kỹ năng sao chép đang dùng (Đạo Tặc, TP-39).
+var active_copy := ""
+
 
 func setup(talent_id: String, rng: Callable, now: float, class_name_id := "kiem-khach") -> void:
 	talent = talent_id
@@ -98,6 +117,16 @@ func to_dict() -> Dictionary:
 		"build_clock": build_clock,
 		"class_id": class_id,
 		"stolen": stolen,
+		"map_id": map_id,
+		"unlocked_maps": unlocked_maps,
+		"grids": grids,
+		"tiles_region": tiles_region,
+		"bosses": bosses,
+		"boss_respawn": boss_respawn,
+		"ore": ore,
+		"iron": iron,
+		"quest": quest,
+		"active_copy": active_copy,
 	}
 
 
@@ -170,7 +199,65 @@ func load_dict(d: Dictionary) -> bool:
 	stolen = []
 	for k in d.get("stolen", []):
 		stolen.append(str(k))
+
+	# v5 — save v4 trở xuống: đang ở Rừng Sương; Lõi Sương mở nếu đã hạ Sói Chúa.
+	map_id = str(d.get("map_id", "1-1"))
+	unlocked_maps = []
+	for m in d.get("unlocked_maps", ["1-1"]):
+		unlocked_maps.append(str(m))
+	if boss_defeated and not ("1-3" in unlocked_maps) and not d.has("unlocked_maps"):
+		unlocked_maps.append("1-3")
+	grids = {}
+	var g: Dictionary = d.get("grids", {})
+	for rid in g:
+		var arr: Array = []
+		for t in g[rid]:
+			arr.append({"id": int(t.id), "q": int(t.q), "r": int(t.r), "event": str(t.event), "status": str(t.status)})
+		grids[str(rid)] = arr
+	tiles_region = int(d.get("tiles_region", 1))
+	bosses = {}
+	var bd: Dictionary = d.get("bosses", {})
+	for k in bd:
+		bosses[str(k)] = bool(bd[k])
+	boss_respawn = {}
+	var br: Dictionary = d.get("boss_respawn", {})
+	for k in br:
+		boss_respawn[str(k)] = float(br[k])
+	ore = float(d.get("ore", 0.0))
+	iron = float(d.get("iron", 0.0))
+	var q: Dictionary = d.get("quest", {})
+	quest = {"ch2": int(q.get("ch2", 0)), "kills2": int(q.get("kills2", 0))}
+	active_copy = str(d.get("active_copy", ""))
 	return true
+
+
+## Lưới của một vùng (vùng hiện tại là `tiles`).
+func grid_of(region_id: int) -> Array:
+	if region_id == tiles_region:
+		return tiles
+	return grids.get(str(region_id), [])
+
+
+## Mọi lưới, để tính sản lượng lãnh địa cả các vùng không đang đứng.
+func all_grids() -> Array:
+	var out: Array = [tiles]
+	for rid in grids:
+		if int(rid) != tiles_region:
+			out.append(grids[rid])
+	return out
+
+
+## Đổi lưới hiện tại sang vùng khác (cất lưới cũ vào grids).
+func switch_grid(region_id: int, make_grid: Callable) -> void:
+	if region_id == tiles_region:
+		return
+	grids[str(tiles_region)] = tiles
+	if grids.has(str(region_id)):
+		tiles = grids[str(region_id)]
+		grids.erase(str(region_id))
+	else:
+		tiles = make_grid.call(region_id)
+	tiles_region = region_id
 
 
 static func _load_item(d: Dictionary) -> Dictionary:

@@ -2,7 +2,7 @@
 
 Game nhập vai hành động: nhận Thiên phú khi vào game, đánh quái lên cấp, vượt map, khai phá vùng đất bị sương mù che phủ.
 
-Trạng thái: Chương 1 chơi được trên Godot 4.7.2. Đang làm **MVP**: đã xong M1 (trang bị, cường hoá), M2 (đủ 20 Thiên phú), G1 (hình pixel art sinh bằng code) và M3 (lớp Thợ Săn, 4 kỹ năng mỗi lớp, MP, né tránh, công thức chỉ số quái mới); đợt tiếp theo là M4 (Chương 2).
+Trạng thái: Chương 1 chơi được trên Godot 4.7.2. Đang làm **MVP**: đã xong M1 (trang bị, cường hoá), M2 (đủ 20 Thiên phú), G1 (hình pixel art sinh bằng code) và M3 (lớp Thợ Săn, 4 kỹ năng mỗi lớp, MP, né tránh, công thức chỉ số quái mới); đang làm đợt C1 (hoàn chỉnh Chương 1, [08](docs/08-chuong-1-hoan-chinh.md)), sau đó M4 (Chương 2).
 
 ## Thư mục
 
@@ -22,6 +22,7 @@ Trạng thái: Chương 1 chơi được trên Godot 4.7.2. Đang làm **MVP**: 
 | [docs/05-thien-phu-chi-tiet.md](docs/05-thien-phu-chi-tiet.md) | Thiết kế nội dung | 20 Thiên phú: hiệu ứng theo cấp, kỹ năng, tiến hoá 2 bậc, cộng hưởng, tương tác 4 lớp. Đã chốt Q17–Q21 |
 | [docs/06-ban-do-quai-boss.md](docs/06-ban-do-quai-boss.md) | Thiết kế nội dung | Công thức chỉ số; 9 vùng, môi trường, quái, tinh anh, boss chương, boss hiếm, đồ Cam. Sinh bằng script — xem đầu file. Đã chốt Q22–Q27 |
 | [docs/07-do-hoa-ke-hoach.md](docs/07-do-hoa-ke-hoach.md) | Đồ hoạ | Nghiên cứu, phong cách pixel art đã chốt, hạng mục AR-xx, kết quả G1. Sinh hình: `python tools/art/build_all.py` (skill `game-art`) |
+| [docs/08-chuong-1-hoan-chinh.md](docs/08-chuong-1-hoan-chinh.md) | Kế hoạch | Đợt C1: hoàn chỉnh Chương 1, kết hợp ghi chú Spec_Notes (N1–N7), hạng mục C1-xx |
 | [docs/04-ke-hoach-tien-do.md](docs/04-ke-hoach-tien-do.md) | **Theo dõi tiến độ** | 173 hạng mục của kịch bản: đã làm / một phần / chưa làm, đợt sẽ làm, việc cần làm từng đợt, quyết định đang chờ |
 
 ## Chạy nhanh

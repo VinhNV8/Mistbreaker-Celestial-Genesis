@@ -19,6 +19,7 @@ var camera: Camera2D
 
 var _trees: Array = []
 var _patches: Array = []
+var _decor_map := ""
 var _font: Font
 var _art := false
 ## Theo dõi từng thực thể giữa các frame: vị trí cũ (để biết đang chạy), hướng, lúc đổi hoạt ảnh.
@@ -31,18 +32,28 @@ func _ready() -> void:
 	_font = UiTheme.font()
 	_art = SpriteLib.has_sprite(HERO_SPRITE)
 	texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+
+
+## M4: cây cối, mảng cỏ sinh lại theo từng map (cùng map luôn ra cùng một cảnh).
+func _build_decor() -> void:
+	_decor_map = world.map_id
+	_trees = []
+	_patches = []
 	var rng := RandomNumberGenerator.new()
-	rng.seed = 20261019
-	var size := GameWorld.WORLD_SIZE
+	rng.seed = 20261019 if world.map_id == "1-1" else hash(world.map_id)
+	var size: Vector2 = world.world_size
+	var safe: Vector2 = world.safe_pos
+	var path_end: float = world.arena_pos.x if world.map.arena != null else size.x
+	var want: int = int(world.map.get("trees", 240))
 	var attempts := 0
-	while _trees.size() < 240 and attempts < 600:
+	while _trees.size() < want and attempts < want * 3:
 		attempts += 1
 		var pos := Vector2(rng.randf() * size.x, rng.randf() * size.y)
-		if pos.distance_to(GameWorld.VILLAGE_POS) < GameWorld.VILLAGE_R + 70.0:
+		if pos.distance_to(safe) < world.safe_r + 70.0:
 			continue
-		if pos.distance_to(GameWorld.ARENA_POS) < GameWorld.ARENA_R + 60.0:
+		if world.map.arena != null and pos.distance_to(world.arena_pos) < world.arena_r + 60.0:
 			continue
-		if absf(pos.y - GameWorld.VILLAGE_POS.y) < 90.0 and pos.x > GameWorld.VILLAGE_POS.x and pos.x < GameWorld.ARENA_POS.x:
+		if absf(pos.y - safe.y) < 90.0 and pos.x > safe.x and pos.x < path_end:
 			continue
 		_trees.append({"pos": pos, "r": 16.0 + rng.randf() * 22.0, "shade": rng.randf(), "variant": rng.randi() % 4})
 	for i in 160:
@@ -68,10 +79,17 @@ func _view_rect() -> Rect2:
 func _draw() -> void:
 	if world == null:
 		return
+	if _decor_map != world.map_id:
+		_build_decor()
+		_track = {}
+		_corpses = []
+	if world.travel_timer > 0.0:
+		return
 	var view := _view_rect().grow(120.0)
 	_draw_ground(view)
 	_draw_village_ground()
-	_draw_arena()
+	if world.map.arena != null:
+		_draw_arena()
 	if _art:
 		_draw_sorted(view)
 	else:
@@ -108,9 +126,9 @@ func _draw() -> void:
 
 # ---------------------------------------------------------------- nền
 func _draw_ground(view: Rect2) -> void:
-	var size := GameWorld.WORLD_SIZE
+	var size: Vector2 = world.world_size
 	var whole := PackedVector2Array([Vector2.ZERO, Vector2(size.x, 0), size, Vector2(0, size.y)])
-	if not (_art and SpriteLib.fill_polygon(self, whole, "tile-grass-0")):
+	if not (_art and SpriteLib.fill_polygon(self, whole, str(world.map.get("ground", "tile-grass-0")))):
 		draw_rect(Rect2(Vector2.ZERO, size), Color("#1c3226"))
 	for p in _patches:
 		if view.has_point(p.pos):
@@ -119,14 +137,16 @@ func _draw_ground(view: Rect2) -> void:
 			else:
 				draw_circle(p.pos, p.r, Color(0.27, 0.43, 0.27, 0.18) if p.shade > 0.5 else Color(0.04, 0.1, 0.07, 0.25))
 	# lối mòn từ làng tới hang
-	var v := GameWorld.VILLAGE_POS
-	var path := Rect2(v.x, v.y - 45.0, GameWorld.ARENA_POS.x - v.x, 90.0)
+	var v: Vector2 = world.safe_pos
+	var path_end: float = world.arena_pos.x if world.map.arena != null else size.x
+	var path := Rect2(v.x, v.y - 45.0, path_end - v.x, 90.0)
 	var path_pts := PackedVector2Array([path.position, Vector2(path.end.x, path.position.y), path.end, Vector2(path.position.x, path.end.y)])
 	if not (_art and SpriteLib.fill_polygon(self, path_pts, "tile-dirt", Color(1, 1, 1, 0.55))):
 		draw_rect(path, Color(0.47, 0.39, 0.27, 0.22))
 	# sương mù dày dần về phía đông
-	var clear := Color(0.16, 0.08, 0.27, 0.0)
-	var dense := Color(0.16, 0.08, 0.27, 0.45)
+	var tint: Color = world.map.get("tint", Color(0.16, 0.08, 0.27))
+	var clear := Color(tint, 0.0)
+	var dense := Color(tint, float(world.map.get("fog", 0.45)))
 	draw_polygon(whole, PackedColorArray([clear, dense, dense, clear]))
 
 
@@ -138,24 +158,39 @@ func _circle_points(c: Vector2, r: float, n := 48) -> PackedVector2Array:
 
 
 func _draw_village_ground() -> void:
-	var c := GameWorld.VILLAGE_POS
-	var r := GameWorld.VILLAGE_R
-	if not (_art and SpriteLib.fill_polygon(self, _circle_points(c, r), "tile-village")):
+	var c: Vector2 = world.safe_pos
+	var r: float = world.safe_r
+	var kind: String = world.map.safe.kind
+	var tile := "tile-town" if kind == "town" and SpriteLib.has_env("tile-town") else "tile-village"
+	if not (_art and SpriteLib.fill_polygon(self, _circle_points(c, r), tile)):
 		draw_circle(c, r, Color("#4a3b2a"))
-	draw_arc(c, r, 0.0, TAU, 64, Color("#7a5f3e"), 5.0, true)
-	_label("Làng Thanh Thạch", c + Vector2(0, -r - 12.0), Color("#f3e3c3"), 16)
+	draw_arc(c, r, 0.0, TAU, 64, Color("#9aa0a6") if kind == "town" else Color("#7a5f3e"), 7.0 if kind == "town" else 5.0, true)
+	_label(str(world.map.safe.name), c + Vector2(0, -r - 12.0), Color("#f3e3c3"), 16)
+
+
+## Vị trí nhà trong vùng an toàn theo loại.
+func _safe_buildings() -> Array:
+	var kind: String = world.map.safe.kind
+	if kind == "camp":
+		return [[Vector2(-50, -40), "hut"]]
+	if kind == "town":
+		return [[Vector2(-150, -120), "house-stone"], [Vector2(-170, 30), "house-stone"], [Vector2(-60, 150), "house-stone"],
+			[Vector2(70, -170), "house-stone"], [Vector2(130, 120), "tower"], [Vector2(-40, -200), "tower"]]
+	return [[Vector2(-90, -70), "hut"], [Vector2(-110, 40), "hut"], [Vector2(-30, 100), "hut"], [Vector2(60, -105), "hut"]]
 
 
 func _draw_village() -> void:
-	var c := GameWorld.VILLAGE_POS
-	for off in [Vector2(-90, -70), Vector2(-110, 40), Vector2(-30, 100), Vector2(60, -105)]:
-		var t: Vector2 = c + off
+	var c: Vector2 = world.safe_pos
+	for b in _safe_buildings():
+		var t: Vector2 = c + b[0]
 		draw_colored_polygon(PackedVector2Array([t + Vector2(0, -26), t + Vector2(-24, 16), t + Vector2(24, 16)]), Color("#b08d57"))
 	_draw_stele_fallback()
 
 
 func _draw_stele_fallback() -> void:
-	var c := GameWorld.VILLAGE_POS
+	if world.map.safe.kind != "village":
+		return
+	var c: Vector2 = world.safe_pos
 	var glow := 0.5 + 0.5 * sin(world.time * 2.0)
 	draw_circle(c, 46.0, Color(1.0, 0.86, 0.55, 0.12 + glow * 0.12))
 	draw_rect(Rect2(c + Vector2(-12, -34), Vector2(24, 50)), Color("#8c8f99"))
@@ -163,12 +198,15 @@ func _draw_stele_fallback() -> void:
 
 
 func _draw_arena() -> void:
-	var c := GameWorld.ARENA_POS
-	if not (_art and SpriteLib.fill_polygon(self, _circle_points(c, GameWorld.ARENA_R, 64), "tile-void", Color(1, 1, 1, 0.85))):
-		draw_circle(c, GameWorld.ARENA_R, Color("#251d33"))
-	draw_arc(c, GameWorld.ARENA_R, 0.0, TAU, 96, Color(0.63, 0.51, 0.86, 0.35), 3.0, true)
-	var title := "Hang Sói Chúa (đã chinh phục)" if world.profile.boss_defeated else "Hang Sói Chúa"
-	_label(title, c + Vector2(0, -GameWorld.ARENA_R - 12.0), Color("#d8c8ff"), 16)
+	var c: Vector2 = world.arena_pos
+	var r: float = world.arena_r
+	if not (_art and SpriteLib.fill_polygon(self, _circle_points(c, r, 64), "tile-void", Color(1, 1, 1, 0.85))):
+		draw_circle(c, r, Color("#251d33"))
+	var locked: bool = world.boss() != null
+	draw_arc(c, r, 0.0, TAU, 96, Color(1.0, 0.33, 0.44, 0.7) if locked else Color(0.63, 0.51, 0.86, 0.35), 5.0 if locked else 3.0, true)
+	var name: String = world.map.arena.name
+	var title := ("%s (đã chinh phục)" % name) if world.is_boss_defeated(world.arena_boss()) else name
+	_label(title, c + Vector2(0, -r - 12.0), Color("#d8c8ff"), 16)
 
 
 func _draw_trees(view: Rect2) -> void:
@@ -186,11 +224,13 @@ func _draw_sorted(view: Rect2) -> void:
 	for t in _trees:
 		if view.has_point(t.pos):
 			items.append([t.pos.y + t.r * 0.6, _draw_tree_sprite.bind(t)])
-	var c := GameWorld.VILLAGE_POS
-	for off in [Vector2(-90, -70), Vector2(-110, 40), Vector2(-30, 100), Vector2(60, -105)]:
-		var at: Vector2 = c + off + Vector2(0, 16)
-		items.append([at.y, _draw_env_at.bind("hut", at)])
-	items.append([c.y + 16.0, _draw_stele.bind(c + Vector2(0, 16))])
+	var c: Vector2 = world.safe_pos
+	for b in _safe_buildings():
+		var at: Vector2 = c + b[0] + Vector2(0, 16)
+		var id: String = b[1] if SpriteLib.has_env(b[1]) else "hut"
+		items.append([at.y, _draw_env_at.bind(id, at)])
+	if world.map.safe.kind == "village":
+		items.append([c.y + 16.0, _draw_stele.bind(c + Vector2(0, 16))])
 	for h in world.herbs:
 		if h.respawn <= 0.0:
 			items.append([h.pos.y, _draw_env_at.bind("herb", h.pos)])
@@ -488,8 +528,10 @@ func _flashed(e) -> bool:
 
 # ---------------------------------------------------------------- hình khối tạm (khi chưa có hình)
 func _draw_gate() -> void:
-	var x := GameWorld.GATE_X
-	var h := GameWorld.WORLD_SIZE.y
+	if world.gate_x == INF:
+		return
+	var x: float = world.gate_x
+	var h: float = world.world_size.y
 	var a := Color(0.47, 0.35, 0.78, 0.0)
 	var b := Color(0.47, 0.35, 0.78, 0.55)
 	var c := Color(0.16, 0.1, 0.27, 0.92)
@@ -498,7 +540,7 @@ func _draw_gate() -> void:
 	for i in 14:
 		var y := fposmod(i * 131.0 + world.time * 30.0, h)
 		draw_circle(Vector2(x + 30.0 + sin(world.time + i) * 20.0, y), 50.0, Color(0.75, 0.67, 1.0, 0.12))
-	_label("Sương mù Hư Vô", Vector2(x + 50.0, GameWorld.VILLAGE_POS.y - 70.0), Color("#e6dcff"), 15)
+	_label("Sương mù Hư Vô", Vector2(x + 50.0, world.safe_pos.y - 70.0), Color("#e6dcff"), 15)
 
 
 func _draw_pickups() -> void:

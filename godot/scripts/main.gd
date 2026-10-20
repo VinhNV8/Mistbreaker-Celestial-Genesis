@@ -13,6 +13,7 @@ const StatsPanel = preload("res://scripts/ui/stats_panel.gd")
 const MapPanel = preload("res://scripts/ui/map_panel.gd")
 const InventoryPanel = preload("res://scripts/ui/inventory_panel.gd")
 const TalentPanel = preload("res://scripts/ui/talent_panel.gd")
+const WorldMapPanel = preload("res://scripts/ui/world_map_panel.gd")
 const Talents = preload("res://scripts/data/talents.gd")
 const Items = preload("res://scripts/core/items.gd")
 const Screens = preload("res://scripts/ui/screens.gd")
@@ -36,6 +37,7 @@ const KEY_ACTIONS := {
 	"toggle_map": [KEY_M, KEY_TAB],
 	"toggle_inventory": [KEY_I, KEY_B],
 	"toggle_talent": [KEY_T],
+	"toggle_world": [KEY_N],
 	"potion": [KEY_Q],
 	"close_panel": [KEY_ESCAPE],
 }
@@ -47,6 +49,7 @@ var stats_panel: StatsPanel
 var map_panel: MapPanel
 var inventory_panel: InventoryPanel
 var talent_panel: TalentPanel
+var world_panel: WorldMapPanel
 ## Smoke test gắn bot vào đây để thay cho bàn phím/chuột.
 var bot := Callable()
 
@@ -151,7 +154,7 @@ func _input(event: InputEvent) -> void:
 		_last_mouse_move = Time.get_ticks_msec()
 	if world == null or _victory != null:
 		return
-	for pair in [["toggle_stats", stats_panel], ["toggle_map", map_panel], ["toggle_inventory", inventory_panel], ["toggle_talent", talent_panel]]:
+	for pair in [["toggle_stats", stats_panel], ["toggle_map", map_panel], ["toggle_inventory", inventory_panel], ["toggle_talent", talent_panel], ["toggle_world", world_panel]]:
 		if event.is_action_pressed(pair[0]):
 			var target = pair[1]
 			for panel in _panels():
@@ -166,7 +169,7 @@ func _input(event: InputEvent) -> void:
 
 
 func _panels() -> Array:
-	return [stats_panel, map_panel, inventory_panel, talent_panel]
+	return [stats_panel, map_panel, inventory_panel, talent_panel, world_panel]
 
 
 func _any_panel_open() -> bool:
@@ -186,7 +189,7 @@ func _process(delta: float) -> void:
 	for ev in world.drain_events():
 		_handle_event(ev)
 	_camera.position = world.player.pos
-	_vignette.modulate.a = 0.45 + 0.35 * world.player.pos.x / GameWorld.WORLD_SIZE.x
+	_vignette.modulate.a = 0.45 + 0.35 * world.player.pos.x / world.world_size.x
 	_freeze_tint.visible = world.freeze_timer > 0.0
 	hud.update_from(world)
 	_save_timer += delta
@@ -225,12 +228,29 @@ func _handle_event(ev: Dictionary) -> void:
 			_persist()
 		"tile":
 			_persist()
+		"map":
+			_fit_camera()
+			_camera.position = world.player.pos
+			_camera.reset_smoothing()
+			_persist()
 		"item":
 			hud.log_message(ev.text, "good" if ev.rarity in ["blue", "purple", "orange"] else "info")
 		"victory":
 			_persist()
-			_victory = Screens.victory(world, _close_victory, _go_title)
+			_victory = Screens.victory(world, _after_victory, _go_title)
 			_ui.add_child(_victory)
+
+
+## MP-06: cảnh kết chương — mở bản đồ lục địa, vùng tiếp theo sáng lên.
+func _after_victory() -> void:
+	_close_victory()
+	world_panel.intro = "Ánh sáng từ Bia Đá lan khắp Rừng Sương. Phía đông, Đồng Bằng Gió Hú đang chờ… Lõi Sương đã mở."
+	world_panel.open(world)
+
+
+func _fit_camera() -> void:
+	_camera.limit_right = int(world.world_size.x)
+	_camera.limit_bottom = int(world.world_size.y)
 
 
 func _close_victory() -> void:
@@ -335,6 +355,9 @@ func _start_world(p: Profile) -> void:
 	_ui.add_child(inventory_panel)
 	talent_panel = TalentPanel.new()
 	_ui.add_child(talent_panel)
+	world_panel = WorldMapPanel.new()
+	_ui.add_child(world_panel)
+	_fit_camera()
 	map_panel.nest_started.connect(func(): hud.log_message("Thủ lĩnh ổ quái đã xuất hiện trước mặt bạn!", "bad"))
 	_camera.position = world.player.pos
 	_camera.reset_smoothing()
@@ -342,7 +365,7 @@ func _start_world(p: Profile) -> void:
 
 func _end_session() -> void:
 	_close_victory()
-	for n in [hud, stats_panel, map_panel, inventory_panel, talent_panel]:
+	for n in [hud, stats_panel, map_panel, inventory_panel, talent_panel, world_panel]:
 		if n != null:
 			n.queue_free()
 	hud = null
@@ -350,6 +373,7 @@ func _end_session() -> void:
 	map_panel = null
 	inventory_panel = null
 	talent_panel = null
+	world_panel = null
 	world = null
 	_view.world = null
 	_view.visible = false

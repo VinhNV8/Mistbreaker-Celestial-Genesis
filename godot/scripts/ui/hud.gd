@@ -10,6 +10,7 @@ const UiTheme = preload("res://scripts/ui/ui_theme.gd")
 const Monsters = preload("res://scripts/data/monsters.gd")
 const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
 const Classes = preload("res://scripts/data/classes.gd")
+const Maps = preload("res://scripts/data/maps.gd")
 
 var _tl: PanelContainer
 var _level: Label
@@ -53,6 +54,10 @@ var _extra: Label
 var _log: VBoxContainer
 var _banner: Label
 var _dead: ColorRect
+var _map_name: Label
+var _obj_title: Label
+var _travel: ColorRect
+var _travel_label: Label
 
 
 func _ready() -> void:
@@ -90,21 +95,26 @@ func _ready() -> void:
 	add_child(_tl)
 
 	_tr = PanelContainer.new()
+	var trv := UiTheme.vbox(2)
 	_resources = UiTheme.label("")
-	_tr.add_child(_resources)
+	trv.add_child(_resources)
+	_map_name = UiTheme.label("", "Small")
+	trv.add_child(_map_name)
+	_tr.add_child(trv)
 	add_child(_tr)
 
 	_obj = PanelContainer.new()
 	_obj.custom_minimum_size.x = 290
 	var ov := UiTheme.vbox(4)
 	_obj.add_child(ov)
-	ov.add_child(UiTheme.label("CHƯƠNG 1 · THỨC TỈNH", "Eyebrow"))
+	_obj_title = UiTheme.label("CHƯƠNG 1 · THỨC TỈNH", "Eyebrow")
+	ov.add_child(_obj_title)
 	for i in 3:
 		var l := UiTheme.label("", "", 266)
 		l.add_theme_font_size_override("font_size", 14)
 		_objectives.append(l)
 		ov.add_child(l)
-	ov.add_child(UiTheme.label("M: Bản đồ · I: Túi đồ · C: Chỉ số · T: Thiên phú", "Small"))
+	ov.add_child(UiTheme.label("M: Khai phá · N: Lục địa · I: Túi đồ · C: Chỉ số · T: Thiên phú", "Small", 266))
 	add_child(_obj)
 
 	_boss_box = UiTheme.vbox(4)
@@ -170,6 +180,19 @@ func _ready() -> void:
 	dl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_dead.add_child(dl)
 	add_child(_dead)
+
+	# MP-03: màn hình đi đường
+	_travel = ColorRect.new()
+	_travel.color = Color(0.03, 0.04, 0.06, 0.92)
+	_travel.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	_travel_label = UiTheme.label("", "HudLabel")
+	_travel_label.add_theme_font_override("font", UiTheme.bold_font())
+	_travel_label.add_theme_font_size_override("font_size", 30)
+	_travel_label.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	_travel_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_travel_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_travel.add_child(_travel_label)
+	add_child(_travel)
 
 	_ignore_mouse(self)
 
@@ -351,7 +374,18 @@ func update_from(w: GameWorld) -> void:
 		_boss_name.text = boss.name + tags
 		_boss_hp.value = maxf(0.0, boss.hp) / boss.max_hp
 		_boss_poise.value = boss.poise / boss.max_poise
-	_dead.visible = pl.dead_timer > 0.0
+	_dead.visible = pl.dead_timer > 0.0 and w.travel_timer <= 0.0
+	_travel.visible = w.travel_timer > 0.0
+	if _travel.visible:
+		var dest: Dictionary = Maps.get_map(w.travel_target)
+		_travel_label.text = "Đang lên đường tới %s…\n%.1f giây" % [dest.name, w.travel_timer]
+	var m: Dictionary = w.map
+	_map_name.text = "%s · cấp %d–%d" % [m.name, m.levels[0], m.levels[1]]
+	if w.challenge_warning(w.map_id) != "":
+		_map_name.text += " · Vượt ải: EXP ×2"
+		_map_name.add_theme_color_override("font_color", UiTheme.BAD)
+	else:
+		_map_name.remove_theme_color_override("font_color")
 	_layout()
 
 

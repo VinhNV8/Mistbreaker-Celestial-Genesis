@@ -12,7 +12,9 @@ const Items = preload("res://scripts/core/items.gd")
 const ItemData = preload("res://scripts/data/items.gd")
 const Classes = preload("res://scripts/data/classes.gd")
 const RngUtil = preload("res://scripts/core/rng_util.gd")
+const Maps = preload("res://scripts/data/maps.gd")
 
+## Toạ độ map 1-1 (Rừng Sương). Code dùng các biến theo map (world_size, safe_pos, …); hằng số giữ cho test và tham chiếu.
 const WORLD_SIZE := Vector2(2600, 1600)
 const VILLAGE_POS := Vector2(230, 800)
 const VILLAGE_R := 170.0
@@ -122,6 +124,15 @@ const STEAL_FIELD := 0.03
 const STEAL_ELITE := 0.30
 const STEAL_LEVEL_GAP := 5
 const STEAL_BOSS_POINTS := 3
+
+# --- MVP M4: nhiều bản đồ (03-mvp-spec mục 6.2)
+## MP-03: thời gian đi đường giữa 2 map.
+const TRAVEL_TIME := 4.0
+## MP-05: thử thách vượt ải.
+const CHALLENGE_GAP := 5
+## NV-25: quái thấp hơn từ 10 cấp chỉ cho 10% EXP.
+const LOW_LEVEL_GAP := 10
+const LOW_LEVEL_EXP := 0.1
 
 
 class PlayerState:
@@ -299,6 +310,20 @@ var blasts: Array = []
 var combo := 0
 var time := 0.0
 
+# M4: map hiện tại
+var map_id := "1-1"
+var map: Dictionary = {}
+var world_size := WORLD_SIZE
+var safe_pos := VILLAGE_POS
+var safe_r := VILLAGE_R
+var arena_pos := ARENA_POS
+var arena_r := ARENA_R
+## Không có tường thì INF.
+var gate_x := GATE_X
+## MP-03: đang đi đường tới travel_target (giây còn lại).
+var travel_timer := 0.0
+var travel_target := ""
+
 var _events: Array = []
 var _combo_timer := 0.0
 var _next_id := 1
@@ -316,9 +341,41 @@ func _init(p, rng: Callable) -> void:
 	profile = p
 	_rng = rng
 	stats = _derive()
-	player.pos = VILLAGE_POS + Vector2(60, 0)
 	player.hp = stats.max_hp
 	player.mp = stats.max_mp
+	_load_map(profile.map_id if Maps.MAPS.has(profile.map_id) else "1-1")
+
+
+## Dựng map: vị trí, quái, thảo dược, rương, thú cưng (MP-01, MP-07).
+func _load_map(id: String) -> void:
+	map_id = id
+	map = Maps.get_map(id)
+	profile.map_id = id
+	if not (id in profile.unlocked_maps):
+		profile.unlocked_maps.append(id)
+	world_size = map.size
+	safe_pos = map.safe.pos
+	safe_r = float(map.safe.r)
+	if map.arena != null:
+		arena_pos = map.arena.pos
+		arena_r = float(map.arena.r)
+	else:
+		arena_pos = Vector2(-99999, -99999)
+		arena_r = 0.0
+	gate_x = (arena_pos.x - arena_r - 60.0) if map.gate else INF
+	enemies = []
+	projectiles = []
+	shots = []
+	rains = []
+	traps = []
+	blasts = []
+	pickups = []
+	allies = []
+	herbs = []
+	chests = []
+	freeze_timer = 0.0
+	slowmo_timer = 0.0
+	player.pos = safe_pos + Vector2(60, 0)
 	for _i in Config.MAX_FIELD_MOBS:
 		_spawn_field_mob()
 	for _i in HERB_NODES:
@@ -333,6 +390,12 @@ func _init(p, rng: Callable) -> void:
 		_add_ally("pet", str(pet.kind), int(pet.level), player.pos)
 
 
+## Cấp quái theo vị trí trên map hiện tại.
+func level_at(x: float) -> int:
+	return Maps.level_at(map, x)
+
+
+## Cấp quái theo vị trí trên map 1-1 (giữ cho test cũ).
 static func zone_level(x: float) -> int:
 	return clampi(1 + int(floor((x - 450.0) / 260.0)), 1, 6)
 
@@ -358,8 +421,107 @@ func explored() -> float:
 	return Explore.explored_ratio(profile.tiles)
 
 
+## Tường sương mù trước hang boss đã mở chưa (map không có tường thì luôn mở).
 func boss_unlocked() -> bool:
-	return profile.boss_defeated or (profile.level >= Config.BOSS_LEVEL_REQ and explored() >= Config.EXPLORE_REQ)
+	if not map.gate:
+		return true
+	if map_id == "1-1":
+		return profile.boss_defeated or (profile.level >= Config.BOSS_LEVEL_REQ and explored() >= Config.EXPLORE_REQ)
+	return gate_open(map_id)
+
+
+## Điều kiện mở tường các map sau (M4.2+).
+func gate_open(_id: String) -> bool:
+	return true
+
+
+func arena_boss() -> String:
+	return str(map.arena.boss) if map.arena != null else ""
+
+
+func is_boss_defeated(boss_id: String) -> bool:
+	return profile.boss_defeated if boss_id == "boss" else bool(profile.bosses.get(boss_id, false))
+
+
+# ------------------------------------------------------------------ M4.1: di chuyển giữa map (MP-02…05)
+
+
+## Lý do không vào được map; "" nếu được. Map đã mở điểm dịch chuyển thì luôn vào được.
+func travel_blocker(id: String) -> String:
+	if not Maps.MAPS.has(id):
+		return "Vùng đất này chưa mở trong bản thử nghiệm."
+	if id == map_id:
+		return "Bạn đang ở đây."
+	if id in profile.unlocked_maps:
+		return ""
+	var m: Dictionary = Maps.MAPS[id]
+	var req := map_requirement(id)
+	if req != "":
+		return req
+	if profile.level + CHALLENGE_GAP < int(m.levels[0]):
+		return "Cần cấp %d (vượt ải cho phép thấp hơn tối đa %d cấp)." % [int(m.levels[0]) - CHALLENGE_GAP, CHALLENGE_GAP]
+	return ""
+
+
+## Điều kiện cốt truyện để mở map lần đầu.
+func map_requirement(id: String) -> String:
+	match id:
+		"1-3":
+			return "" if profile.boss_defeated else "Hạ Sói Chúa Hư Vô để mở Lõi Sương."
+	return ""
+
+
+## Cảnh báo thử thách vượt ải (MP-05); "" nếu đủ cấp.
+func challenge_warning(id: String) -> String:
+	if not Maps.MAPS.has(id):
+		return ""
+	var lo: int = int(Maps.MAPS[id].levels[0])
+	if profile.level < lo:
+		return "Thử thách vượt ải: quái ở đây mạnh hơn bạn tới %d cấp. Hạ quái cao hơn bạn từ %d cấp được EXP ×2." % [lo - profile.level, CHALLENGE_GAP]
+	return ""
+
+
+func in_combat() -> bool:
+	return time - _last_combat < OUT_OF_COMBAT
+
+
+func travel_seconds() -> float:
+	# TP-23: Chân Không Biết Mỏi đi đường nhanh hơn 10% → 15%.
+	return TRAVEL_TIME * ((1.0 - tv(0.1, 0.15)) if profile.talent == "chan-khong" else 1.0)
+
+
+func travel(id: String) -> Dictionary:
+	var res := {"ok": false, "message": ""}
+	var block := travel_blocker(id)
+	if block == "" and boss() != null:
+		block = "Không thể rời đi khi boss đang ở trước mặt."
+	elif block == "" and in_combat():
+		block = "Đang giao chiến — thoát khỏi quái 3 giây rồi mới lên đường."
+	elif block == "" and player.dead_timer > 0.0:
+		block = "Đợi hồi sinh đã."
+	if block != "":
+		res.message = block
+		_message(block, "bad")
+		return res
+	travel_target = id
+	travel_timer = travel_seconds()
+	res.ok = true
+	res.message = "Lên đường tới %s…" % Maps.MAPS[id].name
+	_message(res.message, "info")
+	return res
+
+
+func _arrive() -> void:
+	var id := travel_target
+	travel_target = ""
+	travel_timer = 0.0
+	var first: bool = not (id in profile.unlocked_maps)
+	_load_map(id)
+	_events.append({"type": "map", "map_id": id, "first": first})
+	_message("Đã tới %s (cấp %d–%d).%s" % [map.name, map.levels[0], map.levels[1], " Mở điểm dịch chuyển." if first else ""], "good")
+	var warn := challenge_warning(id)
+	if warn != "":
+		_message(warn, "bad")
 
 
 func boss() -> Enemy:
@@ -398,6 +560,12 @@ func update(dt: float, input: Dictionary) -> void:
 	for key in Explore.tick_build_clock(profile, dt):
 		_on_built(key)
 
+	# MP-03: đang đi đường thì thế giới đứng yên.
+	if travel_timer > 0.0:
+		travel_timer -= dt
+		if travel_timer <= 0.0:
+			_arrive()
+		return
 	var p := player
 	if p.dead_timer > 0.0:
 		p.dead_timer -= dt
@@ -487,16 +655,16 @@ func _move_player(dt: float, input: Dictionary) -> void:
 		vel = p.dodge_dir * DODGE_SPEED
 	elif move.length() > 0.0:
 		vel = move / maxf(1.0, move.length()) * move_speed()
-	p.pos = (p.pos + vel * dt).clamp(Vector2.ONE * PLAYER_RADIUS, WORLD_SIZE - Vector2.ONE * PLAYER_RADIUS)
+	p.pos = (p.pos + vel * dt).clamp(Vector2.ONE * PLAYER_RADIUS, world_size - Vector2.ONE * PLAYER_RADIUS)
 	_enforce_gate()
 	_enforce_arena_lock()
 	if p.swing_kind == "dash" and p.swing > 0.0:
 		_dash_hits()
 
-	if boss_available() and boss() == null and p.pos.distance_to(ARENA_POS) < ARENA_R:
-		var b := spawn_enemy("boss", BOSS_LEVEL, ARENA_POS + Vector2(120, 0), {"role": "boss"})
+	if map.arena != null and boss_available() and boss() == null and p.pos.distance_to(arena_pos) < arena_r:
+		var b := spawn_enemy(arena_boss(), int(map.arena.level), arena_pos + Vector2(120, 0), {"role": "boss"})
 		b.state = "chase"
-		_message("Sói Chúa Hư Vô xuất hiện! Đánh vào thanh Phá Thế để làm nó choáng.", "bad")
+		_message("%s xuất hiện! Đánh vào thanh Phá Thế để làm nó choáng." % b.name, "bad")
 
 
 ## Chân Không Biết Mỏi: +10% tốc chạy khi không giao chiến.
@@ -509,8 +677,8 @@ func move_speed() -> float:
 
 func _enforce_gate() -> void:
 	var p := player
-	if not boss_unlocked() and p.pos.x > GATE_X:
-		p.pos.x = GATE_X
+	if not boss_unlocked() and p.pos.x > gate_x:
+		p.pos.x = gate_x
 		if _gate_msg_cd <= 0.0:
 			_message(
 				"Sương mù Hư Vô chặn đường: cần cấp %d và khai phá %d%% vùng đất (phím M)."
@@ -526,15 +694,20 @@ func _enforce_arena_lock() -> void:
 	if boss() == null:
 		return
 	var p := player
-	var off := p.pos - ARENA_POS
-	var limit := ARENA_R - PLAYER_RADIUS
+	var off := p.pos - arena_pos
+	var limit := arena_r - PLAYER_RADIUS
 	if off.length() > limit:
-		p.pos = ARENA_POS + off.normalized() * limit
+		p.pos = arena_pos + off.normalized() * limit
 
 
 ## Lần đầu: chưa hạ. Sau đó: hồi sinh khi đủ 10 phút chơi (EQ-07).
 func boss_available() -> bool:
-	return not profile.boss_defeated or profile.play_seconds >= profile.boss_respawn_at
+	var id := arena_boss()
+	if id == "":
+		return false
+	if id == "boss":
+		return not profile.boss_defeated or profile.play_seconds >= profile.boss_respawn_at
+	return not is_boss_defeated(id) or profile.play_seconds >= float(profile.boss_respawn.get(id, 0.0))
 
 
 func atk_speed() -> float:
@@ -867,7 +1040,7 @@ func talent_skill_name() -> String:
 func _leap() -> void:
 	var p := player
 	var dest := p.pos + (_aim - p.pos).limit_length(LEAP_DIST)
-	p.pos = dest.clamp(Vector2.ONE * PLAYER_RADIUS, WORLD_SIZE - Vector2.ONE * PLAYER_RADIUS)
+	p.pos = dest.clamp(Vector2.ONE * PLAYER_RADIUS, world_size - Vector2.ONE * PLAYER_RADIUS)
 	_enforce_gate()
 	p.swing = 0.3
 	p.swing_kind = "spin"
@@ -1047,13 +1220,13 @@ func _die() -> void:
 
 
 func _respawn() -> void:
-	player.pos = VILLAGE_POS + Vector2(60, 0)
+	player.pos = safe_pos + Vector2(60, 0)
 	player.hp = stats.max_hp
 	player.mp = stats.max_mp
 	player.dodge_time = 0.0
 	player.dash_time = 0.0
 	for e in enemies:
-		if e.role == "summon" or (e.role == "field" and e.pos.distance_to(VILLAGE_POS) < VILLAGE_R + 220.0):
+		if e.role == "summon" or (e.role == "field" and e.pos.distance_to(safe_pos) < safe_r + 220.0):
 			e.dead = true
 	projectiles = []
 
@@ -1139,8 +1312,8 @@ func _kill_enemy(e: Enemy) -> void:
 	e.dead = true
 	profile.kills += 1
 	var is_boss := e.role == "boss"
-	var base := float(boss_exp()) if is_boss else float(Formulas.mob_exp(e.level, e.elite))
-	add_exp(base * Formulas.combo_exp_multiplier(combo), true)
+	var base := float(boss_exp(e.level)) if is_boss else float(Formulas.mob_exp(e.level, e.elite))
+	add_exp(base * Formulas.combo_exp_multiplier(combo) * exp_level_mult(e.level), true)
 
 	var pk := Pickup.new()
 	pk.pos = e.pos
@@ -1166,10 +1339,14 @@ func _kill_enemy(e: Enemy) -> void:
 	if e.nest_tile_id >= 0 and Explore.conquer_tile(profile, e.nest_tile_id):
 		_events.append({"type": "tile", "tile_id": e.nest_tile_id})
 		_message("Đã chiếm Ổ quái! Lãnh địa mở rộng thêm một ô.", "good")
-	if is_boss:
+	if is_boss and e.kind != "boss":
+		_on_boss_killed(e)
+	elif is_boss:
 		var first_kill: bool = not profile.boss_defeated
 		profile.boss_defeated = true
 		profile.boss_respawn_at = profile.play_seconds + BOSS_RESPAWN_SEC
+		if not ("1-3" in profile.unlocked_maps):
+			profile.unlocked_maps.append("1-3")
 		for m in enemies:
 			if m.role == "bossMinion":
 				m.dead = true
@@ -1185,8 +1362,17 @@ func _kill_enemy(e: Enemy) -> void:
 
 
 ## CB-22: EXP boss = 0,3 × EXP lên cấp của boss.
-static func boss_exp() -> int:
-	return roundi(0.3 * Formulas.exp_to_next(BOSS_LEVEL))
+static func boss_exp(level := BOSS_LEVEL) -> int:
+	return roundi(0.3 * Formulas.exp_to_next(level))
+
+
+## MP-05: quái cao hơn từ 5 cấp → EXP ×2. NV-25: quái thấp hơn từ 10 cấp → 10% EXP.
+func exp_level_mult(mob_level: int) -> float:
+	if mob_level >= profile.level + CHALLENGE_GAP:
+		return 2.0
+	if mob_level <= profile.level - LOW_LEVEL_GAP:
+		return LOW_LEVEL_EXP
+	return 1.0
 
 
 ## TP-40 (CR-01): Đạo Tặc cướp thuộc tính khi hạ quái.
@@ -1210,6 +1396,21 @@ func _try_steal(e: Enemy) -> void:
 	var label := ", ".join(gained.map(func(x): return "+1 " + x))
 	_message("Đạo Tặc: cướp %s từ %s (%d/%d)." % [label, e.name, profile.stolen.size(), profile.level], "good")
 	_text(e.pos + Vector2(0, -e.radius - 30), label, Color("#ff5470"), true)
+
+
+## Boss các chương sau (M4.2+).
+func _on_boss_killed(e: Enemy) -> void:
+	var first: bool = not is_boss_defeated(e.kind)
+	profile.bosses[e.kind] = true
+	profile.boss_respawn[e.kind] = profile.play_seconds + BOSS_RESPAWN_SEC
+	for m in enemies:
+		if m.role == "bossMinion" or m.role == "bossClone":
+			m.dead = true
+	profile.essence += ESSENCE_PER_BOSS
+	profile.tinh_kim += 1
+	_message("%s đã ngã xuống! +%d Thiên Phú Tinh Hoa, +1 Tinh Kim." % [e.name, ESSENCE_PER_BOSS], "good")
+	if first:
+		_events.append({"type": "victory", "boss": e.kind})
 
 
 ## EQ-04/05/06: rơi trang bị và Đá Cường Hoá.
@@ -1264,7 +1465,7 @@ func _update_enemy(e: Enemy, dt: float) -> void:
 	# Quái thường không theo vào làng; quái ngoài hang không theo vào hang Sói Chúa.
 	var outsider := e.role != "boss" and e.role != "bossMinion"
 	var player_safe := (
-		p.pos.distance_to(VILLAGE_POS) < VILLAGE_R or (outsider and p.pos.distance_to(ARENA_POS) < ARENA_R)
+		p.pos.distance_to(safe_pos) < safe_r or (outsider and p.pos.distance_to(arena_pos) < arena_r)
 	)
 
 	match e.state:
@@ -1278,7 +1479,7 @@ func _update_enemy(e: Enemy, dt: float) -> void:
 			e.timer -= dt
 			if e.pos.distance_to(e.wander) < 8.0 or e.timer <= 0.0:
 				e.wander = (e.home + Vector2(_r() - 0.5, _r() - 0.5) * 240.0).clamp(
-					Vector2(40, 40), WORLD_SIZE - Vector2(40, 40)
+					Vector2(40, 40), world_size - Vector2(40, 40)
 				)
 				e.timer = 2.0 + _r() * 3.0
 			else:
@@ -1396,9 +1597,9 @@ func _move_toward(e: Enemy, target: Vector2, speed: float, dt: float) -> void:
 
 
 func _clamp_to_arena(pos: Vector2, radius: float) -> Vector2:
-	var limit := ARENA_R - radius
-	var off := pos - ARENA_POS
-	return pos if off.length() <= limit else ARENA_POS + off.normalized() * limit
+	var limit := arena_r - radius
+	var off := pos - arena_pos
+	return pos if off.length() <= limit else arena_pos + off.normalized() * limit
 
 
 func _separate_enemies() -> void:
@@ -1472,7 +1673,22 @@ func _update_spawning(dt: float) -> void:
 		_spawn_field_mob()
 
 
+## Mép phải vùng sinh quái: trước tường sương mù/hang, hoặc sát mép map.
+func _field_right() -> float:
+	if gate_x < INF:
+		return gate_x
+	if map.arena != null:
+		return arena_pos.x - arena_r - 60.0
+	return world_size.x - 80.0
+
+
 func _pick_kind(level: int) -> String:
+	var table = map.get("mobs", "legacy") if not map.is_empty() else "legacy"
+	if table is Array:
+		var opts: Array = table.filter(func(row): return level >= int(row[1]))
+		if opts.is_empty():
+			opts = table
+		return str(RngUtil.pick_weighted(opts, func(row): return float(row[2]), _rng)[0])
 	var r := _r()
 	if level <= 2:
 		return "mushroom" if level == 2 and r < 0.3 else "wolf"
@@ -1503,20 +1719,20 @@ func _elite_kind(level: int) -> String:
 
 func _random_field_pos() -> Vector2:
 	for _attempt in 20:
-		var pos := Vector2(480.0 + _r() * (GATE_X - 520.0), 80.0 + _r() * (WORLD_SIZE.y - 160.0))
-		if pos.distance_to(VILLAGE_POS) > VILLAGE_R + 120.0:
+		var pos := Vector2(480.0 + _r() * (_field_right() - 520.0), 80.0 + _r() * (world_size.y - 160.0))
+		if pos.distance_to(safe_pos) > safe_r + 120.0:
 			return pos
 	return Vector2(900, 400)
 
 
 func _spawn_field_mob() -> void:
 	for _attempt in 12:
-		var pos := Vector2(480.0 + _r() * (GATE_X - 520.0), 80.0 + _r() * (WORLD_SIZE.y - 160.0))
+		var pos := Vector2(480.0 + _r() * (_field_right() - 520.0), 80.0 + _r() * (world_size.y - 160.0))
 		if pos.distance_to(player.pos) < 450.0:
 			continue
-		if pos.distance_to(VILLAGE_POS) < VILLAGE_R + 150.0:
+		if pos.distance_to(safe_pos) < safe_r + 150.0:
 			continue
-		var level := zone_level(pos.x)
+		var level := level_at(pos.x)
 		var kind := _pick_kind(level)
 		var elite := false
 		if _r() < 0.06:
@@ -1532,7 +1748,7 @@ func _spawn_field_mob() -> void:
 func spawn_enemy(kind: String, level: int, pos: Vector2, opts: Dictionary = {}) -> Enemy:
 	var def: Dictionary = Monsters.DEFS[kind]
 	var elite: bool = opts.get("elite", false)
-	var is_boss := kind == "boss"
+	var is_boss: bool = opts.get("role", "") == "boss" or kind == "boss"
 	var e := Enemy.new()
 	e.id = _next_id
 	_next_id += 1
@@ -1547,7 +1763,8 @@ func spawn_enemy(kind: String, level: int, pos: Vector2, opts: Dictionary = {}) 
 	# CB-21, CB-22: chỉ số theo công thức tài liệu 06 mục 1.
 	var tier := "boss" if is_boss else ("tinhanh" if elite else "thuong")
 	var arch: String = def.get("elite_arch", def.arch) if elite else def.arch
-	var ms := Formulas.mob_stats(level, tier, arch, BOSS_LEVEL - 1 if is_boss else 0, Formulas.boss_hits(1) if is_boss else 0)
+	var chapter: int = int(map.arena.chapter) if is_boss and map.arena != null else 1
+	var ms := Formulas.mob_stats(level, tier, arch, level - 1 if is_boss else 0, Formulas.boss_hits(chapter) if is_boss else 0)
 	e.max_hp = ms.hp
 	e.hp = e.max_hp
 	e.atk = ms.atk
@@ -1659,10 +1876,10 @@ func upgrade_camp() -> Dictionary:
 func _start_nest(tile_id: int) -> void:
 	var level := clampi(maxi(2, profile.level), 1, 8)
 	var pos := (player.pos + Vector2.from_angle(player.facing) * 280.0).clamp(
-		Vector2(120, 120), Vector2(GATE_X - 40.0, WORLD_SIZE.y - 120.0)
+		Vector2(120, 120), Vector2(_field_right() - 40.0, world_size.y - 120.0)
 	)
-	if pos.distance_to(VILLAGE_POS) < VILLAGE_R + 80.0:
-		pos = VILLAGE_POS + Vector2(VILLAGE_R + 300.0, 0)
+	if pos.distance_to(safe_pos) < safe_r + 80.0:
+		pos = safe_pos + Vector2(safe_r + 300.0, 0)
 	# CB-13: thủ lĩnh là Sói Đầu Đàn hoặc Nấm Mẹ.
 	var kind := "mushroom" if level >= 5 and _r() < 0.5 else "wolf"
 	var guard := spawn_enemy(kind, level, pos, {"elite": true, "role": "nestGuard", "nest_tile_id": tile_id})
@@ -1814,6 +2031,6 @@ func _update_chests() -> void:
 		profile.stones += 2
 		var text := "Tìm thấy rương ẩn: +%d vàng, +2 Đá Cường Hoá" % gold
 		if _r() < 0.3:
-			var item := Items.new_item(profile, maxi(1, zone_level(c.pos.x)), "green" if _r() < 0.5 else "blue", _rng)
+			var item := Items.new_item(profile, maxi(1, level_at(c.pos.x)), "green" if _r() < 0.5 else "blue", _rng)
 			text += ", " + str(Items.add_item(profile, item).message).trim_suffix(".")
 		_message(text + ".", "good")

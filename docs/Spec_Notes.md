@@ -1,3 +1,7 @@
 - Có inventory chưa?
 - Nhân vật, quá chưa có hình ảnh -> cần build đầy đủ.
 - Chưa có plan cụ thể nên không rõ cái gì đã build cái gì chưa build.
+- Cần có chỗ để đặt tên nhân vật, chọn giới tính, build/chọn ngoại hình.....
+- Khi chém quái có vấn đề: Quái đứng sau nhân vật, thì không chém được, chỉ chém đằng trước....khi quay lại cũng không chém được... hãy check lại.
+- vàng, gỗ, đuốc là gì... ngoài ra -> các cái này có thể thay bàng icon được không?
+- Inventory -> sao ko có thông tin nhân vật trong Inventory nhỉ?

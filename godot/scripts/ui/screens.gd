@@ -264,7 +264,7 @@ static func victory(world, on_continue: Callable, on_title: Callable) -> Control
 	col.add_child(_centered("Thời gian chơi %d phút  ·  Cấp %d  ·  Quái đã hạ %d  ·  Khai phá %d/%d  ·  Thiên phú %s · %s" % [
 		roundi(p.play_seconds / 60.0), p.level, p.kills, Explore.owned_count(p.tiles), Explore.explore_total(p.tiles), t.rank, t.name
 	], "", 600))
-	col.add_child(_centered("Bạn đã đi hết nội dung hiện có. Chương 2 — Đồng Bằng Gió Hú — đang được phát triển.", "Small", 580))
+	col.add_child(_centered("Lõi Sương (cấp 7–10) đã mở — bấm Tiếp tục khám phá để xem bản đồ lục địa (phím N). Chương 2 — Đồng Bằng Gió Hú — đang được phát triển.", "Small", 580))
 	var row := _buttons(col)
 	var b1 := UiTheme.button("Tiếp tục khám phá", true)
 	b1.pressed.connect(on_continue)
