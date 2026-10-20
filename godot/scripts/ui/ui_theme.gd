@@ -24,6 +24,8 @@ static var GOLD_DARK := Color("#7a5a2a")
 static var _font: Font
 static var _bold: Font
 static var _theme: Theme
+## KT-07: hệ số cỡ chữ của theme (1.0 = mặc định). Đổi bằng set_font_scale() rồi gán lại theme cho cây UI.
+static var font_scale := 1.0
 
 
 ## Font hệ thống có đủ dấu tiếng Việt (Segoe UI trên Windows); thiếu thì Godot tự dùng font dự phòng.
@@ -73,7 +75,7 @@ static func get_theme() -> Theme:
 		return _theme
 	var t := Theme.new()
 	t.default_font = font()
-	t.default_font_size = 15
+	t.default_font_size = fs(15)
 
 	# DH-11: khung trang trí — bảng phủ (SolidPanel) khung lớn, khung HUD (PanelContainer) khung nhỏ.
 	t.set_stylebox("panel", "PanelContainer", FrameBox.new().setup(WOOD_HUD, 12, "small"))
@@ -90,7 +92,7 @@ static func get_theme() -> Theme:
 	for v in [["Muted", MUTED, 14], ["Small", MUTED, 12], ["Eyebrow", ACCENT, 13], ["Heading", TEXT, 22], ["Title", ACCENT, 60]]:
 		t.set_type_variation(v[0], "Label")
 		t.set_color("font_color", v[0], v[1])
-		t.set_font_size("font_size", v[0], v[2])
+		t.set_font_size("font_size", v[0], fs(v[2]))
 	t.set_font("font", "Heading", bold_font())
 	t.set_font("font", "Title", bold_font())
 	t.set_type_variation("HudLabel", "Label")
@@ -110,6 +112,19 @@ static func get_theme() -> Theme:
 		t.set_stylebox("fill", bar[0], box(bar[1], 5, 0, LINE, 0))
 	_theme = t
 	return t
+
+
+## Cỡ chữ đã nhân hệ số KT-07.
+static func fs(size: int) -> int:
+	return maxi(8, roundi(size * font_scale))
+
+
+## KT-07: đổi hệ số cỡ chữ (0,8–1,5); trả về theme mới — nơi gọi gán lại `theme` cho Control gốc.
+## Chỉ đổi cỡ chữ lấy từ theme; chỗ code tự đặt `add_theme_font_size_override` muốn theo thì dùng UiTheme.fs().
+static func set_font_scale(k: float) -> Theme:
+	font_scale = clampf(k, 0.8, 1.5)
+	_theme = null
+	return get_theme()
 
 
 static func _button_styles(t: Theme, type_name: String, normal: Color, hover: Color, text: Color,
