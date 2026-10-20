@@ -13,7 +13,9 @@ const Classes = preload("res://scripts/data/classes.gd")
 const Story = preload("res://scripts/data/story.gd")
 const Resources = preload("res://scripts/data/resources.gd")
 ## C1-03: tài nguyên hiện trên HUD (icon + số, rê chuột xem chú thích).
-const HUD_RESOURCES := ["gold", "wood", "torches", "stones", "essence"]
+const HUD_RESOURCES := ["gold", "wood", "torches", "stones", "essence", "ore", "iron"]
+## TB-11: Đá, Sắt chỉ hiện khi đã có.
+const HUD_OPTIONAL := ["ore", "iron"]
 const Maps = preload("res://scripts/data/maps.gd")
 const SkillBar = preload("res://scripts/ui/skill_bar.gd")
 ## DH-11: thứ tự ô trên thanh kỹ năng.
@@ -289,8 +291,11 @@ func update_from(w: GameWorld) -> void:
 	if p.torches < torch_cap:
 		var left := maxi(0, ceili(Explore.torch_regen_sec(p) - p.torch_timer))
 		torch_note = "  (+1 sau %d:%02d)" % [left / 60, left % 60]
-	for rid in HUD_RESOURCES:
+	for i in HUD_RESOURCES.size():
+		var rid: String = HUD_RESOURCES[i]
 		_res_labels[rid].text = str(Resources.value(p, rid)) + ("/%d" % torch_cap if rid == "torches" else "")
+		if rid in HUD_OPTIONAL:
+			_res_slots[i].visible = Resources.value(p, rid) > 0
 	_resources.text = ("Đuốc hồi%s · rê chuột vào icon để xem chú thích" % torch_note) if torch_note != "" else "Rê chuột vào icon để xem chú thích"
 
 	_update_quest(w)
@@ -388,11 +393,27 @@ static func _arrow(d: Vector2) -> String:
 func _update_quest(w: GameWorld) -> void:
 	var p = w.profile
 	var q := w.quest()
+	# M4.3: nhiệm vụ chính chương 2 khi đã tới vùng 2 (hoặc chương 1 đã xong).
+	var q2 := w.quest2()
+	if not q2.is_empty() and (q.is_empty() or int(w.map.get("region", 1)) == 2):
+		_obj_title.text = "CHƯƠNG 2 · NHIỆM VỤ %d/%d · Hạng %s" % [int(p.quest.ch2), Story.QUESTS2.size(), w.alliance_rank()]
+		var st2 := w.quest2_status()
+		_set_obj(0, "◆ " + str(q2.title) + ("  (%d/%d)" % st2 if int(st2[1]) > 1 else ""), UiTheme.GOLD)
+		_set_obj(1, str(q2.hint), UiTheme.TEXT)
+		var rt2 := Story.reward_text(q2.reward)
+		_set_obj(2, ("Thưởng: " + rt2) if rt2 != "" else "", UiTheme.MUTED)
+		return
+	if q.is_empty() and int(p.quest.ch2) >= Story.DONE2:
+		_obj_title.text = "CHƯƠNG 2 · HOÀN THÀNH ✓"
+		_set_obj(0, "Hạng Liên minh: %s (Bạc 10 ô, Vàng 25 ô vùng 2)" % w.alliance_rank(), UiTheme.TEXT)
+		_set_obj(1, "Chương 3: Sa Mạc Xích Sa — sắp mở (cần Lực chiến 5.000)", UiTheme.MUTED)
+		_set_obj(2, "", UiTheme.MUTED)
+		return
 	if q.is_empty():
 		_obj_title.text = "CHƯƠNG 1 · HOÀN THÀNH ✓"
 		_set_obj(0, "Luyện cấp ở Lõi Sương (bản đồ lục địa, phím N)", UiTheme.TEXT)
 		_set_obj(1, "Săn boss hiếm Lão Thụ Sương Mù — xuất hiện 2 lần mỗi ngày", UiTheme.MUTED)
-		_set_obj(2, "Chương 2: Đồng Bằng Gió Hú — sắp mở", UiTheme.MUTED)
+		_set_obj(2, "Chương 2: Đồng Bằng Gió Hú — cấp 10 + khai phá 60% vùng 1, đi bằng phím N", UiTheme.MUTED)
 		return
 	_obj_title.text = "CHƯƠNG 1 · NHIỆM VỤ %d/%d" % [p.quest_step, Story.QUESTS.size()]
 	var st := w.quest_status()

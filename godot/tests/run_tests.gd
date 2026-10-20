@@ -106,6 +106,10 @@ func _init() -> void:
 	_run("CB-T9 kháng hệ, phạt EXP quái thấp cấp", _test_m42_resist)
 	_run("TB-T1 Bộ Phong Hành, Mặt Nạ Huyền Ảnh, ảo ảnh hút đòn", _test_m42_sets)
 	_run("MP-T2 điều kiện mở vùng 2, thử thách vượt ải", _test_m42_unlock)
+	# M4.3 — Thành Biên Đài, lãnh địa vùng 2
+	_run("KP-T1 lưới vùng 2 45 ô, đổi lưới theo vùng, Khứu Giác", _test_m43_grid)
+	_run("KP-T1b Mỏ, Bến Cá, sản lượng mọi vùng, EXP offline, thợ rèn", _test_m43_buildings)
+	_run("KP-T2 nhiệm vụ chương 2, NPC, gián điệp Mạc Tam, hạng Liên minh", _test_m43_quest)
 	_run("TL-B2 cân bằng vùng 2: 2 lớp × 20 Thiên phú hạ Huyền Ảnh", _test_m42_balance)
 
 	print("")
@@ -1656,14 +1660,16 @@ func _test_gift_rates() -> void:
 # ------------------------------------------------------------------ M4.2 — vùng 2 chiến đấu (03-mvp-spec mục 6.6)
 
 
-func _region2_world(map_id := "2-1", class_id := "kiem-khach", talent := "tay-nhanh", level := 12) -> GameWorld:
+func _region2_world(map_id := "2-1", class_id := "kiem-khach", talent := "tay-nhanh", level := 12, seed_value := 5) -> GameWorld:
 	var p := _profile(talent, 3)
 	p.class_id = class_id
 	p.level = level
 	p.boss_defeated = true
 	p.unlocked_maps = ["1-1", "1-3", "2-1", "2-2", "2-3"]
+	# Đã qua phần cốt truyện chương 2 tới bước đánh boss (Phủ Huyền Ảnh mở).
+	p.quest = {"ch2": 5, "kills2": 0}
 	p.map_id = map_id
-	var w := GameWorld.new(p, RngUtil.make(5))
+	var w := GameWorld.new(p, RngUtil.make(seed_value))
 	w.enemies = []
 	return w
 
@@ -1850,33 +1856,22 @@ func _test_m42_balance() -> void:
 		var all: Array = []
 		var lines := PackedStringArray()
 		for t in Talents.LIST:
-			var w := _region2_world("2-3", class_id, t.id, 17)
-			var p = w.profile
-			p.points = {"str": 48, "agi": 0, "int": 0, "vit": 32, "luk": 0} if class_id == "kiem-khach" else {"str": 0, "agi": 48, "int": 0, "vit": 32, "luk": 0}
-			var rng := RngUtil.make(77)
-			for pair in [["weapon", "blue"], ["armor", "blue"], ["helm", "green"], ["boots", "green"], ["gloves", "green"]]:
-				var it := Items.new_item(p, 17, pair[1], rng, pair[0])
-				Items.add_item(p, it)
-				w.equip(int(it.id))
-			w.player.hp = w.stats.max_hp
-			w.player.mp = w.stats.max_mp
-			w.player.pos = w.arena_pos - Vector2(100, 0)
+			# Mỗi tổ hợp đánh 2 trận (2 seed, gió đổi ngẫu nhiên) rồi lấy trung bình.
+			var times: Array = []
 			var deaths := 0
-			var seconds := 0.0
-			while seconds < 600.0 and not p.bosses.get("huyen-anh", false):
-				for ev in w.drain_events():
-					if ev.type == "death":
-						deaths += 1
-				if w.boss() == null and w.player.dead_timer <= 0.0:
-					w.player.pos = w.arena_pos - Vector2(100, 0)
-				w.update(1.0 / 60.0, _bot(w))
-				seconds += 1.0 / 60.0
-			lines.append("%s %s %.0fs/%d" % [t.rank, t.name, seconds, deaths])
-			_check(p.bosses.get("huyen-anh", false), "%s · %s hạ được Huyền Ảnh" % [class_id, t.name])
+			var won := true
+			for seed_value in [5, 11]:
+				var res := _r2_fight(class_id, t.id, seed_value)
+				times.append(res[0])
+				deaths += int(res[1])
+				won = won and bool(res[2])
+			var sec: float = avg.call(times)
+			lines.append("%s %s %.0fs/%d" % [t.rank, t.name, sec, deaths])
+			_check(won, "%s · %s hạ được Huyền Ảnh" % [class_id, t.name])
 			if not by_rank.has(t.rank):
 				by_rank[t.rank] = []
-			by_rank[t.rank].append(seconds)
-			all.append(seconds)
+			by_rank[t.rank].append(sec)
+			all.append(sec)
 		print("       [%s] (" % class_id + " · ".join(lines) + ")")
 		var f: float = avg.call(by_rank.F)
 		var s_: float = avg.call(by_rank.S)
@@ -1887,3 +1882,127 @@ func _test_m42_balance() -> void:
 	var b: float = class_avg["tho-san"]
 	print("       (2 lớp chênh %.0f%%)" % (absf(a - b) / maxf(a, b) * 100.0))
 	_check(absf(a - b) / maxf(a, b) <= 0.25, "2 lớp chênh ≤ 25%")
+
+
+## Một trận Huyền Ảnh: bot cấp 17, bộ đồ chuẩn cấp 17. Trả về [giây, số lần chết, thắng].
+func _r2_fight(class_id: String, talent_id: String, seed_value: int) -> Array:
+	var w := _region2_world("2-3", class_id, talent_id, 17, seed_value)
+	var p = w.profile
+	p.points = {"str": 48, "agi": 0, "int": 0, "vit": 32, "luk": 0} if class_id == "kiem-khach" else {"str": 0, "agi": 48, "int": 0, "vit": 32, "luk": 0}
+	var rng := RngUtil.make(77)
+	for pair in [["weapon", "blue"], ["armor", "blue"], ["helm", "green"], ["boots", "green"], ["gloves", "green"]]:
+		var it := Items.new_item(p, 17, pair[1], rng, pair[0])
+		Items.add_item(p, it)
+		w.equip(int(it.id))
+	w.player.hp = w.stats.max_hp
+	w.player.mp = w.stats.max_mp
+	w.player.pos = w.arena_pos - Vector2(100, 0)
+	var deaths := 0
+	var seconds := 0.0
+	while seconds < 600.0 and not p.bosses.get("huyen-anh", false):
+		for ev in w.drain_events():
+			if ev.type == "death":
+				deaths += 1
+		if w.boss() == null and w.player.dead_timer <= 0.0:
+			w.player.pos = w.arena_pos - Vector2(100, 0)
+		w.update(1.0 / 60.0, _bot(w))
+		seconds += 1.0 / 60.0
+	return [seconds, deaths, p.bosses.get("huyen-anh", false)]
+
+
+# ------------------------------------------------------------------ M4.3 — Thành Biên Đài, lãnh địa vùng 2
+
+
+func _test_m43_grid() -> void:
+	var counts := {}
+	var n := 300
+	for i in n:
+		var tiles := Explore.create_region_tiles(2, RngUtil.make(1000 + i))
+		_check(tiles.size() == 46, "") if i == 0 else null
+		for t in tiles:
+			if t.event != "camp":
+				counts[t.event] = counts.get(t.event, 0) + 1
+	var res_total: int = counts.resource + counts.mine + counts.fishery
+	_check(res_total == 19 * n and counts.nest == 11 * n and counts.relic == 5 * n and counts.survivor == 5 * n and counts.merchant == 4 * n and counts.wonder == 1 * n,
+		"lưới vùng 2: 45 ô theo tỉ lệ kịch bản (Tài nguyên + Cổng dungeon 19, Ổ quái 11, Di tích 5, Người sống sót 5, Thương nhân 4, Kỳ quan 1)")
+	var scent := Explore.create_region_tiles(2, RngUtil.make(3), "khuu-giac")
+	_check(scent.filter(func(t): return t.event == "relic").size() == 9, "Khứu Giác: Di tích 20% (9/45)")
+	# vào vùng 2 thì đổi lưới; lưới vùng 1 được giữ
+	var w := _region2_world("1-1", "kiem-khach", "tay-nhanh", 12)
+	var g1: Array = w.profile.tiles
+	w._load_map("2-1")
+	_check(int(w.profile.tiles_region) == 2 and w.profile.tiles.size() == 46 and w.profile.grid_of(1) == g1, "sang vùng 2 dùng lưới 45 ô, lưới vùng 1 được cất")
+	w._load_map("1-1")
+	_check(w.profile.tiles == g1, "về vùng 1 thì lấy lại lưới cũ")
+
+
+func _test_m43_buildings() -> void:
+	var w := _region2_world("2-1", "kiem-khach", "tay-nhanh", 12)
+	var p = w.profile
+	p.gold = 10000.0
+	p.wood = 10000.0
+	var mine: Dictionary = p.tiles.filter(func(t): return t.event == "mine")[0]
+	var fish: Array = p.tiles.filter(func(t): return t.event == "fishery")
+	for t in [mine] + fish:
+		t.status = "revealed"
+		_check(Explore.claim_tile(p, int(t.id)).ok, "xây %s" % t.event)
+	Explore.tick_build_clock(p, 100.0)
+	var rate := Explore.production_per_minute(p)
+	_check(is_equal_approx(rate.ore, 4.0) and is_equal_approx(rate.iron, 2.0), "Mỏ: 4 Đá, 2 Sắt mỗi phút")
+	_check(is_equal_approx(Explore.fishery_hp_pct(p), 0.15), "Bến Cá ×6 → tối đa +15% HP")
+	var hp_before: int = w.stats.max_hp
+	w._refresh_stats()
+	_check(w.stats.max_hp > hp_before, "Bến Cá cộng HP tối đa")
+	# sản lượng cộng mọi vùng: Xưởng Gỗ vùng 1 vẫn chạy
+	var g1: Array = p.grid_of(1)
+	var res1: Dictionary = g1.filter(func(t): return t.event == "resource")[0]
+	res1.status = "owned"
+	p.buildings[Explore.tile_key("lumber", res1, 1)] = 0.0
+	_check(Explore.production_per_minute(p).wood > 0.0, "Xưởng Gỗ vùng 1 vẫn sản xuất khi đang ở vùng 2")
+	# EXP offline
+	p.last_seen = 0.0
+	var off := SaveSystem.apply_offline(p, 600.0)
+	_check(is_equal_approx(float(off.exp), 2.0 * p.level * 10.0), "EXP offline = 1 × cấp mỗi phút mỗi công trình (%.0f)" % off.exp)
+	# thợ rèn
+	p.ore = 30.0
+	p.iron = 10.0
+	var st0: int = p.stones
+	_check(w.smith_trade("stone").ok and p.stones == st0 + 1 and is_equal_approx(p.ore, 20.0), "10 Đá → 1 Đá Cường Hoá")
+	var tk0: int = p.tinh_kim
+	_check(w.smith_trade("tinh_kim").ok and p.tinh_kim == tk0 + 1, "20 Đá + 10 Sắt → 1 Tinh Kim")
+	_check(not w.smith_trade("tinh_kim").ok, "thiếu nguyên liệu thì từ chối")
+
+
+func _test_m43_quest() -> void:
+	var p := _profile("tay-nhanh", 3)
+	p.level = 12
+	p.boss_defeated = true
+	p.unlocked_maps = ["1-1", "1-3"]
+	var w := GameWorld.new(p, RngUtil.make(5))
+	w._load_map("2-1")
+	_check(int(p.quest.ch2) == 1 and "r2_arrive" in p.seen_dialogs, "tới vùng 2: nhận nhiệm vụ chương 2")
+	_check(w.npcs().size() == 3, "Thành Biên Đài có 3 NPC")
+	var gold0: float = p.gold
+	w.talk("lac-phong")
+	_check(int(p.quest.ch2) == 2 and p.gold >= gold0 + 200.0, "nói với Lạc Phong: gia nhập Liên minh, +200 vàng")
+	p.quest.kills2 = 30
+	w._check_quest2()
+	_check(int(p.quest.ch2) == 3, "hạ 30 quái vùng 2 → bước 3")
+	for t in p.tiles.slice(1, 7):
+		t.status = "owned"
+	w._check_quest2()
+	_check(int(p.quest.ch2) == 4, "chiếm 6 ô vùng 2 → bước 4")
+	_check(w.alliance_rank() == "Đồng", "hạng Đồng khi dưới 10 ô")
+	_check(not w.gate_open("2-3"), "Phủ Huyền Ảnh còn khoá")
+	_check(w.talk("mac-tam") == "", "hỏi Mạc Tam về gián điệp")
+	_check(int(p.quest.ch2) == 5 and w.npcs().size() == 2, "Mạc Tam lộ mặt và rời thành")
+	_check(w.gate_open("2-3"), "Phủ Huyền Ảnh mở")
+	p.bosses["huyen-anh"] = true
+	w._check_quest2()
+	_check(int(p.quest.ch2) == Story.DONE2 and "ch2_done" in p.seen_dialogs, "hạ Huyền Ảnh → chương 2 hoàn thành")
+	for t in p.tiles.slice(7, 12):
+		t.status = "owned"
+	_check(w.alliance_rank() == "Bạc", "hạng Bạc từ 10 ô")
+	var back := Profile.new()
+	back.load_dict(JSON.parse_string(JSON.stringify(p.to_dict())))
+	_check(int(back.quest.ch2) == Story.DONE2 and back.grid_of(1).size() == 41 and int(back.tiles_region) == 2, "save giữ nhiệm vụ chương 2 và lưới 2 vùng")

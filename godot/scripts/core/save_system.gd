@@ -45,5 +45,8 @@ static func apply_offline(p: Profile, now: float) -> Dictionary:
 	var made := Explore.tick_production(p, seconds)
 	var torches := Explore.regen_torches(p, seconds)
 	var herbs := Explore.tick_garden(p, seconds)
+	# NV-24: EXP offline từ lãnh địa — main.gd cộng qua GameWorld.add_exp để lên cấp đúng.
+	var exp_gain := Explore.offline_exp_per_minute(p) * seconds / 60.0
 	p.last_seen = now
-	return {"seconds": seconds, "gold": made.gold, "wood": made.wood, "torches": torches, "herbs": herbs}
+	return {"seconds": seconds, "gold": made.gold, "wood": made.wood, "torches": torches, "herbs": herbs,
+		"ore": made.ore, "iron": made.iron, "exp": exp_gain}

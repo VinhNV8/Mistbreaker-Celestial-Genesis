@@ -1872,6 +1872,8 @@
   "res-torch": "res://assets/icons/res-torch.png",
   "res-herb": "res://assets/icons/res-herb.png",
   "res-potion": "res://assets/icons/res-potion.png",
+  "res-ore": "res://assets/icons/res-ore.png",
+  "res-iron": "res://assets/icons/res-iron.png",
   "skill-slash": "res://assets/icons/skill-slash.png",
   "skill-spin": "res://assets/icons/skill-spin.png",
   "skill-dodge": "res://assets/icons/skill-dodge.png",

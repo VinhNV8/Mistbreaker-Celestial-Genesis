@@ -16,6 +16,10 @@ const LIST := [
 		"desc": "Kim loại hiếm, cần để cường hoá từ +10 trở lên. Rơi từ boss; Bàn Tay Vàng có khi phân rã."},
 	{"id": "herbs", "icon": "herb", "name": "Thảo dược",
 		"desc": "Hái ngoài Rừng Sương hoặc từ Vườn Thảo Dược. Đủ 2 thảo dược tự chế 1 bình máu."},
+	{"id": "ore", "icon": "ore", "name": "Đá",
+		"desc": "Mỏ trên ô Núi đá (vùng 2) sản xuất, cả khi offline. Thợ rèn Thiết Ngưu đổi 10 Đá → 1 Đá Cường Hoá."},
+	{"id": "iron", "icon": "iron", "name": "Sắt",
+		"desc": "Mỏ sản xuất. Thợ rèn Thiết Ngưu đổi 20 Đá + 10 Sắt → 1 Tinh Kim."},
 	{"id": "potions", "icon": "potion", "name": "Bình máu",
 		"desc": "Phím Q hồi 35% HP, hồi chiêu 8 giây, mang tối đa 5. Mua ở cửa hàng làng (phím E)."},
 ]

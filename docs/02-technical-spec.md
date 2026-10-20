@@ -128,7 +128,7 @@ Main (Node, main.gd)
 | `scripts/ui/talent_panel.gd` | Bảng Thiên phú: hiệu ứng, kỹ năng L, hiệu ứng phụ, luyện cấp (M2) |
 | `scripts/ui/screens.gd` | Màn hình tiêu đề, Lễ Thức Tỉnh, chiến thắng |
 | `scripts/main.gd` | Điểm vào + chế độ smoke test |
-| `tests/run_tests.gd` | 64 test logic chạy headless; chạy một phần bằng `-- --only=<chuỗi trong tên test>` |
+| `tests/run_tests.gd` | 76 test logic chạy headless; chạy một phần bằng `-- --only=<chuỗi trong tên test>` |
 | `tools/audio/*.py` (ngoài `godot/`) | Sinh âm thanh bằng code (thư viện chuẩn Python): `python tools/audio/gen_audio.py [id …]`; danh sách id ở `tools/audio/README.md` |
 | `godot/export_presets.cfg`, `tools/build_windows.sh` | Preset xuất Windows và script build `build/ThienPhuKhaiGioi.exe` (C1-50) |
 | `tools/art/*.py` (ngoài `godot/`) | Bộ sinh hình pixel art (Python 3 + Pillow): `pixel.py` thư viện vẽ, `builders.py` dáng nhân vật/quái, `catalog.py` danh mục sprite, `icons.py`, `env.py`, `build_all.py`. Quy trình ở skill `.claude/skills/game-art/SKILL.md` |
@@ -284,7 +284,8 @@ Chơi chỉ bằng bàn phím: nếu chuột đứng yên quá 1,5 giây mà ng�
 - 13 test M3 (`CL-T1…T5`, `CB-T1`, `CB-T3…T6`, `TP-T1…T3`), khớp mục 5.10 của 03-mvp-spec. `TL-B` chạy cho **2 lớp × 20 Thiên phú**, bot mặc bộ đồ chuẩn (`_standard_kit`) vì công thức quái giả định người chơi mặc đồ đúng vùng.
 - Chạy một phần: `... --script res://tests/run_tests.gd -- --only=TL-B` (TL-B riêng khoảng 13 giây).
 - 12 test C1 (`C1-T1…T12`, 08 mục 3.4). Hồ sơ test mặc định đặt `quest_step = 12` (đã qua hướng dẫn) để không sinh quái nhiệm vụ/thoại trong test cũ; test chuỗi nhiệm vụ dùng hồ sơ mới. Test thời gian thực đặt `GameWorld.debug_now`.
-- Kết quả gần nhất: **64/64 qua**. Toàn bộ chạy khoảng 1 phút vì có 2 mô phỏng 15 phút chơi và 20 trận boss.
+- 11 test M4.2–M4.3 (03 mục 6.6, 6.8); TL-B2 đánh Huyền Ảnh 2 lớp × 20 Thiên phú × 2 seed (khoảng 2 phút).
+- Kết quả gần nhất: **76/76 qua**. Toàn bộ chạy khoảng 1 phút vì có 2 mô phỏng 15 phút chơi và 20 trận boss.
 - **Đọc log, không chỉ dòng tổng kết**: có `SCRIPT ERROR` trong log thì coi như hỏng, kể cả khi test báo `ok` (xem mục 7).
 
 ### 5.2. Smoke test (có cửa sổ, khoảng 1–2 phút)
@@ -336,6 +337,9 @@ Chạy bot trên nhiều seed, có né và không né, rồi chỉnh HP/ATK boss
 | D24 | Thoại và nhiệm vụ là dữ liệu (`story.gd`); trạng thái kiểm theo nhịp 0,5 giây (`_check_quest_state`) + sự kiện đếm (`quest_event`) | Thêm bước mới chỉ cần 1 dòng dữ liệu + 1 nhánh `match` | Bước kiểu trạng thái có độ trễ tối đa 0,5 giây |
 | D25 | Thời gian thực (boss hiếm, thương nhân) dùng `GameWorld.now_unix()`, test ghi đè bằng `debug_now` | Kịch bản "2 lần/ngày", "tồn tại 1 giờ" | Người chơi đổi giờ máy để gọi boss — chống gian lận ở server (KT-10) |
 | D26 | Gift code kiểm offline bằng tổng kiểm tra SHA-256 có khoá bí mật trong game (CR-02) | Chưa có server; nhà phát hành vẫn phát mã được ngay | Người giải nén game tự sinh được mã; mỗi mã chỉ chặn dùng lại trên 1 máy → bản phát hành phải chuyển sang server (KT-10) |
+| D27 | Gió là trạng thái của `GameWorld` (hướng, đồng hồ, gió mạnh), áp lên vận tốc người chơi và hướng đạn lúc bắn | Một chỗ đọc, test được headless | Thêm map có gió chỉ cần `wind` trong `maps.gd` |
+| D28 | Lưới khai phá theo vùng: `tiles` = vùng đang đứng, `grids` cất vùng khác; khoá công trình vùng ≥ 2 là `<loại>_r<vùng>_<id ô>` (`Explore.tile_key`) | Id ô trùng giữa các vùng | Sản lượng phải duyệt mọi lưới (`Explore.region_grids`) |
+| D29 | Ảo ảnh hút đòn (`decoys`): quái trong 30 m đi tới ảo ảnh gần nhất thay vì người chơi | Không cần hệ mục tiêu chung cho mọi quái | Ảo ảnh không có máu, chỉ hết theo thời gian |
 | D16 | Đồng hồ xây riêng (`build_clock`) thay vì giờ thực | Không phụ thuộc đồng hồ máy (người chơi chỉnh giờ để gian lận); vẫn chạy offline qua `apply_offline` | Phải nhớ cộng `build_clock` ở cả `update()` và `apply_offline()` |
 
 ## 7. Lỗi đã gặp và cách xử lý

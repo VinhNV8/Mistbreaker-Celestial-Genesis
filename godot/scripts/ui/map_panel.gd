@@ -14,6 +14,8 @@ const CLAIM_LABEL := {
 	"survivor": "Mời gia nhập lãnh địa",
 	"wonder": "Chiếm Kỳ quan",
 	"merchant": "Mời thương nhân về làng",
+	"mine": "Xây Mỏ (40 vàng, 40 gỗ)",
+	"fishery": "Xây Bến Cá (30 vàng, 30 gỗ)",
 }
 
 var _selected := 0
@@ -22,21 +24,26 @@ var _selected := 0
 func _render(content: VBoxContainer) -> void:
 	var p = world.profile
 	content.custom_minimum_size.x = 820
-	_header(content, "Bản đồ khai phá · Rừng Sương", "Đóng (M)")
+	var region := int(p.tiles_region)
+	_header(content, "Bản đồ khai phá · %s" % ("Đồng Bằng Gió Hú" if region == 2 else "Rừng Sương"), "Đóng (M)")
 
 	var owned := Explore.owned_count(p.tiles)
 	var total := Explore.explore_total(p.tiles)
 	var rate := Explore.production_per_minute(p)
 	# Spec_Notes N10: thông tin tách 2 dòng ngắn, không chồng lên lưới.
-	var summary := "Lãnh địa %d/%d ô · Đuốc %d · Sản lượng +%.1f vàng, +%.1f gỗ mỗi phút · Mở hang Sói Chúa: cấp %d + chiếm %d ô" % [
-		owned, total, p.torches, rate.gold, rate.wood, Config.BOSS_LEVEL_REQ, Config.BOSS_TILES_REQ
+	var summary := "Lãnh địa %d/%d ô · Đuốc %d · Mỗi phút (mọi vùng): +%.1f vàng, +%.1f gỗ, +%.1f Đá, +%.1f Sắt" % [
+		owned, total, p.torches, rate.gold, rate.wood, rate.ore, rate.iron
 	]
+	if region == 1:
+		summary += " · Mở hang Sói Chúa: cấp %d + chiếm %d ô" % [Config.BOSS_LEVEL_REQ, Config.BOSS_TILES_REQ]
+	else:
+		summary += " · Hạng Liên minh: %s · Bến Cá +%d%% HP" % [world.alliance_rank(), roundi(Explore.fishery_hp_pct(p) * 100)]
 	content.add_child(UiTheme.label(summary, "Muted", 790))
 	var zones := PackedStringArray()
 	for z in [1, 2, 3]:
 		var n: int = p.tiles.filter(func(t): return t.event != "camp" and Explore.zone_of(t) == z).size()
-		zones.append("%s %d/%d%s" % [Explore.ZONE_NAMES[z], Explore.zone_owned(p.tiles, z), n,
-			" (khoá — hạ Sói Chúa)" if z == 3 and not p.boss_defeated else ""])
+		zones.append("%s %d/%d%s" % [Explore.zone_name(region, z), Explore.zone_owned(p.tiles, z), n,
+			" (khoá — hạ Sói Chúa)" if region == 1 and z == 3 and not p.boss_defeated else ""])
 	content.add_child(UiTheme.label("   ·   ".join(zones), "Small", 790))
 
 	var body := UiTheme.hbox(20)
@@ -95,7 +102,7 @@ func _on_tile(id: int) -> void:
 func _tile_info(info: VBoxContainer, t: Dictionary) -> void:
 	var p = world.profile
 	var ev: Dictionary = Explore.EVENT_INFO[t.event]
-	info.add_child(UiTheme.label(str(Explore.ZONE_NAMES[Explore.zone_of(t)]).to_upper(), "Eyebrow"))
+	info.add_child(UiTheme.label(Explore.zone_name(int(p.tiles_region), Explore.zone_of(t)).to_upper(), "Eyebrow"))
 	if t.status == "fog":
 		info.add_child(UiTheme.label("Ô đất bị sương mù che", "Heading"))
 		if Explore.is_event_visible(p.tiles, t, p.talent):
@@ -121,9 +128,11 @@ func _tile_info(info: VBoxContainer, t: Dictionary) -> void:
 		tag.add_theme_color_override("font_color", UiTheme.GOOD)
 	info.add_child(tag)
 	info.add_child(UiTheme.label(ev.desc, "", 330))
-	if t.event == "resource" and t.status == "owned":
-		var key := "lumber_%d" % int(t.id)
-		var state := "Xưởng Gỗ đang hoạt động." if Explore.is_built(p, key) else "Xưởng Gỗ đang xây, còn %d giây." % ceili(Explore.remaining(p, key))
+	var bkind: String = {"resource": "lumber", "mine": "mine", "fishery": "fishery"}.get(t.event, "")
+	if bkind != "" and t.status == "owned":
+		var key := Explore.tile_key(bkind, t, int(p.tiles_region))
+		var bname: String = Explore.BUILDINGS[bkind].name
+		var state := ("%s đang hoạt động." % bname) if Explore.is_built(p, key) else ("%s đang xây, còn %d giây." % [bname, ceili(Explore.remaining(p, key))])
 		info.add_child(UiTheme.label(state, "Muted", 330))
 	if t.status != "revealed":
 		return

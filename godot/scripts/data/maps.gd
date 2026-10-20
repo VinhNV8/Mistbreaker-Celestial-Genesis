@@ -27,6 +27,8 @@ const MAPS := {
 		"levels": [1, 6],
 		"zone_x": [450.0, 260.0],
 		"safe": {"pos": Vector2(230, 800), "r": 170.0, "name": "Làng Thanh Thạch", "kind": "village"},
+		## NPC: [id, sprite, vị trí so với tâm vùng an toàn, tên hiển thị]
+		"npcs": [["elder", "npc-elder", Vector2(48, 30), "Thạch Lão"], ["merchant", "npc-merchant", Vector2(-70, 70), "Thương nhân · E"]],
 		"arena": {"pos": Vector2(2290, 800), "r": 270.0, "boss": "boss", "level": 6, "chapter": 1, "name": "Hang Sói Chúa"},
 		"gate": true,
 		"mobs": "legacy",
@@ -61,6 +63,8 @@ const MAPS := {
 		"levels": [10, 13],
 		"zone_x": [500.0, 600.0],
 		"safe": {"pos": Vector2(300, 800), "r": 230.0, "name": "Thành Biên Đài", "kind": "town"},
+		"npcs": [["lac-phong", "npc-lac-phong", Vector2(40, -40), "Lạc Phong · E"], ["thiet-nguu", "npc-thiet-nguu", Vector2(-90, 60), "Thiết Ngưu · E"],
+			["mac-tam", "npc-mac-tam", Vector2(70, 90), "Mạc Tam · E"]],
 		"arena": null,
 		"gate": false,
 		"mobs": [["ung-gio", 10, 40], ["linh-danh-thue", 11, 35], ["cung-thu", 12, 25]],

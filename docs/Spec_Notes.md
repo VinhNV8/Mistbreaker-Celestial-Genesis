@@ -6,3 +6,7 @@ Inventory:
 		
 Cửa hàng:
  + Cần thêm chức năng bán nhanh (có bộ lọc bán trang bị nào)
+
+Bản đồ:
+  + Bản đồ ở các chương hiện tại đang khá hẹp, nên không tạo được cho người chơi cảm giác khám phá...
+  + Ngoài ra, bản đồ nên thiết kế theo kiểu khám phá, đi đến đâu thì nhìn thấy đất đến đó.... thì tốt hơn, gây tò mò sở thích khám phá của người chơi.

@@ -19,6 +19,9 @@ const EVENT_INFO := {
 	"relic": {"name": "Di tích", "short": "Di tích", "desc": "Rương báu và một trang sách cốt truyện.", "color": "#c08a3e"},
 	"survivor": {"name": "Người sống sót", "short": "Dân", "desc": "Gia nhập lãnh địa: +10% sản lượng.", "color": "#5a8fd0"},
 	"wonder": {"name": "Suối Linh Khí", "short": "Kỳ quan", "desc": "Kỳ quan: +10% EXP nhận được từ chiến đấu.", "color": "#9b6be0"},
+	## M4.3 (KP-06): núi đá → Mỏ (Đá, Sắt); suối → Bến Cá (+3% HP tối đa mỗi Bến Cá, tối đa +15%).
+	"mine": {"name": "Núi đá", "short": "Mỏ", "desc": "Xây Mỏ: 4 Đá và 2 Sắt mỗi phút, kể cả khi offline.", "color": "#8c8f99"},
+	"fishery": {"name": "Suối", "short": "Suối", "desc": "Xây Bến Cá: +3% HP tối đa (cộng dồn tối đa +15%).", "color": "#4a9df8"},
 	"merchant": {
 		"name": "Thương nhân lữ hành",
 		"short": "Thương nhân",
@@ -29,6 +32,11 @@ const EVENT_INFO := {
 
 ## C1-21: 3 map con của vùng 1 trên cùng một lưới (zone 1–3). Zone 3 = Lõi Sương, khoá tới khi hạ Sói Chúa.
 const ZONE_NAMES := {1: "Bìa Rừng Sương", 2: "Rừng Sương Sâu", 3: "Lõi Sương"}
+const ZONE_NAMES_R2 := {1: "Cửa Gió", 2: "Thảo Nguyên Hú", 3: "Mắt Bão"}
+
+
+static func zone_name(region: int, zone: int) -> String:
+	return str((ZONE_NAMES_R2 if region == 2 else ZONE_NAMES).get(zone, ""))
 const ZONE2_EVENTS := ["resource", "resource", "resource", "resource", "resource", "resource", "nest", "nest", "nest", "nest",
 	"relic", "relic", "survivor", "survivor", "merchant"]
 const ZONE3_EVENTS := ["resource", "resource", "resource", "resource", "resource", "resource", "nest", "nest", "nest", "nest", "nest",
@@ -55,6 +63,8 @@ const BUILDINGS := {
 	"temple": {"name": "Đền Thiên Phú", "time": 120.0, "gold": 80, "wood": 60},
 	"dragon": {"name": "Long Mạch Đàn", "time": 120.0, "gold": 150, "wood": 100},
 	"forge": {"name": "Xưởng Rèn", "time": 120.0, "gold": 150, "wood": 80},
+	"mine": {"name": "Mỏ", "time": 90.0, "gold": 40, "wood": 40},
+	"fishery": {"name": "Bến Cá", "time": 60.0, "gold": 30, "wood": 30},
 	"garden": {"name": "Vườn Thảo Dược", "time": 90.0, "gold": 60, "wood": 60},
 }
 ## C1-31: Vườn Thảo Dược sinh 1 thảo dược mỗi 3 phút.
@@ -73,6 +83,59 @@ static func create_tiles(rng: Callable, talent := "") -> Array:
 		tiles.append({"id": tiles.size(), "q": RING2[i][0], "r": RING2[i][1], "event": ring2[i], "status": "fog", "zone": 1})
 	upgrade_region1(tiles, talent, rng)
 	return tiles
+
+
+## M4.3 (KP-01, KP-11): lưới vùng 2 — 45 ô (vòng 1–3 = 36 ô + 9 ô vòng 4), tâm là Thành Biên Đài.
+## Tỉ lệ kịch bản 35/25/12/10/8/7/3; Cổng dungeon (7%) chưa có → tính là Tài nguyên (Q41).
+## Tài nguyên chia Rừng thưa (Xưởng Gỗ), Núi đá (Mỏ), Suối (Bến Cá).
+const REGION2_EVENTS := {"resource": 7, "mine": 6, "fishery": 6, "nest": 11, "relic": 5, "survivor": 5, "merchant": 4, "wonder": 1}
+
+
+static func create_region_tiles(region: int, rng: Callable, talent := "") -> Array:
+	if region <= 1:
+		return create_tiles(rng, talent)
+	var events: Array = []
+	for ev in REGION2_EVENTS:
+		for _i in int(REGION2_EVENTS[ev]):
+			events.append(ev)
+	# TP-26: Khứu Giác Kho Báu — Di tích 12% → 20% (đổi 4 ô Tài nguyên).
+	if talent == "khuu-giac":
+		for _i in 4:
+			events[events.find("resource")] = "relic"
+	events = RngUtil.shuffle(events, rng)
+	var coords: Array = ring(1) + ring(2) + ring(3)
+	var r4: Array = ring(4)
+	r4.sort_custom(func(a, b): return int(a[0]) * 2 + int(a[1]) > int(b[0]) * 2 + int(b[1]))
+	coords += r4.slice(0, 9)
+	var tiles: Array = [{"id": 0, "q": 0, "r": 0, "event": "camp", "status": "owned", "zone": 1}]
+	for i in coords.size():
+		var c: Array = coords[i]
+		var rr := hex_distance({"q": c[0], "r": c[1]}, {"q": 0, "r": 0})
+		tiles.append({"id": tiles.size(), "q": c[0], "r": c[1], "event": events[i], "status": "fog", "zone": clampi(rr - 1, 1, 3)})
+	return tiles
+
+
+## Khoá công trình trên ô: vùng 1 giữ dạng cũ "lumber_<id>", vùng khác "lumber_r<vùng>_<id>" (id ô trùng giữa các vùng).
+static func tile_key(kind: String, tile: Dictionary, region: int) -> String:
+	return "%s_%d" % [kind, int(tile.id)] if region <= 1 else "%s_r%d_%d" % [kind, region, int(tile.id)]
+
+
+## [[vùng, lưới], …] — mọi lưới đã có (vùng đang đứng + đã cất).
+static func region_grids(p) -> Array:
+	var out: Array = [[int(p.tiles_region), p.tiles]]
+	for rid in p.grids:
+		if int(rid) != int(p.tiles_region):
+			out.append([int(rid), p.grids[rid]])
+	return out
+
+
+static func count_built(p, kind: String) -> int:
+	var n := 0
+	for rg in region_grids(p):
+		for t in rg[1]:
+			if t.status == "owned" and is_built(p, tile_key(kind, t, rg[0])):
+				n += 1
+	return n
 
 
 static func ring(radius: int) -> Array:
@@ -193,7 +256,13 @@ static func is_event_visible(tiles: Array, tile: Dictionary, talent: String) -> 
 
 ## Khai phá cấp 5: +1 Đuốc tối đa.
 static func torch_max(p) -> int:
-	return Config.TORCH_MAX + (1 if Talents.has_sub(p.talent, p.talent_level, "explore", 1) else 0)
+	var n := 0
+	for slot in p.equipment:
+		if str(p.equipment[slot].get("set", "")) == "phong_hanh":
+			n += 1
+	# TB-05: Bộ Phong Hành ≥ 4 món + Thiên phú nhóm Khai phá → +1 Đuốc tối đa.
+	var resonance := 1 if n >= 4 and str(Talents.get_talent(p.talent).group) == "explore" else 0
+	return Config.TORCH_MAX + (1 if Talents.has_sub(p.talent, p.talent_level, "explore", 1) else 0) + resonance
 
 
 ## Khai phá cấp 10: Đuốc hồi nhanh hơn 20%.
@@ -259,8 +328,17 @@ static func claim_tile(p, id: int) -> Dictionary:
 				return _result(false, "Cần %d vàng để xây Xưởng Gỗ." % Config.LUMBER_COST_GOLD)
 			p.gold -= Config.LUMBER_COST_GOLD
 			tile.status = "owned"
-			start_building(p, "lumber_%d" % int(tile.id))
+			start_building(p, tile_key("lumber", tile, int(p.tiles_region)))
 			return _result(true, "Bắt đầu xây Xưởng Gỗ (%d giây)." % roundi(build_time(p, "lumber")))
+		"mine", "fishery":
+			var def: Dictionary = BUILDINGS[tile.event]
+			if p.gold < def.gold or p.wood < def.wood:
+				return _result(false, "Cần %d vàng và %d gỗ để xây %s." % [def.gold, def.wood, def.name])
+			p.gold -= def.gold
+			p.wood -= def.wood
+			tile.status = "owned"
+			start_building(p, tile_key(tile.event, tile, int(p.tiles_region)))
+			return _result(true, "Bắt đầu xây %s (%d giây)." % [def.name, roundi(build_time(p, tile.event))])
 		"relic":
 			var opened := count_owned(p.tiles, "relic")
 			p.gold += 80
@@ -292,7 +370,10 @@ static func conquer_tile(p, id: int) -> bool:
 
 
 static func _kind(key: String) -> String:
-	return "lumber" if key.begins_with("lumber_") else key
+	for k in ["lumber", "mine", "fishery"]:
+		if key.begins_with(k + "_"):
+			return k
+	return key
 
 
 static func build_time(p, kind: String) -> float:
@@ -375,18 +456,19 @@ static func upgrade_camp(p) -> Dictionary:
 # ------------------------------------------------------------------ sản lượng
 
 
+## Sản lượng cộng mọi vùng (M4.3): Xưởng Gỗ vùng 1 vẫn chạy khi đang ở vùng 2.
 static func production_per_minute(p) -> Dictionary:
-	var lumber := 0
-	for t in p.tiles:
-		if t.event == "resource" and t.status == "owned" and is_built(p, "lumber_%d" % int(t.id)):
-			lumber += 1
-	var survivors := count_owned(p.tiles, "survivor")
+	var lumber := count_built(p, "lumber")
+	var mines := count_built(p, "mine")
+	var survivors := 0
+	for rg in region_grids(p):
+		survivors += count_owned(rg[1], "survivor")
 	var mult := 1.0 + 0.1 * survivors + (0.2 if is_built(p, "camp2") else 0.0)
 	if p.talent == "thien-menh":
 		mult += Talents.lv_value(0.2, 0.3, p.talent_level)
 	if Talents.has_sub(p.talent, p.talent_level, "territory", 1):
 		mult += 0.1
-	return {"gold": lumber * 3.0 * mult, "wood": lumber * 6.0 * mult}
+	return {"gold": lumber * 3.0 * mult, "wood": lumber * 6.0 * mult, "ore": mines * 4.0 * mult, "iron": mines * 2.0 * mult}
 
 
 static func tick_production(p, seconds: float) -> Dictionary:
@@ -395,7 +477,21 @@ static func tick_production(p, seconds: float) -> Dictionary:
 	var wood: float = rate.wood * seconds / 60.0
 	p.gold += gold
 	p.wood += wood
-	return {"gold": gold, "wood": wood}
+	var ore: float = rate.ore * seconds / 60.0
+	var iron: float = rate.iron * seconds / 60.0
+	p.ore += ore
+	p.iron += iron
+	return {"gold": gold, "wood": wood, "ore": ore, "iron": iron}
+
+
+## KP-06: Bến Cá +3% HP tối đa mỗi cái, tối đa +15% (Q26).
+static func fishery_hp_pct(p) -> float:
+	return minf(0.15, 0.03 * count_built(p, "fishery"))
+
+
+## NV-24: EXP offline — mỗi công trình sản xuất (Xưởng Gỗ, Mỏ) cho 1 × cấp EXP mỗi phút (Q42).
+static func offline_exp_per_minute(p) -> float:
+	return float(count_built(p, "lumber") + count_built(p, "mine")) * float(p.level)
 
 
 ## C1-31: Vườn Thảo Dược; trả về số thảo dược vừa sinh.

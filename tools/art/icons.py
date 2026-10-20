@@ -164,6 +164,21 @@ def g_herb(cv):
     cv.ellipse(16, 8, 2.4, 2.4, hexc("#e8f7a0"))
 
 
+def g_ore(cv):
+    """Đá thô từ Mỏ (M4.3)."""
+    for (x, y, rx, ry) in ((11, 20, 7, 5.5), (21, 21, 6, 5), (16, 13, 6, 5)):
+        cv.shade_ellipse(x, y, rx, ry, R["stone"])
+    cv.line(9, 19, 13, 22, R["stone"][0])
+    cv.line(17, 11, 15, 15, R["stone"][0])
+
+
+def g_iron(cv):
+    """Sắt thỏi (M4.3)."""
+    for (y, x0) in ((22, 5), (15, 8)):
+        cv.shade_poly([(x0, y + 4), (x0 + 4, y - 3), (x0 + 19, y - 3), (x0 + 22, y + 4)], [hexc("#3a3f4a"), hexc("#5a606e"), hexc("#7d8494"), hexc("#a4abb8")])
+        cv.line(x0 + 5, y - 2, x0 + 17, y - 2, hexc("#c4cad6"))
+
+
 def g_potion(cv):
     cv.rect(13, 3, 19, 7, R["wood"][2])
     cv.shade_poly([(13, 7), (19, 7), (19, 12), (25, 18), (25, 26), (21, 29), (11, 29), (7, 26), (7, 18), (13, 12)], [hexc("#9aa8c0", 255)] * 4)
@@ -415,7 +430,7 @@ def g_huyen_mask(cv):
 ITEMS = {"weapon": g_sword, "helm": g_helm, "armor": g_armor, "gloves": g_gloves, "boots": g_boots,
          "necklace": g_necklace, "ring": g_ring, "amulet": g_amulet, "wolf_fang": g_wolf_fang, "lao_thu_bark": g_bark, "huyen_anh_mask": g_huyen_mask}
 RESOURCES = {"gold": g_gold, "wood": g_wood, "stone": g_stone, "essence": g_essence, "tinh_kim": g_tinh_kim,
-             "torch": g_torch, "herb": g_herb, "potion": g_potion}
+             "torch": g_torch, "herb": g_herb, "potion": g_potion, "ore": g_ore, "iron": g_iron}
 # ---------------------------------------------------------------------- kỹ năng M3 (03-mvp-spec mục 5.4)
 def _bow(cv, ox=0, oy=0, pull=0.0):
     cv.arc(13 + ox, 16 + oy, 11, math.radians(-75), math.radians(75), R["wood"][2], 2.0)

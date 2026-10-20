@@ -11,6 +11,9 @@ const PORTRAITS := {
 	"Thương nhân lữ hành": "npc-merchant",
 	"Sói Chúa Hư Vô": "boss",
 	"Lão Thụ Sương Mù": "lao-thu",
+	"Đội trưởng Lạc Phong": "npc-lac-phong",
+	"Thương nhân Mạc Tam": "npc-mac-tam",
+	"Thợ rèn Thiết Ngưu": "npc-thiet-nguu",
 }
 const CHARS_PER_SEC := 55.0
 

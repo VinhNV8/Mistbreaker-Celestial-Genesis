@@ -29,6 +29,7 @@ class Continent:
 	const POS := [Vector2(-230, 40), Vector2(-120, 70), Vector2(0, 80), Vector2(120, 60), Vector2(230, 30),
 		Vector2(170, -60), Vector2(40, -80), Vector2(-90, -60), Vector2(0, -10)]
 	var t := 0.0
+	var chapter := 1
 
 	func _process(delta: float) -> void:
 		t = minf(t + delta, 99.0)
@@ -41,9 +42,9 @@ class Continent:
 			var p: Vector2 = c + POS[i]
 			var reveal := clampf(t * 1.5 - i * 0.15, 0.0, 1.0)
 			var col := Color(0.18, 0.16, 0.26, 0.9 * reveal)
-			if i == 0:
+			if i < chapter:
 				col = Color(0.36, 0.82, 0.42, 0.9 * reveal)
-			elif i == 1:
+			elif i == chapter:
 				col = Color(1.0, 0.8, 0.3, (0.5 + 0.4 * sin(t * 4.0)) * reveal)
 			elif i == 8:
 				col = Color(0.6, 0.4, 1.0, 0.5 * reveal)
@@ -373,25 +374,29 @@ static func _card(t, spinning: bool) -> Control:
 	return card
 
 
-static func victory(world, on_continue: Callable, on_title: Callable) -> Control:
+static func victory(world, on_continue: Callable, on_title: Callable, boss_id := "boss") -> Control:
 	var page := _page(0.82)
 	var col: VBoxContainer = page[1]
 	var p = world.profile
 	var t: Dictionary = world.talent()
-	col.add_child(_centered("CHƯƠNG 1 HOÀN THÀNH", "Eyebrow"))
-	var h := _centered("Sói Chúa Hư Vô đã ngã xuống", "Title")
-	h.add_theme_font_size_override("font_size", 44)
+	var ch2: bool = boss_id == "huyen-anh"
+	col.add_child(_centered("CHƯƠNG 2 HOÀN THÀNH" if ch2 else "CHƯƠNG 1 HOÀN THÀNH", "Eyebrow"))
+	var h := _centered("Tướng Gián Điệp Huyền Ảnh đã ngã xuống" if ch2 else "Sói Chúa Hư Vô đã ngã xuống", "Title")
+	h.add_theme_font_size_override("font_size", 40 if ch2 else 44)
 	col.add_child(h)
-	col.add_child(_centered("Ánh sáng từ Bia Đá lan tới tận hang sói. Phía đông, Đồng Bằng Gió Hú đang chờ… và Thiên phú trong %s khẽ rung động, như có một mảnh thứ hai đang thức giấc." % p.name, "Muted", 580))
-	# C1-13 (TN-09): bản đồ lục địa hiện ra, vùng 1 sáng, vùng 2 nhấp nháy.
+	var story := ("Gió ở Đồng Bằng lặng đi. Liên minh Khai Giới đã sạch bóng gián điệp — nhưng lời thì thầm “mảnh linh hồn của Chủ nhân” vẫn vang trong đầu %s. Phía nam, Sa Mạc Xích Sa đang chờ…" % p.name) if ch2 		else ("Ánh sáng từ Bia Đá lan tới tận hang sói. Phía đông, Đồng Bằng Gió Hú đang chờ… và Thiên phú trong %s khẽ rung động, như có một mảnh thứ hai đang thức giấc." % p.name)
+	col.add_child(_centered(story, "Muted", 580))
+	# C1-13 (TN-09): bản đồ lục địa hiện ra, vùng đã qua sáng, vùng kế tiếp nhấp nháy.
 	var art := Continent.new()
+	art.chapter = 2 if ch2 else 1
 	art.custom_minimum_size = Vector2(620, 290)
 	art.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	col.add_child(art)
 	col.add_child(_centered("Thời gian chơi %d phút  ·  Cấp %d  ·  Quái đã hạ %d  ·  Khai phá %d/%d  ·  Thiên phú %s · %s" % [
 		roundi(p.play_seconds / 60.0), p.level, p.kills, Explore.owned_count(p.tiles), Explore.explore_total(p.tiles), t.rank, t.name
 	], "", 600))
-	col.add_child(_centered("Lõi Sương (cấp 7–10) đã mở — bấm Tiếp tục khám phá để xem bản đồ lục địa (phím N). Chương 2 — Đồng Bằng Gió Hú — đang được phát triển.", "Small", 580))
+	col.add_child(_centered(("Chương 3 — Sa Mạc Xích Sa — đang được phát triển. Tiếp tục mở rộng lãnh địa vùng 2 để lên hạng Liên minh." if ch2
+		else "Lõi Sương (cấp 7–10) đã mở; Đồng Bằng Gió Hú mở khi đạt cấp 10 và khai phá 60% vùng 1 — xem bản đồ lục địa (phím N)."), "Small", 580))
 	var row := _buttons(col)
 	var b1 := UiTheme.button("Tiếp tục khám phá", true)
 	b1.pressed.connect(on_continue)

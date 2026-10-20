@@ -739,7 +739,7 @@ Rơi: 1 đồ Tím, 15% **Mặt Nạ Huyền Ảnh**, 3 Tinh Hoa, 1 Tinh Kim. Th
 
 ### 6.7. Điểm cần duyệt
 
-M4 code theo **mặc định** dưới đây. **Trạng thái: chưa duyệt.**
+M4 code theo **mặc định** dưới đây. **Trạng thái: chưa duyệt** (đã code theo mặc định; kết quả ở 6.8).
 
 | # | Câu hỏi | Mặc định | Lý do |
 | --- | --- | --- | --- |
@@ -751,6 +751,25 @@ M4 code theo **mặc định** dưới đây. **Trạng thái: chưa duyệt.**
 | Q40 | Kháng hệ đến từ affix trang bị | Như vậy | Kịch bản chỉ liệt kê chỉ số; khảm ngọc (Alpha) sẽ thêm nguồn kháng |
 | Q41 | Thương nhân, Cổng dungeon trên lưới vùng 2 tạm tính là Tài nguyên | Như vậy | 2 hệ thống này ở M5/Alpha |
 | Q42 | EXP offline = 1 × cấp mỗi phút mỗi công trình sản xuất | Như vậy | Kịch bản chỉ ghi "5% nguồn EXP"; cần playtest |
+
+### 6.8. Kết quả triển khai M4
+
+Hoàn thành 20/10/2026: M4.1 (phiên game-bc), M4.2 + M4.3 (phiên chính). **76/76 test** (11 test M4.2–M4.3 mới: GI-T1, CB-T7, CB-T8, CB-T9, TB-T1, MP-T2, TL-B2, KP-T1, KP-T1b, KP-T2 + M4.1). Smoke test chụp thêm `09-region2`, `09b-town`, `09c-town-shop`.
+
+**Cân bằng TL-B2** (bot cấp 17, bộ đồ chuẩn cấp 17, mỗi tổ hợp 2 trận với 2 seed): Kiếm Khách F 47,5 / S 40,4 giây (15%); Thợ Săn F 41,4 / S 31,7 giây (23%); 2 lớp chênh 17%; không lần chết nào.
+
+**Chỉnh trong lúc làm (so với spec):**
+
+| # | Thay đổi | Lý do |
+| --- | --- | --- |
+| M4-F1 | Kháng hệ **chỉ** có trên đồ phòng thủ (mũ, áo, giày, dây chuyền, bùa) | 5 affix mới làm loãng bể affix: vũ khí hay ra kháng thay vì tấn công, boss chương 1 chậm 29 → 37 giây |
+| M4-F2 | Bản sao Huyền Ảnh bắn **1** phi tiêu, hồi 2,2 giây (thay vì 3 phi tiêu như boss) | 4 bản sao × 3 phi tiêu mỗi 1,8 giây là màn đạn không né nổi |
+| M4-F3 | Huyền Ảnh đánh thường hồi 1,1 giây (0,7 trong bản nháp) | Kiếm Khách chết 2–6 lần/trận: né lăn hồi 3 giây không theo kịp nhịp đánh 1,2 giây |
+| M4-F4 | **Khoá mục tiêu mềm** cho Thợ Săn: dùng chuột → quái trong hướng ngắm ±15° trước; bàn phím → quái gần nhất (N9). Đòn đã khoá **bù gió** (chỉ lệch 5°) | "Luôn bắn quái gần nhất" làm không nhắm được bản thật giữa các bản sao; gió 15° làm tên trượt ở tầm xa |
+| M4-F5 | Phủ Huyền Ảnh (Mắt Bão) khoá tới khi lật mặt Mạc Tam (bước 5) | Giữ đúng thứ tự cốt truyện chương 2 |
+| M4-F6 | Thương nhân lữ hành có trên lưới vùng 2 (4 ô) — không tính là Tài nguyên như Q41 | Thương nhân đã làm ở C1 |
+| M4-F7 | TL-B2 chạy 2 seed mỗi tổ hợp | Gió đổi ngẫu nhiên làm một trận đơn lẻ dao động quá mạnh |
+
 
 ## Phụ lục A — Yêu cầu thay đổi (CR)
 

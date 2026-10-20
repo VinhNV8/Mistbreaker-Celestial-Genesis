@@ -183,10 +183,13 @@ func _input(event: InputEvent) -> void:
 		world.toggle_auto()
 		get_viewport().set_input_as_handled()
 		return
-	# C1-32: phím E mở cửa hàng khi đứng trong làng.
+	# C1-32, M4.3: phím E — nói chuyện với NPC gần nhất, hoặc mở cửa hàng khi đứng trong làng/thành.
 	if event.is_action_pressed("interact"):
+		var npc := world.nearest_npc()
 		if shop_panel.is_open():
 			shop_panel.close()
+		elif not npc.is_empty() and world.talk(str(npc.id)) != "shop":
+			pass
 		elif world.in_village():
 			for panel in _panels():
 				panel.close()
@@ -303,7 +306,7 @@ func _handle_event(ev: Dictionary) -> void:
 			_persist()
 		"victory":
 			_persist()
-			_victory = Screens.victory(world, _after_victory, _go_title)
+			_victory = Screens.victory(world, _after_victory, _go_title, str(ev.get("boss", "boss")))
 			_ui.add_child(_victory)
 
 
@@ -412,6 +415,9 @@ func _on_continue() -> void:
 		return
 	var off := SaveSystem.apply_offline(p, _now())
 	_start_world(p)
+	if float(off.get("exp", 0.0)) >= 1.0:
+		world.add_exp(float(off.exp), false)
+		hud.log_message("Lãnh địa vận hành khi bạn vắng mặt: +%d EXP." % int(off.exp), "good")
 	if off.seconds > 60.0 and (off.gold >= 1.0 or off.wood >= 1.0 or off.torches > 0):
 		hud.log_message(
 			"Lãnh địa thu hoạch khi bạn vắng mặt: +%d gỗ, +%d vàng, +%d Đuốc." % [int(off.wood), int(off.gold), off.torches], "good"
@@ -678,6 +684,17 @@ func _run_smoke(dir: String) -> void:
 		world.spawn_enemy(k, 12, world.player.pos + Vector2(220 + randf() * 200, randf() * 300 - 150))
 	await _wait(3.0)
 	await _shot(dir, "09-region2")
+	# M4.3: Thành Biên Đài — NPC, nhiệm vụ chương 2, cửa hàng có thợ rèn
+	world.enemies = []
+	world.player.pos = world.safe_pos + Vector2(10, -10)
+	p.ore = 25.0
+	p.iron = 12.0
+	await _wait(1.0)
+	await _shot(dir, "09b-town")
+	shop_panel.open(world)
+	await _wait(0.3)
+	await _shot(dir, "09c-town-shop")
+	shop_panel.close()
 	print("SMOKE done: boss_defeated=%s level=%d kills=%d" % [p.boss_defeated, p.level, p.kills])
 	SaveSystem.clear_save()
 	get_tree().quit()

@@ -2,7 +2,7 @@
 
 Game nhập vai hành động: nhận Thiên phú khi vào game, đánh quái lên cấp, vượt map, khai phá vùng đất bị sương mù che phủ.
 
-Trạng thái: Chương 1 chơi được trên Godot 4.7.2. Đang làm **MVP**: đã xong M1 (trang bị, cường hoá), M2 (đủ 20 Thiên phú), G1 (hình pixel art sinh bằng code) và M3 (lớp Thợ Săn, 4 kỹ năng mỗi lớp, MP, né tránh, công thức chỉ số quái mới); đã xong đợt **C1 — hoàn chỉnh Chương 1** ([08](docs/08-chuong-1-hoan-chinh.md): tạo nhân vật, cốt truyện, hướng dẫn, Lõi Sương, boss hiếm, cửa hàng, âm thanh); tiếp theo M4 (Chương 2).
+Trạng thái: Chương 1 chơi được trên Godot 4.7.2. Đang làm **MVP**: đã xong M1 (trang bị, cường hoá), M2 (đủ 20 Thiên phú), G1 (hình pixel art sinh bằng code) và M3 (lớp Thợ Săn, 4 kỹ năng mỗi lớp, MP, né tránh, công thức chỉ số quái mới); đã xong đợt **C1 — hoàn chỉnh Chương 1** ([08](docs/08-chuong-1-hoan-chinh.md): tạo nhân vật, cốt truyện, hướng dẫn, Lõi Sương, boss hiếm, cửa hàng, âm thanh); và **M4 — Chương 2** (Đồng Bằng Gió Hú, gió, boss Huyền Ảnh, Thành Biên Đài, Mỏ/Bến Cá); tiếp theo M5.
 
 ## Thư mục
 

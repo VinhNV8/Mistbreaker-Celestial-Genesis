@@ -243,9 +243,7 @@ func _draw_sorted(view: Rect2) -> void:
 		items.append([at.y, _draw_env_at.bind(id, at)])
 	if world.map.safe.kind == "village":
 		items.append([c.y + 16.0, _draw_stele.bind(c + Vector2(0, 16))])
-		# C1-11, C1-32: Trưởng làng cạnh Bia Đá, thương nhân ở góc làng (phím E để mua bán)
-		for npc in [["npc-elder", c + Vector2(48, 30), "Thạch Lão"], ["npc-merchant", c + Vector2(-70, 70), "Thương nhân · E"]]:
-			items.append([npc[1].y, _draw_npc.bind(npc[0], npc[1], npc[2])])
+
 	for h in world.herbs:
 		if h.respawn <= 0.0:
 			items.append([h.pos.y, _draw_env_at.bind("herb", h.pos)])
@@ -258,6 +256,9 @@ func _draw_sorted(view: Rect2) -> void:
 		items.append([e.pos.y, _draw_enemy_sprite.bind(e)])
 	for k in _corpses:
 		items.append([k.pos.y - 1.0, _draw_corpse.bind(k)])
+	# C1-11, M4.3: NPC của map (dữ liệu maps.gd), bấm E khi đứng gần
+	for npc in world.npcs():
+		items.append([npc.pos.y, _draw_npc.bind(npc.sprite, npc.pos, npc.name)])
 	items.append([world.player.pos.y, _draw_player_sprite])
 	items.sort_custom(func(a, b): return a[0] < b[0])
 	for it in items:

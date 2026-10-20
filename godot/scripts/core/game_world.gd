@@ -430,6 +430,13 @@ func _load_map(id: String) -> void:
 	map_id = id
 	map = Maps.get_map(id)
 	profile.map_id = id
+	# M4.3 (KP-01): mỗi vùng một lưới khai phá; `tiles` luôn là lưới của vùng đang đứng.
+	var region := int(map.get("region", 1))
+	if region != int(profile.tiles_region) or profile.tiles.is_empty():
+		profile.switch_grid(region, func(r): return Explore.create_region_tiles(r, _rng, profile.talent))
+	if region == 2 and int(profile.quest.ch2) == 0:
+		profile.quest.ch2 = 1
+		say("r2_arrive")
 	if not (id in profile.unlocked_maps):
 		profile.unlocked_maps.append(id)
 	world_size = map.size
@@ -513,8 +520,10 @@ func boss_unlocked() -> bool:
 	return gate_open(map_id)
 
 
-## Điều kiện mở tường các map sau (M4.2+).
-func gate_open(_id: String) -> bool:
+## Điều kiện mở tường các map sau. Mắt Bão: lật mặt Mạc Tam (nhiệm vụ chương 2 bước 5) hoặc đã hạ Huyền Ảnh.
+func gate_open(id: String) -> bool:
+	if id == "2-3":
+		return int(profile.quest.ch2) >= 5 or is_boss_defeated("huyen-anh")
 	return true
 
 
@@ -698,6 +707,7 @@ func update(dt: float, input: Dictionary) -> void:
 	if _quest_poll <= 0.0:
 		_quest_poll = 0.5
 		_check_quest_state()
+		_check_quest2()
 		_check_rare_boss()
 	_passive_msg_cd -= dt
 	_combo_timer -= dt
@@ -812,8 +822,8 @@ func _enforce_gate() -> void:
 		p.pos.x = gate_x
 		if _gate_msg_cd <= 0.0:
 			_message(
-				"Sương mù Hư Vô chặn đường: cần cấp %d và chiếm %d ô đất (phím M)."
-				% [Config.BOSS_LEVEL_REQ, Config.BOSS_TILES_REQ],
+				("Sương mù Hư Vô chặn đường: cần cấp %d và chiếm %d ô đất (phím M)." % [Config.BOSS_LEVEL_REQ, Config.BOSS_TILES_REQ])
+				if map_id == "1-1" else "Bão cát chắn lối vào Phủ Huyền Ảnh — hoàn thành nhiệm vụ Liên minh ở Thành Biên Đài trước.",
 				"bad"
 			)
 			_gate_msg_cd = 4.0
@@ -1357,6 +1367,14 @@ func respec() -> bool:
 func _derive(equipment = null) -> Dictionary:
 	var bonus := Items.equipment_bonus(profile.equipment if equipment == null else equipment)
 	bonus["dragon"] = dragon_active()
+	# KP-06: Bến Cá +3% HP tối đa mỗi cái (tối đa +15%).
+	bonus.max_hp_pct += Explore.fishery_hp_pct(profile)
+	# TB-05: bộ cộng hưởng Thiên phú ("Người Khai Hoang") — ≥ 4 món của bộ + Thiên phú đúng nhóm.
+	var group := str(talent().group)
+	if int(bonus.sets.get("frost_hunter", 0)) >= 4 and group == "combat":
+		bonus.flat["crit"] = float(bonus.flat.get("crit", 0.0)) + 0.05
+	if int(bonus.sets.get("phong_hanh", 0)) >= 4 and group == "explore":
+		bonus.move_pct += 0.10
 	return Stats.derive(profile.level, profile.points, profile.talent, bonus, profile.talent_level, profile.class_id, profile.stolen)
 
 
@@ -1582,6 +1600,8 @@ func _kill_enemy(e: Enemy) -> void:
 	profile.kills += 1
 	if e.role == "quest":
 		quest_event("kill_quest")
+	if int(map.get("region", 1)) == 2 and int(profile.quest.ch2) == 2:
+		profile.quest.kills2 = int(profile.quest.kills2) + 1
 	var is_boss := e.role == "boss"
 	var base := float(boss_exp(e.level)) if is_boss else float(Formulas.mob_exp(e.level, e.elite))
 	if e.role == "rare":
@@ -2683,7 +2703,7 @@ const AUTO_RANGE := 400.0
 
 
 func in_village() -> bool:
-	return map_id == "1-1" and player.pos.distance_to(safe_pos) < safe_r + 20.0
+	return (map_id == "1-1" or map_id == "2-1") and player.pos.distance_to(safe_pos) < safe_r + 20.0
 
 
 func _shop_result(ok: bool, msg: String) -> Dictionary:
@@ -3042,3 +3062,159 @@ func _update_huyen_anh(e: Enemy, dt: float) -> void:
 	var tmp := e.pos
 	e.pos = c.pos
 	c.pos = tmp
+
+
+# ------------------------------------------------------------------ M4.3: Thành Biên Đài, NPC, nhiệm vụ chương 2, thợ rèn
+
+const NPC_RANGE := 70.0
+const SMITH_STONE_ORE := 10
+const SMITH_KIM_ORE := 20
+const SMITH_KIM_IRON := 10
+const RANKS := [[0, "Đồng"], [10, "Bạc"], [25, "Vàng"]]
+
+
+## NPC của map hiện tại: [{id, sprite, pos, name}]. Mạc Tam biến mất sau khi lộ mặt (CT-07).
+func npcs() -> Array:
+	var out: Array = []
+	for n in map.get("npcs", []):
+		if n[0] == "mac-tam" and int(profile.quest.ch2) >= 5:
+			continue
+		out.append({"id": n[0], "sprite": n[1], "pos": safe_pos + n[2], "name": n[3]})
+	return out
+
+
+func nearest_npc() -> Dictionary:
+	var best := {}
+	var bd := NPC_RANGE
+	for n in npcs():
+		var d: float = n.pos.distance_to(player.pos)
+		if d < bd:
+			bd = d
+			best = n
+	return best
+
+
+## Bấm E cạnh NPC. Trả về hành động cho giao diện: "shop" (mở cửa hàng) hoặc "" (chỉ thoại).
+func talk(npc_id: String) -> String:
+	var step: int = int(profile.quest.ch2)
+	match npc_id:
+		"lac-phong":
+			if step == 1:
+				_advance_quest2()
+			else:
+				_force_say(["", "lac_join", "lac_q2", "lac_q3", "lac_q4", "lac_q5"][clampi(step, 0, 5)] if step <= 5 else "ch2_done")
+			return ""
+		"mac-tam":
+			if step == 4:
+				_advance_quest2()
+				return ""
+			_force_say("mac_greet")
+			return "shop"
+		"thiet-nguu":
+			_force_say("smith")
+			return "shop"
+		"merchant":
+			return "shop"
+		"elder":
+			_force_say("q%d" % profile.quest_step if profile.quest_step <= Story.QUESTS.size() else "done")
+			return ""
+	return ""
+
+
+## Thoại lặp lại được (NPC nói lại khi bấm E), không ghi vào seen_dialogs.
+func _force_say(id: String) -> void:
+	if Story.DIALOGS.has(id):
+		_events.append({"type": "dialog", "id": id})
+
+
+func quest2() -> Dictionary:
+	return Story.quest2(int(profile.quest.ch2))
+
+
+func quest2_status() -> Array:
+	var q := quest2()
+	if q.is_empty():
+		return [0, 0]
+	match str(q.type):
+		"kills2":
+			return [mini(int(profile.quest.kills2), int(q.need)), int(q.need)]
+		"tiles2":
+			return [mini(Explore.owned_count(profile.grid_of(2)), int(q.need)), int(q.need)]
+	return [0, int(q.need)]
+
+
+func _check_quest2() -> void:
+	var q := quest2()
+	if q.is_empty():
+		return
+	var done := false
+	match str(q.type):
+		"kills2":
+			done = int(profile.quest.kills2) >= int(q.need)
+		"tiles2":
+			done = Explore.owned_count(profile.grid_of(2)) >= int(q.need)
+		"boss2":
+			done = is_boss_defeated("huyen-anh")
+	if done:
+		_advance_quest2()
+
+
+func _advance_quest2() -> void:
+	var q := quest2()
+	if q.is_empty():
+		return
+	var r: Dictionary = q.reward
+	profile.gold += float(r.get("gold", 0))
+	profile.stones += int(r.get("stones", 0))
+	var rt := Story.reward_text(r)
+	_message("Nhiệm vụ chương 2 hoàn thành: %s%s" % [q.title, (". Thưởng: " + rt) if rt != "" else ""], "good")
+	var step: int = int(profile.quest.ch2)
+	if step == 2:
+		var gift := Items.new_item(profile, maxi(1, profile.level), "blue", _rng)
+		_events.append({"type": "item", "text": Items.add_item(profile, gift).message, "rarity": "blue"})
+	profile.quest.ch2 = step + 1
+	_events.append({"type": "quest_done", "step": step, "chapter": 2})
+	if r.has("exp"):
+		add_exp(float(r.exp), false)
+	match step:
+		1:
+			say("lac_join")
+			say("lac_q2")
+		2:
+			say("lac_q3")
+		3:
+			say("lac_q4")
+		4:
+			say("mac_reveal")
+			_message("Mạc Tam là gián điệp Hư Vô Giáo! Hắn chạy về Phủ Huyền Ảnh ở Mắt Bão.", "bad")
+		5:
+			say("ch2_done")
+
+
+## CT-04: hạng Khai Giới Giả theo số ô chiếm ở vùng 2 (0 / 10 / 25).
+func alliance_rank() -> String:
+	var n := Explore.owned_count(profile.grid_of(2))
+	var name := ""
+	for r in RANKS:
+		if n >= int(r[0]):
+			name = r[1]
+	return name
+
+
+## TB-11: thợ rèn Thiết Ngưu đổi Đá/Sắt.
+func smith_trade(kind: String) -> Dictionary:
+	match kind:
+		"stone":
+			if profile.ore < SMITH_STONE_ORE:
+				return _shop_result(false, "Cần %d Đá." % SMITH_STONE_ORE)
+			profile.ore -= SMITH_STONE_ORE
+			profile.stones += 1
+			return _shop_result(true, "Thiết Ngưu rèn được 1 Đá Cường Hoá.")
+		"tinh_kim":
+			if profile.ore < SMITH_KIM_ORE or profile.iron < SMITH_KIM_IRON:
+				return _shop_result(false, "Cần %d Đá và %d Sắt." % [SMITH_KIM_ORE, SMITH_KIM_IRON])
+			profile.ore -= SMITH_KIM_ORE
+			profile.iron -= SMITH_KIM_IRON
+			profile.tinh_kim += 1
+			return _shop_result(true, "Thiết Ngưu luyện được 1 Tinh Kim.")
+	return _shop_result(false, "Không có việc này.")

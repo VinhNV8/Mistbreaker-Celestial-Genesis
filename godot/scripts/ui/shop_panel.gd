@@ -14,7 +14,8 @@ var _sell_id := -1
 func _render(content: VBoxContainer) -> void:
 	var p = world.profile
 	content.custom_minimum_size.x = W
-	_header(content, "Làng Thanh Thạch · Cửa hàng", "Đóng (E)")
+	var town: bool = world.map_id == "2-1"
+	_header(content, ("Thành Biên Đài · Cửa hàng" if town else "Làng Thanh Thạch · Cửa hàng"), "Đóng (E)")
 	content.add_child(UiTheme.label("Vàng %d · Đá Cường Hoá %d · Bình máu %d/%d · Túi %d/%d" % [
 		int(p.gold), p.stones, p.potions, GameWorld.POTION_MAX, p.inventory.size(), ItemData.BAG_SIZE], "Muted", W))
 	var body := UiTheme.hbox(24)
@@ -27,7 +28,7 @@ func _render(content: VBoxContainer) -> void:
 	body.add_child(right)
 
 	# --- cửa hàng làng
-	left.add_child(UiTheme.label("THƯƠNG NHÂN LÀNG", "Eyebrow"))
+	left.add_child(UiTheme.label("THƯƠNG NHÂN MẠC TAM" if town else "THƯƠNG NHÂN LÀNG", "Eyebrow"))
 	for row in [["potion", "res-potion", "Bình máu", GameWorld.SHOP_POTION], ["stone", "res-stone", "Đá Cường Hoá", GameWorld.SHOP_STONE]]:
 		var h := UiTheme.hbox(8)
 		h.add_child(_icon(SpriteLib.icon(row[1])))
@@ -69,6 +70,26 @@ func _render(content: VBoxContainer) -> void:
 			left.add_child(h)
 	else:
 		left.add_child(UiTheme.label("Chưa có. Tìm ô Thương nhân lữ hành trên Bản đồ khai phá (phím M) rồi mời về làng.", "Small", 400))
+
+	# --- M4.3 (TB-11): Thợ rèn Thiết Ngưu đổi Đá, Sắt
+	if town:
+		left.add_child(HSeparator.new())
+		left.add_child(UiTheme.label("THỢ RÈN THIẾT NGƯU · Đá %d · Sắt %d" % [int(p.ore), int(p.iron)], "Eyebrow"))
+		for row in [["stone", "10 Đá → 1 Đá Cường Hoá", p.ore >= GameWorld.SMITH_STONE_ORE],
+				["tinh_kim", "20 Đá + 10 Sắt → 1 Tinh Kim", p.ore >= GameWorld.SMITH_KIM_ORE and p.iron >= GameWorld.SMITH_KIM_IRON]]:
+			var h := UiTheme.hbox(8)
+			var l := UiTheme.label(row[1])
+			l.size_flags_horizontal = SIZE_EXPAND_FILL
+			h.add_child(l)
+			var b := UiTheme.button("Đổi")
+			b.name = "Smith_" + row[0]
+			b.disabled = not row[2]
+			var kind: String = row[0]
+			b.pressed.connect(func():
+				world.smith_trade(kind)
+				refresh())
+			h.add_child(b)
+			left.add_child(h)
 
 	# --- Xưởng Rèn
 	left.add_child(HSeparator.new())
