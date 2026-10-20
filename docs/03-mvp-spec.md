@@ -863,6 +863,6 @@ Xác suất: 0,2% mỗi lần quay, 4 lần quay mỗi nhân vật → khoảng 
 
 | # | Câu hỏi | Quyết định | Ghi chú |
 | --- | --- | --- | --- |
-| Q36 | Lượt gift code là lượt thêm hay thay lượt quay thường? | **Lượt thêm** | Vẫn chọn được bất kỳ lượt quay thường nào |
-| Q37 | Tỉ lệ trong lượt gift code | **A 65 · S 25 · SS 9 · SSS 1** (đề xuất của Claude, chủ dự án đồng ý) | Giữ tỉ lệ tương đối của kịch bản: hạng cao vẫn hiếm, SSS không bị phá giá; chia đều 25% sẽ làm SSS phổ biến gấp 125 lần quay thường |
-| Q38 | Mỗi nhân vật dùng tối đa mấy mã | **1 mã** | |
+| Q43 | Lượt gift code là lượt thêm hay thay lượt quay thường? | **Lượt thêm** | Vẫn chọn được bất kỳ lượt quay thường nào |
+| Q44 | Tỉ lệ trong lượt gift code | **A 65 · S 25 · SS 9 · SSS 1** (đề xuất của Claude, chủ dự án đồng ý) | Giữ tỉ lệ tương đối của kịch bản: hạng cao vẫn hiếm, SSS không bị phá giá; chia đều 25% sẽ làm SSS phổ biến gấp 125 lần quay thường |
+| Q45 | Mỗi nhân vật dùng tối đa mấy mã | **1 mã** | |

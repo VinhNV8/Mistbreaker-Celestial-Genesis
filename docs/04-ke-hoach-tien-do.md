@@ -399,4 +399,4 @@ Chủ dự án uỷ quyền (20/10/2026) chọn phương án tốt nhất, hợp
 | Q25 | Boss vùng 1 cấp 6 giữa vùng; Lõi Sương mở sau boss | BD-06 |
 | Q26 | Chỉ thêm Đá, Sắt, Tinh Thạch; Bến Cá là buff lãnh địa; bỏ Tinh Thạch Hư Vô | KP-06, TB-11 |
 | Q27 | Dùng tên, kỹ năng, đồ Cam như tài liệu 06 | BD-02…04, CB-18…20 |
-| Q36–Q38 | Gift code: lượt **thêm**; tỉ lệ A 65 · S 25 · SS 9 · SSS 1; **1 mã** mỗi nhân vật (chủ dự án chốt) | TP-46 |
+| Q43–Q45 | Gift code: lượt **thêm**; tỉ lệ A 65 · S 25 · SS 9 · SSS 1; **1 mã** mỗi nhân vật (chủ dự án chốt) | TP-46 |
