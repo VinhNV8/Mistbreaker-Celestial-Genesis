@@ -2,6 +2,7 @@ extends RefCounted
 ## Dựng các màn hình toàn trang: tiêu đề, Lễ Thức Tỉnh, chiến thắng.
 
 const Awakening = preload("res://scripts/core/awakening.gd")
+const GiftCode = preload("res://scripts/core/gift_code.gd")
 const Explore = preload("res://scripts/core/explore.gd")
 const Talents = preload("res://scripts/data/talents.gd")
 const UiTheme = preload("res://scripts/ui/ui_theme.gd")
@@ -181,6 +182,21 @@ static func awakening(rng: Callable, on_accept: Callable, player_name := "") -> 
 		"Small", 600
 	))
 
+	# CR-02 (GC-01): ô nhập gift code của nhà phát hành.
+	var gift_row := _buttons(col)
+	var gift_edit := LineEdit.new()
+	gift_edit.name = "GiftEdit"
+	gift_edit.placeholder_text = "Gift code: TPKG-XXXX-XXXX-XXXX"
+	gift_edit.custom_minimum_size.x = 300
+	gift_edit.max_length = 24
+	gift_row.add_child(gift_edit)
+	var b_gift := UiTheme.button("Đổi mã")
+	b_gift.name = "GiftButton"
+	gift_row.add_child(b_gift)
+	var gift_note := _centered("Có gift code? Nhập để Bia Đá quay thêm 1 lần chỉ ra hạng A, S, SS hoặc SSS (không tốn lượt quay lại).", "Small", 600)
+	gift_note.name = "GiftNote"
+	col.add_child(gift_note)
+
 	var render := func() -> void:
 		var aw = state.aw
 		for holder in [card_holder, history]:
@@ -198,7 +214,8 @@ static func awakening(rng: Callable, on_accept: Callable, player_name := "") -> 
 		card_holder.add_child(pair)
 		for i in aw.rolls.size():
 			var t: Dictionary = aw.rolls[i]
-			var chip := UiTheme.button("Lần %d: %s · %s" % [i + 1, t.rank, t.name])
+			var label := ("★ Gift code: %s · %s" % [t.rank, t.name]) if i == aw.gift_index else ("Lần %d: %s · %s" % [i + 1 - (1 if aw.gift_used() and i > aw.gift_index else 0), t.rank, t.name])
+			var chip := UiTheme.button(label)
 			var c := Talents.rank_color(t.rank)
 			chip.add_theme_stylebox_override("normal", UiTheme.box(Color(c, 0.25 if i == state.selected else 0.04), 999, 1, c, 8))
 			chip.add_theme_stylebox_override("hover", UiTheme.box(Color(c, 0.3), 999, 1, c, 8))
@@ -211,7 +228,39 @@ static func awakening(rng: Callable, on_accept: Callable, player_name := "") -> 
 		b_roll.text = "Chạm Bia Đá" if aw.rolls.is_empty() else "Quay lại (còn %d lần)" % aw.rerolls_left()
 		b_roll.disabled = rolling or not aw.can_roll()
 		b_accept.disabled = rolling or state.selected < 0
+		gift_edit.editable = not aw.gift_used() and not rolling
+		b_gift.disabled = aw.gift_used() or rolling
 	screen.set_meta("render", render)
+
+	var redeem := func(code: String) -> void:
+		var aw = state.aw
+		if aw.gift_used():
+			gift_note.text = "Mỗi nhân vật chỉ dùng được 1 gift code."
+			return
+		if state.rolling != null:
+			return
+		var res := GiftCode.validate(code)
+		if not res.ok:
+			gift_note.text = res.message
+			gift_note.add_theme_color_override("font_color", UiTheme.BAD)
+			return
+		GiftCode.mark_redeemed(res.serial)
+		gift_note.text = "Mã hợp lệ! Bia Đá rực sáng…"
+		gift_note.add_theme_color_override("font_color", UiTheme.GOLD)
+		var started := Time.get_ticks_msec()
+		var rare: Array = Talents.LIST.filter(func(x): return Talents.rank_index(x.rank) >= Talents.rank_index("A") and not x.get("hidden", false))
+		while Time.get_ticks_msec() - started < 1400:
+			state.rolling = rare[randi() % rare.size()]
+			render.call()
+			await screen.get_tree().create_timer(0.08).timeout
+		state.rolling = null
+		var t: Dictionary = aw.gift_roll(res.serial)
+		state.selected = aw.gift_index
+		gift_note.text = "Gift code: nhận %s · %s. Vẫn có thể chọn lượt quay khác." % [t.rank, t.name]
+		render.call()
+	b_gift.pressed.connect(func(): redeem.call(gift_edit.text))
+	gift_edit.text_submitted.connect(func(txt): redeem.call(txt))
+	screen.set_meta("redeem", redeem)
 
 	b_roll.pressed.connect(func():
 		var aw = state.aw
@@ -230,7 +279,7 @@ static func awakening(rng: Callable, on_accept: Callable, player_name := "") -> 
 		render.call())
 	b_accept.pressed.connect(func():
 		if state.selected >= 0:
-			on_accept.call(state.aw.rolls[state.selected].id))
+			on_accept.call(state.aw.rolls[state.selected].id, state.aw.gift_serial))
 	render.call()
 	return screen
 

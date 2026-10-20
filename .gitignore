@@ -4,3 +4,4 @@ __pycache__/
 .claude/logs/
 **/.claude/logs/
 build/
+tools/giftcode_out/

@@ -37,7 +37,7 @@ File này liệt kê **mọi hạng mục trong kịch bản**: trạng thái hi
 | 30 phút đầu (mục 9) | 9 | 9 | 0 | 0 | 0 |
 | Đồ hoạ, âm thanh | 13 | 11 | 0 | 2 | 0 |
 | Kỹ thuật, phát hành | 10 | 4 | 3 | 3 | 0 |
-| **Tổng** | **182** | **106** (58%) | **21** (12%) | **53** (29%) | **2** |
+| **Tổng** | **183** | **107** (58%) | **21** (11%) | **53** (29%) | **2** |
 
 ### Các giai đoạn
 
@@ -130,6 +130,7 @@ Thiết kế chi tiết từng Thiên phú (hiệu ứng Lv1 → Lv10, 2 bậc t
 | TP-43 | Bảng Thiên phú hiện trước cây tiến hoá (tên, hạng, điều kiện) | ✅ | C1 | Smoke `05d-talent` | **Q20** (C1-14) |
 | TP-44 | Cộng hưởng đặc biệt hiện "???" kèm gợi ý cho tới khi kích hoạt | ⬜ | Alpha | — | **Q21**. Đi cùng TP-13; Thợ Săn Di Tích hiện sẵn |
 | TP-45 | Thông báo toàn server khi có người tiến hoá lên SSS (không giới hạn độc nhất) | ⬜ | Beta | — | **Q19**. Cần backend (KT-09) |
+| TP-46 | **Gift code** ở Lễ Thức Tỉnh: lượt quay thêm chỉ ra hạng A–SSS ([CR-02](03-mvp-spec.md)) | ✅ | C1 | GC-T1, GC-T2 | Bản offline: mỗi mã 1 lần mỗi máy; mỗi mã 1 lần toàn server cần backend (KT-10). Sinh mã: `python tools/giftcode.py` |
 
 ## 4. Nhân vật, chỉ số và lên cấp (kịch bản mục 4)
 
@@ -379,6 +380,7 @@ Mỗi đợt theo quy trình: **viết spec → duyệt → code → test → c�
 | 5 | Tốc độ hồi Đuốc khi phát hành (KP-02) | Nhịp độ khai phá | 2 phút/cái (kịch bản: 20 phút) |
 | 6 | ~~Khởi tạo Git cho dự án (KT-05)~~ | An toàn mã nguồn | **Đã xong** 20/10/2026, có remote GitHub |
 | 7 | Q13–Q16: số liệu Đạo Tặc cướp thuộc tính, độc nhất server — [CR-01](03-mvp-spec.md) | Thiên phú SSS | Như CR-01 (đã code ở M3) |
+| 11 | Q36–Q38: gift code — lượt thêm hay thay, tỉ lệ, số mã mỗi nhân vật — [CR-02](03-mvp-spec.md) | Thiên phú hạng cao | Lượt thêm · A 65/S 25/SS 9/SSS 1 · 1 mã |
 | 10 | Q28–Q34: 8 kỹ năng, phím 1–4, INT/LUK, né tránh, MP, tinh anh vùng 1, không đổi lớp — [03 mục 5.11](03-mvp-spec.md) | Combat 2 lớp | Như spec M3 (đã code) |
 
 ### 13.1. Đã chốt

@@ -19,6 +19,7 @@ const Classes = preload("res://scripts/data/classes.gd")
 const Stats = preload("res://scripts/core/stats.gd")
 const Looks = preload("res://scripts/data/looks.gd")
 const Story = preload("res://scripts/data/story.gd")
+const GiftCode = preload("res://scripts/core/gift_code.gd")
 
 var _total := 0
 var _failed: Array[String] = []
@@ -95,6 +96,9 @@ func _init() -> void:
 	_run("C1-T10 cửa hàng, bán đồ, Thương nhân lữ hành", _test_c1_shop)
 	_run("C1-T11 Tự đánh, tự cộng điểm", _test_c1_auto)
 	_run("C1-T12 đủ hình ngoại hình, NPC, boss hiếm và âm thanh", _test_c1_assets)
+	# CR-02 — gift code (03-mvp-spec Phụ lục A)
+	_run("GC-T1 gift code: định dạng, kiểm tra, dùng 1 lần, 1 mã mỗi nhân vật", _test_gift_code)
+	_run("GC-T2 gift code: chỉ hạng A–SSS, tỉ lệ 65/25/9/1", _test_gift_rates)
 
 	print("")
 	if _failed.is_empty():
@@ -1587,3 +1591,55 @@ func _test_c1_assets() -> void:
 		_check(ResourceLoader.exists("res://assets/audio/sfx/%s.wav" % id), "có âm thanh %s" % id)
 	for id in ["village", "forest", "core", "boss"]:
 		_check(ResourceLoader.exists("res://assets/audio/music/%s.wav" % id), "có nhạc %s" % id)
+
+
+func _test_gift_code() -> void:
+	GiftCode.store_path = "user://test_redeemed_codes.cfg"
+	if FileAccess.file_exists(GiftCode.store_path):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(GiftCode.store_path))
+	# Mã do tools/giftcode.py sinh — game phải nhận (cùng thuật toán, GC-06/07).
+	_check(GiftCode.validate("TPKG-4T8Y-9ATD-78JK").ok, "nhận mã do công cụ Python sinh")
+	_check(GiftCode.validate("tpkg 4t8y-9atd-78jk").ok, "không phân biệt hoa thường, dấu gạch, khoảng trắng")
+	_check(not GiftCode.validate("TPKG-4T8Y-9ATD-78JL").ok, "sai 1 ký tự kiểm tra thì từ chối")
+	_check(GiftCode.validate("ABC").message.contains("định dạng"), "sai định dạng báo rõ")
+	_check(GiftCode.validate("").message.contains("Hãy nhập"), "ô trống báo rõ")
+	var code := GiftCode.make("TEST0001")
+	var res := GiftCode.validate(code)
+	_check(res.ok and res.serial == "TEST0001", "mã tự sinh hợp lệ")
+	GiftCode.mark_redeemed(res.serial)
+	_check(GiftCode.validate(code).message.contains("đã được dùng"), "mỗi mã dùng 1 lần trên máy")
+	var aw := Awakening.new(RngUtil.make(4))
+	aw.roll()
+	var t: Dictionary = aw.gift_roll("TEST0002")
+	_check(Talents.rank_index(t.rank) >= Talents.rank_index("A"), "lượt gift code ra hạng A trở lên")
+	_check(aw.gift_roll("TEST0003").is_empty(), "mỗi nhân vật 1 mã")
+	_check(aw.rerolls_left() == 3 and aw.can_roll(), "lượt gift code không tốn lượt quay lại")
+	for i in 3:
+		aw.roll()
+	_check(aw.rolls.size() == 5 and not aw.can_roll(), "vẫn đủ 4 lượt thường + 1 lượt gift code")
+	var p := _profile("kiem-tam")
+	p.gift_code = "TEST0002"
+	var back := Profile.new()
+	back.load_dict(JSON.parse_string(JSON.stringify(p.to_dict())))
+	_check(back.gift_code == "TEST0002", "hồ sơ lưu mã đã dùng")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(GiftCode.store_path))
+
+
+func _test_gift_rates() -> void:
+	var counts := {"A": 0, "S": 0, "SS": 0, "SSS": 0}
+	var rng := RngUtil.make(21)
+	var n := 100000
+	var bad := 0
+	for i in n:
+		var aw := Awakening.new(rng)
+		var t: Dictionary = aw.gift_roll()
+		if counts.has(t.rank):
+			counts[t.rank] += 1
+		else:
+			bad += 1
+	var expect := {"A": 65.0, "S": 25.0, "SS": 9.0, "SSS": 1.0}
+	var ok: bool = bad == 0
+	for r in expect:
+		ok = ok and absf(counts[r] * 100.0 / n - expect[r]) < 1.0
+	print("       (gift code: %s)" % str(counts))
+	_check(ok, "tỉ lệ A 65 · S 25 · SS 9 · SSS 1 (lệch < 1 điểm %)")

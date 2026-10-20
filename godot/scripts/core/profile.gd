@@ -91,6 +91,8 @@ var evo_essence := 0
 var herb_timer := 0.0
 ## Thương nhân lữ hành: {"until": giờ Unix, "items": [món đồ có "price"]}.
 var merchant := {}
+## CR-02 (GC-08): seri gift code đã dùng khi thức tỉnh ("" = không dùng).
+var gift_code := ""
 
 
 func setup(talent_id: String, rng: Callable, now: float, class_name_id := "kiem-khach") -> void:
@@ -154,6 +156,7 @@ func to_dict() -> Dictionary:
 		"evo_essence": evo_essence,
 		"herb_timer": herb_timer,
 		"merchant": merchant,
+		"gift_code": gift_code,
 	}
 
 
@@ -271,6 +274,7 @@ func load_dict(d: Dictionary) -> bool:
 		seen_dialogs.append(str(k))
 	rare_boss_at = float(d.get("rare_boss_at", 0.0))
 	evo_essence = int(d.get("evo_essence", 0))
+	gift_code = str(d.get("gift_code", ""))
 	herb_timer = float(d.get("herb_timer", 0.0))
 	merchant = {}
 	var mc = d.get("merchant", {})

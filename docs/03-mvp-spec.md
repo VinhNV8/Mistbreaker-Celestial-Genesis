@@ -830,3 +830,39 @@ Xác suất: 0,2% mỗi lần quay, 4 lần quay mỗi nhân vật → khoảng 
 | Q14 | Giới hạn điểm cướp | 1 × cấp (≈ +15% tấn công) | 2 × cấp (≈ +30% tấn công, vượt nguyên tắc 25%) |
 | Q15 | Cướp khi **hạ** quái hay mỗi **đòn đánh**? | Khi hạ quái | Mỗi đòn có tỉ lệ nhỏ cướp tạm thời, làm quái yếu đi trong trận |
 | Q16 | Thời gian giải phóng khi người giữ bỏ game | 30 ngày | 14 / 60 ngày, hoặc không bao giờ |
+
+### CR-02 — Gift code ở Lễ Thức Tỉnh
+
+| | |
+| --- | --- |
+| Ngày yêu cầu | 20/10/2026 |
+| Yêu cầu của chủ dự án | *"Nhà phát hành phát mã code; ở màn hình thức tỉnh Thiên phú lúc đầu game có ô nhập gift-code → người chơi có mã được nhận Thiên phú random từ A → SSS."* |
+| Kịch bản gốc | Không có (mục 8 kiếm tiền: không bán Thiên phú — gift code là quà sự kiện, không bán) |
+| Trạng thái | ✅ Đã làm (bản offline) · bản server ở Beta (KT-10) |
+
+#### CR-02.1. Yêu cầu
+
+| Mã | Yêu cầu | Tiêu chí nghiệm thu |
+| --- | --- | --- |
+| GC-01 | Màn hình Lễ Thức Tỉnh có ô **Nhập gift code** + nút **Đổi mã** | Smoke `02b-awakening` |
+| GC-02 | Mã hợp lệ → Bia Đá quay thêm **1 lần đặc biệt** chỉ ra Thiên phú hạng **A, S, SS hoặc SSS**; kết quả thêm vào danh sách lượt quay để chọn như các lượt khác. **Không tốn** lượt quay lại | GC-T1 |
+| GC-03 | Tỉ lệ trong lượt gift code giữ đúng tỉ lệ tương đối của kịch bản giữa các hạng A trở lên: A 65% · S 25% · SS 9% · SSS 1% | GC-T2: 100.000 lần, lệch < 1 điểm % |
+| GC-04 | Mỗi nhân vật dùng **tối đa 1 mã**; mỗi mã chỉ dùng **1 lần trên máy** (lưu `user://redeemed_codes.cfg`, không mất khi xoá save) | GC-T1 |
+| GC-05 | Mã sai báo lỗi rõ ràng: sai định dạng / mã không tồn tại / mã đã dùng / đã dùng mã cho nhân vật này | GC-T1 |
+| GC-06 | Định dạng mã `TPKG-XXXX-XXXX-XXXX` (12 ký tự Base32 Crockford, không phân biệt hoa thường, bỏ qua dấu gạch và khoảng trắng): 8 ký tự số seri + 4 ký tự kiểm tra = SHA-256(khoá bí mật + seri) | GC-T1 |
+| GC-07 | Nhà phát hành sinh mã bằng `python tools/giftcode.py <số lượng> [tên đợt]` → in danh sách và ghi `tools/giftcode_out/<đợt>.csv` (thư mục này không commit) | Công cụ sinh 1.000 mã, game nhận hết |
+| GC-08 | Hồ sơ lưu mã đã dùng (`gift_code`) để tra soát | GC-T1 |
+
+#### CR-02.2. Bảo mật và giới hạn của bản offline
+
+- Game kiểm mã **ngay trên máy**, khoá bí mật nằm trong file game: người giải nén game có thể tự sinh mã. Chấp nhận cho bản thử nghiệm kín.
+- "Mỗi mã 1 lần" chỉ đúng **trên 1 máy**; muốn mỗi mã dùng 1 lần trên toàn bộ người chơi phải kiểm ở **server** (Beta, KT-10): server giữ danh sách mã và đánh dấu đã dùng.
+- Đạo Tặc (SSS) quay từ gift code vẫn theo luật DT-15 (chưa có server thì không giới hạn).
+
+#### CR-02.3. Điểm cần duyệt
+
+| # | Câu hỏi | Mặc định | Lựa chọn khác |
+| --- | --- | --- | --- |
+| Q36 | Lượt gift code là lượt **thêm** hay **thay** lượt quay thường? | Thêm (vẫn chọn được lượt thường) | Thay: dùng mã thì nhận luôn, không quay thường |
+| Q37 | Tỉ lệ trong lượt gift code | Tỉ lệ tương đối của kịch bản (A 65 · S 25 · SS 9 · SSS 1) | Chia đều 4 hạng (25% mỗi hạng) — SSS quá dễ |
+| Q38 | Mỗi nhân vật dùng tối đa mấy mã | 1 | Không giới hạn |

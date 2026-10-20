@@ -88,6 +88,8 @@ Main (Node, main.gd)
 | --- | --- |
 | `scripts/data/talents.gd` | 20 Thiên phú, kỹ năng L, tỉ lệ theo hạng, hiệu ứng phụ theo nhóm, chi phí luyện cấp (M2) |
 | `scripts/data/monsters.gd` | 6 loại quái vùng 1 + boss: loại (arch), tốc, tầm, đòn đánh, hệ ngũ hành, bảng Đạo Tặc cướp, tinh anh (M3). **Không** chứa HP/Tấn công/Phòng thủ — tính bằng `Formulas.mob_stats()` |
+| `scripts/core/gift_code.gd` | Kiểm gift code (SHA-256 + Base32 Crockford), mã đã dùng lưu `user://redeemed_codes.cfg` (CR-02) |
+| `tools/giftcode.py` (ngoài `godot/`) | Nhà phát hành sinh mã: `python tools/giftcode.py <số lượng> [đợt]` → `tools/giftcode_out/<đợt>.csv` (không commit); `--check <mã>` để thử. Thuật toán phải giống `gift_code.gd` (test GC-T1 kiểm 1 mã do công cụ sinh) |
 | `scripts/data/looks.gd` | Ngoại hình: giới tính, 3 da, 4 kiểu tóc, 6 màu tóc; id sprite thân/tóc (C1) |
 | `scripts/data/story.gd` | 18 đoạn thoại và chuỗi 11 nhiệm vụ chương 1 (C1) |
 | `scripts/data/resources.gd` | Tên, icon, chú thích 8 tài nguyên (C1, Spec_Notes N6) |
@@ -332,6 +334,7 @@ Chạy bot trên nhiều seed, có né và không né, rồi chỉnh HP/ATK boss
 | D23 | Âm thanh: logic chỉ ghi id vào `GameWorld.sfx` (tối đa 32/khung), `main.gd` chuyển cho `AudioManager` | Logic vẫn chạy headless, test không cần âm thanh | Thêm âm mới: gọi `_sfx("id")` + sinh file cùng id |
 | D24 | Thoại và nhiệm vụ là dữ liệu (`story.gd`); trạng thái kiểm theo nhịp 0,5 giây (`_check_quest_state`) + sự kiện đếm (`quest_event`) | Thêm bước mới chỉ cần 1 dòng dữ liệu + 1 nhánh `match` | Bước kiểu trạng thái có độ trễ tối đa 0,5 giây |
 | D25 | Thời gian thực (boss hiếm, thương nhân) dùng `GameWorld.now_unix()`, test ghi đè bằng `debug_now` | Kịch bản "2 lần/ngày", "tồn tại 1 giờ" | Người chơi đổi giờ máy để gọi boss — chống gian lận ở server (KT-10) |
+| D26 | Gift code kiểm offline bằng tổng kiểm tra SHA-256 có khoá bí mật trong game (CR-02) | Chưa có server; nhà phát hành vẫn phát mã được ngay | Người giải nén game tự sinh được mã; mỗi mã chỉ chặn dùng lại trên 1 máy → bản phát hành phải chuyển sang server (KT-10) |
 | D16 | Đồng hồ xây riêng (`build_clock`) thay vì giờ thực | Không phụ thuộc đồng hồ máy (người chơi chỉnh giờ để gian lận); vẫn chạy offline qua `apply_offline` | Phải nhớ cộng `build_clock` ở cả `update()` và `apply_offline()` |
 
 ## 7. Lỗi đã gặp và cách xử lý

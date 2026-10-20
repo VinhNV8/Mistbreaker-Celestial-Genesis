@@ -21,6 +21,7 @@ const UiTheme = preload("res://scripts/ui/ui_theme.gd")
 const IntroScreen = preload("res://scripts/ui/intro_screen.gd")
 const CreateScreen = preload("res://scripts/ui/create_screen.gd")
 const DialogBox = preload("res://scripts/ui/dialog_box.gd")
+const GiftCode = preload("res://scripts/core/gift_code.gd")
 const ShopPanel = preload("res://scripts/ui/shop_panel.gd")
 const PauseMenu = preload("res://scripts/ui/pause_menu.gd")
 const AudioManager = preload("res://scripts/audio/audio_manager.gd")
@@ -391,13 +392,14 @@ func _on_hero_created(hero: Dictionary) -> void:
 	_set_screen(Screens.awakening(RngUtil.make(randi()), _on_talent_chosen, str(hero.name)))
 
 
-func _on_talent_chosen(talent_id: String) -> void:
+func _on_talent_chosen(talent_id: String, gift_serial := "") -> void:
 	var hero := _pending_hero
 	var p := Profile.new()
 	p.setup(talent_id, RngUtil.make(randi()), _now(), str(hero.get("class_id", "kiem-khach")))
 	p.name = str(hero.get("name", p.name))
 	if hero.has("look"):
 		p.look = hero.look
+	p.gift_code = gift_serial
 	SaveSystem.save_profile(p)
 	_start_world(p)
 
@@ -524,6 +526,9 @@ func _smoke_bot(w: GameWorld) -> Dictionary:
 func _run_smoke(dir: String) -> void:
 	DirAccess.make_dir_recursive_absolute(dir)
 	SaveSystem.save_path = "user://smoke_save.json"
+	GiftCode.store_path = "user://smoke_redeemed_codes.cfg"
+	if FileAccess.file_exists(GiftCode.store_path):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(GiftCode.store_path))
 	SaveSystem.clear_save()
 	_go_title()
 	await _wait(0.5)
@@ -548,6 +553,10 @@ func _run_smoke(dir: String) -> void:
 	await _wait(1.5)
 	_press("RollButton")
 	await _wait(1.5)
+	# CR-02: nhập gift code
+	(_screen.find_child("GiftEdit", true, false) as LineEdit).text = GiftCode.make("SMOKE001")
+	_press("GiftButton")
+	await _wait(1.8)
 	await _shot(dir, "02b-awakening")
 	_press("AcceptButton")
 	await _wait(0.15)
