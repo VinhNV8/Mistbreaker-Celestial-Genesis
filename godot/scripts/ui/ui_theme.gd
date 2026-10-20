@@ -80,7 +80,7 @@ static func get_theme() -> Theme:
 	_button_styles(t, "PrimaryButton", Color("#c9a45c"), Color("#dfbd78"), Color("#1b1408"))
 
 	t.set_stylebox("background", "ProgressBar", box(Color(0, 0, 0, 0.55), 5, 0, LINE, 0))
-	for bar in [["HpBar", Color("#e0484f")], ["ExpBar", Color("#4a9df8")], ["BossBar", Color("#8a63e6")], ["PoiseBar", GOLD]]:
+	for bar in [["HpBar", Color("#e0484f")], ["ExpBar", Color("#4a9df8")], ["MpBar", Color("#7a6cf0")], ["BossBar", Color("#8a63e6")], ["PoiseBar", GOLD]]:
 		t.set_type_variation(bar[0], "ProgressBar")
 		t.set_stylebox("fill", bar[0], box(bar[1], 5, 0, LINE, 0))
 	_theme = t

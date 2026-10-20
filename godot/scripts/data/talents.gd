@@ -92,9 +92,49 @@ const LIST := [
 	{"id": "long-mach", "name": "Long Mạch", "rank": "SS", "group": "territory",
 		"description": "Mở công trình Long Mạch Đàn: khi xây xong, +10% Tấn công và HP cho nhân vật và mọi đồng minh."},
 	{"id": "dao-tac", "name": "Đạo Tặc", "rank": "SSS", "group": "special", "hidden": true,
-		"description": "Mỗi lần hạ boss, sao chép 1 kỹ năng của boss đó.",
+		"description": "Hạ quái có tỉ lệ cướp 1 điểm thuộc tính của quái (cộng thẳng vào nhân vật, tối đa 1 × cấp). Hạ boss: cướp 3 điểm và sao chép 1 kỹ năng của boss.",
 		"skill": {"name": "Kỹ năng sao chép", "cd": 8.0, "text": "Dùng kỹ năng boss đã sao chép."}},
 ]
+
+
+## TP-41: giá trị hiệu ứng chính để hiển thị — [mẫu câu, giá trị Lv1, giá trị Lv10] (tài liệu 05 mục 2.1).
+## Code dùng cùng các mốc này qua lv_value() tại chỗ áp dụng (D14).
+const MAIN_SCALE := {
+	"than-the": ["+%s%% HP tối đa", 8.0, 12.0],
+	"tay-nhanh": ["+%s%% tốc đánh", 5.0, 7.5],
+	"may-man": ["+%s điểm %% rơi đồ và rơi đá", 5.0, 7.5],
+	"chan-khong": ["+%s%% tốc chạy khi không giao chiến", 10.0, 15.0],
+	"huyet-chien": ["HP < 30%%: +%s%% sát thương", 20.0, 30.0],
+	"tho-ren": ["+%s%% tỉ lệ cường hoá", 10.0, 15.0],
+	"khuu-giac": ["Thấy rương ẩn trong %s m", 30.0, 45.0],
+	"kiem-tam": ["Đòn thứ 5 ×%s sát thương", 2.0, 2.5],
+	"thao-duoc": ["Bình máu hồi thêm %s%%", 30.0, 45.0],
+	"trai-tim": ["Xây nhanh %s%%", 25.0, 37.5],
+	"thuan-thu": ["Thu phục dưới %s%% HP", 10.0, 15.0],
+	"mat-ung": ["+%s%% chí mạng", 10.0, 15.0],
+	"hap-huyet": ["%s%% sát thương thành máu", 8.0, 12.0],
+	"ban-tay-vang": ["%s%% thêm 1 Tinh Kim khi phân rã", 20.0, 30.0],
+	"ngu-hanh": ["Khắc hệ +%s%%", 30.0, 40.0],
+	"thoi-gian-ngung-dong": ["Ngưng Đọng %s giây", 3.0, 4.5],
+	"bay-dan": ["%s%% quái bị hạ thành lính bóng tối", 15.0, 22.5],
+	"thien-menh": ["Sản lượng lãnh địa +%s%%", 20.0, 30.0],
+	"long-mach": ["Long Mạch Đàn +%s%% Tấn công và HP", 10.0, 15.0],
+	"dao-tac": ["Tỉ lệ cướp thuộc tính ×%s", 1.0, 1.5],
+}
+
+
+static func main_effect_text(talent_id: String, lv: int) -> String:
+	if not MAIN_SCALE.has(talent_id):
+		return ""
+	var m: Array = MAIN_SCALE[talent_id]
+	var v := lv_value(m[1], m[2], lv)
+	var txt := str(snappedf(v, 0.01)).trim_suffix(".0").replace(".", ",")
+	return str(m[0]) % txt
+
+
+## TP-41 (Q17): hiệu ứng chính nội suy tuyến tính từ giá trị Lv1 tới Lv10 (tài liệu 05 mục 2.1).
+static func lv_value(v1: float, v10: float, lv: int) -> float:
+	return v1 + (v10 - v1) * float(clampi(lv, 1, MAX_TALENT_LEVEL) - 1) / float(MAX_TALENT_LEVEL - 1)
 
 
 static func rank_index(rank: String) -> int:

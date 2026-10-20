@@ -4,7 +4,7 @@
 | --- | --- |
 | Dự án | Thiên Phú Khai Giới |
 | Nguồn | [Kịch bản](kich-ban-game-thien-phu-khai-gioi.md) mục 2, 5, 6, 7 |
-| Trạng thái | **Đã chốt thiết kế** 20/10/2026 — Q22–Q27 chốt theo phương án ở mục 7. Đã code: vùng 1 (một phần, chỉ số còn theo công thức cũ) |
+| Trạng thái | **Đã chốt thiết kế** 20/10/2026 — Q22–Q27 chốt theo phương án ở mục 7. Đã code: vùng 1 (một phần) — **chỉ số quái trong game tính bằng công thức mục 1 từ M3** (`Formulas.mob_stats`) |
 | Cập nhật | 20/10/2026 |
 | Cách tạo | Các bảng chỉ số được **sinh bằng script** `tools/gen_world_doc.py` từ công thức ở mục 1. Đổi công thức hoặc thêm quái: sửa script rồi chạy `python tools/gen_world_doc.py docs/06-ban-do-quai-boss.md`, không sửa tay từng số |
 
@@ -60,9 +60,9 @@ Boss vùng tính với người chơi **thấp hơn boss 1 cấp** (cấp khuy�
 | Phép | ×0,9 | ×1,2 | ×0,8 | 110 | 18 m | Sát thương cao, kỹ năng vùng |
 | Tự nổ | ×0,6 | ×2,5 | ×0,5 | 170 | 2,0 m | Lao tới nổ một lần |
 
-### 1.3. So với chỉ số đang chạy trong code (vùng 1)
+### 1.3. So với chỉ số của prototype (trước M3)
 
-Code hiện tại dùng công thức cũ của prototype (`HP × (1 + 0,35·(L−1))`, `ATK × (1 + 0,25·(L−1))`). Công thức mới **làm quái cứng hơn ở cấp 5 trở lên** — khớp với phát hiện F2 (người chơi lên cấp quá nhanh). **Đã chốt (Q22): áp dụng ở M3**, làm cùng đợt cân bằng 20 Thiên phú × 2 lớp; M5 chỉ tinh chỉnh hệ số từ dữ liệu playtest.
+Trước M3, code dùng công thức cũ của prototype (`HP × (1 + 0,35·(L−1))`, `ATK × (1 + 0,25·(L−1))`). Công thức mới **làm quái cứng hơn ở cấp 5 trở lên** — khớp với phát hiện F2 (người chơi lên cấp quá nhanh). **Đã áp dụng ở M3** (Q22): `godot/scripts/core/formulas.gd` `mob_stats()` tính giống hệt script này; test CB-T1 so khớp bảng dưới. M5 chỉ tinh chỉnh hệ số từ dữ liệu playtest. Cột trái là số cũ để so sánh.
 
 | Quái | Cấp | Code hiện tại (HP / ATK / DEF) | Thiết kế mới (HP / ATK / DEF) |
 | --- | --- | --- | --- |
@@ -131,7 +131,7 @@ Mỗi vùng gồm 3 map con (Ngoài rìa → Trung tâm → Lõi) và 1 dungeon 
 | Sói Đầu Đàn | Nhanh | Mộc | 3–8 | 276 → 823 | 24 → 54 | 9 → 18 | 160 · 3,4 m | 468 → 2.037 | **Hú gọi** (hồi 15 s): gọi 2 Sói Sương; cả bầy +20% tốc chạy 6 giây | STR 35 · AGI 50 · VIT 15 |
 | Nấm Mẹ | Lì | Thổ | 5–10 | 783 → 1.672 | 36 → 67 | 20 → 35 | 80 · 3,6 m | 1.005 → 2.847 | **Sinh sôi** (mỗi 8 s): đẻ 2 nấm con (loại Bầy), nấm con tự nổ sau 3 giây, vòng 3 m, ×1,5 | VIT 45 · INT 35 · LUK 20 |
 
-**Boss chương 1: Sói Chúa Hư Vô** — **đã có trong game** (chỉ số đang theo code cũ, xem mục 1.3)
+**Boss chương 1: Sói Chúa Hư Vô** — **đã có trong game** (chỉ số theo công thức mục 1 từ M3)
 
 | Cấp | Hệ | HP | Tấn công | Phòng thủ | Phá Thế | Cấp khuyến nghị | EXP | Vàng |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -697,7 +697,7 @@ Dùng bằng phím L (Thiên phú Đạo Tặc, [05-thien-phu-chi-tiet](05-thien
 
 | Đợt | Nội dung |
 | --- | --- |
-| M3 | **Áp công thức chỉ số mới cho vùng 1 (Q22)**: quái lấy chỉ số từ công thức trong code thay cho bảng số cứng · boss chương 1 = 90 đòn (Q23) · Thanh Phá Thế + kỹ năng riêng cho quái tinh anh vùng 1 (Sói Đầu Đàn, Nấm Mẹ) · thêm Mộc Tinh |
+| M3 | ✅ Xong 20/10/2026 — **Áp công thức chỉ số mới cho vùng 1 (Q22)**: quái lấy chỉ số từ công thức trong code thay cho bảng số cứng · boss chương 1 = 90 đòn (Q23) · Thanh Phá Thế + kỹ năng riêng cho quái tinh anh vùng 1 (Sói Đầu Đàn, Nấm Mẹ) · thêm Mộc Tinh |
 | M4 | Vùng 1 đủ 3 map con, 40 ô (Bìa Rừng, Rừng Sâu, Lõi Sương mở sau boss — Q24, Q25) · toàn bộ vùng 2, 45 ô · Mỏ (Đá, Sắt), Bến Cá dạng buff (Q26) · bộ Phong Hành · Mặt Nạ Huyền Ảnh |
 | M5 | Boss hiếm vùng 1–2 (Lão Thụ, Bạch Hổ) · tinh chỉnh hệ số công thức (số đòn, % HP) từ dữ liệu playtest |
 | Alpha | Vùng 3–5 |

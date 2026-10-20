@@ -151,6 +151,45 @@ def hit_spark(frame):
     return cv, [8, 8]
 
 
+# ------------------------------------------------------------ đạn, bẫy của người chơi (M3) — vẽ hướng sang phải, game xoay
+def fx_arrow():
+    cv = Canvas(20, 8)
+    cv.line(2, 4, 16, 4, R["wood"][3], 1.2)
+    cv.shade_poly([(15, 1.5), (19.5, 4), (15, 6.5)], R["steel"])
+    cv.line(1, 2, 4, 4, hexc("#c84040"))
+    cv.line(1, 6, 4, 4, hexc("#c84040"))
+    cv.outline(OUTLINE)
+    return cv, [10, 4]
+
+
+def fx_pierce():
+    cv = Canvas(28, 12)
+    glow(cv, 16, 6, 9, hexc("#c28af0"), 140)
+    cv.line(2, 6, 22, 6, R["purple"][3], 1.6)
+    cv.shade_poly([(20, 2.5), (27, 6), (20, 9.5)], R["white"])
+    cv.outline(OUTLINE)
+    return cv, [14, 6]
+
+
+def fx_wave():
+    cv = Canvas(24, 32)
+    glow(cv, 12, 16, 12, hexc("#c8e6ff"), 120)
+    for i, r in enumerate((13, 10)):
+        cv.arc(2 + i * 2, 16, r, math.radians(-65), math.radians(65), hexc("#ffffff") if i == 0 else hexc("#9ec8ff"), 3.0 - i)
+    return cv, [12, 16]
+
+
+def fx_trap():
+    cv = Canvas(18, 14)
+    shadow(cv, 9, 10, 8, 2.5)
+    cv.shade_ellipse(9, 9, 7.5, 3.5, R["steel"])
+    for i in range(5):
+        x = 4 + i * 2.5
+        cv.shade_poly([(x - 1, 9), (x, 3 + (i % 2) * 2), (x + 1, 9)], R["white"])
+    cv.outline(OUTLINE)
+    return cv, [9, 9]
+
+
 def build_all():
     out = {}
     for i in range(3):
@@ -172,4 +211,8 @@ def build_all():
     out["fx-spore"] = spore()
     for f in range(3):
         out["fx-hit-%d" % f] = hit_spark(f)
+    out["fx-arrow"] = fx_arrow()
+    out["fx-pierce"] = fx_pierce()
+    out["fx-wave"] = fx_wave()
+    out["fx-trap"] = fx_trap()
     return {k: (cv.to_image(), origin) for k, (cv, origin) in out.items()}

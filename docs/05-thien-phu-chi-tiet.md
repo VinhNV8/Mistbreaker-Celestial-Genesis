@@ -33,7 +33,7 @@ Quy ước: 1 m = 10 đơn vị trong game. "Lv" = cấp Thiên phú (1–10), k
 | --- | --- | --- |
 | Thưởng chung | Mỗi Lv trên 1: +2% Tấn công, +2% HP (Lv10: +18%) | ✅ Đã code (M2) |
 | Hiệu ứng phụ theo nhóm | Mở ở Lv5 và Lv10 (bảng ở [03-mvp-spec](03-mvp-spec.md) mục 4.6) | ✅ Đã code (M2) |
-| **Hiệu ứng chính mạnh dần** | Giá trị hiệu ứng chính tăng tuyến tính, Lv10 = ×1,5 Lv1 (trừ các ngoại lệ ghi trong bảng mục 2) | ⬜ Đã chốt (**Q17**), làm ở M3 |
+| **Hiệu ứng chính mạnh dần** | Giá trị hiệu ứng chính tăng tuyến tính, Lv10 = ×1,5 Lv1 (trừ các ngoại lệ ghi trong bảng mục 2) | ✅ Đã code (M3, test TP-T1) |
 | Chi phí | 1, 1, 2, 2, 3, 3, 4, 4, 5 Thiên Phú Tinh Hoa (tổng 25), tại Đền Thiên Phú | ✅ Đã code (M2) |
 
 Công thức hiệu ứng chính ở Lv n: `giá trị(n) = giá trị(1) × (1 + 0,5 × (n − 1) / 9)`.
@@ -79,26 +79,26 @@ Cột **Code**: ✅ đã có trong game (M2), 🟡 có nhưng khác thiết kế
 
 | # | Thiên phú | Hạng · Nhóm | Hiệu ứng chính Lv1 → Lv10 | Kỹ năng L (hồi chiêu) Lv1 → Lv10 | Code |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Thân Thể Cường Tráng | F · Chiến đấu | +8% → +12% HP tối đa | — | ✅ Lv1 |
-| 2 | Tay Nhanh | F · Chiến đấu | +5% → +7,5% tốc đánh | — | ✅ Lv1 |
-| 3 | May Mắn Nhỏ | F · Kinh tế | Quái thường rơi đồ +5 → +7,5 điểm %; rơi Đá Cường Hoá +5 → +7,5 điểm % | — | ✅ Lv1 |
+| 1 | Thân Thể Cường Tráng | F · Chiến đấu | +8% → +12% HP tối đa | — | ✅ Lv1→10 (M3) |
+| 2 | Tay Nhanh | F · Chiến đấu | +5% → +7,5% tốc đánh | — | ✅ Lv1→10 (M3) |
+| 3 | May Mắn Nhỏ | F · Kinh tế | Quái thường rơi đồ +5 → +7,5 điểm %; rơi Đá Cường Hoá +5 → +7,5 điểm % | — | ✅ Lv1→10 (M3) |
 | 4 | Chân Không Biết Mỏi | F · Khai phá | +10% → +15% tốc chạy trên **bản đồ lục địa** và khi không giao chiến | — | 🟡 Chưa có bản đồ lục địa |
-| 5 | Huyết Chiến | C · Chiến đấu | HP < 30%: +20% → +30% sát thương | — | ✅ Lv1 |
-| 6 | Thợ Rèn Bẩm Sinh | C · Chế tạo | Cường hoá +10% → +15% tỉ lệ thành công | — | ✅ Lv1 |
+| 5 | Huyết Chiến | C · Chiến đấu | HP < 30%: +20% → +30% sát thương | — | ✅ Lv1→10 (M3) |
+| 6 | Thợ Rèn Bẩm Sinh | C · Chế tạo | Cường hoá +10% → +15% tỉ lệ thành công | — | ✅ Lv1→10 (M3) |
 | 7 | Khứu Giác Kho Báu | C · Khai phá | Hiện rương ẩn trong 30 m → 45 m; ô sự kiện Di tích 20% → 30% (thay 12% mặc định) | — | 🟡 Thiếu phần Di tích |
-| 8 | Kiếm Tâm | B · Chiến đấu | Đòn thứ 5 gây ×2 → ×2,5 sát thương | **Nhất Kiếm Đoạn** (15 giây): đòn kế tiếp ×3 → ×3,5, chắc chắn chí mạng | ✅ Lv1 |
-| 9 | Nhà Thảo Dược | B · Chế tạo | Hái thảo dược ×2; bình máu hồi +30% → +45% | **Linh Dược** (45 giây): hồi 30% → 45% HP, không tốn bình | ✅ Lv1 |
-| 10 | Trái Tim Lãnh Chúa | B · Lãnh địa | Công trình xây nhanh 25% → 37,5% | **Hiệu Triệu** (300 → 200 giây): hoàn thành ngay 1 công trình đang xây | ✅ Lv1 |
-| 11 | Thuần Thú Sư | A · Triệu hồi | Đòn làm quái thường **hoặc quái Ổ quái** tụt dưới 10% → 15% HP thì thu phục (tối đa 2 thú); thú cưng +0% → +50% chỉ số | — | 🟡 Chưa thu phục quái Ổ quái |
-| 12 | Mắt Ưng | A · Khai phá | Nhìn xuyên sương mù 2 ô; +10% → +15% chí mạng | — | ✅ Lv1 |
-| 13 | Hấp Huyết | A · Chiến đấu | 8% → 12% sát thương thành máu; không dùng được bình máu | — | ✅ Lv1 |
-| 14 | Bàn Tay Vàng | A · Kinh tế | Phân rã: 20% → 30% thêm 1 Tinh Kim | — | ✅ Lv1 |
-| 15 | Ngũ Hành Linh Căn | S · Phép thuật | Đòn đánh mang hệ; khắc hệ +30% → +40% *(ngoại lệ: ×1,33)* | **Đổi hệ** (0,5 giây). Xoáy Kiếm trong 2 giây sau khi đổi hệ = **Ngũ Hành Bộc Phá** +100% → +150%, bán kính 16 m | ✅ Lv1 |
-| 16 | Thời Gian Ngưng Đọng | S · Điều khiển | — | **Ngưng Đọng** (90 giây): quái và đạn đứng yên 3 → 4,5 giây | ✅ Lv1 |
-| 17 | Bầy Đàn Bóng Tối | S · Triệu hồi | Quái bị hạ 15% → 22,5% thành lính bóng tối (tối đa 10, sống 60 giây, tấn công = 30% → 45% của nhân vật) | **Bóng Tối Trỗi Dậy** (60 giây): gọi ngay 3 → 5 lính | ✅ Lv1 |
-| 18 | Thiên Mệnh Khai Giới | SS · Khai phá | Mỗi Đuốc dọn thêm 2 ô kề bên; sản lượng lãnh địa +20% → +30% | — | ✅ Lv1 |
-| 19 | Long Mạch | SS · Lãnh địa | Mở công trình **Long Mạch Đàn**: +10% → +15% Tấn công và HP cho nhân vật và đồng minh | — | ✅ Lv1 |
-| 20 | Đạo Tặc (Ẩn) | SSS · Đặc biệt | **Cướp Thuộc Tính** khi hạ quái: tỉ lệ ×1,0 → ×1,5 (bảng ở CR-01), giới hạn 1 × cấp nhân vật | **Kỹ năng sao chép** (8 giây): dùng kỹ năng boss đã sao chép; +0% → +30% sát thương. Danh sách kỹ năng boss ở [06-ban-do-quai-boss](06-ban-do-quai-boss.md) mục 5 | 🟡 Mới có sao chép kỹ năng |
+| 8 | Kiếm Tâm | B · Chiến đấu | Đòn thứ 5 gây ×2 → ×2,5 sát thương | **Nhất Kiếm Đoạn** (15 giây): đòn kế tiếp ×3 → ×3,5, chắc chắn chí mạng | ✅ Lv1→10 (M3) |
+| 9 | Nhà Thảo Dược | B · Chế tạo | Hái thảo dược ×2; bình máu hồi +30% → +45% | **Linh Dược** (45 giây): hồi 30% → 45% HP, không tốn bình | ✅ Lv1→10 (M3) |
+| 10 | Trái Tim Lãnh Chúa | B · Lãnh địa | Công trình xây nhanh 25% → 37,5% | **Hiệu Triệu** (300 → 200 giây): hoàn thành ngay 1 công trình đang xây | ✅ Lv1→10 (M3) |
+| 11 | Thuần Thú Sư | A · Triệu hồi | Đòn làm quái thường **hoặc quái Ổ quái** tụt dưới 10% → 15% HP thì thu phục (tối đa 2 thú); thú cưng +0% → +50% chỉ số | — | ✅ Lv1→10 (M3) |
+| 12 | Mắt Ưng | A · Khai phá | Nhìn xuyên sương mù 2 ô; +10% → +15% chí mạng | — | ✅ Lv1→10 (M3) |
+| 13 | Hấp Huyết | A · Chiến đấu | 8% → 12% sát thương thành máu; không dùng được bình máu | — | ✅ Lv1→10 (M3) |
+| 14 | Bàn Tay Vàng | A · Kinh tế | Phân rã: 20% → 30% thêm 1 Tinh Kim | — | ✅ Lv1→10 (M3) |
+| 15 | Ngũ Hành Linh Căn | S · Phép thuật | Đòn đánh mang hệ; khắc hệ +30% → +40% *(ngoại lệ: ×1,33)* | **Đổi hệ** (0,5 giây). Xoáy Kiếm trong 2 giây sau khi đổi hệ = **Ngũ Hành Bộc Phá** +100% → +150%, bán kính 16 m | ✅ Lv1→10 (M3) |
+| 16 | Thời Gian Ngưng Đọng | S · Điều khiển | — | **Ngưng Đọng** (90 giây): quái và đạn đứng yên 3 → 4,5 giây | ✅ Lv1→10 (M3) |
+| 17 | Bầy Đàn Bóng Tối | S · Triệu hồi | Quái bị hạ 15% → 22,5% thành lính bóng tối (tối đa 10, sống 60 giây, tấn công = 30% → 45% của nhân vật) | **Bóng Tối Trỗi Dậy** (60 giây): gọi ngay 3 → 5 lính | ✅ Lv1→10 (M3) |
+| 18 | Thiên Mệnh Khai Giới | SS · Khai phá | Mỗi Đuốc dọn thêm 2 ô kề bên; sản lượng lãnh địa +20% → +30% | — | ✅ Lv1→10 (M3) |
+| 19 | Long Mạch | SS · Lãnh địa | Mở công trình **Long Mạch Đàn**: +10% → +15% Tấn công và HP cho nhân vật và đồng minh | — | ✅ Lv1→10 (M3) |
+| 20 | Đạo Tặc (Ẩn) | SSS · Đặc biệt | **Cướp Thuộc Tính** khi hạ quái: tỉ lệ ×1,0 → ×1,5 (bảng ở CR-01), giới hạn 1 × cấp nhân vật | **Kỹ năng sao chép** (8 giây): dùng kỹ năng boss đã sao chép; +0% → +30% sát thương. Danh sách kỹ năng boss ở [06-ban-do-quai-boss](06-ban-do-quai-boss.md) mục 5 | ✅ Cướp Thuộc Tính + sao chép (M3) |
 
 ### 2.2. Ghi chú từng Thiên phú
 

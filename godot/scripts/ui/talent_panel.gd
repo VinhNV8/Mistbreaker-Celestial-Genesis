@@ -41,6 +41,13 @@ func _render(content: VBoxContainer) -> void:
 	_talent_state(content, p, t)
 
 	content.add_child(UiTheme.label("HIỆU ỨNG THEO CẤP", "Eyebrow"))
+	# TP-41: hiệu ứng chính mạnh dần tới Lv10.
+	var main_now := Talents.main_effect_text(t.id, p.talent_level)
+	if main_now != "":
+		var nxt := ""
+		if p.talent_level < Talents.MAX_TALENT_LEVEL:
+			nxt = "   →   Cấp %d: %s" % [p.talent_level + 1, Talents.main_effect_text(t.id, p.talent_level + 1)]
+		content.add_child(UiTheme.label("Hiệu ứng chính cấp %d: %s%s" % [p.talent_level, main_now, nxt], "", W))
 	var bonus: int = 2 * (int(p.talent_level) - 1)
 	content.add_child(UiTheme.label("Cấp %d: +%d%% Tấn công, +%d%% HP (mỗi cấp +2%%)." % [p.talent_level, bonus, bonus], "Muted", W))
 	var subs: Array = Talents.GROUP_SUB[t.group]

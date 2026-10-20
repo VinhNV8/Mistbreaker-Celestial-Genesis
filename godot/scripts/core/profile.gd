@@ -5,12 +5,13 @@ const Config = preload("res://scripts/core/config.gd")
 const Explore = preload("res://scripts/core/explore.gd")
 
 ## v1: prototype Chương 1. v2: MVP M1 thêm trang bị (EQ-20). v3: MVP M2 thêm Thiên phú, công trình (mục 4.8).
-const VERSION := 3
+## v4: MVP M3 thêm lớp nhân vật, INT/LUK, điểm Đạo Tặc cướp (mục 5.9).
+const VERSION := 4
 
 var talent := ""
 var level := 1
 var xp := 0
-var points := {"str": 0, "agi": 0, "vit": 0}
+var points := {"str": 0, "agi": 0, "int": 0, "vit": 0, "luk": 0}
 var unspent := 0
 var gold := 0.0
 var wood := 0.0
@@ -49,9 +50,15 @@ var buildings := {}
 ## Đồng hồ xây (giây), chạy cả khi offline (TL-S3).
 var build_clock := 0.0
 
+# --- v4: lớp nhân vật, Đạo Tặc cướp thuộc tính
+var class_id := "kiem-khach"
+## Thuộc tính Đạo Tặc cướp được, cũ → mới (DT-04: đầy thì bỏ phần tử đầu).
+var stolen: Array = []
 
-func setup(talent_id: String, rng: Callable, now: float) -> void:
+
+func setup(talent_id: String, rng: Callable, now: float, class_name_id := "kiem-khach") -> void:
 	talent = talent_id
+	class_id = class_name_id
 	tiles = Explore.create_tiles(rng)
 	last_seen = now
 
@@ -89,6 +96,8 @@ func to_dict() -> Dictionary:
 		"element": element,
 		"buildings": buildings,
 		"build_clock": build_clock,
+		"class_id": class_id,
+		"stolen": stolen,
 	}
 
 
@@ -100,7 +109,10 @@ func load_dict(d: Dictionary) -> bool:
 	talent = str(d.talent)
 	level = int(d.level)
 	xp = int(d.xp)
-	points = {"str": int(d.points.str), "agi": int(d.points.agi), "vit": int(d.points.vit)}
+	points = {
+		"str": int(d.points.str), "agi": int(d.points.agi), "int": int(d.points.get("int", 0)),
+		"vit": int(d.points.vit), "luk": int(d.points.get("luk", 0)),
+	}
 	unspent = int(d.unspent)
 	gold = float(d.gold)
 	wood = float(d.wood)
@@ -152,6 +164,12 @@ func load_dict(d: Dictionary) -> bool:
 				buildings["lumber_%d" % t.id] = 0.0
 		if camp_level > 1:
 			buildings["camp2"] = 0.0
+
+	# v4 — save v3 trở xuống: Kiếm Khách, chưa cướp điểm nào.
+	class_id = str(d.get("class_id", "kiem-khach"))
+	stolen = []
+	for k in d.get("stolen", []):
+		stolen.append(str(k))
 	return true
 
 
@@ -168,4 +186,5 @@ static func _load_item(d: Dictionary) -> Dictionary:
 		"set": str(d.get("set", "")),
 		"unique": str(d.get("unique", "")),
 		"affixes": affixes,
+		"style": str(d.get("style", "")),
 	}

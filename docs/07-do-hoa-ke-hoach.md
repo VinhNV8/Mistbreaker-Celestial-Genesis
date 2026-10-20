@@ -92,7 +92,7 @@ Ký hiệu như [04](04-ke-hoach-tien-do.md): ✅ xong · 🟡 một phần · �
 | Mã | Hạng mục | Đợt |
 | --- | --- | --- |
 | AR-40 | Quái và boss vùng 2 (tài liệu 06) | M4 |
-| AR-41 | 3 kỹ năng mới mỗi lớp (tên chốt ở spec M3) | M3 |
+| AR-41 | ✅ 8 icon kỹ năng M3, mũi tên, tên xuyên phá, kiếm khí, bẫy, sprite Nấm Con (20/10/2026) | M3 |
 | AR-42 | Khung giao diện có art, font chính thức (DH-11) | G2 |
 | AR-43 | Âm thanh, nhạc (DH-12, DH-13) | G2 |
 | AR-44 | Thay hình sinh bằng code bằng hình hoạ sĩ vẽ (giữ kích thước, manifest) | Khi có ngân sách |

@@ -15,6 +15,8 @@ const Items = preload("res://scripts/core/items.gd")
 const ItemData = preload("res://scripts/data/items.gd")
 const Monsters = preload("res://scripts/data/monsters.gd")
 const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
+const Classes = preload("res://scripts/data/classes.gd")
+const Stats = preload("res://scripts/core/stats.gd")
 
 var _total := 0
 var _failed: Array[String] = []
@@ -64,6 +66,20 @@ func _init() -> void:
 	_run("TL-H chuyển đổi save v2 → v3", _test_save_v3)
 	# Đồ hoạ G1 (docs/07-do-hoa-ke-hoach.md)
 	_run("AR-35 mọi quái, Thiên phú, ô đồ, đồ Cam đều có hình", _test_art_coverage)
+	# MVP M3 — lớp, kỹ năng, chiến đấu (docs/03-mvp-spec.md, mục 5.10)
+	_run("CL-T1 chỉ số theo lớp, INT, LUK, né tránh", _test_class_stats)
+	_run("CL-T2 Thợ Săn bắn tên, vũ khí tên Cung", _test_hunter_shot)
+	_run("CL-T3 8 kỹ năng: hồi chiêu, MP, xuyên, bẫy, Thiết Bích", _test_class_skills)
+	_run("CL-T4 né tránh 30% (2.000 đòn)", _test_evasion)
+	_run("CL-T5 chuyển đổi save v3 → v4", _test_save_v4)
+	_run("CB-T1 chỉ số quái khớp tài liệu 06", _test_mob_formula)
+	_run("CB-T3 né Hoàn hảo làm chậm 1 giây", _test_perfect_dodge)
+	_run("CB-T4 Phá Thế tinh anh", _test_elite_poise)
+	_run("CB-T5 Hú gọi, Sinh sôi, Nấm Con nổ", _test_elite_skills)
+	_run("CB-T6 Mộc Tinh từ cấp 6, Dậm đất", _test_moc_tinh)
+	_run("TP-T1 hiệu ứng Thiên phú mạnh dần theo cấp", _test_talent_levels)
+	_run("TP-T2 Thuần Thú thu phục quái Ổ quái", _test_tame_nest)
+	_run("TP-T3 Đạo Tặc cướp thuộc tính", _test_thief_steal)
 
 	print("")
 	if _failed.is_empty():
@@ -75,7 +91,18 @@ func _init() -> void:
 	quit(1 if not _failed.is_empty() else 0)
 
 
+## Chạy một phần: godot --headless --path godot --script res://tests/run_tests.gd -- --only=TL-B
+func _only() -> String:
+	for a in OS.get_cmdline_user_args():
+		if a.begins_with("--only="):
+			return a.substr(7)
+	return ""
+
+
 func _run(test_name: String, fn: Callable) -> void:
+	var only := _only()
+	if only != "" and not test_name.contains(only):
+		return
 	_total += 1
 	_current = test_name
 	var before := _failed.size()
@@ -238,7 +265,8 @@ func _test_save_roundtrip() -> void:
 # ------------------------------------------------------------------ thế giới
 
 
-## Bot đơn giản: lao vào quái gần nhất, chém liên tục, né khi quái sắp đánh trúng.
+## Bot đơn giản: lao vào quái gần nhất (Thợ Săn: giữ khoảng cách 18–30 m), đánh liên tục,
+## dùng 4 kỹ năng khi hồi xong, né khi quái sắp đánh trúng.
 func _bot(w: GameWorld) -> Dictionary:
 	var p := w.player
 	var target = null
@@ -250,20 +278,58 @@ func _bot(w: GameWorld) -> Dictionary:
 			target = e
 	if target == null:
 		return {"move": Vector2.RIGHT, "aim": p.pos + Vector2.RIGHT * 100.0, "attack": false, "skill": false, "talent": false, "dodge": false}
+	# Đang đánh boss thì nhắm boss (quái thường lảng vảng không kéo bot đi xa).
+	var b = w.boss()
+	if b != null and best > 70.0:
+		target = b
+		best = b.pos.distance_to(p.pos)
 	var threat := false
 	for e in w.enemies:
 		if e.state == "windup" and e.timer < 0.2 and e.pos.distance_to(p.pos) < 140.0:
 			threat = true
-	var close: bool = best < 60.0 + target.radius
 	var dir: Vector2 = (target.pos - p.pos).sign()
+	if w.is_hunter():
+		var gap: float = best - target.radius
+		var mv := Vector2.ZERO
+		if gap < 180.0:
+			mv = -dir
+		elif gap > 300.0:
+			mv = dir
+		return {
+			"move": mv, "aim": target.pos, "attack": true,
+			"skill_1": gap < 380.0, "skill_2": gap < 500.0, "skill_3": gap < 120.0, "skill_4": true,
+			"talent": true, "dodge": threat,
+		}
+	var close: bool = best < 60.0 + target.radius
 	return {
 		"move": Vector2.ZERO if close else dir,
 		"aim": target.pos,
 		"attack": true,
 		"skill": best < 120.0,
+		"skill_2": best < 200.0 and best > 90.0,
+		"skill_3": best < 380.0,
+		"skill_4": best < 160.0,
 		"talent": true,
 		"dodge": threat,
 	}
+
+
+## Bộ đồ chuẩn cấp 5 (vũ khí Xanh dương, áo + mũ Xanh lá) — như người chơi cày tới boss
+## (M1-12 trung bình mặc 3 món). Công thức chỉ số quái giả định người chơi mặc đồ đúng vùng (03 mục 5.6).
+func _standard_kit(w: GameWorld) -> void:
+	var p = w.profile
+	var rng := RngUtil.make(77)
+	for pair in [["weapon", "blue"], ["armor", "green"], ["helm", "green"]]:
+		var it := Items.new_item(p, 5, pair[1], rng, pair[0])
+		Items.add_item(p, it)
+		w.equip(int(it.id))
+	w.player.hp = w.stats.max_hp
+
+
+func _class_points(class_id: String) -> Dictionary:
+	if class_id == "tho-san":
+		return {"str": 0, "agi": 12, "int": 0, "vit": 8, "luk": 0}
+	return {"str": 12, "agi": 0, "int": 0, "vit": 8, "luk": 0}
 
 
 func _idle(w: GameWorld, move := Vector2.ZERO) -> Dictionary:
@@ -311,6 +377,7 @@ func _test_boss() -> void:
 	for i in range(1, 7):
 		p.tiles[i].status = "owned"
 	var w := GameWorld.new(p, RngUtil.make(5))
+	_standard_kit(w)
 	w.enemies = []
 	w.player.hp = w.stats.max_hp
 	w.player.pos = GameWorld.ARENA_POS - Vector2(100, 0)
@@ -584,32 +651,45 @@ func _tick(w: GameWorld, input := {}, frames := 1) -> void:
 
 
 ## TL-B: nguyên tắc kịch bản — "chênh lệch sức mạnh giữa F và S ở cùng cấp không quá 25%".
+## M3: chạy cho 2 lớp × 20 Thiên phú; F/S chênh ≤ 25% trong từng lớp, 2 lớp chênh nhau ≤ 25%.
 func _test_talent_balance() -> void:
-	var by_rank := {}
-	var lines := PackedStringArray()
-	for t in Talents.LIST:
-		var p := _profile(t.id, 3)
-		p.level = 5
-		p.points = {"str": 12, "agi": 0, "vit": 8}
-		for i in range(1, 7):
-			p.tiles[i].status = "owned"
-		var w := GameWorld.new(p, RngUtil.make(5))
-		var res := _boss_fight(w)
-		lines.append("%s %s %.0fs/%d" % [t.rank, t.name, res[0], res[1]])
-		_check(p.boss_defeated, "%s hạ được boss" % t.name)
-		if not by_rank.has(t.rank):
-			by_rank[t.rank] = []
-		by_rank[t.rank].append(res[0])
-	print("       (" + " · ".join(lines) + ")")
 	var avg := func(arr: Array) -> float:
 		var sum := 0.0
 		for x in arr:
 			sum += x
 		return sum / arr.size()
-	var f: float = avg.call(by_rank.F)
-	var s_: float = avg.call(by_rank.S)
-	print("       (thời gian trung bình: F %.1f giây, S %.1f giây, chênh %.0f%%)" % [f, s_, absf(f - s_) / maxf(f, s_) * 100.0])
-	_check(absf(f - s_) / maxf(f, s_) <= 0.25, "F và S chênh ≤ 25%")
+	var class_avg := {}
+	for class_id in Classes.ORDER:
+		var by_rank := {}
+		var all: Array = []
+		var lines := PackedStringArray()
+		for t in Talents.LIST:
+			var p := _profile(t.id, 3)
+			p.class_id = class_id
+			p.level = 5
+			p.points = _class_points(class_id)
+			for i in range(1, 7):
+				p.tiles[i].status = "owned"
+			var w := GameWorld.new(p, RngUtil.make(5))
+			_standard_kit(w)
+			var res := _boss_fight(w)
+			lines.append("%s %s %.0fs/%d" % [t.rank, t.name, res[0], res[1]])
+			_check(p.boss_defeated, "%s · %s hạ được boss" % [class_id, t.name])
+			if not by_rank.has(t.rank):
+				by_rank[t.rank] = []
+			by_rank[t.rank].append(res[0])
+			all.append(res[0])
+		print("       [%s] (" % class_id + " · ".join(lines) + ")")
+		var f: float = avg.call(by_rank.F)
+		var s_: float = avg.call(by_rank.S)
+		class_avg[class_id] = avg.call(all)
+		print("       [%s] F %.1f giây, S %.1f giây, chênh %.0f%%; trung bình %.1f giây" % [
+			class_id, f, s_, absf(f - s_) / maxf(f, s_) * 100.0, class_avg[class_id]])
+		_check(absf(f - s_) / maxf(f, s_) <= 0.25, "%s: F và S chênh ≤ 25%%" % class_id)
+	var a: float = class_avg["kiem-khach"]
+	var b: float = class_avg["tho-san"]
+	print("       (2 lớp chênh %.0f%%)" % (absf(a - b) / maxf(a, b) * 100.0))
+	_check(absf(a - b) / maxf(a, b) <= 0.25, "2 lớp chênh ≤ 25%")
 
 
 func _test_effects_basic() -> void:
@@ -864,3 +944,272 @@ func _test_art_coverage() -> void:
 		_check(SpriteLib.icon("skill-" + id) != null, "có icon kỹ năng %s" % id)
 	for id in ["tile-grass-0", "tile-dirt", "tile-village", "tile-void", "hut", "stele", "chest", "herb", "fx-spore"]:
 		_check(SpriteLib.has_env(id), "có hình môi trường %s" % id)
+
+
+# ------------------------------------------------------------------ MVP M3 (docs/03-mvp-spec.md, mục 5.10)
+
+
+func _m3_world(class_id: String, talent := "tay-nhanh", seed_value := 5) -> GameWorld:
+	var p := _profile(talent, 3)
+	p.class_id = class_id
+	var w := GameWorld.new(p, RngUtil.make(seed_value))
+	w.enemies = []
+	return w
+
+
+## Quái đứng yên (choáng dài) để kiểm đạn/kỹ năng.
+func _dummy(w: GameWorld, kind: String, level: int, pos: Vector2) -> GameWorld.Enemy:
+	var e := w.spawn_enemy(kind, level, pos)
+	e.max_hp = 100000.0
+	e.hp = e.max_hp
+	e.state = "stunned"
+	e.timer = 999.0
+	return e
+
+
+func _test_class_stats() -> void:
+	var sw := _m3_world("kiem-khach")
+	var hu := _m3_world("tho-san")
+	_check(sw.stats.max_hp == 100 and hu.stats.max_hp == 90, "HP gốc 100 / 90")
+	_check(is_zero_approx(sw.stats.evasion) and is_equal_approx(hu.stats.evasion, 0.05), "né gốc 0% / 5%")
+	hu.profile.points.agi = 10
+	hu._refresh_stats()
+	sw.profile.points.agi = 10
+	sw._refresh_stats()
+	_check(is_equal_approx(hu.stats.atk, 30.0), "Thợ Săn: AGI +2 Tấn công (%.1f)" % hu.stats.atk)
+	_check(is_equal_approx(sw.stats.atk, 10.0), "Kiếm Khách: AGI không cộng Tấn công")
+	_check(is_equal_approx(hu.stats.evasion, 0.08), "AGI +0,3% né")
+	sw.profile.points.int = 10
+	sw.profile.points.luk = 10
+	sw._refresh_stats()
+	_check(int(sw.stats.max_mp) == 110 and is_equal_approx(sw.stats.skill_mul, 1.05), "INT: MP 110, kỹ năng ×1,05")
+	_check(is_equal_approx(sw.stats.crit, 0.05 + 0.05 + 0.03), "LUK +0,3% chí mạng")
+	hu.profile.points.agi = 100
+	hu._refresh_stats()
+	_check(is_equal_approx(hu.stats.evasion, 0.3), "né tránh trần 30%")
+
+
+func _test_hunter_shot() -> void:
+	var w := _m3_world("tho-san")
+	var p := w.player
+	p.pos = Vector2(800, 800)
+	var near := _dummy(w, "wolf", 1, p.pos + Vector2(300, 0))
+	var far := _dummy(w, "wolf", 1, p.pos + Vector2(340, 0))
+	var behind := _dummy(w, "wolf", 1, p.pos + Vector2(-200, 0))
+	w._shoot()
+	_tick(w, {}, 60)
+	_check(near.hp < near.max_hp, "tên trúng quái đầu tiên ở 30 m")
+	_check(is_equal_approx(far.hp, far.max_hp), "tên không xuyên quái")
+	_check(is_equal_approx(behind.hp, behind.max_hp), "không trúng quái sau lưng")
+	var bow := Items.new_item(w.profile, 3, "white", RngUtil.make(4), "weapon")
+	_check(Items.display_name(bow).begins_with("Cung"), "vũ khí Thợ Săn tên Cung: %s" % Items.display_name(bow))
+
+
+func _test_class_skills() -> void:
+	for class_id in Classes.ORDER:
+		var w := _m3_world(class_id)
+		for i in 4:
+			var p := w.player
+			p.mp = w.stats.max_mp
+			var mp_before := p.mp
+			_check(w.use_skill(i), "%s kỹ năng %d dùng được" % [class_id, i + 1])
+			_check(is_equal_approx(p.skill_cds[i], w.skill_cd_of(i)), "%s kỹ năng %d đúng hồi chiêu" % [class_id, i + 1])
+			_check(is_equal_approx(mp_before - p.mp, w.skill_mp(i)), "%s kỹ năng %d trừ MP" % [class_id, i + 1])
+			_check(not w.use_skill(i), "%s kỹ năng %d đang hồi thì bị từ chối" % [class_id, i + 1])
+			p.skill_cds[i] = 0.0
+			p.mp = 0.0
+			_check(not w.use_skill(i), "%s kỹ năng %d thiếu MP bị từ chối" % [class_id, i + 1])
+			p.dash_time = 0.0
+			w.shots = []
+			w.traps = []
+			w.rains = []
+	# Kiếm Khí và Tên Xuyên Phá xuyên quái
+	for pair in [["kiem-khach", 2], ["tho-san", 1]]:
+		var w := _m3_world(pair[0])
+		w.player.pos = Vector2(800, 800)
+		w.player.mp = 999.0
+		var a := _dummy(w, "wolf", 1, w.player.pos + Vector2(150, 0))
+		var b := _dummy(w, "wolf", 1, w.player.pos + Vector2(250, 0))
+		w.use_skill(pair[1])
+		_tick(w, {}, 60)
+		_check(a.hp < a.max_hp and b.hp < b.max_hp, "%s: đạn kỹ năng xuyên 2 quái" % pair[0])
+	# Bẫy Gai trói
+	var hw := _m3_world("tho-san")
+	hw.player.pos = Vector2(800, 800)
+	hw.player.mp = 999.0
+	hw.use_skill(2)
+	var wolf := hw.spawn_enemy("wolf", 1, hw.player.pos + Vector2(20, 0))
+	wolf.max_hp = 100000.0
+	wolf.hp = wolf.max_hp
+	_tick(hw, {}, 1)
+	_check(wolf.root_timer > 1.5 and wolf.hp < wolf.max_hp, "Bẫy Gai nổ và trói 2 giây")
+	# Thiết Bích giảm 50%
+	var gw := _m3_world("kiem-khach")
+	gw.player.hp = 1000.0
+	gw._damage_player(40.0, 1.0)
+	var d1 := 1000.0 - gw.player.hp
+	gw.player.hp = 1000.0
+	gw.player.mp = 999.0
+	gw.use_skill(3)
+	gw._damage_player(40.0, 1.0)
+	var d2 := 1000.0 - gw.player.hp
+	_check(absf(d2 - d1 * 0.5) <= 1.0, "Thiết Bích: %d → %d" % [d1, d2])
+
+
+func _test_evasion() -> void:
+	var w := _m3_world("tho-san")
+	w.profile.points.agi = 100
+	w._refresh_stats()
+	var dodged := 0
+	var n := 2000
+	for i in n:
+		w.player.hp = 1.0e9
+		w._damage_player(20.0, 1.0)
+		if w.player.hp >= 1.0e9:
+			dodged += 1
+	var rate := dodged / float(n)
+	print("       (né %.3f, mục tiêu 0,300)" % rate)
+	_check(absf(rate - 0.3) < 0.03, "né tránh 30% ± 3 điểm")
+
+
+func _test_save_v4() -> void:
+	var p := _profile("dao-tac")
+	var d := p.to_dict()
+	d.version = 3
+	d.erase("class_id")
+	d.erase("stolen")
+	d.points = {"str": 2, "agi": 1, "vit": 3}
+	var old := Profile.new()
+	_check(old.load_dict(JSON.parse_string(JSON.stringify(d))), "nạp được save v3")
+	_check(old.class_id == "kiem-khach" and int(old.points.int) == 0 and int(old.points.luk) == 0 and old.stolen.is_empty(), "v3 → Kiếm Khách, INT/LUK = 0")
+	p.class_id = "tho-san"
+	p.stolen = ["agi", "str"]
+	p.points.luk = 4
+	var back := Profile.new()
+	_check(back.load_dict(JSON.parse_string(JSON.stringify(p.to_dict()))), "nạp được save v4")
+	_check(back.class_id == "tho-san" and back.stolen == ["agi", "str"] and int(back.points.luk) == 4, "v4 giữ lớp, điểm cướp, LUK")
+
+
+func _test_mob_formula() -> void:
+	var w1 := Formulas.mob_stats(1, "thuong", "nhanh")
+	var w7 := Formulas.mob_stats(7, "thuong", "nhanh")
+	var bs := Formulas.mob_stats(6, "boss", "boss", 5, Formulas.boss_hits(1))
+	_check(int(w1.hp) == 18 and int(w1.atk) == 8, "Sói Sương cấp 1: %d HP / %d ATK" % [w1.hp, w1.atk])
+	_check(int(w7.hp) == 188 and int(w7.atk) == 36, "Sói Sương cấp 7: %d HP / %d ATK" % [w7.hp, w7.atk])
+	_check(int(bs.hp) == 4023 and int(bs.atk) == 43 and int(bs.def) == 24, "Sói Chúa: %d / %d / %d" % [bs.hp, bs.atk, bs.def])
+	var w := _m3_world("kiem-khach")
+	var boss := w.spawn_enemy("boss", GameWorld.BOSS_LEVEL, GameWorld.ARENA_POS, {"role": "boss"})
+	_check(int(boss.max_hp) == 4023 and is_equal_approx(boss.max_poise, boss.max_hp / 6.0), "boss sinh ra đúng HP, Phá Thế = HP/6")
+	_check(GameWorld.boss_exp() == 1545, "EXP boss 1.545")
+
+
+func _test_perfect_dodge() -> void:
+	var w := _m3_world("kiem-khach")
+	w.player.hp = 100.0
+	w.player.dodge_time = GameWorld.DODGE_TIME - 0.05
+	w._damage_player(20.0, 1.0)
+	_check(w.slowmo_timer > 0.9 and is_equal_approx(w.player.hp, 100.0), "chặn đòn trong 0,15 giây đầu → Hoàn hảo")
+	var late := _m3_world("kiem-khach")
+	late.player.dodge_time = GameWorld.DODGE_TIME - 0.25
+	late._damage_player(20.0, 1.0)
+	_check(late.slowmo_timer <= 0.0, "né muộn thì không Hoàn hảo")
+
+
+func _test_elite_poise() -> void:
+	var w := _m3_world("kiem-khach")
+	var e := w.spawn_enemy("wolf", 5, Vector2(900, 400), {"elite": true})
+	_check(e.name == "Sói Đầu Đàn", "tinh anh Sói Sương = Sói Đầu Đàn")
+	_check(is_equal_approx(e.max_poise, e.max_hp * 0.3), "Phá Thế tinh anh = 30% HP")
+	w._apply_damage(e, int(e.max_poise) + 1, false, true)
+	_check(e.state == "stunned" and is_equal_approx(e.timer, GameWorld.ELITE_STUN) and e.broken, "phá thanh → choáng 3 giây, nhận +50%")
+
+
+func _test_elite_skills() -> void:
+	var w := _m3_world("kiem-khach")
+	var leader := w.spawn_enemy("wolf", 5, w.player.pos + Vector2(200, 0), {"elite": true})
+	w._elite_skill(leader, "howl")
+	var summons := w.enemies.filter(func(m): return m.role == "summon")
+	_check(summons.size() == 2 and summons[0].kind == "wolf", "Hú gọi: 2 Sói Sương")
+	var w2 := _m3_world("kiem-khach")
+	w2.player.pos = Vector2(900, 800)
+	var mother := w2.spawn_enemy("mushroom", 5, w2.player.pos + Vector2(300, 0), {"elite": true})
+	_check(mother.name == "Nấm Mẹ", "tinh anh Nấm Độc = Nấm Mẹ")
+	w2._elite_skill(mother, "spawn")
+	var kids := w2.enemies.filter(func(m): return m.kind == "nam-con")
+	_check(kids.size() == 2 and kids[0].fuse > 0.0, "Sinh sôi: 2 Nấm Con có ngòi nổ")
+	w2.enemies = [kids[0]]
+	kids[0].pos = w2.player.pos + Vector2(20, 0)
+	var hp0 := w2.player.hp
+	for i in 300:
+		_tick(w2)
+		if kids[0].dead:
+			break
+	_check(kids[0].dead and w2.player.hp < hp0, "Nấm Con nổ trúng người đứng gần")
+
+
+func _test_moc_tinh() -> void:
+	var w := _m3_world("kiem-khach")
+	var seen5 := 0
+	var seen6 := 0
+	for i in 2000:
+		if w._pick_kind(5) == "moc-tinh":
+			seen5 += 1
+		if w._pick_kind(6) == "moc-tinh":
+			seen6 += 1
+	_check(seen5 == 0 and seen6 > 300, "Mộc Tinh chỉ từ cấp 6 (%d/2000)" % seen6)
+	w.player.pos = Vector2(900, 800)
+	var m := w.spawn_enemy("moc-tinh", 6, w.player.pos + Vector2(45, 0))
+	m.state = "chase"
+	var hp0 := w.player.hp
+	for i in 240:
+		_tick(w)
+	_check(w.player.hp < hp0, "Dậm đất trúng người đứng trong 6 m")
+
+
+func _test_talent_levels() -> void:
+	var w := _world("than-the")
+	w.profile.talent_level = 10
+	w._refresh_stats()
+	_check(int(w.stats.max_hp) == 130, "Thân Thể Lv10: +12%% + 18%% = 130 HP (%d)" % w.stats.max_hp)
+	var f := _world("thoi-gian-ngung-dong")
+	f.profile.talent_level = 10
+	f._use_talent()
+	_check(is_equal_approx(f.freeze_timer, 4.5 + 1.0), "Ngưng Đọng Lv10: 4,5 giây + 1 (hiệu ứng phụ)")
+	_check(Talents.main_effect_text("than-the", 10) == "+12% HP tối đa", "bảng Thiên phú hiện giá trị Lv10")
+
+
+func _test_tame_nest() -> void:
+	var w := _world("thuan-thu")
+	var e := w.spawn_enemy("wolf", 2, w.player.pos + Vector2(30, 0), {"role": "nestMinion"})
+	e.max_hp = 1000.0
+	e.hp = 105.0
+	w._hit_enemy(e, 1.0)
+	_check(w.profile.pets.size() == 1, "thu phục được quái Ổ quái")
+
+
+func _test_thief_steal() -> void:
+	var w := _world("dao-tac")
+	var p = w.profile
+	p.level = 5
+	w._refresh_stats()
+	var boss := w.spawn_enemy("boss", GameWorld.BOSS_LEVEL, GameWorld.ARENA_POS, {"role": "boss"})
+	w._kill_enemy(boss)
+	_check(p.stolen.size() == 3, "boss cho 3 điểm (%d)" % p.stolen.size())
+	var first: String = p.stolen[0]
+	for i in 3:
+		var g := w.spawn_enemy("wolf", 5, Vector2(900, 400), {"elite": true, "role": "nestGuard"})
+		w._kill_enemy(g)
+	_check(p.stolen.size() == p.level, "giới hạn 1 × cấp (%d/%d)" % [p.stolen.size(), p.level])
+	var before: Array = p.stolen.duplicate()
+	var low := w.spawn_enemy("wolf", 1, Vector2(900, 400), {"elite": true, "role": "nestGuard"})
+	p.level = 7
+	w._kill_enemy(low)
+	_check(p.stolen == before, "quái thấp hơn 6 cấp không cướp được")
+	p.unspent = 0
+	w.respec()
+	_check(p.stolen == before, "tẩy điểm không mất điểm cướp")
+	var total := Stats.total_points(p.points, p.stolen)
+	var sum := 0
+	for k in total:
+		sum += int(total[k])
+	_check(sum == p.stolen.size() and first != "", "điểm cướp cộng vào chỉ số")

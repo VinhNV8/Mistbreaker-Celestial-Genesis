@@ -4,7 +4,7 @@
 | --- | --- |
 | Dự án | Thiên Phú Khai Giới |
 | Engine | Godot 4.7.2-stable, GDScript, renderer GL Compatibility |
-| Mã nguồn | [godot/](../godot/) — khoảng 5.600 dòng GDScript |
+| Mã nguồn | [godot/](../godot/) — khoảng 7.400 dòng GDScript |
 | Yêu cầu | [01-requirement-spec.md](01-requirement-spec.md) (prototype), [03-mvp-spec.md](03-mvp-spec.md) (MVP) |
 | Cập nhật | 20/10/2026 |
 
@@ -87,11 +87,12 @@ Main (Node, main.gd)
 | File | Vai trò |
 | --- | --- |
 | `scripts/data/talents.gd` | 20 Thiên phú, kỹ năng L, tỉ lệ theo hạng, hiệu ứng phụ theo nhóm, chi phí luyện cấp (M2) |
-| `scripts/data/monsters.gd` | Chỉ số gốc 3 loại quái và boss; hệ ngũ hành và bảng khắc (M2) |
+| `scripts/data/monsters.gd` | 6 loại quái vùng 1 + boss: loại (arch), tốc, tầm, đòn đánh, hệ ngũ hành, bảng Đạo Tặc cướp, tinh anh (M3). **Không** chứa HP/Tấn công/Phòng thủ — tính bằng `Formulas.mob_stats()` |
+| `scripts/data/classes.gd` | 2 lớp (Kiếm Khách, Thợ Săn) và 4 kỹ năng mỗi lớp: hồi chiêu, MP, hệ số, icon (M3) |
 | `scripts/data/items.gd` | Trang bị: 8 ô, 5 phẩm chất, affix, tỉ lệ cường hoá, bảng rơi đồ, bộ trang bị, đồ Cam (M1) |
 | `scripts/core/config.gd` | **Mọi hằng số cân bằng** (Đuốc, điều kiện mở hang, giá xây…) |
-| `scripts/core/formulas.gd` | Công thức EXP, sát thương, combo |
-| `scripts/core/stats.gd` | Tính chỉ số phái sinh từ cấp + điểm + Thiên phú |
+| `scripts/core/formulas.gd` | Công thức EXP, sát thương, combo; **chỉ số quái theo tài liệu 06** (`mob_stats`, `boss_hits`, M3) — phải giống hệt `tools/gen_world_doc.py` |
+| `scripts/core/stats.gd` | Tính chỉ số phái sinh từ lớp + cấp + điểm (+ điểm Đạo Tặc cướp) + Thiên phú: HP, MP, Tấn công, né tránh… |
 | `scripts/core/rng_util.gd` | RNG dạng `Callable`, chọn theo trọng số, xáo trộn |
 | `scripts/core/awakening.gd` | Lễ Thức Tỉnh: lượt quay, bảo hiểm hạng B |
 | `scripts/core/explore.gd` | Lưới lục giác, sự kiện ô đất, công trình có thời gian xây, sản lượng, hồi Đuốc |
@@ -111,7 +112,7 @@ Main (Node, main.gd)
 | `scripts/ui/talent_panel.gd` | Bảng Thiên phú: hiệu ứng, kỹ năng L, hiệu ứng phụ, luyện cấp (M2) |
 | `scripts/ui/screens.gd` | Màn hình tiêu đề, Lễ Thức Tỉnh, chiến thắng |
 | `scripts/main.gd` | Điểm vào + chế độ smoke test |
-| `tests/run_tests.gd` | 39 test logic chạy headless |
+| `tests/run_tests.gd` | 52 test logic chạy headless; chạy một phần bằng `-- --only=<chuỗi trong tên test>` |
 | `tools/art/*.py` (ngoài `godot/`) | Bộ sinh hình pixel art (Python 3 + Pillow): `pixel.py` thư viện vẽ, `builders.py` dáng nhân vật/quái, `catalog.py` danh mục sprite, `icons.py`, `env.py`, `build_all.py`. Quy trình ở skill `.claude/skills/game-art/SKILL.md` |
 | `tools/gen_world_doc.py` (ngoài `godot/`) | Sinh `docs/06-ban-do-quai-boss.md` từ công thức chỉ số quái; chạy `python tools/gen_world_doc.py docs/06-ban-do-quai-boss.md` (cần Python 3) |
 
@@ -163,14 +164,14 @@ Giai đoạn `windup` là cửa sổ để người chơi né; `world_view.gd` v
 | Trên Windows | `%APPDATA%\Godot\app_userdata\Thiên Phú Khai Giới\save.json` |
 | Smoke test | `user://smoke_save.json` (tự xoá sau khi chạy, không đụng save thật) |
 | Định dạng | JSON một dòng |
-| Phiên bản hiện tại | **3** (M1 thêm trang bị, M2 thêm Thiên phú và công trình). Save v1, v2 được chuyển đổi tự động khi nạp |
+| Phiên bản hiện tại | **4** (M1 thêm trang bị, M2 thêm Thiên phú và công trình, M3 thêm lớp, INT/LUK, điểm Đạo Tặc cướp). Save v1–v3 được chuyển đổi tự động khi nạp |
 
 ```json
 {
   "version": 1,
   "talent": "kiem-tam",
   "level": 5, "xp": 120,
-  "points": {"str": 12, "agi": 0, "vit": 8}, "unspent": 0,
+  "points": {"str": 12, "agi": 0, "int": 0, "vit": 8, "luk": 0}, "unspent": 0,
   "gold": 46.5, "wood": 120.0,
   "torches": 4, "torch_timer": 37.2,
   "tiles": [{"id": 0, "q": 0, "r": 0, "event": "camp", "status": "owned"}, "…10 ô nữa"],
@@ -183,7 +184,8 @@ Giai đoạn `windup` là cửa sổ để người chơi né; `world_view.gd` v
   "stones": 19, "next_item_id": 13, "boss_respawn_at": 1780.0,
   "talent_level": 3, "essence": 2, "tinh_kim": 1, "potions": 2, "herbs": 1,
   "pets": [{"kind": "wolf", "level": 4}], "copied_skills": ["pounce"], "element": "kim",
-  "buildings": {"lumber_3": 60.0, "temple": 300.0}, "build_clock": 845.2
+  "buildings": {"lumber_3": 60.0, "temple": 300.0}, "build_clock": 845.2,
+  "class_id": "tho-san", "stolen": ["agi", "str", "agi"]
 }
 ```
 
@@ -193,6 +195,8 @@ Giai đoạn `windup` là cửa sổ để người chơi né; `world_view.gd` v
 - Đổi cấu trúc save thì **tăng `Profile.VERSION`** và cho `load_dict()` đọc được cả bản cũ: trường mới đọc bằng `d.get(khoá, mặc định)`. Cách làm mẫu: chuyển đổi v1 → v2 ở M1. Save có version lớn hơn bản game hiện tại sẽ bị từ chối.
 - `boss_respawn_at` tính theo `play_seconds` (giây đã chơi), không theo giờ thực, nên boss không hồi khi tắt game.
 - `buildings[khoá]` là thời điểm xong theo `build_clock`. Khác `play_seconds`, `build_clock` **chạy cả khi offline** (cộng trong `apply_offline`), nên công trình xây xong trong lúc tắt game. Công trình xong khi `build_clock >= buildings[khoá]`.
+- Khi chuyển từ v3: `class_id` = `kiem-khach`, `points` thêm `int`, `luk` = 0, `stolen` rỗng. Món đồ có thêm trường `style` (`"bow"` = vũ khí tên Cung), save cũ không có thì là `""`.
+- `stolen`: thuộc tính Đạo Tặc cướp được, cũ → mới; tối đa = cấp nhân vật, đầy thì bỏ phần tử đầu. Không bị tẩy điểm.
 - Khi chuyển từ v2: Xưởng Gỗ đã chiếm và Thôn đã nâng được đánh dấu xong ngay (`0.0`), để người chơi cũ không bị mất sản lượng.
 
 ### 3.2. Toạ độ lục giác
@@ -218,7 +222,8 @@ Dạng axial `(q, r)`, lục giác đỉnh nhọn. Khoảng cách: `(|dq| + |dr|
 | --- | --- |
 | `move_left/right/up/down` | A D W S, phím mũi tên |
 | `attack` | J, chuột trái (giữ) |
-| `skill` | K, chuột phải |
+| `skill` | K, chuột phải (= kỹ năng 1) |
+| `skill_1` … `skill_4` | 1 2 3 4 (M3) |
 | `talent` | L |
 | `dodge` | Space |
 | `toggle_stats` | C |
@@ -243,7 +248,9 @@ Chơi chỉ bằng bàn phím: nếu chuột đứng yên quá 1,5 giây mà ng�
 - 12 test M1 (`M1-1` … `M1-12`), khớp danh sách ở mục 3.11 của [03-mvp-spec.md](03-mvp-spec.md).
 - 10 test M2 (`TL-B` … `TL-H`; `TL-A` thay test tỉ lệ quay cũ), khớp mục 4.9. `TL-B` cho bot đánh boss với từng Thiên phú trong 20 để kiểm nguyên tắc cân bằng F/S.
 - 1 test đồ hoạ (`AR-35`): mọi quái có đủ 5 hoạt ảnh và nạp được ảnh; mọi Thiên phú, ô đồ, đồ Cam, kỹ năng có icon.
-- Kết quả gần nhất: **39/39 qua**. Toàn bộ chạy khoảng 1 phút vì có 2 mô phỏng 15 phút chơi và 20 trận boss.
+- 13 test M3 (`CL-T1…T5`, `CB-T1`, `CB-T3…T6`, `TP-T1…T3`), khớp mục 5.10 của 03-mvp-spec. `TL-B` chạy cho **2 lớp × 20 Thiên phú**, bot mặc bộ đồ chuẩn (`_standard_kit`) vì công thức quái giả định người chơi mặc đồ đúng vùng.
+- Chạy một phần: `... --script res://tests/run_tests.gd -- --only=TL-B` (TL-B riêng khoảng 13 giây).
+- Kết quả gần nhất: **52/52 qua**. Toàn bộ chạy khoảng 1 phút vì có 2 mô phỏng 15 phút chơi và 20 trận boss.
 - **Đọc log, không chỉ dòng tổng kết**: có `SCRIPT ERROR` trong log thì coi như hỏng, kể cả khi test báo `ok` (xem mục 7).
 
 ### 5.2. Smoke test (có cửa sổ, khoảng 1–2 phút)
@@ -287,6 +294,9 @@ Chạy bot trên nhiều seed, có né và không né, rồi chỉnh HP/ATK boss
 | D15 | Quái không tấn công đồng minh (Q9) | Tránh phải làm AI chọn mục tiêu cho MVP | Thú cưng bất tử; xem lại sau playtest |
 | D17 | Hình pixel art **sinh bằng code** (Python + Pillow), không vẽ tay, không AI tạo ảnh | Miễn phí, chạy lại được, một phong cách, thêm quái chỉ cần khai báo; chưa có hoạ sĩ và ngân sách | Mức chi tiết giới hạn; khi có hoạ sĩ chỉ cần thay PNG cùng kích thước frame và manifest (logic, `sprite_lib.gd` giữ nguyên) |
 | D18 | `world_view.gd` vẫn vẽ bằng `_draw()` (draw_texture_rect_region) thay vì tạo node Sprite2D cho từng thực thể | Không phải đồng bộ vòng đời node với danh sách thực thể của GameWorld; giữ dự phòng hình khối tạm | Sắp xếp chiều sâu làm thủ công (sort mỗi frame); nếu lên hàng nghìn thực thể nên chuyển sang node + y_sort |
+| D19 | Chỉ số quái **tính lúc sinh quái** từ công thức (`Formulas.mob_stats`) thay vì bảng số trong dữ liệu (M3, Q22) | Một công thức cho 9 vùng, thêm quái chỉ cần khai báo loại (arch); tài liệu 06 sinh từ cùng công thức | Đổi công thức phải sửa **2 chỗ**: `formulas.gd` và `tools/gen_world_doc.py`; test CB-T1 bắt lệch |
+| D20 | Kỹ năng lớp khai báo dữ liệu (`classes.gd`), hiệu ứng viết trong `GameWorld.use_skill()` theo `id` | Như D14: 8 kỹ năng mỗi cái một cơ chế riêng | Thêm lớp mới: thêm khối dữ liệu + nhánh `match` cho kỹ năng mới |
+| D21 | Khoá hang boss khi boss xuất hiện (CB-23) | Chặn đánh xa từ ngoài hang | Người chơi muốn bỏ chạy phải gục hoặc hạ boss — xem lại khi playtest |
 | D16 | Đồng hồ xây riêng (`build_clock`) thay vì giờ thực | Không phụ thuộc đồng hồ máy (người chơi chỉnh giờ để gian lận); vẫn chạy offline qua `apply_offline` | Phải nhớ cộng `build_clock` ở cả `update()` và `apply_offline()` |
 
 ## 7. Lỗi đã gặp và cách xử lý
@@ -310,6 +320,9 @@ Ghi lại để không lặp lại khi viết thêm code.
 | Thanh kỹ năng 5 ô đè lên nhật ký | Thêm ô bình máu Q làm thanh rộng ra | Ô kỹ năng 92px, nhật ký 320px; mỗi lần thêm phần tử HUD cần chụp lại ảnh ở 1366 × 768 |
 | Ô kỹ năng đè nhật ký lần 2 (G1) | Thêm icon 32px làm ô rộng 124px | Ô 100px, chữ lệch phải 33px |
 | `Cannot infer the type` với `var x := a.kind == "..."` | `a` không khai báo kiểu nên biểu thức là Variant | `var x: bool = ...` |
+| Test báo `ok` nhưng log có `unsupported format character` (M3) | Câu báo lỗi trong `_check()` chứa `%` (ví dụ "+12% + 18%") rồi dùng toán tử `%` | Viết `%%`; lại một lần nữa: thấy `SCRIPT ERROR` là coi như hỏng |
+| Vá file bằng Python qua heredoc làm `\n` trong chuỗi GDScript thành xuống dòng thật (lặp lại ở M3) | Lớp shell/heredoc ăn mất dấu `\` | Viết script vá ra file riêng bằng công cụ Write, dùng `chr(92)` cho dấu `\` |
+| `Cannot infer the type of "before"` (M3) | `:=` với `Array.duplicate()` của biến kiểu Variant | `var before: Array = ...` |
 | Lệnh bash treo tới hết thời gian chờ | Lỡ để `cat > file` không có đầu vào (chờ bàn phím) | Không dùng `cat >` không kèm heredoc |
 
 ## 8. Hạn chế và việc cần làm

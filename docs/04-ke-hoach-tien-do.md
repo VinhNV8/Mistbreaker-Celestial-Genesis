@@ -6,7 +6,7 @@
 | Nguồn yêu cầu | [Kịch bản game](kich-ban-game-thien-phu-khai-gioi.md), mục 2–9 |
 | Spec chi tiết | [01 — Prototype](01-requirement-spec.md) · [03 — MVP](03-mvp-spec.md) · [02 — Kỹ thuật](02-technical-spec.md) |
 | Thiết kế nội dung | [05 — 20 Thiên phú](05-thien-phu-chi-tiet.md) (cấp, kỹ năng, tiến hoá, cộng hưởng) · [06 — Bản đồ, quái, boss](06-ban-do-quai-boss.md) (9 vùng, công thức chỉ số, 36 quái thường, 18 tinh anh, 9 boss chương, 9 boss hiếm). Cả hai **đã chốt** 20/10/2026 (Q17–Q27, mục 13) · [07 — Đồ hoạ](07-do-hoa-ke-hoach.md) (phong cách, hạng mục AR-xx) |
-| Cập nhật | 20/10/2026 (sau đợt M2 và G1; chốt Q17–Q27) |
+| Cập nhật | 20/10/2026 (sau đợt M3) |
 
 File này liệt kê **mọi hạng mục trong kịch bản**: trạng thái hiện tại, đợt sẽ làm, và mã yêu cầu/test để kiểm chứng. Mỗi lần xong một đợt, cập nhật cột Trạng thái và phần Tổng quan.
 
@@ -28,16 +28,16 @@ File này liệt kê **mọi hạng mục trong kịch bản**: trạng thái hi
 | Phần | Tổng | ✅ Xong | 🟡 Một phần | ⬜ Chưa làm | ⛔ Không làm |
 | --- | --- | --- | --- | --- | --- |
 | Thế giới quan, cốt truyện (mục 2) | 13 | 0 | 4 | 9 | 0 |
-| Thiên phú (mục 3) | 41 | 20 | 10 | 11 | 0 |
-| Nhân vật, chỉ số (mục 4) | 26 | 7 | 3 | 16 | 0 |
-| Chiến đấu, quái (mục 5) | 22 | 8 | 3 | 10 | 1 |
+| Thiên phú (mục 3) | 41 | 23 | 9 | 9 | 0 |
+| Nhân vật, chỉ số (mục 4) | 26 | 12 | 4 | 10 | 0 |
+| Chiến đấu, quái (mục 5) | 23 | 15 | 2 | 5 | 1 |
 | Bản đồ, vượt map (mục 6) | 11 | 0 | 2 | 9 | 0 |
-| Khai phá, lãnh địa (mục 7) | 22 | 7 | 3 | 12 | 0 |
+| Khai phá, lãnh địa (mục 7) | 22 | 7 | 4 | 11 | 0 |
 | Trang bị, kinh tế (mục 8) | 14 | 7 | 2 | 4 | 1 |
-| 30 phút đầu (mục 9) | 9 | 5 | 0 | 4 | 0 |
-| Đồ hoạ, âm thanh | 13 | 7 | 2 | 4 | 0 |
-| Kỹ thuật, phát hành | 10 | 3 | 1 | 6 | 0 |
-| **Tổng** | **181** | **64** (35%) | **30** (17%) | **85** (47%) | **2** |
+| 30 phút đầu (mục 9) | 9 | 5 | 1 | 3 | 0 |
+| Đồ hoạ, âm thanh | 13 | 8 | 1 | 4 | 0 |
+| Kỹ thuật, phát hành | 10 | 4 | 1 | 5 | 0 |
+| **Tổng** | **182** | **81** (45%) | **30** (16%) | **69** (38%) | **2** |
 
 ### Các giai đoạn
 
@@ -46,8 +46,8 @@ File này liệt kê **mọi hạng mục trong kịch bản**: trạng thái hi
 | Prototype | Combat cơ bản, 1 lớp, 5 Thiên phú, 1 map, 1 boss, lưới khai phá 10 ô | ✅ Xong 19/10/2026 |
 | MVP — M1 | Trang bị, cường hoá, phân rã, Lực chiến | ✅ Xong 20/10/2026 |
 | MVP — M2 | Đủ 20 Thiên phú, luyện cấp, Đền Thiên Phú, công trình có thời gian xây | ✅ Xong 20/10/2026 |
-| MVP — M3 | Lớp Thợ Săn, chọn lớp khi tạo nhân vật, đủ 4 kỹ năng mỗi lớp | ⬜ Tiếp theo |
-| MVP — M4 | Chương 2: Đồng Bằng Gió Hú, boss Huyền Ảnh, Thành Biên Đài, bản đồ lục địa, di chuyển giữa vùng | ⬜ |
+| MVP — M3 | Lớp Thợ Săn, chọn lớp khi tạo nhân vật, đủ 4 kỹ năng mỗi lớp | ✅ Xong 20/10/2026 |
+| MVP — M4 | Chương 2: Đồng Bằng Gió Hú, boss Huyền Ảnh, Thành Biên Đài, bản đồ lục địa, di chuyển giữa vùng | ⬜ Tiếp theo |
 | MVP — M5 | Cốt truyện có thoại, hướng dẫn, nhiệm vụ, boss hiếm, Xưởng Rèn, cân bằng 1 → 20 | ⬜ |
 | MVP — G | Đồ hoạ nhân vật, quái, bản đồ, hiệu ứng, âm thanh cho chương 1–2 | 🟡 G1 (hình chương 1, sinh bằng code) xong 20/10/2026 — [07](07-do-hoa-ke-hoach.md); còn âm thanh, khung giao diện, vùng 2 |
 | Thử nghiệm kín | 50–100 người chơi (kịch bản mục 9) | ⬜ Cần M3–M5 + G |
@@ -108,7 +108,7 @@ Thiết kế chi tiết từng Thiên phú (hiệu ứng Lv1 → Lv10, 2 bậc t
 | TP-27 | Kiếm Tâm | B | ✅ | Có kỹ năng L Nhất Kiếm Đoạn (bổ sung). Có thể hơi mạnh (phát hiện F4) |
 | TP-28 | Nhà Thảo Dược | B | ✅ | Có kỹ năng L Linh Dược (bổ sung) |
 | TP-29 | Trái Tim Lãnh Chúa | B | ✅ | Có kỹ năng L Hiệu Triệu (bổ sung) |
-| TP-30 | Thuần Thú Sư | A | 🟡 | Thu phục được quái ngoài đồng; **chưa** thu phục được quái trong Ổ quái (kịch bản mục 7) — sửa ở M3 |
+| TP-30 | Thuần Thú Sư | A | ✅ | M3: thu phục cả quái Ổ quái (TP-T2); ngưỡng 10% → 15% và thú cưng +0 → 50% tấn công theo cấp Thiên phú |
 | TP-31 | Mắt Ưng | A | ✅ | |
 | TP-32 | Hấp Huyết | A | ✅ | |
 | TP-33 | Bàn Tay Vàng | A | 🟡 | "Nguyên liệu hiếm" được định nghĩa là Tinh Kim, **chờ duyệt Q10** |
@@ -118,13 +118,13 @@ Thiết kế chi tiết từng Thiên phú (hiệu ứng Lv1 → Lv10, 2 bậc t
 | TP-37 | Thiên Mệnh Khai Giới | SS | ✅ | |
 | TP-38 | Long Mạch | SS | ✅ | |
 | TP-39 | Đạo Tặc (Ẩn) — sao chép kỹ năng boss | SSS | 🟡 | Mới sao chép được kỹ năng của 1 boss (Sói Chúa); thêm kỹ năng khi có boss mới (M4 trở đi) |
-| TP-40 | Đạo Tặc (Ẩn) — Cướp Thuộc Tính khi hạ quái | SSS | ⬜ | Yêu cầu mới 20/10/2026 ([CR-01](03-mvp-spec.md), DT-01…08), làm ở M3. **Chờ duyệt Q13–Q16** |
+| TP-40 | Đạo Tặc (Ẩn) — Cướp Thuộc Tính khi hạ quái | SSS | ✅ | M3 ([CR-01](03-mvp-spec.md), DT-01…08, test TP-T3). Code theo mặc định Q13–Q16 — số liệu vẫn chờ duyệt |
 
 ### 3.2. Bổ sung từ thiết kế chi tiết ([05](05-thien-phu-chi-tiet.md), đã chốt Q17–Q21)
 
 | Mã | Hạng mục | Trạng thái | Đợt | Kiểm chứng | Ghi chú |
 | --- | --- | --- | --- | --- | --- |
-| TP-41 | Hiệu ứng chính mạnh dần theo Lv, Lv10 = ×1,5 (05 mục 1.2) | ⬜ | M3 | — | **Q17**. Làm cùng đợt cân bằng M3; TL-B phải vẫn đạt F/S chênh ≤ 25% ở cả Lv1 và Lv10 |
+| TP-41 | Hiệu ứng chính mạnh dần theo Lv, Lv10 = ×1,5 (05 mục 1.2) | ✅ | M3 | TP-T1 | **Q17**. 20 Thiên phú nội suy Lv1 → Lv10 theo bảng 05 mục 2.1; bảng Thiên phú hiện giá trị cấp này → cấp sau |
 | TP-42 | Tiến hoá đặt lại Lv1, không tụt sức mạnh, hoàn 50% Tinh Hoa | ⬜ | Alpha | — | **Q18**. Đi cùng TP-12 |
 | TP-43 | Bảng Thiên phú hiện trước cây tiến hoá (tên, hạng, điều kiện) | ⬜ | M5 | — | **Q20**. Làm cùng hướng dẫn (TN-04) để người quay F thấy đường lên B |
 | TP-44 | Cộng hưởng đặc biệt hiện "???" kèm gợi ý cho tới khi kích hoạt | ⬜ | Alpha | — | **Q21**. Đi cùng TP-13; Thợ Săn Di Tích hiện sẵn |
@@ -135,21 +135,21 @@ Thiết kế chi tiết từng Thiên phú (hiệu ứng Lv1 → Lv10, 2 bậc t
 | Mã | Hạng mục | Trạng thái | Đợt | Kiểm chứng | Ghi chú |
 | --- | --- | --- | --- | --- | --- |
 | NV-01 | Lớp Kiếm Khách | ✅ | Proto | — | Mới có 1 kỹ năng (Xoáy Kiếm), cần đủ 4 (CB-01) |
-| NV-02 | Lớp Thợ Săn | ⬜ | M3 | — | |
+| NV-02 | Lớp Thợ Săn | ✅ | M3 | CL-T1, CL-T2 | Bắn tên 45 m, Tấn công từ AGI, HP thấp hơn, né gốc 5%; vũ khí tên Cung |
 | NV-03 | Lớp Pháp Sư | ⬜ | Alpha | — | |
 | NV-04 | Lớp Hộ Vệ | ⬜ | Alpha | — | |
-| NV-05 | Chọn lớp khi tạo nhân vật | ⬜ | M3 | — | |
+| NV-05 | Chọn lớp khi tạo nhân vật | ✅ | M3 | Smoke `02b-class` | Màn hình sau Lễ Thức Tỉnh; không đổi lớp giữa chừng (Q34) |
 | NV-06 | Chuyển chức 1 (cấp 30) và 2 (cấp 60) | ⬜ | Alpha | — | |
 | NV-07 | Chuyển chức 3 (cấp 90) | ⬜ | Beta | — | |
 | NV-08 | Cấp tối đa 100 | ✅ | Proto | CHR-01 | |
 | NV-09 | Cấp Thần Vực vô hạn (endgame) | ⬜ | Beta | — | |
 | NV-10 | Chỉ số gốc STR, AGI, VIT | ✅ | Proto | — | |
-| NV-11 | Chỉ số gốc INT | ⬜ | M3 / Alpha | — | Cần khi có Pháp Sư; Thợ Săn dùng AGI |
-| NV-12 | Chỉ số gốc LUK | ⬜ | M3 | — | Kịch bản có nhưng chưa nói tác dụng; đề xuất: tỉ lệ rơi đồ và chí mạng |
+| NV-11 | Chỉ số gốc INT | 🟡 | M3 / Alpha | CL-T1 | M3: +MP, hồi MP, +sát thương kỹ năng. Vai trò chính khi có Pháp Sư (Alpha) |
+| NV-12 | Chỉ số gốc LUK | ✅ | M3 | CL-T1 | +0,3% chí mạng, +0,2 điểm % rơi đồ mỗi điểm (Q30) |
 | NV-13 | 5 điểm mỗi cấp, tẩy điểm miễn phí trước cấp 30 | ✅ | Proto | CHR-02, 04 | |
 | NV-14 | HP, Tấn công, Phòng thủ, Chí mạng, Sát thương chí mạng, Tốc đánh | ✅ | Proto / M1 | — | |
-| NV-15 | MP | ⬜ | M3 | — | Cần khi có 4 kỹ năng (kỹ năng tốn MP) |
-| NV-16 | Né tránh | ⬜ | M3 | — | |
+| NV-15 | MP | ✅ | M3 | CL-T3 | 50 + 5/cấp + 6/INT, hồi 3/giây; 8 kỹ năng tốn MP (Q32) |
+| NV-16 | Né tránh | ✅ | M3 | CL-T4 | 0,3%/AGI, trần 30%, Thợ Săn gốc 5% (Q31) |
 | NV-17 | Kháng 5 hệ | ⬜ | M4 | — | Cần khi quái vùng 2 đánh có hệ |
 | NV-18 | Lực chiến, dùng để mở map và xếp hạng | 🟡 | M1 | EQ-17 | Đã tính và hiện ở HUD; chưa hiện "trên đầu" nhân vật; chưa dùng mở map (vùng 3, Alpha) |
 | NV-19 | Công thức EXP | ✅ | Proto | CHR-01 | |
@@ -167,18 +167,18 @@ Chỉ số, kỹ năng từng quái/boss và công thức sức mạnh theo cấ
 
 | Mã | Hạng mục | Trạng thái | Đợt | Kiểm chứng | Ghi chú |
 | --- | --- | --- | --- | --- | --- |
-| CB-01 | Đánh thường + **4 kỹ năng** + 1 kỹ năng Thiên phú + né lăn | 🟡 | M3 | CMB-01…03 | Có đánh thường, 1 kỹ năng (Xoáy Kiếm), kỹ năng Thiên phú, né. Thiếu 3 kỹ năng mỗi lớp |
+| CB-01 | Đánh thường + **4 kỹ năng** + 1 kỹ năng Thiên phú + né lăn | ✅ | M3 | CL-T3 | 4 kỹ năng mỗi lớp, phím 1–4 (K/chuột phải = kỹ năng 1) (Q28, Q29) |
 | CB-02 | Nút Tự đánh khi cày map cũ (boss vẫn phải đánh tay) | ⬜ | M5 | — | |
 | CB-03 | Né lăn 0,3 giây bất tử, hồi 3 giây | ✅ | Proto | CMB-03 | |
-| CB-04 | Né "Hoàn hảo" làm chậm thời gian 1 giây | ⬜ | M3 | — | |
+| CB-04 | Né "Hoàn hảo" làm chậm thời gian 1 giây | ✅ | M3 | CB-T3 | Chặn đòn trong 0,15 giây đầu của né lăn → quái và đạn chậm còn 30% trong 1 giây |
 | CB-05 | Ngũ hành tương khắc +30% | 🟡 | M2 | TL-C | Quái đã có hệ; người chơi chỉ đổi hệ được nhờ Ngũ Hành Linh Căn. Người khác cần Khảm ngọc (TB-08) |
 | CB-06 | Thanh Phá Thế ở boss | ✅ | Proto | MOB-07 | |
-| CB-07 | Thanh Phá Thế ở quái tinh anh | ⬜ | M3 | — | Kịch bản ghi "boss **và quái tinh anh**"; hiện mới có ở boss |
+| CB-07 | Thanh Phá Thế ở quái tinh anh | ✅ | M3 | CB-T4 | 30% HP, choáng 3 giây, +50% sát thương; hiện dưới thanh máu |
 | CB-08 | Combo tăng EXP (+20% ở 100 combo) | ✅ | Proto | CMB-05 | |
 | CB-09 | Công thức sát thương | ✅ | Proto | CMB-04 | |
-| CB-10 | Quái thường 4–6 loại mỗi map | 🟡 | M4 | MOB-01 | Rừng Sương mới có 3 loại |
+| CB-10 | Quái thường 4–6 loại mỗi map | 🟡 | M4 | MOB-01, CB-T6 | Rừng Sương có 4 loại (thêm Mộc Tinh ở M3) |
 | CB-11 | Quái tinh anh: viền sáng, rơi đồ xanh/tím | ✅ | M1 | EQ-04 | |
-| CB-12 | Quái tinh anh có 1 kỹ năng đặc biệt riêng | ⬜ | M3 | — | Hiện tinh anh chỉ mạnh hơn, chưa có kỹ năng riêng |
+| CB-12 | Quái tinh anh có 1 kỹ năng đặc biệt riêng | ✅ | M3 | CB-T5 | Sói Đầu Đàn: Hú gọi · Nấm Mẹ: Sinh sôi (Nấm Con tự nổ) (Q33) |
 | CB-13 | Thủ lĩnh cứ điểm canh ô đất | ✅ | Proto | EXP-05 | Dạng Ổ quái |
 | CB-14 | Boss vùng 2–3 giai đoạn, rơi Tinh Hoa | ✅ | Proto / M2 | MOB-06…10, TL-G | |
 | CB-15 | Boss hiếm, xuất hiện 2 lần/ngày, rơi đồ Cam | ⬜ | M5 | — | Tạm thời Sói Chúa rơi đồ Cam 15% (**Q2**) |
@@ -187,8 +187,9 @@ Chỉ số, kỹ năng từng quái/boss và công thức sức mạnh theo cấ
 | CB-18 | Boss chương 2 Tướng Gián Điệp Huyền Ảnh (phân thân 3, bản thật có bóng) | ⬜ | M4 | — | |
 | CB-19 | Boss chương 3–5 | ⬜ | Alpha | — | |
 | CB-20 | Boss chương 6–9 | ⬜ | Beta | — | |
-| CB-21 | Chỉ số quái tính bằng công thức mới (06 mục 1) thay cho bảng số cứng | ⬜ | M3 | — | **Q22**. Vùng 1: Sói Sương cấp 7 124 → 188 HP; cấp 1 dễ hơn (40 → 18 HP). M5 chỉ tinh chỉnh hệ số |
-| CB-22 | Số đòn mục tiêu: thường 3, tinh anh 12, boss chương 1 = 90 / chương 2–3 = 110 / chương 4+ = 130, boss hiếm 200 | ⬜ | M3 | — | **Q23**. Sói Chúa 3.600 → 4.023 HP, Tấn công 27 → 43, Phá Thế 670. Test: bot chuẩn cấp 5 hạ boss trong 35–45 giây |
+| CB-21 | Chỉ số quái tính bằng công thức mới (06 mục 1) thay cho bảng số cứng | ✅ | M3 | CB-T1 | **Q22**. `Formulas.mob_stats()` giống hệt `tools/gen_world_doc.py` |
+| CB-22 | Số đòn mục tiêu: thường 3, tinh anh 12, boss chương 1 = 90 / chương 2–3 = 110 / chương 4+ = 130, boss hiếm 200 | ✅ | M3 | CB-T1, TL-B | **Q23**. Sói Chúa 4.023 HP; bot mặc bộ đồ chuẩn hạ trong khoảng 30 giây (phát hiện F7) |
+| CB-23 | Khoá hang boss khi boss đã xuất hiện (không đánh xa từ ngoài hang) | ✅ | M3 | TL-B | Bổ sung trong M3 (03 mục 5.12): bot Thợ Săn phát hiện lỗ hổng |
 
 ## 6. Bản đồ và vượt map (kịch bản mục 6)
 
@@ -233,7 +234,7 @@ Chi tiết 9 vùng × 3 map con, cơ chế môi trường có số liệu, bộ 
 | KP-19 | Dân cư có kỹ năng nghề, xếp vào công trình | ⬜ | Alpha | — | Hiện người sống sót chỉ +10% sản lượng |
 | KP-20 | Thu hoạch offline tối đa 12 giờ | ✅ | Proto | EXP-09 | |
 | KP-21 | Thiên phú ảnh hưởng khai phá: Mắt Ưng, Trái Tim Lãnh Chúa | ✅ | Proto / M2 | TL-C, TL-F | |
-| KP-22 | Thiên phú ảnh hưởng khai phá: Khứu Giác (Di tích 20%), Thuần Thú (quái Ổ quái) | ⬜ | M3 / M4 | — | Xem TP-26, TP-30 |
+| KP-22 | Thiên phú ảnh hưởng khai phá: Khứu Giác (Di tích 20%), Thuần Thú (quái Ổ quái) | 🟡 | M3 / M4 | TP-T2 | Thuần Thú xong ở M3; Khứu Giác Di tích làm ở M4 (TP-26) |
 
 ## 8. Trang bị, kinh tế và vòng lặp (kịch bản mục 8)
 
@@ -259,7 +260,7 @@ Chi tiết 9 vùng × 3 map con, cơ chế môi trường có số liệu, bộ 
 | Mã | Phút | Cảnh | Trạng thái | Đợt | Ghi chú |
 | --- | --- | --- | --- | --- | --- |
 | TN-01 | 0–2 | Cutscene Thiên Liệt, giọng kể | ⬜ | M5 + G | Hiện vào thẳng màn hình tiêu đề |
-| TN-02 | 2–4 | Tạo nhân vật: chọn ngoại hình, lớp | ⬜ | M3 + G | Chọn lớp ở M3; ngoại hình cần đồ hoạ |
+| TN-02 | 2–4 | Tạo nhân vật: chọn ngoại hình, lớp | 🟡 | M3 + G | Chọn lớp xong ở M3; chọn ngoại hình cần đồ hoạ |
 | TN-03 | 4–7 | Lễ Thức Tỉnh, lời Trưởng làng | ✅ | Proto | |
 | TN-04 | 7–10 | Hướng dẫn combat: quái tấn công làng, học đánh/né/kỹ năng | ⬜ | M5 | Hiện chỉ có 1 dòng thông báo |
 | TN-05 | 10–15 | Rừng Sương: lên cấp 5, nhặt đồ xanh đầu tiên | ✅ | Proto / M1 | EQ-05 |
@@ -276,7 +277,7 @@ Phong cách đã chốt: **pixel art góc trên xuống 3/4, sinh bằng code** 
 | --- | --- | --- | --- | --- |
 | DH-01 | **Chốt phong cách đồ hoạ** | ✅ | G1 | Pixel art 3/4, frame 24/32/48 px, ×2, sinh bằng code (07 mục 1.2) |
 | DH-02 | Sprite nhân vật Kiếm Khách: đứng, chạy, chém, Xoáy Kiếm, né, trúng đòn, chết | ✅ | G1 | AR-10. Xoáy Kiếm = frame chém + nháy sáng + vòng vector; né = mờ |
-| DH-03 | Sprite nhân vật Thợ Săn | 🟡 | G1 / M3 | AR-11: sprite xong, vào game khi có lớp Thợ Săn |
+| DH-03 | Sprite nhân vật Thợ Săn | ✅ | G1 / M3 | AR-11: có trong game từ M3; thêm 8 icon kỹ năng, tên bay, kiếm khí, bẫy (AR-41) |
 | DH-04 | Sprite quái: Sói Sương, Nấm Độc, Tinh Linh Sương (+ biến thể tinh anh) | ✅ | G1 | AR-12, AR-13 (thêm Mộc Tinh). Tinh anh: cùng hình, to hơn, ánh vàng, vòng chân |
 | DH-05 | Sprite boss Sói Chúa Hư Vô (2 giai đoạn, tàng hình) | ✅ | G1 | AR-14: 48×48, bờm Hư Vô, mắt đỏ, hào quang; giai đoạn 2 ánh đỏ; tàng hình = mờ |
 | DH-06 | Đồng minh: thú cưng, lính bóng tối | ✅ | G1 | AR-15: hình quái gốc, vòng xanh / tô tím |
@@ -297,8 +298,8 @@ Khi có art, chỉ cần thay `scripts/view/world_view.gd` (vẽ) và theme UI; 
 | KT-01 | Engine Godot 4.7.2 | ✅ | Proto | |
 | KT-02 | Dữ liệu tách khỏi logic (designer chỉnh không sửa code) | 🟡 | Proto | Dữ liệu nằm trong `scripts/data/*.gd`; kịch bản đề xuất JSON/Resource. Chuyển khi có designer |
 | KT-03 | Lưu game cục bộ, chuyển đổi save cũ | ✅ | M1 / M2 | Save v3 |
-| KT-04 | Test tự động headless | ✅ | Proto → G1 | 39 test |
-| KT-05 | Quản lý mã nguồn bằng Git | ⬜ | Ngay | Chưa khởi tạo repo — **rủi ro mất code**, nên làm ngay |
+| KT-04 | Test tự động headless | ✅ | Proto → M3 | 52 test; chạy một phần bằng `-- --only=<tên>` |
+| KT-05 | Quản lý mã nguồn bằng Git | ✅ | 20/10/2026 | Repo cục bộ nhánh `main` (chưa có remote); `.gitignore` bỏ `.godot/`, `node_modules/`, log công cụ |
 | KT-06 | Build file chạy Windows (.exe) | ⬜ | M5 | Cần cài export templates 4.7.2 |
 | KT-07 | Cài đặt: âm lượng, đổi phím, cỡ chữ | ⬜ | M5 | |
 | KT-08 | Điều khiển tay cầm / cảm ứng | ⬜ | Alpha | Phụ thuộc quyết định PC hay Mobile |
@@ -311,22 +312,24 @@ Mỗi đợt theo quy trình: **viết spec → duyệt → code → test → c�
 
 ### M3 — Lớp Thợ Săn và 4 kỹ năng mỗi lớp
 
-- [ ] Viết spec M3 trong `03-mvp-spec.md` (mục 5)
-- [ ] NV-05: màn hình chọn lớp sau Lễ Thức Tỉnh (Kiếm Khách / Thợ Săn)
-- [ ] NV-02: Thợ Săn đánh xa bằng cung, chỉ số chính AGI
-- [ ] CB-01: đủ 4 kỹ năng cho Kiếm Khách và Thợ Săn (phím 1–4), có hồi chiêu
-- [ ] NV-15: MP — kỹ năng tốn MP, MP hồi theo thời gian
-- [ ] NV-16: Né tránh; NV-12: LUK
-- [ ] CB-04: né "Hoàn hảo" làm chậm thời gian 1 giây
-- [ ] CB-07: thanh Phá Thế cho quái tinh anh
-- [ ] CB-12: mỗi loại tinh anh có 1 kỹ năng đặc biệt
-- [ ] TP-30: Thuần Thú Sư thu phục được quái trong Ổ quái
-- [ ] TP-40 (CR-01): Đạo Tặc cướp thuộc tính khi hạ quái, DT-01…08
-- [ ] CB-21 (Q22): quái lấy chỉ số từ công thức của tài liệu 06 (hàm trong `formulas.gd`), bỏ bảng số cứng của vùng 1
-- [ ] CB-22 (Q23): boss chương 1 = 90 đòn; kiểm bằng bot chuẩn cấp 5 (35–45 giây)
-- [ ] TP-41 (Q17): hiệu ứng chính Thiên phú mạnh dần theo Lv (×1,5 ở Lv10)
-- [ ] Cân bằng (sau CB-21, CB-22, TP-41): 20 Thiên phú × 2 lớp đều hạ được boss, F/S chênh ≤ 25% ở cả Lv1 và Lv10
-- [ ] Save v4, test, cập nhật tài liệu
+- [x] Viết spec M3 trong `03-mvp-spec.md` (mục 5)
+- [x] NV-05: màn hình chọn lớp sau Lễ Thức Tỉnh (Kiếm Khách / Thợ Săn)
+- [x] NV-02: Thợ Săn đánh xa bằng cung, chỉ số chính AGI
+- [x] CB-01: đủ 4 kỹ năng cho Kiếm Khách và Thợ Săn (phím 1–4), có hồi chiêu
+- [x] NV-15: MP — kỹ năng tốn MP, MP hồi theo thời gian
+- [x] NV-16: Né tránh; NV-12: LUK
+- [x] CB-04: né "Hoàn hảo" làm chậm thời gian 1 giây
+- [x] CB-07: thanh Phá Thế cho quái tinh anh
+- [x] CB-12: mỗi loại tinh anh có 1 kỹ năng đặc biệt
+- [x] TP-30: Thuần Thú Sư thu phục được quái trong Ổ quái
+- [x] TP-40 (CR-01): Đạo Tặc cướp thuộc tính khi hạ quái, DT-01…08
+- [x] CB-21 (Q22): quái lấy chỉ số từ công thức của tài liệu 06 (hàm trong `formulas.gd`), bỏ bảng số cứng của vùng 1
+- [x] CB-22 (Q23): boss chương 1 = 90 đòn; kiểm bằng bot chuẩn cấp 5 (35–45 giây)
+- [x] TP-41 (Q17): hiệu ứng chính Thiên phú mạnh dần theo Lv (×1,5 ở Lv10)
+- [x] Cân bằng (sau CB-21, CB-22, TP-41): 20 Thiên phú × 2 lớp đều hạ được boss, F/S chênh ≤ 25% ở cả Lv1 và Lv10
+- [x] Save v4, test, cập nhật tài liệu
+- [x] CB-23 (bổ sung): khoá hang boss
+- [x] UI: màn hình chọn lớp, HUD 8 ô + MP, bảng Chỉ số 5 chỉ số, icon kỹ năng
 
 ### M4 — Chương 2
 
@@ -374,7 +377,8 @@ Mỗi đợt theo quy trình: **viết spec → duyệt → code → test → c�
 | 4 | Q6–Q12 (Thiên phú) — [03-mvp-spec mục 4.10](03-mvp-spec.md) | Kỹ năng L, Tinh Kim, công trình | Như spec |
 | 5 | Tốc độ hồi Đuốc khi phát hành (KP-02) | Nhịp độ khai phá | 2 phút/cái (kịch bản: 20 phút) |
 | 6 | Khởi tạo Git cho dự án (KT-05) | An toàn mã nguồn | Chưa có |
-| 7 | Q13–Q16: số liệu Đạo Tặc cướp thuộc tính, độc nhất server — [CR-01](03-mvp-spec.md) | Thiên phú SSS | Như CR-01 |
+| 7 | Q13–Q16: số liệu Đạo Tặc cướp thuộc tính, độc nhất server — [CR-01](03-mvp-spec.md) | Thiên phú SSS | Như CR-01 (đã code ở M3) |
+| 10 | Q28–Q34: 8 kỹ năng, phím 1–4, INT/LUK, né tránh, MP, tinh anh vùng 1, không đổi lớp — [03 mục 5.11](03-mvp-spec.md) | Combat 2 lớp | Như spec M3 (đã code) |
 
 ### 13.1. Đã chốt
 

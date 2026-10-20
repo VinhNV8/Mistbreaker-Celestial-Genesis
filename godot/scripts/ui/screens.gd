@@ -5,12 +5,14 @@ const Awakening = preload("res://scripts/core/awakening.gd")
 const Explore = preload("res://scripts/core/explore.gd")
 const Talents = preload("res://scripts/data/talents.gd")
 const UiTheme = preload("res://scripts/ui/ui_theme.gd")
+const Classes = preload("res://scripts/data/classes.gd")
+const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
 
 const CONTROLS := [
 	["W A S D", "Di chuyển"],
-	["Chuột", "Ngắm hướng chém"],
-	["Chuột trái / J", "Chém (giữ để chém liên tục)"],
-	["K / Chuột phải", "Xoáy Kiếm (đánh vòng quanh)"],
+	["Chuột", "Ngắm hướng đánh"],
+	["Chuột trái / J", "Đánh thường (giữ để đánh liên tục)"],
+	["1 · 2 · 3 · 4", "4 kỹ năng của lớp (tốn MP); K / chuột phải = kỹ năng 1"],
 	["Space", "Né lăn — bất tử 0,3 giây"],
 	["L", "Kỹ năng Thiên phú (nếu có)"],
 	["Q", "Uống bình máu"],
@@ -109,7 +111,7 @@ static func awakening(rng: Callable, on_accept: Callable) -> Control:
 	for r in Talents.RANK_ORDER:
 		rates.append("%s %s%%" % [r, str(Talents.RANK_WEIGHT[r])])
 	col.add_child(_centered(
-		"Có thể chọn lại bất kỳ lần quay nào. Bảo hiểm: nếu cả 4 lần đều dưới hạng B, lần cuối được nâng lên hạng B.\nTỉ lệ theo hạng: %s. Bể quay gồm 20 Thiên phú. Lớp nhân vật: Kiếm Khách." % " · ".join(rates),
+		"Có thể chọn lại bất kỳ lần quay nào. Bảo hiểm: nếu cả 4 lần đều dưới hạng B, lần cuối được nâng lên hạng B.\nTỉ lệ theo hạng: %s. Bể quay gồm 20 Thiên phú. Chọn lớp nhân vật ở bước tiếp theo." % " · ".join(rates),
 		"Small", 600
 	))
 
@@ -158,6 +160,69 @@ static func awakening(rng: Callable, on_accept: Callable) -> Control:
 			on_accept.call(state.aw.rolls[state.selected].id))
 	render.call()
 	return screen
+
+
+## CL-01: chọn lớp sau Lễ Thức Tỉnh. on_choose nhận id lớp.
+static func class_select(talent_name: String, on_choose: Callable) -> Control:
+	var page := _page(1.0, 900.0)
+	var col: VBoxContainer = page[1]
+	col.add_child(_centered("TẠO NHÂN VẬT", "Eyebrow"))
+	var heading := _centered("Chọn con đường của con", "Heading")
+	heading.add_theme_font_size_override("font_size", 34)
+	col.add_child(heading)
+	col.add_child(_centered("Thiên phú: %s. Mọi Thiên phú đều dùng được với cả hai lớp." % talent_name, "Muted"))
+	var row := UiTheme.hbox(20)
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	col.add_child(row)
+	for cid in Classes.ORDER:
+		var c: Dictionary = Classes.DEFS[cid]
+		var card := PanelContainer.new()
+		card.custom_minimum_size = Vector2(420, 0)
+		card.add_theme_stylebox_override("panel", UiTheme.box(UiTheme.PANEL_SOLID, 14, 2, UiTheme.LINE, 18))
+		var v := UiTheme.vbox(8)
+		card.add_child(v)
+		var top := UiTheme.hbox(14)
+		var portrait := _portrait(c.sprite)
+		top.add_child(portrait)
+		var head := UiTheme.vbox(2)
+		head.add_child(UiTheme.label(c.name, "Heading"))
+		head.add_child(UiTheme.label("%s · Chỉ số chính %s" % [c.role, c.main], "Small"))
+		top.add_child(head)
+		v.add_child(top)
+		v.add_child(UiTheme.label(c.description, "Muted", 380))
+		for i in 4:
+			var sk: Dictionary = c.skills[i]
+			var line := UiTheme.hbox(8)
+			var ic := TextureRect.new()
+			ic.texture = SpriteLib.icon("skill-" + str(sk.icon))
+			ic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			ic.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			ic.custom_minimum_size = Vector2(32, 32)
+			line.add_child(ic)
+			line.add_child(UiTheme.label("%d · %s — %s" % [i + 1, sk.name, sk.text], "Small", 330))
+			v.add_child(line)
+		var b := UiTheme.button("Chọn %s" % c.name, cid == "kiem-khach")
+		b.name = "Class_" + cid
+		var id: String = cid
+		b.pressed.connect(func(): on_choose.call(id))
+		v.add_child(b)
+		row.add_child(card)
+	return page[0]
+
+
+## Khung chân dung: frame đứng của sprite, phóng ×3.
+static func _portrait(sprite_id: String) -> Control:
+	var holder := TextureRect.new()
+	holder.custom_minimum_size = Vector2(96, 96)
+	holder.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	holder.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	var s: Dictionary = SpriteLib.data().get("sprites", {}).get(sprite_id, {})
+	if not s.is_empty():
+		var at := AtlasTexture.new()
+		at.atlas = SpriteLib.texture(s.path)
+		at.region = Rect2(0, 0, float(s.w), float(s.h))
+		holder.texture = at
+	return holder
 
 
 static func _card(t, spinning: bool) -> Control:

@@ -52,7 +52,8 @@ def build_sprites(only):
             anims[name] = {"row": m["row"], "frames": m["frames"],
                            "fps": d.get("fps", {}).get(name, FPS[name]), "loop": LOOP[name]}
         # Gốc vẽ = điểm chân (giữa bóng); game đặt điểm này vào vị trí thực thể.
-        out[sid] = {"path": path, "w": fw, "h": fh, "origin": [fw // 2, round(fh * 29.5 / 32)], "anims": anims, "name": d["name"]}
+        out[sid] = {"path": path, "w": fw, "h": fh, "origin": [fw // 2, round(fh * 29.5 / 32)], "anims": anims, "name": d["name"],
+                    "size_mul": d.get("size_mul", 1.0)}
         previews.append((d["name"], img))
     return out, previews
 

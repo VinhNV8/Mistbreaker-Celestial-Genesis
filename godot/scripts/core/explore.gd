@@ -209,7 +209,7 @@ static func _kind(key: String) -> String:
 
 
 static func build_time(p, kind: String) -> float:
-	return float(BUILDINGS[kind].time) * (0.75 if p.talent == "trai-tim" else 1.0)
+	return float(BUILDINGS[kind].time) * ((1.0 - Talents.lv_value(0.25, 0.375, p.talent_level)) if p.talent == "trai-tim" else 1.0)
 
 
 static func start_building(p, key: String) -> void:
@@ -296,7 +296,7 @@ static func production_per_minute(p) -> Dictionary:
 	var survivors := count_owned(p.tiles, "survivor")
 	var mult := 1.0 + 0.1 * survivors + (0.2 if is_built(p, "camp2") else 0.0)
 	if p.talent == "thien-menh":
-		mult += 0.2
+		mult += Talents.lv_value(0.2, 0.3, p.talent_level)
 	if Talents.has_sub(p.talent, p.talent_level, "territory", 1):
 		mult += 0.1
 	return {"gold": lumber * 3.0 * mult, "wood": lumber * 6.0 * mult}

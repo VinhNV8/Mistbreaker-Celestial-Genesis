@@ -87,7 +87,7 @@ static func draw_frame(ci: CanvasItem, id: String, anim: String, frame: int, pos
 	var w := float(s.w)
 	var h := float(s.h)
 	var region := Rect2(frame * w, float(a.row) * h, w, h)
-	var k := scale() * size_mul
+	var k := scale() * size_mul * float(s.get("size_mul", 1.0))
 	ci.draw_set_transform(pos, 0.0, Vector2(-k if flip else k, k))
 	ci.draw_texture_rect_region(tex, Rect2(-Vector2(s.origin[0], s.origin[1]), Vector2(w, h)), region, modulate)
 	ci.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
@@ -102,7 +102,7 @@ static func env_texture(id: String) -> Texture2D:
 	return texture(e.path) if not e.is_empty() else null
 
 
-static func draw_env(ci: CanvasItem, id: String, pos: Vector2, modulate := Color.WHITE, size_mul := 1.0, flip := false) -> void:
+static func draw_env(ci: CanvasItem, id: String, pos: Vector2, modulate := Color.WHITE, size_mul := 1.0, flip := false, rotation := 0.0) -> void:
 	var e: Dictionary = data().get("env", {}).get(id, {})
 	if e.is_empty():
 		return
@@ -110,7 +110,7 @@ static func draw_env(ci: CanvasItem, id: String, pos: Vector2, modulate := Color
 	if tex == null:
 		return
 	var k := scale() * size_mul
-	ci.draw_set_transform(pos, 0.0, Vector2(-k if flip else k, k))
+	ci.draw_set_transform(pos, rotation, Vector2(-k if flip else k, k))
 	ci.draw_texture(tex, -Vector2(e.origin[0], e.origin[1]), modulate)
 	ci.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 

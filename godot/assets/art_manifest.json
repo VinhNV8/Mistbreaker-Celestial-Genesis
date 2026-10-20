@@ -42,7 +42,8 @@
      "loop": false
     }
    },
-   "name": "Kiếm Khách"
+   "name": "Kiếm Khách",
+   "size_mul": 1.0
   },
   "hero-tho-san": {
    "path": "res://assets/sprites/hero-tho-san.png",
@@ -84,7 +85,8 @@
      "loop": false
     }
    },
-   "name": "Thợ Săn"
+   "name": "Thợ Săn",
+   "size_mul": 1.0
   },
   "wolf": {
    "path": "res://assets/sprites/wolf.png",
@@ -126,7 +128,8 @@
      "loop": false
     }
    },
-   "name": "Sói Sương"
+   "name": "Sói Sương",
+   "size_mul": 1.0
   },
   "mushroom": {
    "path": "res://assets/sprites/mushroom.png",
@@ -168,7 +171,8 @@
      "loop": false
     }
    },
-   "name": "Nấm Độc"
+   "name": "Nấm Độc",
+   "size_mul": 1.0
   },
   "wisp": {
    "path": "res://assets/sprites/wisp.png",
@@ -210,7 +214,8 @@
      "loop": false
     }
    },
-   "name": "Tinh Linh Sương"
+   "name": "Tinh Linh Sương",
+   "size_mul": 1.0
   },
   "moc-tinh": {
    "path": "res://assets/sprites/moc-tinh.png",
@@ -252,7 +257,51 @@
      "loop": false
     }
    },
-   "name": "Mộc Tinh"
+   "name": "Mộc Tinh",
+   "size_mul": 1.0
+  },
+  "nam-con": {
+   "path": "res://assets/sprites/nam-con.png",
+   "w": 24,
+   "h": 24,
+   "origin": [
+    12,
+    22
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Nấm Con",
+   "size_mul": 0.6
   },
   "boss": {
    "path": "res://assets/sprites/boss.png",
@@ -294,7 +343,8 @@
      "loop": false
     }
    },
-   "name": "Sói Chúa Hư Vô"
+   "name": "Sói Chúa Hư Vô",
+   "size_mul": 1.0
   }
  },
  "icons": {
@@ -319,6 +369,14 @@
   "skill-spin": "res://assets/icons/skill-spin.png",
   "skill-dodge": "res://assets/icons/skill-dodge.png",
   "skill-potion": "res://assets/icons/skill-potion.png",
+  "skill-shot": "res://assets/icons/skill-shot.png",
+  "skill-dash": "res://assets/icons/skill-dash.png",
+  "skill-wave": "res://assets/icons/skill-wave.png",
+  "skill-guard": "res://assets/icons/skill-guard.png",
+  "skill-rain": "res://assets/icons/skill-rain.png",
+  "skill-pierce": "res://assets/icons/skill-pierce.png",
+  "skill-trap": "res://assets/icons/skill-trap.png",
+  "skill-eagle": "res://assets/icons/skill-eagle.png",
   "talent-than-the": "res://assets/icons/talent-than-the.png",
   "talent-tay-nhanh": "res://assets/icons/talent-tay-nhanh.png",
   "talent-may-man": "res://assets/icons/talent-may-man.png",
@@ -537,6 +595,42 @@
    "origin": [
     8,
     8
+   ]
+  },
+  "fx-arrow": {
+   "path": "res://assets/env/fx-arrow.png",
+   "w": 20,
+   "h": 8,
+   "origin": [
+    10,
+    4
+   ]
+  },
+  "fx-pierce": {
+   "path": "res://assets/env/fx-pierce.png",
+   "w": 28,
+   "h": 12,
+   "origin": [
+    14,
+    6
+   ]
+  },
+  "fx-wave": {
+   "path": "res://assets/env/fx-wave.png",
+   "w": 24,
+   "h": 32,
+   "origin": [
+    12,
+    16
+   ]
+  },
+  "fx-trap": {
+   "path": "res://assets/env/fx-trap.png",
+   "w": 18,
+   "h": 14,
+   "origin": [
+    9,
+    9
    ]
   }
  }

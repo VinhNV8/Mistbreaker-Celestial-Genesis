@@ -20,6 +20,9 @@ SPRITES = {
     "mushroom": {"builder": "mushroom", "name": "Nấm Độc", "spec": {}},
     "wisp": {"builder": "wisp", "name": "Tinh Linh Sương", "spec": {}},
     "moc-tinh": {"builder": "treant", "name": "Mộc Tinh", "spec": {}},
+    # Nấm Con (M3, CB-12): do Nấm Mẹ đẻ ra, hiển thị nhỏ hơn (size_mul) — mũ hồng sáng, bào tử cam
+    "nam-con": {"builder": "mushroom", "name": "Nấm Con", "size_mul": 0.6,
+                "spec": {"cap": "fire", "spots": "#fff2c8", "spore": "#ff9a3c"}},
     "boss": {"builder": "quadruped", "name": "Sói Chúa Hư Vô",
              "spec": {"size": 48, "fur": "fur_void", "mane": "void", "eye": "#ff3b4e", "aura": "#9b6ee0"}},
 }

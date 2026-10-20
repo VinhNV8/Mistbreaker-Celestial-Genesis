@@ -26,6 +26,10 @@ const KEY_ACTIONS := {
 	"move_down": [KEY_S, KEY_DOWN],
 	"attack": [KEY_J],
 	"skill": [KEY_K],
+	"skill_1": [KEY_1],
+	"skill_2": [KEY_2],
+	"skill_3": [KEY_3],
+	"skill_4": [KEY_4],
 	"talent": [KEY_L],
 	"dodge": [KEY_SPACE],
 	"toggle_stats": [KEY_C],
@@ -202,6 +206,10 @@ func _read_input() -> Dictionary:
 		"aim": aim,
 		"attack": Input.is_action_pressed("attack"),
 		"skill": Input.is_action_just_pressed("skill"),
+		"skill_1": Input.is_action_just_pressed("skill_1"),
+		"skill_2": Input.is_action_just_pressed("skill_2"),
+		"skill_3": Input.is_action_just_pressed("skill_3"),
+		"skill_4": Input.is_action_just_pressed("skill_4"),
 		"talent": Input.is_action_just_pressed("talent"),
 		"dodge": Input.is_action_just_pressed("dodge"),
 		"potion": Input.is_action_just_pressed("potion"),
@@ -287,8 +295,12 @@ func _start_awakening() -> void:
 
 
 func _on_talent_chosen(talent_id: String) -> void:
+	_set_screen(Screens.class_select(Talents.get_talent(talent_id).name, func(class_id): _on_class_chosen(talent_id, class_id)))
+
+
+func _on_class_chosen(talent_id: String, class_id: String) -> void:
 	var p := Profile.new()
-	p.setup(talent_id, RngUtil.make(randi()), _now())
+	p.setup(talent_id, RngUtil.make(randi()), _now(), class_id)
 	SaveSystem.save_profile(p)
 	_start_world(p)
 	hud.log_message("Quái Sương đang tràn vào Rừng Sương. Hãy đánh chúng, lên cấp và khai phá vùng đất (phím M).")
@@ -393,6 +405,9 @@ func _smoke_bot(w: GameWorld) -> Dictionary:
 		"aim": target.pos,
 		"attack": true,
 		"skill": best < 120.0,
+		"skill_2": best < 200.0 and best > 90.0,
+		"skill_3": best < 380.0,
+		"skill_4": best < 160.0,
 		"talent": Talents.has_skill(w.talent()),
 		"dodge": threat,
 	}
@@ -415,11 +430,22 @@ func _run_smoke(dir: String) -> void:
 	await _shot(dir, "02-awakening")
 	_press("AcceptButton")
 	await _wait(0.5)
+	await _shot(dir, "02b-class")
+	_press("Class_kiem-khach")
+	await _wait(0.5)
 
 	bot = _smoke_bot
 	world.player.pos.x = 600.0
 	await _wait(5.0)
 	await _shot(dir, "03-combat")
+	# M3: chụp Thợ Săn (đổi lớp tạm thời chỉ trong smoke test).
+	world.profile.class_id = "tho-san"
+	world._refresh_stats()
+	world.player.mp = world.stats.max_mp
+	await _wait(4.0)
+	await _shot(dir, "03b-hunter")
+	world.profile.class_id = "kiem-khach"
+	world._refresh_stats()
 
 	var first: Dictionary = world.profile.tiles.filter(func(t): return Explore.hex_distance(t, {"q": 0, "r": 0}) == 1)[0]
 	map_panel.open(world)

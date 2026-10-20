@@ -30,7 +30,7 @@ Thứ tự được chọn theo phụ thuộc: nhiều Thiên phú trong danh s�
 | --- | --- | --- | --- | --- |
 | **M1** | Trang bị: rơi đồ, túi đồ, mặc/tháo, affix, bộ trang bị, cường hoá, phân rã, Lực chiến | 4, 5, 8 | — | ✅ Đã xong 20/10/2026 — kết quả ở mục 3.12 |
 | **M2** | Đủ 20 Thiên phú (bể quay 7 hạng) + luyện cấp Thiên phú bằng Tinh Hoa + Đền Thiên Phú | 3, 7 | M1 | ✅ Đã xong 20/10/2026 — kết quả ở mục 4.11 |
-| M3 | Lớp Thợ Săn (đánh xa) + chọn lớp lúc tạo nhân vật, 4 kỹ năng mỗi lớp, MP, né tránh, công thức chỉ số quái mới | 4, 5, 9 | M2 | 🟡 Spec ở mục 5, đang code |
+| **M3** | Lớp Thợ Săn (đánh xa) + chọn lớp lúc tạo nhân vật, 4 kỹ năng mỗi lớp, MP, né tránh, công thức chỉ số quái mới | 4, 5, 9 | M2 | ✅ Đã xong 20/10/2026 — kết quả ở mục 5.12 |
 | M4 | Chương 2: Đồng Bằng Gió Hú, gió đẩy lùi, boss Tướng Gián Điệp Huyền Ảnh, Thành Biên Đài, di chuyển giữa các vùng | 2, 5, 6 | M1 | Chưa viết spec |
 | M5 | Cốt truyện có thoại, nhiệm vụ chính, boss hiếm, cân bằng lại 1 → 20 cho thử nghiệm kín | 2, 5, 9 | M1–M4 | Chưa viết spec |
 
@@ -545,7 +545,7 @@ Công thức giả định **người chơi chuẩn mặc đồ đúng vùng** (
 
 ### 5.11. Điểm cần duyệt
 
-M3 code theo **mặc định** dưới đây. **Trạng thái: chưa duyệt.**
+M3 code theo **mặc định** dưới đây. **Trạng thái: chưa duyệt** (đã code theo mặc định).
 
 | # | Câu hỏi | Mặc định | Lý do |
 | --- | --- | --- | --- |
@@ -556,6 +556,51 @@ M3 code theo **mặc định** dưới đây. **Trạng thái: chưa duyệt.**
 | Q32 | MP: 50 + 5/cấp, hồi 3/giây | Như vậy | Đủ dùng xoay vòng 4 kỹ năng ở chương 1, thiếu nếu bấm liên tục |
 | Q33 | Tinh anh vùng 1 chỉ còn Sói Đầu Đàn, Nấm Mẹ (thay "… Tinh Anh") | Có | Đúng tài liệu 06 (2 loại tinh anh mỗi map, kịch bản mục 5) |
 | Q34 | Không đổi lớp giữa chừng | Không đổi được | Đổi lớp sẽ đi cùng chuyển chức (Alpha) |
+
+### 5.12. Kết quả triển khai M3
+
+Hoàn thành 20/10/2026. Kiểm thử: **13 test tự động mới** (CL-T1…T5, CB-T1, CB-T3…T6, TP-T1…T3), TL-B mở rộng cho 2 lớp, 2 test boss cũ cập nhật theo luật mới. Tổng **52/52 qua**, không có `SCRIPT ERROR`. Smoke test chụp thêm `02b-class` (chọn lớp) và `03b-hunter` (Thợ Săn đánh, có bẫy và tên bay).
+
+| Mã | Trạng thái | Kiểm chứng |
+| --- | --- | --- |
+| CL-01…05 Lớp nhân vật | ✅ | CL-T1, CL-T2, CL-T5; smoke `02b-class`, `03b-hunter` |
+| ST-01…05 INT, LUK, MP, né tránh, tẩy điểm | ✅ | CL-T1, CL-T4 (né 29,9% với AGI 100, mục tiêu 30%) |
+| 8 kỹ năng (5.4) | ✅ | CL-T3: hồi chiêu, MP, xuyên quái, bẫy trói, Thiết Bích giảm đúng 50% |
+| CB-04 Né Hoàn hảo | ✅ | CB-T3 |
+| CB-07 Phá Thế tinh anh | ✅ | CB-T4 |
+| CB-12, CB-13 Tinh anh Sói Đầu Đàn, Nấm Mẹ, Nấm Con | ✅ | CB-T5 |
+| MC-01 Mộc Tinh | ✅ | CB-T6 |
+| CB-21, CB-22 Công thức chỉ số quái, boss 90 đòn | ✅ | CB-T1: Sói Sương cấp 1 = 18 HP, cấp 7 = 188 HP / 36 ATK, Sói Chúa = 4.023 / 43 / 24, EXP 1.545 — đúng bảng 06 |
+| TP-41 Thiên phú mạnh dần theo cấp | ✅ | TP-T1; bảng Thiên phú hiện giá trị cấp này → cấp sau |
+| TP-30 Thuần Thú thu phục quái Ổ quái | ✅ | TP-T2 |
+| TP-40 Đạo Tặc cướp thuộc tính | ✅ | TP-T3: boss 3 điểm, giới hạn 1 × cấp, quái thấp hơn 6 cấp không cướp, tẩy điểm không mất |
+| UI-01…06 | ✅ | Smoke test: HUD 8 ô + thanh MP, nhật ký trên thanh kỹ năng, bảng Chỉ số 5 chỉ số, icon kỹ năng (skill `game-art`) |
+| Save v4 (5.9) | ✅ | CL-T5 |
+
+**Bổ sung trong lúc làm (ngoài spec ban đầu):**
+
+| Mã | Yêu cầu | Lý do |
+| --- | --- | --- |
+| CB-23 | **Khoá hang boss**: Sói Chúa đã xuất hiện thì người chơi không ra khỏi hang tới khi boss chết hoặc người chơi gục | Bot Thợ Săn phát hiện có thể đứng **ngoài hang** bắn vào, trong khi boss bị giữ trong hang nên không với tới → thắng không mất máu. Phòng boss đóng cửa là cách làm chuẩn của ARPG |
+| — | Test chạy một phần: `-- --only=<tên>` | Cân bằng nhanh (TL-B chạy riêng khoảng 13 giây) |
+
+**Cân bằng — TL-B, bot cấp 5 mặc bộ đồ chuẩn (vũ khí Xanh dương, áo + mũ Xanh lá), dùng cả 4 kỹ năng:**
+
+| Lớp | F (trung bình) | S (trung bình) | Chênh F/S | Trung bình 20 Thiên phú | Chết |
+| --- | --- | --- | --- | --- | --- |
+| Kiếm Khách | 29,8 giây | 27,6 giây | 7% | 29,3 giây | 0 |
+| Thợ Săn | 31,0 giây | 27,9 giây | 10% | 30,5 giây | 0 |
+
+2 lớp chênh **4%**. Bot không mặc đồ thì chết 24 lần và không hạ được boss trong 10 phút — đúng giả định của công thức (người chơi chuẩn mặc đồ đúng vùng). Người chơi thật ở phút 20–25 thường có 3 món (M1-12: Lực chiến 1.303 → 30 giây).
+
+**Phát hiện cần đưa vào playtest:**
+
+| # | Phát hiện | Đề xuất |
+| --- | --- | --- |
+| F7 | Boss khoảng 30 giây, nhanh hơn mục tiêu Q23 (35–40 giây) vì bot dùng đủ 4 kỹ năng và thường xuyên phá Phá Thế | Giữ ở M3; nếu playtest thấy dễ, tăng số đòn boss chương 1 từ 90 lên 110 (1 dòng trong `Formulas.boss_hits`) |
+| F8 | Người chơi **không mặc đồ** gần như không thể thắng boss ở cấp 5 | Hướng dẫn (M5) phải nhắc mặc đồ; xem xét cho Trưởng làng tặng 1 vũ khí Xanh lá |
+| F9 | Kiếm Tâm vẫn nhanh nhất (22–26 giây, khoảng 20% nhanh hơn trung bình) | Như F4: theo dõi playtest |
+| F10 | Quái cấp 1–2 yếu hơn trước (Sói Sương 40 → 18 HP) nên 5 phút đầu nhanh hơn | Đúng ý đồ "30 phút đầu trơn tru"; đo lại nhịp lên cấp khi playtest (NV-20) |
 
 ## Phụ lục A — Yêu cầu thay đổi (CR)
 
@@ -568,7 +613,7 @@ Thay đổi do chủ dự án yêu cầu sau khi kịch bản đã viết. Mỗi
 | Ngày yêu cầu | 20/10/2026 |
 | Yêu cầu của chủ dự án | *"SSS 'độc nhất server' → có làm. Thiên phú này đánh quái sẽ cướp thuộc tính của quái, cướp random loại thuộc tính để cộng vào nhân vật."* |
 | Kịch bản gốc (mục 3) | Đạo Tặc (Ẩn), SSS, Đặc biệt: "Sao chép 1 kỹ năng boss sau mỗi lần hạ boss"; SSS "độc nhất server (tuỳ chọn)" |
-| Trạng thái | **Đề xuất — chờ duyệt số liệu** (bảng Q13–Q16) |
+| Trạng thái | Cướp thuộc tính **đã code ở M3** theo mặc định Q13–Q16 (03 mục 5.7, test TP-T3); số liệu vẫn chờ duyệt. Độc nhất server: Beta |
 | Đợt | Cướp thuộc tính: **M3** (cần INT, LUK — NV-11, NV-12). Độc nhất server: **Beta** (cần backend — KT-09, KT-10) |
 
 #### CR-01.1. Cướp Thuộc Tính (bị động, mới)

@@ -9,12 +9,15 @@ const Talents = preload("res://scripts/data/talents.gd")
 const UiTheme = preload("res://scripts/ui/ui_theme.gd")
 const Monsters = preload("res://scripts/data/monsters.gd")
 const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
+const Classes = preload("res://scripts/data/classes.gd")
 
 var _tl: PanelContainer
 var _level: Label
 var _talent: Label
 var _hp_bar: ProgressBar
 var _hp_text: Label
+var _mp_bar: ProgressBar
+var _mp_text: Label
 var _exp_bar: ProgressBar
 var _exp_text: Label
 var _points: Label
@@ -33,7 +36,9 @@ var _boss_poise: ProgressBar
 
 var _combo: Label
 var _skills: HBoxContainer
-var _cd_skill: ColorRect
+## UI-01: ô 0 = đánh thường, 1–4 = kỹ năng lớp. Mỗi phần tử: [panel, lớp phủ hồi chiêu, nhãn tên, nhãn phím, icon]
+var _class_slots: Array = []
+var _slots_class := ""
 var _cd_dodge: ColorRect
 var _cd_talent: ColorRect
 var _talent_slot: Label
@@ -68,6 +73,9 @@ func _ready() -> void:
 	_hp_bar = _bar("HpBar", 20)
 	_hp_text = _bar_label(_hp_bar, 12)
 	v.add_child(_hp_bar)
+	_mp_bar = _bar("MpBar", 12)
+	_mp_text = _bar_label(_mp_bar, 10)
+	v.add_child(_mp_bar)
 	_exp_bar = _bar("ExpBar", 14)
 	_exp_text = _bar_label(_exp_bar, 11)
 	v.add_child(_exp_bar)
@@ -120,10 +128,10 @@ func _ready() -> void:
 	add_child(_combo)
 
 	_skills = UiTheme.hbox(8)
-	_skills.add_child(_slot("Chuột trái / J", "Chém", "skill-slash")[0])
-	var s := _slot("K / Chuột phải", "Xoáy Kiếm", "skill-spin")
-	_skills.add_child(s[0])
-	_cd_skill = s[1]
+	for i in 5:
+		var cs := _slot("Chuột trái / J" if i == 0 else str(i), "")
+		_class_slots.append(cs)
+		_skills.add_child(cs[0])
 	var d := _slot("Space", "Né lăn", "skill-dodge")
 	_skills.add_child(d[0])
 	_cd_dodge = d[1]
@@ -279,6 +287,8 @@ func update_from(w: GameWorld) -> void:
 	_talent.add_theme_color_override("font_color", rank_color)
 	_hp_bar.value = maxf(0.0, pl.hp) / float(s.max_hp)
 	_hp_text.text = "%d / %d" % [ceili(maxf(0.0, pl.hp)), s.max_hp]
+	_mp_bar.value = maxf(0.0, pl.mp) / maxf(1.0, float(s.max_mp))
+	_mp_text.text = "MP %d / %d" % [floori(maxf(0.0, pl.mp)), s.max_mp]
 	var need := Formulas.exp_to_next(p.level)
 	_exp_bar.value = minf(1.0, float(p.xp) / need)
 	_exp_text.text = "EXP %d / %d" % [p.xp, need]
@@ -303,7 +313,7 @@ func update_from(w: GameWorld) -> void:
 	_combo.visible = w.combo >= 5
 	_combo.text = "%d combo · +%d%% EXP" % [w.combo, roundi((Formulas.combo_exp_multiplier(w.combo) - 1.0) * 100.0)]
 
-	_cooldown(_cd_skill, pl.skill_cd / w.skill_cd())
+	_update_class_slots(w)
 	_cooldown(_cd_dodge, pl.dodge_cd / GameWorld.DODGE_CD)
 	if _talent_icon_id != t.id:
 		_talent_icon_id = t.id
@@ -345,6 +355,27 @@ func update_from(w: GameWorld) -> void:
 	_layout()
 
 
+func _update_class_slots(w: GameWorld) -> void:
+	var pl := w.player
+	var cid: String = w.profile.class_id
+	var c: Dictionary = Classes.get_class_def(cid)
+	if _slots_class != cid:
+		_slots_class = cid
+		_class_slots[0][2].text = c.basic.name
+		_class_slots[0][4].texture = SpriteLib.icon("skill-" + str(c.basic.icon))
+		for i in 4:
+			var sk: Dictionary = c.skills[i]
+			_class_slots[i + 1][2].text = sk.name
+			_class_slots[i + 1][4].texture = SpriteLib.icon("skill-" + str(sk.icon))
+	for i in 4:
+		var slot: Array = _class_slots[i + 1]
+		_cooldown(slot[1], pl.skill_cds[i] / maxf(0.1, w.skill_cd_of(i)))
+		var cd_left: float = pl.skill_cds[i]
+		slot[3].text = ("%d · %ds" % [i + 1, ceili(cd_left)]) if cd_left > 0.0 else ("%d · %d MP" % [i + 1, int(w.skill_mp(i))])
+		# Thiếu MP: tô xanh mờ.
+		slot[0].modulate = Color(0.55, 0.65, 1.0, 0.8) if pl.mp < w.skill_mp(i) else Color.WHITE
+
+
 func _objective(i: int, done: bool, text: String) -> void:
 	_objectives[i].text = ("✓ " if done else "○ ") + text
 	_objectives[i].add_theme_color_override("font_color", UiTheme.GOOD if done else UiTheme.MUTED)
@@ -370,7 +401,8 @@ func _layout() -> void:
 	_combo.position = Vector2(sz.x - _combo.size.x - 24, sz.y / 2.0)
 	_skills.reset_size()
 	_skills.position = Vector2((sz.x - _skills.size.x) / 2.0, sz.y - _skills.size.y - 14)
+	# UI-02: nhật ký nằm trên thanh kỹ năng.
 	_log.reset_size()
-	_log.position = Vector2(12, sz.y - _log.size.y - 14)
+	_log.position = Vector2(12, _skills.position.y - _log.size.y - 10)
 	_banner.reset_size()
 	_banner.position = Vector2((sz.x - _banner.size.x) / 2.0, sz.y * 0.28)

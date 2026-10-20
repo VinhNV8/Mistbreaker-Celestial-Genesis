@@ -392,7 +392,87 @@ ITEMS = {"weapon": g_sword, "helm": g_helm, "armor": g_armor, "gloves": g_gloves
          "necklace": g_necklace, "ring": g_ring, "amulet": g_amulet, "wolf_fang": g_wolf_fang}
 RESOURCES = {"gold": g_gold, "wood": g_wood, "stone": g_stone, "essence": g_essence, "tinh_kim": g_tinh_kim,
              "torch": g_torch, "herb": g_herb, "potion": g_potion}
-SKILLS = {"slash": g_skill_slash, "spin": g_skill_spin, "dodge": g_skill_dodge, "potion": g_skill_potion}
+# ---------------------------------------------------------------------- kỹ năng M3 (03-mvp-spec mục 5.4)
+def _bow(cv, ox=0, oy=0, pull=0.0):
+    cv.arc(13 + ox, 16 + oy, 11, math.radians(-75), math.radians(75), R["wood"][2], 2.0)
+    top = (13 + ox + math.cos(math.radians(-75)) * 11, 16 + oy + math.sin(math.radians(-75)) * 11)
+    bot = (13 + ox + math.cos(math.radians(75)) * 11, 16 + oy + math.sin(math.radians(75)) * 11)
+    mid = (13 + ox - pull, 16 + oy)
+    cv.line(*top, *mid, (235, 235, 225, 255))
+    cv.line(*bot, *mid, (235, 235, 225, 255))
+
+
+def _arrow(cv, x0, y0, x1, y1, shaft=None, head=None):
+    shaft = shaft or R["wood"][3]
+    head = head or R["steel"][3]
+    cv.line(x0, y0, x1, y1, shaft, 1.2)
+    a = math.atan2(y1 - y0, x1 - x0)
+    for side in (2.5, -2.5):
+        cv.line(x1, y1, x1 - math.cos(a + side * 0.3) * 4, y1 - math.sin(a + side * 0.3) * 4, head, 1.2)
+    cv.line(x0, y0, x0 - math.cos(a + 0.6) * 3, y0 - math.sin(a + 0.6) * 3, hexc("#c84040"))
+    cv.line(x0, y0, x0 - math.cos(a - 0.6) * 3, y0 - math.sin(a - 0.6) * 3, hexc("#c84040"))
+
+
+def g_skill_shot(cv):
+    _skill_bg(cv, "#3a4a2c")
+    _bow(cv, -2, 0, 4)
+    _arrow(cv, 7, 16, 27, 16)
+
+
+def g_skill_dash(cv):
+    _skill_bg(cv, "#4a2c2c")
+    for i, y in enumerate((9, 14, 19, 24)):
+        cv.line(3 + i, y, 12 + i * 2, y, (255, 220, 200, 120 + i * 30), 1.2)
+    g_sword(cv, 0.75, 4, 0)
+
+
+def g_skill_wave(cv):
+    _skill_bg(cv, "#28405a")
+    for i, r in enumerate((11, 8, 5)):
+        cv.arc(8 + i * 3, 16, r, math.radians(-70), math.radians(70), hexc("#c8e6ff") if i else hexc("#ffffff"), 2.4 - i * 0.5)
+    cv.line(4, 16, 10, 16, (200, 230, 255, 160), 1.2)
+
+
+def g_skill_guard(cv):
+    _skill_bg(cv, "#3a3a4a")
+    cv.shade_poly([(8, 7), (16, 4), (24, 7), (23, 18), (16, 27), (9, 18)], R["steel"])
+    cv.shade_poly([(12, 9), (16, 7.5), (20, 9), (19.5, 17), (16, 22), (12.5, 17)], R["crystal"])
+    cv.line(16, 8, 16, 21, (255, 255, 255, 200))
+
+
+def g_skill_rain(cv):
+    _skill_bg(cv, "#2c3a4a")
+    for (x, y) in ((7, 5), (14, 3), (21, 6), (10, 13), (18, 12), (25, 14)):
+        _arrow(cv, x + 2, y, x - 1, y + 9)
+    cv.shade_ellipse(16, 26, 11, 2.5, [hexc("#ff5470", 160)] * 4)
+
+
+def g_skill_pierce(cv):
+    _skill_bg(cv, "#3a2c4a")
+    glow(cv, 16, 16, 12, hexc("#c28af0"), 90)
+    _arrow(cv, 3, 25, 28, 6, R["purple"][3], (255, 255, 255, 255))
+    for (x, y) in ((11, 19), (19, 13)):
+        cv.ellipse(x, y, 2.4, 2.4, (255, 255, 255, 110))
+
+
+def g_skill_trap(cv):
+    _skill_bg(cv, "#4a3a20")
+    cv.shade_ellipse(16, 20, 11, 5, R["steel"])
+    for i in range(7):
+        x = 7 + i * 3
+        cv.shade_poly([(x - 1.4, 19), (x, 10 + (i % 2) * 3), (x + 1.4, 19)], R["white"])
+    cv.ellipse(16, 21, 3, 1.4, R["blood"][2])
+
+
+def g_skill_eagle(cv):
+    _skill_bg(cv, "#4a3a12")
+    glow(cv, 16, 16, 13, R["gold"][3], 80)
+    g_eye(cv)
+
+
+SKILLS = {"slash": g_skill_slash, "spin": g_skill_spin, "dodge": g_skill_dodge, "potion": g_skill_potion,
+          "shot": g_skill_shot, "dash": g_skill_dash, "wave": g_skill_wave, "guard": g_skill_guard,
+          "rain": g_skill_rain, "pierce": g_skill_pierce, "trap": g_skill_trap, "eagle": g_skill_eagle}
 
 
 def build_all():

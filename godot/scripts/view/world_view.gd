@@ -10,6 +10,7 @@ const Monsters = preload("res://scripts/data/monsters.gd")
 const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
 
 const HERO_SPRITE := "hero-kiem-khach"
+const Classes = preload("res://scripts/data/classes.gd")
 const CORPSE_TIME := 0.6
 const HIT_FX_TIME := 0.25
 
@@ -86,6 +87,7 @@ func _draw() -> void:
 			_draw_ally(a)
 		for e in world.enemies:
 			_draw_enemy(e)
+	_draw_player_skills()
 	for pr in world.projectiles:
 		if _art:
 			SpriteLib.draw_env(self, "fx-spore", pr.pos)
@@ -348,23 +350,29 @@ func _draw_ally_sprite(a) -> void:
 	SpriteLib.draw_frame(self, a.monster, anim, frame, _feet(a.pos, a.radius), _facing_left(key, a.pos, false), mod, clampf(a.radius / 16.0, 0.75, 1.25))
 
 
+func _hero() -> String:
+	var id: String = Classes.get_class_def(world.profile.class_id).sprite
+	return id if SpriteLib.has_sprite(id) else HERO_SPRITE
+
+
 func _draw_player_sprite() -> void:
+	var hs := _hero()
 	var p := world.player
 	var anim := "idle"
 	var frame := 0
 	if p.dead_timer > 0.0:
 		anim = "death"
-		frame = SpriteLib.frame_at(HERO_SPRITE, anim, GameWorld.RESPAWN_TIME - p.dead_timer)
-	elif p.swing > 0.0 and p.swing_kind == "slash":
+		frame = SpriteLib.frame_at(hs, anim, GameWorld.RESPAWN_TIME - p.dead_timer)
+	elif p.swing > 0.0 and p.swing_kind in ["slash", "shot", "dash"]:
 		anim = "attack"
-		frame = SpriteLib.frame_progress(HERO_SPRITE, anim, 1.0 - p.swing / 0.16)
+		frame = SpriteLib.frame_progress(hs, anim, 1.0 - clampf(p.swing / 0.16, 0.0, 1.0))
 	elif p.hurt > 0.0:
 		anim = "hurt"
 	else:
 		anim = "run" if _moving(-1, p.pos) else "idle"
-		frame = SpriteLib.frame_at(HERO_SPRITE, anim, _anim_time(-1, anim))
+		frame = SpriteLib.frame_at(hs, anim, _anim_time(-1, anim))
 	var left := cos(p.facing) < 0.0
-	var alpha := 0.55 if p.dodge_time > 0.0 else 1.0
+	var alpha := 0.55 if p.dodge_time > 0.0 or p.dash_time > 0.0 else 1.0
 	var rank_color := Talents.rank_color(world.talent().rank)
 	_ground_ring(_feet(p.pos, GameWorld.PLAYER_RADIUS), GameWorld.PLAYER_RADIUS + 6.0, Color(rank_color, 0.7 * alpha))
 	var mod := Color(1, 1, 1, alpha)
@@ -374,7 +382,14 @@ func _draw_player_sprite() -> void:
 		mod = Color(1.25, 1.3, 1.45, alpha)
 		frame = 1
 		anim = "attack"
-	SpriteLib.draw_frame(self, HERO_SPRITE, anim, frame, _feet(p.pos, GameWorld.PLAYER_RADIUS), left, mod)
+	if p.eagle_time > 0.0:
+		mod = mod * Color(1.2, 1.15, 0.85)
+	SpriteLib.draw_frame(self, hs, anim, frame, _feet(p.pos, GameWorld.PLAYER_RADIUS), left, mod)
+	# Thiết Bích: vòng khiên
+	if p.guard_time > 0.0:
+		var a := 0.35 + 0.15 * sin(world.time * 8.0)
+		draw_circle(p.pos, GameWorld.PLAYER_RADIUS + 14.0, Color(0.6, 0.8, 1.0, a * 0.4))
+		draw_arc(p.pos, GameWorld.PLAYER_RADIUS + 14.0, 0.0, TAU, 40, Color(0.8, 0.92, 1.0, a + 0.3), 2.5, true)
 
 
 func _ground_ring(pos: Vector2, r: float, c: Color) -> void:
@@ -383,10 +398,49 @@ func _ground_ring(pos: Vector2, r: float, c: Color) -> void:
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
+## M3: tên bay, kiếm khí, mưa tên, bẫy, vòng nổ.
+func _draw_player_skills() -> void:
+	for t in world.traps:
+		if _art and SpriteLib.has_env("fx-trap"):
+			SpriteLib.draw_env(self, "fx-trap", t.pos)
+		else:
+			draw_circle(t.pos, 10.0, Color("#9ba8bc"))
+		draw_arc(t.pos, GameWorld.TRAP_TRIGGER, 0.0, TAU, 24, Color(1, 0.8, 0.3, 0.25), 1.5, true)
+	for z in world.rains:
+		var pulse := 0.5 + 0.5 * sin(world.time * 12.0)
+		draw_circle(z.pos, z.radius, Color(1, 0.33, 0.44, 0.10 + 0.05 * pulse))
+		draw_arc(z.pos, z.radius, 0.0, TAU, 40, Color(1, 0.5, 0.5, 0.6), 2.0, true)
+		for i in 6:
+			var ang := float(i) * 1.7 + world.time * 3.0
+			var at: Vector2 = z.pos + Vector2(cos(ang), sin(ang * 1.3)) * z.radius * 0.6
+			var fall := fposmod(world.time * 4.0 + i * 0.37, 1.0)
+			var from := at + Vector2(-12, -60) * (1.0 - fall)
+			if _art:
+				SpriteLib.draw_env(self, "fx-arrow", from, Color(1, 1, 1, 0.9), 1.0, false, Vector2(12, 60).angle())
+			else:
+				draw_line(from, from + Vector2(4, 20), Color.WHITE, 2.0)
+	for s in world.shots:
+		var id: String = {"arrow": "fx-arrow", "wave": "fx-wave", "pierce": "fx-pierce"}.get(s.kind, "fx-arrow")
+		if _art and SpriteLib.has_env(id):
+			SpriteLib.draw_env(self, id, s.pos, Color.WHITE, 1.0, false, s.vel.angle())
+		else:
+			draw_circle(s.pos, s.radius, Color("#c8e6ff"))
+	for b in world.blasts:
+		var k: float = 1.0 - b.ttl / 0.35
+		draw_circle(b.pos, b.radius * (0.6 + 0.4 * k), Color(b.color, 0.35 * (1.0 - k)))
+		draw_arc(b.pos, b.radius * (0.6 + 0.4 * k), 0.0, TAU, 40, Color(b.color, 0.9 * (1.0 - k)), 3.0, true)
+
+
 ## Hiệu ứng chém/Xoáy Kiếm (vector) vẽ trên cùng.
 func _draw_player_fx() -> void:
 	var p := world.player
 	if p.swing <= 0.0:
+		return
+	if p.swing_kind == "shot":
+		return
+	if p.swing_kind == "dash":
+		var back := p.pos - p.dash_dir * 60.0
+		draw_line(back, p.pos, Color(1, 0.9, 0.85, 0.5), 18.0, true)
 		return
 	if p.swing_kind == "slash":
 		var pts := PackedVector2Array([p.pos])
@@ -411,11 +465,15 @@ func _draw_enemy_overlay(e) -> void:
 		_hit_fx.append({"pos": e.pos + Vector2(randf_range(-6, 6), -e.radius + randf_range(-6, 6)), "t": 0.0})
 	if e.role == "boss" or hidden:
 		return
-	if e.hp < e.max_hp:
+	if e.hp < e.max_hp or e.elite:
 		var w: float = e.radius * 2.0
 		var top := Vector2(e.pos.x - w / 2.0, top_y)
 		draw_rect(Rect2(top, Vector2(w, 4)), Color(0, 0, 0, 0.6))
 		draw_rect(Rect2(top, Vector2(w * maxf(0.0, e.hp) / e.max_hp, 4)), Color("#ff5470"))
+		# CB-07: thanh Phá Thế của tinh anh
+		if e.max_poise > 0.0:
+			draw_rect(Rect2(top + Vector2(0, 5), Vector2(w, 3)), Color(0, 0, 0, 0.6))
+			draw_rect(Rect2(top + Vector2(0, 5), Vector2(w * maxf(0.0, e.poise) / e.max_poise, 3)), Color("#ffc940"))
 	if e.elite:
 		_label("%s · Lv%d" % [e.name, e.level], Vector2(e.pos.x, top_y - 6.0), Color("#ffd877"), 12)
 	var el: String = Monsters.DEFS[e.kind].element
@@ -508,6 +566,11 @@ func _draw_telegraph(e: GameWorld.Enemy) -> void:
 			draw_circle(e.target, GameWorld.POUNCE_RADIUS * progress, Color(1, 0.24, 0.31, 0.35))
 		"spore":
 			draw_dashed_line(e.pos, e.target, Color(0.78, 0.47, 1.0, 0.25 + progress * 0.5), 2.0, 6.0)
+		"stomp", "explode":
+			var r: float = GameWorld.STOMP_R if e.attack_kind == "stomp" else GameWorld.EXPLODE_R
+			draw_circle(e.pos, r, Color(1, 0.4, 0.2, 0.12))
+			draw_circle(e.pos, r * progress, Color(1, 0.4, 0.2, 0.3))
+			draw_arc(e.pos, r, 0.0, TAU, 40, Color(1, 0.4, 0.2, 0.7), 2.0, true)
 		_:
 			draw_arc(e.pos, e.radius + e.attack_range * progress, 0.0, TAU, 40, Color(1, 0.24, 0.31, 0.2 + progress * 0.6), 3.0, true)
 

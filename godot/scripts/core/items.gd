@@ -40,6 +40,7 @@ static func create(id: int, level: int, rarity: String, rng: Callable, slot := "
 		"set": set_id,
 		"unique": unique,
 		"affixes": affixes,
+		"style": "",
 	}
 
 
@@ -47,6 +48,9 @@ static func create(id: int, level: int, rarity: String, rng: Callable, slot := "
 static func new_item(p, level: int, rarity: String, rng: Callable, slot := "", set_id := "", unique := "") -> Dictionary:
 	var item := create(p.next_item_id, level, rarity, rng, slot, set_id, unique)
 	p.next_item_id += 1
+	# CL-05: vũ khí sinh ra khi đang là Thợ Săn là Cung (chỉ số như Kiếm).
+	if item.slot == "weapon" and unique == "" and str(p.get("class_id")) == "tho-san":
+		item["style"] = "bow"
 	return item
 
 
@@ -176,7 +180,7 @@ static func unequip(p, slot: String) -> Dictionary:
 static func talent_rate_bonus(p) -> float:
 	if p == null:
 		return 0.0
-	var b := 0.1 if p.talent == "tho-ren" else 0.0
+	var b := Talents.lv_value(0.1, 0.15, p.talent_level) if p.talent == "tho-ren" else 0.0
 	if Talents.has_sub(p.talent, p.talent_level, "craft", 2):
 		b += 0.05
 	return b
@@ -252,7 +256,7 @@ static func salvage(p, id: int, rng := Callable()) -> Dictionary:
 	p.inventory.remove_at(i)
 	p.stones += stones
 	var msg := "Phân rã %s: +%d Đá Cường Hoá." % [display_name(item), stones]
-	if p.talent == "ban-tay-vang" and rng.is_valid() and float(rng.call()) < GOLDEN_HAND_CHANCE:
+	if p.talent == "ban-tay-vang" and rng.is_valid() and float(rng.call()) < Talents.lv_value(GOLDEN_HAND_CHANCE, 0.3, p.talent_level):
 		p.tinh_kim += 1
 		msg += " Bàn Tay Vàng: +1 Tinh Kim!"
 	return _result(true, msg)
@@ -261,14 +265,18 @@ static func salvage(p, id: int, rng := Callable()) -> Dictionary:
 # ------------------------------------------------------------------ hiển thị
 
 
+static func _type_name(item: Dictionary) -> String:
+	return "Cung" if item.get("style", "") == "bow" else str(ItemData.SLOTS[item.slot].item)
+
+
 static func display_name(item: Dictionary) -> String:
 	var name: String
 	if item.unique != "":
 		name = ItemData.UNIQUES[item.unique].name
 	elif item.set != "":
-		name = "%s %s" % [ItemData.SLOTS[item.slot].item, ItemData.SETS[item.set].suffix]
+		name = "%s %s" % [_type_name(item), ItemData.SETS[item.set].suffix]
 	else:
-		name = "%s %s" % [ItemData.SLOTS[item.slot].item, ItemData.RARITIES[item.rarity].prefix]
+		name = "%s %s" % [_type_name(item), ItemData.RARITIES[item.rarity].prefix]
 	if int(item.plus) > 0:
 		name += " +%d" % int(item.plus)
 	return name
