@@ -27,12 +27,63 @@ var _art := false
 var _track: Dictionary = {}
 var _corpses: Array = []
 var _hit_fx: Array = []
+var _fog_layer: FogLayer
+
+
+## SN-31: lớp sương che vẽ trên cùng thế giới. Texture 1 điểm ảnh / ô, lọc tuyến tính nên mép sương mờ dần.
+class FogLayer:
+	extends Node2D
+	const COLOR := Color(0.02, 0.025, 0.035)
+	const ALPHA := 0.94
+	var world
+	var _tex: ImageTexture
+	var _img: Image
+	var _version := -1
+	var _fog = null
+
+	func _ready() -> void:
+		texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+		z_index = 50
+
+	func _process(_delta: float) -> void:
+		if world == null:
+			return
+		var f = world.fog
+		if f != _fog or f.version != _version:
+			_rebuild(f)
+		queue_redraw()
+
+	func _rebuild(f) -> void:
+		_fog = f
+		_version = f.version
+		if f.w <= 0 or f.h <= 0:
+			_tex = null
+			return
+		if _img == null or _img.get_width() != f.w or _img.get_height() != f.h:
+			_img = Image.create(f.w, f.h, false, Image.FORMAT_RGBA8)
+		var open := Color(COLOR, 0.0)
+		var shut := Color(COLOR, ALPHA)
+		for y in f.h:
+			for x in f.w:
+				_img.set_pixel(x, y, open if f.cells[y * f.w + x] == 1 else shut)
+		if _tex == null or _tex.get_width() != f.w or _tex.get_height() != f.h:
+			_tex = ImageTexture.create_from_image(_img)
+		else:
+			_tex.update(_img)
+
+	func _draw() -> void:
+		if _tex == null or world == null or world.travel_timer > 0.0:
+			return
+		var f = world.fog
+		draw_texture_rect(_tex, Rect2(Vector2.ZERO, Vector2(f.w, f.h) * f.CELL), false)
 
 
 func _ready() -> void:
 	_font = UiTheme.font()
 	_art = SpriteLib.has_sprite(HERO_SPRITE)
 	texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+	_fog_layer = FogLayer.new()
+	add_child(_fog_layer)
 
 
 ## M4: cây cối, mảng cỏ sinh lại theo từng map (cùng map luôn ra cùng một cảnh).
@@ -57,7 +108,7 @@ func _build_decor() -> void:
 		if absf(pos.y - safe.y) < 90.0 and pos.x > safe.x and pos.x < path_end:
 			continue
 		_trees.append({"pos": pos, "r": 16.0 + rng.randf() * 22.0, "shade": rng.randf(), "variant": rng.randi() % 4})
-	for i in 160:
+	for i in roundi(160 * world.area_factor()):
 		_patches.append({"pos": Vector2(rng.randf() * size.x, rng.randf() * size.y), "r": 40.0 + rng.randf() * 110.0, "shade": rng.randf()})
 
 
@@ -80,6 +131,8 @@ func _view_rect() -> Rect2:
 func _draw() -> void:
 	if world == null:
 		return
+	if _fog_layer.world != world:
+		_fog_layer.world = world
 	if _decor_map != world.map_id:
 		_build_decor()
 		_track = {}
@@ -448,9 +501,9 @@ func _draw_player_sprite() -> void:
 	if p.dead_timer > 0.0:
 		anim = "death"
 		frame = SpriteLib.frame_at(hs, anim, GameWorld.RESPAWN_TIME - p.dead_timer)
-	elif p.swing > 0.0 and p.swing_kind in ["slash", "shot", "dash"]:
+	elif p.swing > 0.0 and p.swing_kind in ["slash", "shot", "dash", "cast"]:
 		anim = "attack"
-		frame = SpriteLib.frame_progress(hs, anim, 1.0 - clampf(p.swing / 0.16, 0.0, 1.0))
+		frame = SpriteLib.frame_progress(hs, anim, 1.0 - clampf(p.swing / (0.25 if p.swing_kind == "cast" else 0.16), 0.0, 1.0))
 	elif p.hurt > 0.0:
 		anim = "hurt"
 	else:
@@ -492,6 +545,14 @@ func _draw_player_sprite() -> void:
 	# C1-02: tên trên đầu
 	if p.dead_timer <= 0.0:
 		_label(str(world.profile.name), p.pos + Vector2(0, -GameWorld.PLAYER_RADIUS - 46.0), Color(1, 1, 1, 0.85), 12)
+	# SN-04 Pháp Thuẫn: vòng tím, dày theo lượng khiên còn lại
+	if p.shield > 0.0:
+		var k := clampf(p.shield / maxf(1.0, float(world.stats.max_hp) * GameWorld.BARRIER_PCT), 0.0, 1.0)
+		var a2 := 0.35 + 0.15 * sin(world.time * 6.0)
+		draw_circle(p.pos, GameWorld.PLAYER_RADIUS + 16.0, Color(0.7, 0.45, 1.0, a2 * 0.35))
+		for i in 6:
+			var ang := world.time * 1.5 + TAU * i / 6.0
+			draw_arc(p.pos, GameWorld.PLAYER_RADIUS + 16.0, ang, ang + 0.7, 8, Color(0.85, 0.7, 1.0, 0.5 + 0.4 * k), 1.5 + 2.0 * k, true)
 	# Thiết Bích: vòng khiên
 	if p.guard_time > 0.0:
 		var a := 0.35 + 0.15 * sin(world.time * 8.0)
@@ -543,7 +604,38 @@ func _draw_player_skills() -> void:
 				SpriteLib.draw_env(self, "fx-arrow", from, Color(1, 1, 1, 0.9), 1.0, false, Vector2(12, 60).angle())
 			else:
 				draw_line(from, from + Vector2(4, 20), Color.WHITE, 2.0)
+	# SN-04: Thiên Thạch — vòng báo hiệu co dần, thiên thạch rơi chéo xuống
+	for m in world.meteors:
+		var k: float = 1.0 - m.timer / GameWorld.METEOR_DELAY
+		draw_circle(m.pos, m.radius, Color(1, 0.45, 0.15, 0.08 + 0.12 * k))
+		draw_arc(m.pos, m.radius, 0.0, TAU, 40, Color(1, 0.6, 0.25, 0.8), 2.0, true)
+		draw_arc(m.pos, m.radius * k, 0.0, TAU, 40, Color(1, 0.8, 0.4, 0.9), 2.0, true)
+		var rock: Vector2 = m.pos + Vector2(-140, -260) * (1.0 - k)
+		draw_line(rock, rock + Vector2(-50, -90), Color(1, 0.55, 0.2, 0.5), 8.0, true)
+		draw_circle(rock, 16.0, Color(1, 0.5, 0.15, 0.45))
+		draw_circle(rock, 10.0, Color("#6a4a3a"))
+		draw_circle(rock + Vector2(-3, -3), 4.0, Color("#ffe08a"))
+	# SN-04: Lôi Xích — tia sét gấp khúc
+	for b in world.bolts:
+		var a: float = clampf(b.ttl / 0.3, 0.0, 1.0)
+		for i in b.points.size() - 1:
+			var p0: Vector2 = b.points[i]
+			var p1: Vector2 = b.points[i + 1]
+			var pts := PackedVector2Array([p0])
+			var n := (p1 - p0).orthogonal().normalized()
+			for j in range(1, 5):
+				pts.append(p0.lerp(p1, j / 5.0) + n * randf_range(-9.0, 9.0))
+			pts.append(p1)
+			draw_polyline(pts, Color(0.6, 0.8, 1.0, 0.5 * a), 7.0, true)
+			draw_polyline(pts, Color(1, 1, 1, a), 2.0, true)
+			draw_circle(p1, 10.0, Color(0.7, 0.85, 1.0, 0.4 * a))
 	for s in world.shots:
+		if s.kind == "fireball":
+			draw_circle(s.pos - s.vel.normalized() * 10.0, 9.0, Color(1, 0.45, 0.1, 0.35))
+			draw_circle(s.pos, 11.0, Color(1, 0.5, 0.15, 0.5))
+			draw_circle(s.pos, 7.0, Color("#ff9a3c"))
+			draw_circle(s.pos + Vector2(1.5, -1.5), 3.5, Color("#ffe08a"))
+			continue
 		var id: String = {"arrow": "fx-arrow", "wave": "fx-wave", "pierce": "fx-pierce"}.get(s.kind, "fx-arrow")
 		if _art and SpriteLib.has_env(id):
 			SpriteLib.draw_env(self, id, s.pos, Color.WHITE, 1.0, false, s.vel.angle())
@@ -560,7 +652,7 @@ func _draw_player_fx() -> void:
 	var p := world.player
 	if p.swing <= 0.0:
 		return
-	if p.swing_kind == "shot":
+	if p.swing_kind == "shot" or p.swing_kind == "cast":
 		return
 	if p.swing_kind == "dash":
 		var back := p.pos - p.dash_dir * 60.0

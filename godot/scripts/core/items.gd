@@ -48,9 +48,13 @@ static func create(id: int, level: int, rarity: String, rng: Callable, slot := "
 static func new_item(p, level: int, rarity: String, rng: Callable, slot := "", set_id := "", unique := "") -> Dictionary:
 	var item := create(p.next_item_id, level, rarity, rng, slot, set_id, unique)
 	p.next_item_id += 1
-	# CL-05: vũ khí sinh ra khi đang là Thợ Săn là Cung (chỉ số như Kiếm).
-	if item.slot == "weapon" and unique == "" and str(p.get("class_id")) == "tho-san":
-		item["style"] = "bow"
+	# CL-05: vũ khí sinh ra khi đang là Thợ Săn là Cung, Pháp Sư là Trượng (SN-01) — chỉ số như Kiếm.
+	if item.slot == "weapon" and unique == "":
+		match str(p.get("class_id")):
+			"tho-san":
+				item["style"] = "bow"
+			"phap-su":
+				item["style"] = "staff"
 	return item
 
 
@@ -150,17 +154,32 @@ static func add_item(p, item: Dictionary) -> Dictionary:
 	return _result(true, "Nhặt được %s." % display_name(item), {"salvaged": false})
 
 
-## EQ-10: mặc đồ, đồ cũ cùng ô về túi.
+## SN-20: cấp cường hoá món `item` nhận được khi mặc (đổi cấp với đồ đang mặc nếu đồ đó cao hơn).
+static func plus_after_equip(p, item: Dictionary) -> int:
+	var worn: Dictionary = p.equipment.get(item.slot, {})
+	if worn.is_empty() or int(worn.id) == int(item.id):
+		return int(item.plus)
+	return maxi(int(item.plus), int(worn.plus))
+
+
+## EQ-10: mặc đồ, đồ cũ cùng ô về túi. SN-20: đồ cũ cường hoá cao hơn thì 2 món đổi cấp cho nhau.
 static func equip(p, id: int) -> Dictionary:
 	var i := find_in_bag(p, id)
 	if i < 0:
 		return _result(false, "Món đồ không có trong túi.")
 	var item: Dictionary = p.inventory[i]
 	p.inventory.remove_at(i)
+	var msg := "Đã mặc %s." % display_name(item)
 	if p.equipment.has(item.slot):
-		p.inventory.append(p.equipment[item.slot])
+		var old: Dictionary = p.equipment[item.slot]
+		if int(old.plus) > int(item.plus):
+			var moved := int(old.plus)
+			old.plus = int(item.plus)
+			item.plus = moved
+			msg = "Chuyển +%d từ %s sang %s." % [moved, display_name(old), display_name(item)]
+		p.inventory.append(old)
 	p.equipment[item.slot] = item
-	return _result(true, "Đã mặc %s." % display_name(item))
+	return _result(true, msg, {"transferred": msg.begins_with("Chuyển")})
 
 
 static func unequip(p, slot: String) -> Dictionary:
@@ -248,6 +267,43 @@ static func salvage_value(item: Dictionary, p = null) -> int:
 	return int(ItemData.RARITIES[item.rarity].salvage) + int(int(item.plus) / 2.0) + extra
 
 
+# ------------------------------------------------------------------ SN-10: bộ lọc phân rã / bán nhanh
+
+static func default_filter() -> Dictionary:
+	return {"rarities": ["white", "green", "blue"], "keep_plus": true, "keep_set": true, "only_weaker": true}
+
+
+## Đọc bộ lọc từ save (thiếu khoá thì lấy mặc định).
+static func normalize_filter(f) -> Dictionary:
+	var out := default_filter()
+	if f is Dictionary:
+		for k in out:
+			if f.has(k):
+				out[k] = f[k]
+	var rs: Array = []
+	for r in out.rarities:
+		if str(r) in ItemData.RARITY_ORDER:
+			rs.append(str(r))
+	out.rarities = rs
+	return out
+
+
+## Món trong túi khớp bộ lọc. weaker: Callable(item) -> bool (Lực chiến khi mặc < hiện tại); bỏ trống = bỏ qua điều kiện.
+static func bulk_candidates(p, f: Dictionary, weaker := Callable()) -> Array:
+	var out: Array = []
+	for item in p.inventory:
+		if not (str(item.rarity) in f.rarities):
+			continue
+		if f.keep_plus and int(item.plus) > 0:
+			continue
+		if f.keep_set and str(item.get("set", "")) != "":
+			continue
+		if f.only_weaker and weaker.is_valid() and not bool(weaker.call(item)):
+			continue
+		out.append(item)
+	return out
+
+
 static func salvage(p, id: int, rng := Callable()) -> Dictionary:
 	var i := find_in_bag(p, id)
 	if i < 0:
@@ -280,7 +336,12 @@ static func enhance_color(plus: int) -> Color:
 
 
 static func _type_name(item: Dictionary) -> String:
-	return "Cung" if item.get("style", "") == "bow" else str(ItemData.SLOTS[item.slot].item)
+	match str(item.get("style", "")):
+		"bow":
+			return "Cung"
+		"staff":
+			return "Trượng"
+	return str(ItemData.SLOTS[item.slot].item)
 
 
 static func display_name(item: Dictionary) -> String:

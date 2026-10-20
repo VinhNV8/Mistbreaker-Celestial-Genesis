@@ -15,6 +15,8 @@ SKINS = ["skin_light", "skin", "skin_dark"]
 CLASS_LOOK = {
     "kiem-khach": {"cloth": "cloth_blue", "pants": "leather", "cape": "cloth_red", "weapon": "sword"},
     "tho-san": {"cloth": "cloth_green", "pants": "leather", "weapon": "bow", "trim": "leather", "collar": "leaf"},
+    # SN-06: Pháp Sư — áo choàng tím dài, cổ vàng, trượng ngọc tím
+    "phap-su": {"cloth": "purple", "pants": "leather", "weapon": "staff", "trim": "gold", "robe": True, "orb": "crystal"},
 }
 HAIR_STYLES = ["ngan", "dai", "bui", "duoi"]
 
@@ -36,6 +38,9 @@ SPRITES = {
     # ------------------------------------------------ nhân vật
     "hero-kiem-khach": {"builder": "humanoid", "name": "Kiếm Khách",
                         "spec": {"hair": "hair_dark", "cloth": "cloth_blue", "pants": "leather", "cape": "cloth_red", "weapon": "sword"}},
+    "hero-phap-su": {"builder": "humanoid", "name": "Pháp Sư",
+                     "spec": {"hair": "hair_dark", "cloth": "purple", "pants": "leather", "weapon": "staff", "trim": "gold",
+                              "robe": True, "orb": "crystal"}},
     "hero-tho-san": {"builder": "humanoid", "name": "Thợ Săn",
                      "spec": {"hair": "hair_brown", "cloth": "cloth_green", "pants": "leather", "weapon": "bow", "hood": True, "trim": "leather"}},
     # ------------------------------------------------ quái vùng 1 (06-ban-do-quai-boss.md)

@@ -509,9 +509,70 @@ def g_skill_eagle(cv):
     g_eye(cv)
 
 
+# ---------------------------------------------------------------------- SN-06: Pháp Sư
+def g_skill_fireball(cv):
+    _skill_bg(cv, "#4a2418")
+    glow(cv, 19, 13, 12, R["fire"][2], 110)
+    # đuôi lửa kéo về góc dưới trái
+    cv.shade_poly([(14, 8), (3, 26), (9, 23), (6, 29), (13, 22), (11, 27), (20, 18)], R["fire"])
+    cv.shade_poly([(15, 11), (7, 23), (16, 17)], [R["fire"][2], R["fire"][3], R["fire"][3], R["fire"][3]])
+    cv.shade_ellipse(19, 13, 7, 7, R["fire"])
+    cv.ellipse(20.5, 11.5, 3.2, 3.2, (255, 240, 180, 255))
+    cv.ellipse(21, 11, 1.4, 1.4, (255, 255, 255, 255))
+
+
+def g_skill_chain(cv):
+    _skill_bg(cv, "#1e2c5a")
+    glow(cv, 16, 16, 13, hexc("#9ec8ff"), 90)
+    pts = [(5, 5), (13, 13), (10, 17), (20, 19), (17, 23), (27, 28)]
+    for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+        cv.line(x0, y0, x1, y1, hexc("#c8e6ff"), 3.0)
+    for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+        cv.line(x0, y0, x1, y1, (255, 255, 255, 255), 1.2)
+    for (x, y) in ((13, 13), (20, 19)):
+        cv.ellipse(x, y, 2, 2, (255, 255, 255, 255))
+
+
+def g_skill_nova(cv):
+    _skill_bg(cv, "#16384a")
+    glow(cv, 16, 16, 13, hexc("#9de0ff"), 80)
+    for i in range(8):
+        a = math.radians(i * 45)
+        x, y = 16 + math.cos(a) * 9, 16 + math.sin(a) * 9
+        cv.shade_poly([(16 + math.cos(a - 0.25) * 4, 16 + math.sin(a - 0.25) * 4), (x + math.cos(a) * 4, y + math.sin(a) * 4),
+                       (16 + math.cos(a + 0.25) * 4, 16 + math.sin(a + 0.25) * 4)], R["crystal"])
+    cv.shade_ellipse(16, 16, 4.2, 4.2, R["crystal"])
+    cv.ellipse(15, 15, 1.4, 1.4, (255, 255, 255, 255))
+
+
+def g_skill_meteor(cv):
+    _skill_bg(cv, "#3a1e2c")
+    for i in range(4):
+        cv.line(4 + i * 2, 3 + i, 17 + i, 16 + i * 0.5, (255, 150 + i * 20, 60, 90 + i * 35), 2.6 - i * 0.4)
+    glow(cv, 20, 20, 9, R["fire"][2], 120)
+    cv.shade_ellipse(20, 20, 6, 6, R["stone"])
+    cv.shade_ellipse(20, 20, 6, 6, [hexc("#7a1e0a", 140), hexc("#d0481a", 140), hexc("#ff9a3c", 120), hexc("#ffe08a", 90)])
+    cv.set(18, 18, (255, 240, 200, 255))
+    cv.shade_ellipse(20, 28, 10, 1.6, [hexc("#ff5a1e", 150)] * 4)
+
+
+def g_skill_barrier(cv):
+    _skill_bg(cv, "#2c1442")
+    glow(cv, 16, 16, 14, R["purple"][3], 90)
+    for r, al in ((12, 255), (9, 170), (6, 110)):
+        cv.arc(16, 16, r, 0, math.tau, hexc("#c28af0", al), 1.6)
+    for i in range(6):
+        a = math.radians(i * 60 + 30)
+        cv.line(16 + math.cos(a) * 6, 16 + math.sin(a) * 6, 16 + math.cos(a) * 12, 16 + math.sin(a) * 12, hexc("#e8d0ff", 180), 1.0)
+    cv.shade_ellipse(16, 16, 3.2, 3.2, R["purple"])
+    cv.set(15, 15, (255, 255, 255, 255))
+
+
 SKILLS = {"slash": g_skill_slash, "spin": g_skill_spin, "dodge": g_skill_dodge, "potion": g_skill_potion,
           "shot": g_skill_shot, "dash": g_skill_dash, "wave": g_skill_wave, "guard": g_skill_guard,
-          "rain": g_skill_rain, "pierce": g_skill_pierce, "trap": g_skill_trap, "eagle": g_skill_eagle}
+          "rain": g_skill_rain, "pierce": g_skill_pierce, "trap": g_skill_trap, "eagle": g_skill_eagle,
+          "fireball": g_skill_fireball, "chain": g_skill_chain, "nova": g_skill_nova, "meteor": g_skill_meteor,
+          "barrier": g_skill_barrier}
 
 
 def build_all():

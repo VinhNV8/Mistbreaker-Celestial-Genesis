@@ -581,6 +581,12 @@ func _run_smoke(dir: String) -> void:
 	world.player.mp = world.stats.max_mp
 	await _wait(4.0)
 	await _shot(dir, "03b-hunter")
+	# SN-01: chụp Pháp Sư
+	world.profile.class_id = "phap-su"
+	world._refresh_stats()
+	world.player.mp = world.stats.max_mp
+	await _wait(4.0)
+	await _shot(dir, "03c-mage")
 	world.profile.class_id = "kiem-khach"
 	world._refresh_stats()
 

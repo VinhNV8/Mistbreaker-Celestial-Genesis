@@ -8,6 +8,13 @@ const STATS := ["str", "agi", "int", "vit", "luk"]
 ## ST-04: trần né tránh.
 const EVASION_CAP := 0.3
 const RES_CAP := 0.5
+## SN-07: tốc đánh mỗi điểm AGI — Thợ Săn chỉ +0,6% (AGI đã cho cả Tấn công lẫn chí mạng; với +1% thì
+## ở cấp 17 Thợ Săn hạ Huyền Ảnh nhanh hơn 2 lớp kia 31%).
+const AGI_SPEED := 0.01
+const HUNTER_AGI_SPEED := 0.006
+## SN-02: Pháp Sư.
+const MAGE_MP := 30
+const MAGE_MP_REGEN := 1.0
 
 
 ## Đọc điểm an toàn với save/test cũ chỉ có str/agi/vit.
@@ -37,6 +44,7 @@ static func derive(level: int, pts: Dictionary, talent: String, bonus := {}, tal
 	var vit_pts: int = t.vit
 	var luk_pts: int = t.luk
 	var hunter := class_id == "tho-san"
+	var mage := class_id == "phap-su"
 	var flat: Dictionary = bonus.get("flat", {})
 	var tlv := clampi(talent_level, 1, Talents.MAX_TALENT_LEVEL)
 	# TL-10: mỗi cấp Thiên phú trên 1 → +2% Tấn công và HP.
@@ -48,14 +56,21 @@ static func derive(level: int, pts: Dictionary, talent: String, bonus := {}, tal
 	var crit_bonus := 0.05 if Talents.has_sub(talent, talent_level, "combat", 1) else 0.0
 	var crit_dmg_bonus := 0.15 if Talents.has_sub(talent, talent_level, "combat", 2) else 0.0
 	# CL: Kiếm Khách lấy Tấn công từ STR; Thợ Săn từ AGI (STR phụ), máu mỏng hơn, né gốc 5%.
-	var atk_from_pts := (agi_pts * 2 + str_pts) if hunter else str_pts * 2
-	var base_hp := (90 + lv * 13) if hunter else (100 + lv * 15)
+	# SN-02: Pháp Sư lấy Tấn công từ INT, máu mỏng nhất, MP gốc +30, hồi MP +1/giây.
+	var atk_from_pts: float = str_pts * 2
+	var base_hp := 100 + lv * 15
+	if hunter:
+		atk_from_pts = agi_pts * 2 + str_pts
+		base_hp = 90 + lv * 13
+	elif mage:
+		atk_from_pts = int_pts * 2
+		base_hp = 85 + lv * 12
 	return {
 		"class": class_id,
 		"max_hp": int(round((base_hp + vit_pts * 12 + flat.get("max_hp", 0.0)) * (1.0 + hp_pct))),
 		"atk": (10.0 + lv * 2 + atk_from_pts + flat.get("atk", 0.0)) * (1.0 + atk_pct),
 		"def": 5.0 + lv * 1.5 + vit_pts * 0.5 + flat.get("def", 0.0),
-		"atk_speed": 1.0 + agi_pts * 0.01 + (Talents.lv_value(0.05, 0.075, tlv) if talent == "tay-nhanh" else 0.0) + flat.get("atk_speed", 0.0)
+		"atk_speed": 1.0 + agi_pts * (HUNTER_AGI_SPEED if hunter else AGI_SPEED) + (Talents.lv_value(0.05, 0.075, tlv) if talent == "tay-nhanh" else 0.0) + flat.get("atk_speed", 0.0)
 			+ float(bonus.get("atk_speed_pct", 0.0)),
 		"crit": minf(0.6, 0.05 + agi_pts * 0.005 + luk_pts * 0.003
 			+ (Talents.lv_value(0.1, 0.15, tlv) if talent == "mat-ung" else 0.0) + flat.get("crit", 0.0) + crit_bonus),
@@ -65,8 +80,8 @@ static func derive(level: int, pts: Dictionary, talent: String, bonus := {}, tal
 		"spin_cd": BASE_SPIN_CD - float(bonus.get("spin_cd", 0.0)),
 		"uniques": bonus.get("uniques", []),
 		# ST-01…04 (M3)
-		"max_mp": 50 + lv * 5 + int_pts * 6,
-		"mp_regen": 3.0 + int_pts * 0.05,
+		"max_mp": 50 + lv * 5 + int_pts * 6 + (MAGE_MP if mage else 0),
+		"mp_regen": 3.0 + int_pts * 0.05 + (MAGE_MP_REGEN if mage else 0.0),
 		"skill_mul": 1.0 + int_pts * 0.005,
 		"drop_bonus": minf(0.10, luk_pts * 0.002),
 		"evasion": minf(EVASION_CAP, (0.05 if hunter else 0.0) + agi_pts * 0.003),

@@ -14,15 +14,20 @@ const Classes = preload("res://scripts/data/classes.gd")
 const RngUtil = preload("res://scripts/core/rng_util.gd")
 const Maps = preload("res://scripts/data/maps.gd")
 const Story = preload("res://scripts/data/story.gd")
+const Fog = preload("res://scripts/core/fog.gd")
 
 ## Toạ độ map 1-1 (Rừng Sương). Code dùng các biến theo map (world_size, safe_pos, …); hằng số giữ cho test và tham chiếu.
-const WORLD_SIZE := Vector2(2600, 1600)
-const VILLAGE_POS := Vector2(230, 800)
+## SN-30: ×1,6 so với M4 — phải khớp maps.gd "1-1".
+const WORLD_SIZE := Vector2(4160, 2560)
+const VILLAGE_POS := Vector2(368, 1280)
 const VILLAGE_R := 170.0
-const ARENA_POS := Vector2(2290, 800)
+const ARENA_POS := Vector2(3664, 1280)
 const ARENA_R := 270.0
 ## Bức tường sương mù chắn lối vào hang Sói Chúa khi chưa đủ điều kiện.
-const GATE_X := 2290.0 - 270.0 - 60.0
+const GATE_X := 3664.0 - 270.0 - 60.0
+## SN-30: diện tích map chuẩn (map M4) để nhân số quái/thảo dược/rương theo diện tích.
+const BASE_AREA := 2600.0 * 1600.0
+const FIELD_MOBS_CAP := 40
 
 const PLAYER_RADIUS := 16.0
 const SLASH_RANGE := 80.0
@@ -106,6 +111,22 @@ const TRAP_ROOT := 2.0
 const EAGLE_TIME := 6.0
 const EAGLE_SPEED := 0.3
 const EAGLE_CRIT := 0.15
+## SN-03/04 (đợt SN2): Pháp Sư.
+const FIRE_INTERVAL := 0.6
+const FIRE_RANGE := 400.0
+const FIRE_SPEED := 560.0
+const FIRE_SPLASH := 40.0
+const FIRE_SPLASH_MUL := 0.5
+const CHAIN_RANGE := 350.0
+const CHAIN_HOP := 150.0
+const CHAIN_JUMPS := 4
+const NOVA_RADIUS := 110.0
+const NOVA_ROOT := 2.0
+const METEOR_RANGE := 420.0
+const METEOR_RADIUS := 100.0
+const METEOR_DELAY := 0.8
+const BARRIER_TIME := 6.0
+const BARRIER_PCT := 0.3
 ## CB-04: né Hoàn hảo.
 const PERFECT_WINDOW := 0.15
 const SLOWMO_TIME := 1.0
@@ -203,6 +224,9 @@ class PlayerState:
 	var guard_time := 0.0
 	var eagle_time := 0.0
 	var perfect_used := false
+	# SN-04: Pháp Thuẫn
+	var shield := 0.0
+	var shield_time := 0.0
 
 
 class Enemy:
@@ -257,9 +281,26 @@ class PlayerShot:
 	var radius := 10.0
 	var pierce := false
 	var force_crit := false
-	## "arrow" | "wave" | "pierce"
+	## "arrow" | "wave" | "pierce" | "fireball"
 	var kind := "arrow"
 	var hit := {}
+	## SN-03: nổ lan khi trúng (Hỏa Cầu): bán kính, hệ số cho quái xung quanh.
+	var splash := 0.0
+	var splash_mul := 0.0
+
+
+## SN-04: Thiên Thạch rơi sau METEOR_DELAY giây.
+class Meteor:
+	var pos := Vector2.ZERO
+	var timer := 0.8
+	var radius := 100.0
+	var mul := 3.0
+
+
+## SN-04: tia sét Lôi Xích (chỉ để vẽ).
+class Bolt:
+	var points := PackedVector2Array()
+	var ttl := 0.3
 
 
 ## Mưa Tên.
@@ -360,6 +401,8 @@ var shots: Array = []
 var rains: Array = []
 var traps: Array = []
 var blasts: Array = []
+var meteors: Array = []
+var bolts: Array = []
 var hazards: Array = []
 ## M4.2: gió (vector đơn vị, ZERO = không gió), hướng sắp đổi, đồng hồ, gió mạnh ×2 (Nghịch Phong).
 var wind_dir := Vector2.ZERO
@@ -380,6 +423,13 @@ var auto_fight := false
 var sfx: Array = []
 var combo := 0
 var time := 0.0
+## Sinh lại quái thường ngoài đồng. Test cân bằng boss (TL-B, TL-B2) tắt để chỉ đo trận boss (SN2).
+var field_spawn := true
+## SN-31: sương che của map hiện tại.
+var fog = Fog.new()
+var _fog_timer := 0.0
+## Phiên bản sương đã lưu vào hồ sơ (đổi thì lưu lại + kiểm thưởng).
+var _fog_saved := -1
 
 # M4: map hiện tại
 var map_id := "1-1"
@@ -455,6 +505,8 @@ func _load_map(id: String) -> void:
 	rains = []
 	traps = []
 	blasts = []
+	meteors = []
+	bolts = []
 	hazards = []
 	decoys = []
 	whirls = []
@@ -466,13 +518,18 @@ func _load_map(id: String) -> void:
 	freeze_timer = 0.0
 	slowmo_timer = 0.0
 	player.pos = safe_pos + Vector2(60, 0)
-	for _i in Config.MAX_FIELD_MOBS:
+	# SN-31: nạp sương của map; vùng an toàn luôn mở sẵn.
+	fog.setup(world_size, str(profile.fog.get(id, "")))
+	fog.reveal(safe_pos, safe_r + 260.0)
+	fog.reveal(player.pos, Fog.REVEAL_R)
+	profile.fog[id] = fog.encode()
+	for _i in field_mob_cap():
 		_spawn_field_mob()
-	for _i in HERB_NODES:
+	for _i in roundi(HERB_NODES * area_factor()):
 		var h := Herb.new()
 		h.pos = _random_field_pos()
 		herbs.append(h)
-	for _i in CHESTS:
+	for _i in roundi(CHESTS * area_factor()):
 		var c := Chest.new()
 		c.pos = _random_field_pos()
 		chests.append(c)
@@ -487,7 +544,56 @@ func level_at(x: float) -> int:
 
 ## Cấp quái theo vị trí trên map 1-1 (giữ cho test cũ).
 static func zone_level(x: float) -> int:
-	return clampi(1 + int(floor((x - 450.0) / 260.0)), 1, 6)
+	return Maps.level_at(Maps.get_map("1-1"), x)
+
+
+## SN-31/32: mở sương quanh nhân vật 5 lần/giây; đủ mốc 50% / 90% thì thưởng (1 lần mỗi map).
+func _update_fog(dt: float) -> void:
+	_fog_timer -= dt
+	if _fog_timer > 0.0:
+		return
+	_fog_timer = 0.2
+	fog.reveal(player.pos, Fog.REVEAL_R)
+	if fog.version == _fog_saved:
+		return
+	_fog_saved = fog.version
+	profile.fog[map_id] = fog.encode()
+	_check_fog_rewards()
+
+
+func _check_fog_rewards() -> void:
+	var got: Array = profile.fog_rewards.get(map_id, [])
+	var pct := fog.ratio() * 100.0
+	for mark in Fog.REWARD_MARKS:
+		if pct < mark or mark in got:
+			continue
+		got.append(mark)
+		profile.fog_rewards[map_id] = got
+		if mark == 50:
+			profile.torches = mini(Explore.torch_max(profile), profile.torches + 1)
+			_message("Khám phá 50%% %s: +1 Đuốc Khai Giới." % map.name, "good")
+		else:
+			var gold := 100 * int(map.get("region", 1))
+			profile.essence += 1
+			profile.gold += gold
+			_message("Khám phá trọn %s! +1 Thiên Phú Tinh Hoa, +%d vàng." % [map.name, gold], "good")
+			_sfx("levelup")
+
+
+## % khám phá của một map (0–1).
+func explore_ratio(id: String) -> float:
+	if id == map_id:
+		return fog.ratio()
+	return Fog.ratio_of(str(profile.fog.get(id, "")), Maps.get_map(id).size)
+
+
+## SN-30: diện tích map hiện tại so với map chuẩn M4.
+func area_factor() -> float:
+	return world_size.x * world_size.y / BASE_AREA
+
+
+func field_mob_cap() -> int:
+	return mini(FIELD_MOBS_CAP, roundi(Config.MAX_FIELD_MOBS * area_factor()))
 
 
 func talent() -> Dictionary:
@@ -500,6 +606,15 @@ func class_def() -> Dictionary:
 
 func is_hunter() -> bool:
 	return profile.class_id == "tho-san"
+
+
+func is_mage() -> bool:
+	return profile.class_id == "phap-su"
+
+
+## Lớp đánh xa (Thợ Săn, Pháp Sư): tự nhắm, bot giữ khoảng cách.
+func is_ranged() -> bool:
+	return is_hunter() or is_mage()
 
 
 ## TP-41: giá trị hiệu ứng chính theo cấp Thiên phú.
@@ -677,6 +792,7 @@ func update(dt: float, input: Dictionary) -> void:
 		if travel_timer <= 0.0:
 			_arrive()
 		return
+	_update_fog(dt)
 	var p := player
 	if p.dead_timer > 0.0:
 		p.dead_timer -= dt
@@ -690,6 +806,9 @@ func update(dt: float, input: Dictionary) -> void:
 		p.skill_cds[i] -= dt
 	p.guard_time -= dt
 	p.eagle_time -= dt
+	p.shield_time -= dt
+	if p.shield_time <= 0.0:
+		p.shield = 0.0
 	_update_wind(dt)
 	for dc in decoys:
 		dc.ttl -= dt
@@ -749,6 +868,7 @@ func update(dt: float, input: Dictionary) -> void:
 	_update_shots(dt)
 	_update_rains(dt)
 	_update_traps(dt)
+	_update_mage(dt)
 	for b in blasts:
 		b.ttl -= dt
 	blasts = blasts.filter(func(b): return b.ttl > 0.0)
@@ -858,8 +978,24 @@ func atk_speed() -> float:
 func _basic_attack() -> void:
 	if is_hunter():
 		_shoot()
+	elif is_mage():
+		_cast_fireball()
 	else:
 		_slash()
+
+
+## SN-03: Hỏa Cầu — tự nhắm như Thợ Săn, nổ lan 4 m khi trúng quái đầu tiên.
+func _cast_fireball() -> void:
+	var p := player
+	_soft_lock(FIRE_RANGE)
+	p.attack_cd = FIRE_INTERVAL / atk_speed()
+	p.swing = 0.18
+	p.swing_kind = "cast"
+	_sfx("shot")
+	var m := _basic_mul()
+	var s := _fire(FIRE_SPEED, FIRE_RANGE, m[0], false, "fireball", m[1], 12.0)
+	s.splash = FIRE_SPLASH
+	s.splash_mul = FIRE_SPLASH_MUL
 
 
 ## Hệ số đòn đánh thường (chém hoặc bắn): Kiếm Tâm, Nanh Sói Chúa, Nhất Kiếm Đoạn. Trả về [hệ số, chắc chí mạng].
@@ -993,10 +1129,129 @@ func _update_shots(dt: float) -> void:
 			if s.pos.distance_to(e.pos) <= s.radius + e.radius:
 				s.hit[e.id] = true
 				_hit_enemy(e, s.mul, s.force_crit)
+				if s.splash > 0.0:
+					_splash(s, e)
 				if not s.pierce:
 					s.ttl = 0.0
 					break
 	shots = shots.filter(func(s): return s.ttl > 0.0)
+
+
+## SN-03: nổ lan của Hỏa Cầu — quái khác trong bán kính nhận s.mul × splash_mul.
+func _splash(s: PlayerShot, center: Enemy) -> void:
+	_blast(center.pos, s.splash, Color("#ff7a3c"))
+	for o in enemies:
+		if o.dead or o == center:
+			continue
+		if o.pos.distance_to(center.pos) <= s.splash + o.radius:
+			_hit_enemy(o, s.mul * s.splash_mul)
+
+
+## Quái còn sống gần `from` nhất trong tầm, bỏ qua các id trong `skip`.
+func _nearest_enemy(from: Vector2, reach: float, skip := {}) -> Enemy:
+	var best: Enemy = null
+	var bd := INF
+	for e in enemies:
+		if e.dead or is_hidden(e) or skip.has(e.id):
+			continue
+		var d: float = e.pos.distance_to(from) - e.radius
+		if d <= reach and d < bd:
+			bd = d
+			best = e
+	return best
+
+
+## SN-04 Lôi Xích: sét đánh quái gần nhất (ưu tiên theo hướng ngắm), nảy tối đa CHAIN_JUMPS lần.
+func _chain(mul: float) -> void:
+	var p := player
+	_soft_lock(CHAIN_RANGE)
+	var first: Enemy = null
+	var dir := Vector2.from_angle(p.facing)
+	var bd := INF
+	for e in enemies:
+		if e.dead or is_hidden(e):
+			continue
+		var to_e: Vector2 = e.pos - p.pos
+		var d: float = to_e.length() - e.radius
+		if d <= CHAIN_RANGE and absf(angle_difference(dir.angle(), to_e.angle())) <= deg_to_rad(20.0) and d < bd:
+			bd = d
+			first = e
+	if first == null:
+		first = _nearest_enemy(p.pos, CHAIN_RANGE)
+	p.swing = 0.2
+	p.swing_kind = "cast"
+	var b := Bolt.new()
+	b.points.append(p.pos)
+	if first == null:
+		b.points.append(p.pos + dir * CHAIN_RANGE * 0.5)
+		bolts.append(b)
+		return
+	var hit := {}
+	var cur := first
+	for _i in CHAIN_JUMPS + 1:
+		hit[cur.id] = true
+		b.points.append(cur.pos)
+		_hit_enemy(cur, mul)
+		var nxt := _nearest_enemy(cur.pos, CHAIN_HOP, hit)
+		if nxt == null:
+			break
+		cur = nxt
+	bolts.append(b)
+
+
+## SN-04 Băng Ngục: nổ băng quanh mình, trói quái. Ngũ Hành Bộc Phá: vòng lớn hơn, sát thương cao hơn.
+func _nova(mul: float) -> void:
+	var p := player
+	var burst := _consume_burst()
+	var radius := maxf(BURST_RANGE, NOVA_RADIUS * 1.3) if burst else NOVA_RADIUS
+	var m := mul * ((1.0 + tv(1.0, 1.5)) if burst else 1.0)
+	_blast(p.pos, radius, Color("#9de0ff"))
+	_sfx("explode")
+	p.swing = 0.25
+	p.swing_kind = "cast"
+	for e in enemies:
+		if not e.dead and e.pos.distance_to(p.pos) <= radius + e.radius:
+			e.root_timer = maxf(e.root_timer, NOVA_ROOT)
+			_hit_enemy(e, m)
+
+
+## SN-04 Thiên Thạch: vòng báo hiệu tại điểm ngắm (không có quái thì quái gần nhất trong tầm).
+func _meteor(mul: float) -> void:
+	var p := player
+	var pos := p.pos + (_aim - p.pos).limit_length(METEOR_RANGE)
+	var any_near := false
+	for e in enemies:
+		if not e.dead and e.pos.distance_to(pos) <= METEOR_RADIUS + e.radius:
+			any_near = true
+			break
+	if not any_near:
+		var n := _nearest_enemy(p.pos, METEOR_RANGE)
+		if n != null:
+			pos = n.pos
+	var m := Meteor.new()
+	m.pos = pos
+	m.timer = METEOR_DELAY
+	m.radius = METEOR_RADIUS
+	m.mul = mul
+	meteors.append(m)
+	p.swing = 0.3
+	p.swing_kind = "cast"
+
+
+func _update_mage(dt: float) -> void:
+	for m in meteors:
+		m.timer -= dt
+		if m.timer > 0.0:
+			continue
+		_blast(m.pos, m.radius, Color("#ff9a3c"))
+		_sfx("explode")
+		for e in enemies:
+			if not e.dead and e.pos.distance_to(m.pos) <= m.radius + e.radius:
+				_hit_enemy(e, m.mul)
+	meteors = meteors.filter(func(m): return m.timer > 0.0)
+	for b in bolts:
+		b.ttl -= dt
+	bolts = bolts.filter(func(b): return b.ttl > 0.0)
 
 
 func _slash() -> void:
@@ -1072,6 +1327,16 @@ func use_skill(i: int) -> bool:
 			traps.append(t)
 			while traps.size() > TRAP_MAX:
 				traps.pop_front()
+		"chain":
+			_chain(mul)
+		"nova":
+			_nova(mul)
+		"meteor":
+			_meteor(mul)
+		"barrier":
+			p.shield = float(stats.max_hp) * BARRIER_PCT
+			p.shield_time = BARRIER_TIME
+			_text(p.pos + Vector2(0, -40), "Pháp Thuẫn!", Color("#b36bff"), true)
 		"eagle":
 			p.eagle_time = EAGLE_TIME
 			_text(p.pos + Vector2(0, -40), "Ưng Nhãn!", Color("#ffc940"), true)
@@ -1081,7 +1346,7 @@ func use_skill(i: int) -> bool:
 
 
 func skill_cd_of(i: int) -> float:
-	if i == 0 and not is_hunter():
+	if i == 0 and profile.class_id == "kiem-khach":
 		return float(stats.spin_cd)
 	return float(Classes.skill(profile.class_id, i).cd)
 
@@ -1406,10 +1671,61 @@ func combat_power() -> int:
 
 
 ## Lực chiến nếu mặc thêm món này (để so sánh trong túi đồ).
+## SN-20: tính cả cấp cường hoá được chuyển từ đồ đang mặc.
 func power_if_equipped(item: Dictionary) -> int:
 	var eq: Dictionary = profile.equipment.duplicate()
-	eq[item.slot] = item
+	var it := item.duplicate()
+	it.plus = Items.plus_after_equip(profile, item)
+	eq[item.slot] = it
 	return Items.combat_power(_derive(eq))
+
+
+# ------------------------------------------------------------------ SN-10…12: phân rã / bán nhanh
+
+func bulk_filter() -> Dictionary:
+	return Items.normalize_filter(profile.bulk_filter)
+
+
+func set_bulk_filter(f: Dictionary) -> void:
+	profile.bulk_filter = Items.normalize_filter(f)
+
+
+## Món trong túi khớp bộ lọc đang lưu.
+func bulk_list() -> Array:
+	var now := combat_power()
+	return Items.bulk_candidates(profile, bulk_filter(), func(item): return power_if_equipped(item) < now)
+
+
+func salvage_many(items: Array) -> Dictionary:
+	var n := 0
+	var stones0: int = profile.stones
+	var tk0: int = profile.tinh_kim
+	for item in items:
+		if Items.salvage(profile, int(item.id), _rng).ok:
+			n += 1
+	if n == 0:
+		return _shop_result(false, "Không có món nào khớp bộ lọc.")
+	var msg := "Phân rã nhanh %d món: +%d Đá Cường Hoá." % [n, profile.stones - stones0]
+	if profile.tinh_kim > tk0:
+		msg += " Bàn Tay Vàng: +%d Tinh Kim!" % (profile.tinh_kim - tk0)
+	return _shop_result(true, msg)
+
+
+func sell_many(items: Array) -> Dictionary:
+	var n := 0
+	var gold := 0
+	for item in items:
+		var i := Items.find_in_bag(profile, int(item.id))
+		if i < 0:
+			continue
+		var price := sell_price(profile.inventory[i])
+		profile.inventory.remove_at(i)
+		profile.gold += price
+		gold += price
+		n += 1
+	if n == 0:
+		return _shop_result(false, "Không có món nào khớp bộ lọc.")
+	return _shop_result(true, "Bán nhanh %d món: +%d vàng." % [n, gold])
 
 
 func add_exp(amount: float, from_combat: bool) -> void:
@@ -1458,6 +1774,17 @@ func _damage_player(atk: float, mul: float) -> bool:
 	_incoming_el = ""
 	var dmg := maxi(1, int(round(Formulas.compute_damage(atk, stats.def, mul) * (GUARD_REDUCE if p.guard_time > 0.0 else 1.0) * (1.0 - res))))
 	_last_combat = time
+	# SN-04: Pháp Thuẫn hút sát thương trước.
+	if p.shield > 0.0:
+		var absorbed := minf(p.shield, float(dmg))
+		p.shield -= absorbed
+		dmg -= int(absorbed)
+		if p.shield <= 0.0:
+			p.shield_time = 0.0
+			_text(p.pos + Vector2(0, -40), "Khiên vỡ", Color("#b36bff"), false)
+		if dmg <= 0:
+			_text(p.pos + Vector2(0, -26), "Hút", Color("#b36bff"), false)
+			return true
 	p.hp -= dmg
 	p.hurt = 0.2
 	_sfx("player_hurt")
@@ -2088,7 +2415,7 @@ func _update_spawning(dt: float) -> void:
 	for e in enemies:
 		if not e.dead and e.role == "field":
 			field += 1
-	if field < Config.MAX_FIELD_MOBS:
+	if field < field_mob_cap() and field_spawn:
 		_spawn_field_mob()
 
 
@@ -2145,7 +2472,7 @@ func _random_field_pos() -> Vector2:
 		var pos := Vector2(480.0 + _r() * (_field_right() - 520.0), 80.0 + _r() * (world_size.y - 160.0))
 		if pos.distance_to(safe_pos) > safe_r + 120.0:
 			return pos
-	return Vector2(900, 400)
+	return safe_pos + Vector2(safe_r + 400.0, 0)
 
 
 func _spawn_field_mob() -> void:
@@ -2804,9 +3131,10 @@ func forge_craft(slot: String) -> Dictionary:
 	return {"ok": true, "message": Items.display_name(item), "item": item}
 
 
-## C1-34: tự cộng điểm theo lớp (Kiếm Khách 3 STR : 2 VIT; Thợ Săn 3 AGI : 1 VIT : 1 LUK).
+## C1-34: tự cộng điểm theo lớp (Kiếm Khách 3 STR : 2 VIT; Thợ Săn 3 AGI : 1 VIT : 1 LUK; Pháp Sư 3 INT : 2 VIT).
 func auto_allocate() -> int:
-	var pattern: Array = ["agi", "agi", "agi", "vit", "luk"] if is_hunter() else ["str", "str", "str", "vit", "vit"]
+	var pattern: Array = ["agi", "agi", "agi", "vit", "luk"] if is_hunter() else (
+		["int", "int", "int", "vit", "vit"] if is_mage() else ["str", "str", "str", "vit", "vit"])
 	var n := 0
 	while profile.unspent > 0:
 		allocate(pattern[n % pattern.size()])
@@ -2857,7 +3185,7 @@ func _auto_input(input: Dictionary) -> Dictionary:
 		return out
 	var gap: float = best - target.radius
 	var dir: Vector2 = (target.pos - player.pos).normalized()
-	if is_hunter():
+	if is_ranged():
 		out.move = -dir if gap < 150.0 else (dir if gap > 320.0 else Vector2.ZERO)
 	else:
 		out.move = Vector2.ZERO if gap < 50.0 else dir
@@ -2866,7 +3194,7 @@ func _auto_input(input: Dictionary) -> Dictionary:
 	for i in 4:
 		var key := "skill_%d" % (i + 1)
 		var sk: Dictionary = Classes.skill(profile.class_id, i)
-		var useful: bool = sk.mul > 0.0 and gap < (380.0 if is_hunter() else 160.0)
+		var useful: bool = sk.mul > 0.0 and gap < (380.0 if is_ranged() else 160.0)
 		if useful and player.skill_cds[i] <= 0.0 and player.mp >= float(sk.mp) + 10.0:
 			out[key] = true
 			break

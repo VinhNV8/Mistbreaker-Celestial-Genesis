@@ -6,13 +6,14 @@ const Talents = preload("res://scripts/data/talents.gd")
 const Classes = preload("res://scripts/data/classes.gd")
 const Stats = preload("res://scripts/core/stats.gd")
 
-## UI-03: 5 chỉ số gốc; tác dụng STR/AGI khác nhau theo lớp (03-mvp-spec mục 5.2–5.3).
+## UI-03: 5 chỉ số gốc; tác dụng STR/AGI/INT khác nhau theo lớp (03-mvp-spec mục 5.2–5.3, 09 SN-02).
+## [id, tên, mô tả Kiếm Khách, mô tả Thợ Săn ("" = như Kiếm Khách), mô tả Pháp Sư ("" = như Kiếm Khách)]
 const ROWS := [
-	["str", "Sức mạnh (STR)", "+2 Tấn công", "+1 Tấn công"],
-	["agi", "Nhanh nhẹn (AGI)", "+1% tốc đánh, +0,5% chí mạng, +0,3% né tránh", "+2 Tấn công, +1% tốc đánh, +0,5% chí mạng, +0,3% né tránh"],
-	["int", "Trí tuệ (INT)", "+6 MP, +0,05 MP/giây, +0,5% sát thương kỹ năng", ""],
-	["vit", "Thể lực (VIT)", "+12 HP, +0,5 Phòng thủ", ""],
-	["luk", "May mắn (LUK)", "+0,3% chí mạng, +0,2% tỉ lệ rơi đồ", ""],
+	["str", "Sức mạnh (STR)", "+2 Tấn công", "+1 Tấn công", "Không tăng Tấn công của Pháp Sư"],
+	["agi", "Nhanh nhẹn (AGI)", "+1% tốc đánh, +0,5% chí mạng, +0,3% né tránh", "+2 Tấn công, +1% tốc đánh, +0,5% chí mạng, +0,3% né tránh", ""],
+	["int", "Trí tuệ (INT)", "+6 MP, +0,05 MP/giây, +0,5% sát thương kỹ năng", "", "+2 Tấn công, +6 MP, +0,05 MP/giây, +0,5% sát thương kỹ năng"],
+	["vit", "Thể lực (VIT)", "+12 HP, +0,5 Phòng thủ", "", ""],
+	["luk", "May mắn (LUK)", "+0,3% chí mạng, +0,2% tỉ lệ rơi đồ", "", ""],
 ]
 
 
@@ -38,14 +39,14 @@ func _render(content: VBoxContainer) -> void:
 	content.add_child(card)
 
 	content.add_child(UiTheme.label("Điểm tiềm năng còn lại: %d" % p.unspent, "Muted"))
-	var hunter: bool = p.class_id == "tho-san"
+	var col: int = {"tho-san": 3, "phap-su": 4}.get(p.class_id, 2)
 	var stolen := Stats.total_points({}, p.stolen)
 	for r in ROWS:
 		var row := UiTheme.hbox(10)
 		var left := UiTheme.vbox(0)
 		left.size_flags_horizontal = SIZE_EXPAND_FILL
 		left.add_child(UiTheme.label(r[1]))
-		left.add_child(UiTheme.label(r[3] if hunter and r[3] != "" else r[2], "Small"))
+		left.add_child(UiTheme.label(r[col] if r[col] != "" else r[2], "Small"))
 		row.add_child(left)
 		var extra: int = stolen[r[0]]
 		var val := UiTheme.label(str(int(p.points.get(r[0], 0))) + (" +%d" % extra if extra > 0 else ""), "Heading")
@@ -82,7 +83,7 @@ func _render(content: VBoxContainer) -> void:
 		refresh())
 	content.add_child(respec)
 	# C1-34: tự cộng điểm theo lớp
-	var auto := UiTheme.button("Tự cộng điểm (%s)" % ("3 AGI : 1 VIT : 1 LUK" if p.class_id == "tho-san" else "3 STR : 2 VIT"), true)
+	var auto := UiTheme.button("Tự cộng điểm (%s)" % {"tho-san": "3 AGI : 1 VIT : 1 LUK", "phap-su": "3 INT : 2 VIT"}.get(p.class_id, "3 STR : 2 VIT"), true)
 	auto.name = "AutoAllocate"
 	auto.disabled = p.unspent <= 0
 	auto.pressed.connect(func():

@@ -13,7 +13,7 @@ Quy trình cho mỗi đợt: **viết spec → duyệt → code → test → c�
 
 | Hạng mục trong kịch bản | MVP làm | Để lại sau MVP |
 | --- | --- | --- |
-| Lớp nhân vật (mục 4) | Kiếm Khách + Thợ Săn | Pháp Sư, Hộ Vệ; chuyển chức (cấp 30) |
+| Lớp nhân vật (mục 4) | Kiếm Khách + Thợ Săn + Pháp Sư (SN2) | Hộ Vệ; chuyển chức (cấp 30) |
 | Thiên phú (mục 3) | Đủ 20 Thiên phú mẫu, hạng F → SSS; luyện cấp Lv 1→10 | Thiên phú phụ (cấp 30/60), tiến hoá hạng, cộng hưởng |
 | Bản đồ (mục 6) | Vùng 1 Rừng Sương (cấp 1–10), vùng 2 Đồng Bằng Gió Hú (cấp 10–20) | Vùng 3–9, độ khó Ác mộng/Địa ngục |
 | Cốt truyện (mục 2) | Chương 1–2 | Chương 3–9 |
@@ -770,6 +770,19 @@ Hoàn thành 20/10/2026: M4.1 (phiên game-bc), M4.2 + M4.3 (phiên chính). **7
 | M4-F6 | Thương nhân lữ hành có trên lưới vùng 2 (4 ô) — không tính là Tài nguyên như Q41 | Thương nhân đã làm ở C1 |
 | M4-F7 | TL-B2 chạy 2 seed mỗi tổ hợp | Gió đổi ngẫu nhiên làm một trận đơn lẻ dao động quá mạnh |
 
+
+## 7. Đợt SN2 — Spec_Notes đợt 2
+
+Spec riêng: [09-spec-notes-dot-2.md](09-spec-notes-dot-2.md) — lớp Pháp Sư (SN-01…07), phân rã/bán nhanh có bộ lọc (SN-10…12), chuyển cấp cường hoá khi mặc đồ (SN-20), map ×1,6 và sương che bản đồ (SN-30…33), save v7, test SN-T1…T6.
+
+Thay đổi so với spec các đợt trước:
+
+| Mục cũ | Thay đổi ở SN2 |
+| --- | --- |
+| 5.3 — AGI +1% tốc đánh | Thợ Săn chỉ +0,6%/AGI (SN-07); lớp khác giữ +1% |
+| 6.2 — kích thước map (2600 × 1600…) | Mọi map ×1,6 mỗi chiều (SN-30) |
+| EQ-10 — mặc đồ, đồ cũ về túi | Đồ cũ cường hoá cao hơn thì 2 món đổi cấp (SN-20) |
+| TL-B, TL-B2 — có quái thường | Tắt sinh quái thường trong trận đo; TL-B2 lấy trung bình 4 trận; so lớp nhanh nhất với lớp chậm nhất (3 lớp) |
 
 ## Phụ lục A — Yêu cầu thay đổi (CR)
 

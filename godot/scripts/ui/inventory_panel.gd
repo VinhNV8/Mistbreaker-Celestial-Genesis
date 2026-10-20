@@ -7,6 +7,7 @@ const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
 const Classes = preload("res://scripts/data/classes.gd")
 const Resources = preload("res://scripts/data/resources.gd")
 const CreateScreen = preload("res://scripts/ui/create_screen.gd")
+const BulkBox = preload("res://scripts/ui/bulk_box.gd")
 
 const DETAIL_W := 300.0
 
@@ -204,12 +205,23 @@ func _bag_grid(p) -> VBoxContainer:
 	grid.columns = 6
 	grid.add_theme_constant_override("h_separation", 4)
 	grid.add_theme_constant_override("v_separation", 4)
+	var marked := BulkBox.marked_ids(world)
 	for i in ItemData.BAG_SIZE:
 		var item: Dictionary = p.inventory[i] if i < p.inventory.size() else {}
 		var text := ""
 		if not item.is_empty():
 			text = "+%d" % int(item.plus) if int(item.plus) > 0 else ""
 		var b := _item_button(item, text)
+		# SN-11: món khớp bộ lọc phân rã nhanh có dấu đỏ ở góc.
+		if not item.is_empty() and marked.has(int(item.id)):
+			var dot := ColorRect.new()
+			dot.color = Color("#ff5470")
+			dot.size = Vector2(8, 8)
+			dot.position = Vector2(50, 4)
+			dot.mouse_filter = MOUSE_FILTER_IGNORE
+			b.add_child(dot)
+			b.tooltip_text += "
+(khớp bộ lọc phân rã nhanh)"
 		b.custom_minimum_size = Vector2(62, 54)
 		b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		b.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
@@ -217,6 +229,8 @@ func _bag_grid(p) -> VBoxContainer:
 		b.disabled = item.is_empty()
 		grid.add_child(b)
 	col.add_child(grid)
+	col.add_child(HSeparator.new())
+	col.add_child(BulkBox.build(world, "salvage", refresh, 390.0))
 	return col
 
 
@@ -289,6 +303,12 @@ func _detail(p) -> VBoxContainer:
 		)
 		cmp.add_theme_color_override("font_color", UiTheme.GOOD if delta >= 0 else UiTheme.BAD)
 		col.add_child(cmp)
+		# SN-20: báo trước cấp cường hoá được chuyển từ đồ đang mặc.
+		var moved := Items.plus_after_equip(p, item)
+		if moved > int(item.plus):
+			var tl := UiTheme.label("Mặc vào: nhận +%d từ đồ đang mặc (đồ cũ còn +%d)." % [moved, int(item.plus)], "", DETAIL_W)
+			tl.add_theme_color_override("font_color", UiTheme.GOLD)
+			col.add_child(tl)
 
 	col.add_child(HSeparator.new())
 	var row := UiTheme.hbox(8)

@@ -8,7 +8,8 @@ const Explore = preload("res://scripts/core/explore.gd")
 ## v4: MVP M3 thêm lớp nhân vật, INT/LUK, điểm Đạo Tặc cướp (mục 5.9).
 ## v5: MVP M4 thêm nhiều bản đồ, lưới từng vùng, boss theo id, Đá/Sắt, nhiệm vụ chương 2 (mục 6.5).
 ## v6: đợt C1 thêm tên, ngoại hình, nhiệm vụ/thoại chương 1, lưới vùng 1 40 ô, boss hiếm, công trình mới (08 mục 3.3).
-const VERSION := 6
+## v7: đợt SN2 thêm sương che bản đồ, thưởng khám phá, bộ lọc phân rã/bán nhanh (09 mục 3).
+const VERSION := 7
 
 var talent := ""
 var level := 1
@@ -94,6 +95,14 @@ var merchant := {}
 ## CR-02 (GC-08): seri gift code đã dùng khi thức tỉnh ("" = không dùng).
 var gift_code := ""
 
+# --- v7: đợt SN2 (docs/09-spec-notes-dot-2.md mục 3)
+## Sương che: {map_id: base64 của bitset ô 64 px đã mở} (SN-31).
+var fog := {}
+## Mốc thưởng khám phá đã nhận: {map_id: [50, 90]} (SN-32).
+var fog_rewards := {}
+## Bộ lọc phân rã/bán nhanh (SN-10); null = mặc định.
+var bulk_filter := {}
+
 
 func setup(talent_id: String, rng: Callable, now: float, class_name_id := "kiem-khach") -> void:
 	talent = talent_id
@@ -157,6 +166,9 @@ func to_dict() -> Dictionary:
 		"herb_timer": herb_timer,
 		"merchant": merchant,
 		"gift_code": gift_code,
+		"fog": fog,
+		"fog_rewards": fog_rewards,
+		"bulk_filter": bulk_filter,
 	}
 
 
@@ -285,6 +297,20 @@ func load_dict(d: Dictionary) -> bool:
 			item["price"] = int(it.get("price", 0))
 			items.append(item)
 		merchant = {"until": float(mc.until), "items": items}
+	# v7 — save v6 trở xuống: mọi map phủ sương, chưa nhận thưởng, bộ lọc mặc định.
+	fog = {}
+	var fd: Dictionary = d.get("fog", {})
+	for k in fd:
+		fog[str(k)] = str(fd[k])
+	fog_rewards = {}
+	var fr: Dictionary = d.get("fog_rewards", {})
+	for k in fr:
+		var arr: Array = []
+		for v in fr[k]:
+			arr.append(int(v))
+		fog_rewards[str(k)] = arr
+	var bf = d.get("bulk_filter", {})
+	bulk_filter = bf.duplicate(true) if bf is Dictionary else {}
 	# C1-21: lưới vùng 1 cũ 10 ô → thêm 30 ô của Rừng Sâu và Lõi Sương.
 	var g1 := grid_of(1)
 	if Explore.needs_region1_upgrade(g1):

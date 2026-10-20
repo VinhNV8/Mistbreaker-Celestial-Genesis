@@ -61,7 +61,8 @@ func _region_card(r: Dictionary) -> Control:
 		var here: bool = m_id == world.map_id
 		var unlocked: bool = m_id in world.profile.unlocked_maps
 		var block: String = world.travel_blocker(m_id)
-		var name := UiTheme.label("%s%s (%d–%d)" % ["● " if here else ("◆ " if unlocked else ""), m.name, m.levels[0], m.levels[1]], "Small", 150)
+		var name := UiTheme.label("%s%s (%d–%d)%s" % ["● " if here else ("◆ " if unlocked else ""), m.name, m.levels[0], m.levels[1],
+			(" · %d%%" % floori(world.explore_ratio(m_id) * 100.0)) if unlocked or here else ""], "Small", 150)
 		name.size_flags_horizontal = SIZE_EXPAND_FILL
 		row.add_child(name)
 		if not here:

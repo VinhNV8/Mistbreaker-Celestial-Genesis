@@ -106,6 +106,8 @@ Ký hiệu như [04](04-ke-hoach-tien-do.md): ✅ xong · 🟡 một phần · �
 | AR-52 | Boss hiếm Lão Thụ Sương Mù (×2,2), Gốc Rễ, icon Vỏ Lão Thụ | ✅ | Dáng treant + `size_mul` |
 | AR-53 | Hiệu ứng: cường hoá theo bậc (N8), Bia Đá theo hạng, Rễ Trói, Lá Độc, vũng độc, cảnh mở đầu, bản đồ lục địa | ✅ | Vẽ vector bằng `_draw` |
 | AR-54 | Âm thanh 16 hiệu ứng + 4 nhạc nền | ✅ | `tools/audio` (sinh bằng code, phiên game-bc) |
+| AR-55 | Pháp Sư (SN-06): sprite `hero-phap-su` + 6 sheet thân + 4 sheet tóc (áo choàng dài `robe`, trượng ngọc `weapon="staff"`, khung đánh = giơ trượng, ngọc sáng); 5 icon kỹ năng `fireball`, `chain`, `nova`, `meteor`, `barrier` | ✅ | `humanoid` thêm `robe`, `orb`; hiệu ứng cầu lửa, sét, vòng băng, thiên thạch, khiên vẽ vector trong `world_view` |
+| AR-56 | Sương che bản đồ (SN-31) | ✅ | Texture 1 điểm ảnh/ô, lọc tuyến tính — không cần hình |
 
 ## 3. Kết quả (20/10/2026)
 

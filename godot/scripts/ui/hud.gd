@@ -337,7 +337,7 @@ func update_from(w: GameWorld) -> void:
 		var dest: Dictionary = Maps.get_map(w.travel_target)
 		_travel_label.text = "Đang lên đường tới %s…\n%.1f giây" % [dest.name, w.travel_timer]
 	var m: Dictionary = w.map
-	_map_name.text = "%s · cấp %d–%d" % [m.name, m.levels[0], m.levels[1]]
+	_map_name.text = "%s · cấp %d–%d · Khám phá %d%%" % [m.name, m.levels[0], m.levels[1], floori(w.explore_ratio(w.map_id) * 100.0)]
 	if w.challenge_warning(w.map_id) != "":
 		_map_name.text += " · Vượt ải: EXP ×2"
 		_map_name.add_theme_color_override("font_color", UiTheme.BAD)

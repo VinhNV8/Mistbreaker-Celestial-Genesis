@@ -104,7 +104,8 @@ Main (Node, main.gd)
 | `scripts/core/explore.gd` | Lưới lục giác, sự kiện ô đất, công trình có thời gian xây, sản lượng, hồi Đuốc |
 | `scripts/core/profile.gd` | Hồ sơ người chơi + chuyển đổi sang/từ Dictionary |
 | `scripts/core/save_system.gd` | Đọc/ghi JSON, thu hoạch offline |
-| `scripts/core/items.gd` | Sinh đồ, chỉ số đồ, mặc/tháo, cường hoá, phân rã, Lực chiến (M1) |
+| `scripts/core/items.gd` | Sinh đồ, chỉ số đồ, mặc/tháo, cường hoá, phân rã, Lực chiến (M1); chuyển cấp cường hoá khi mặc (`plus_after_equip`), bộ lọc phân rã/bán nhanh (`bulk_candidates`) — SN2 |
+| `scripts/core/fog.gd` | Sương che bản đồ: ô 64 px, mở bán kính 36 m, lưu base64 bitset, % khám phá (SN-31) |
 | `scripts/core/game_world.gd` | Mô phỏng: di chuyển, combat, AI quái, boss, EXP, rơi đồ, kỹ năng Thiên phú, đồng minh, thảo dược, rương ẩn |
 | `scripts/view/world_view.gd` | Vẽ bản đồ, quái, vòng báo hiệu, hiệu ứng chém, chữ bay. Có hình thì vẽ sprite (sắp xếp theo chiều sâu, hoạt ảnh theo trạng thái, xác quái, tia trúng đòn); thiếu hình thì vẽ hình khối tạm |
 | `scripts/view/sprite_lib.gd` | Nạp `assets/art_manifest.json`, cắt frame, lật ngang, lát ô bằng đa giác UV, lấy icon (G1) |
@@ -115,7 +116,8 @@ Main (Node, main.gd)
 | `scripts/ui/modal.gd` | Lớp cha của bảng phủ |
 | `scripts/ui/stats_panel.gd` | Bảng chỉ số |
 | `scripts/ui/map_panel.gd`, `hex_map.gd` | Bản đồ khai phá |
-| `scripts/ui/inventory_panel.gd` | Túi đồ: đang mặc, túi 30 ô, chi tiết, so sánh, cường hoá (M1) |
+| `scripts/ui/inventory_panel.gd` | Túi đồ: đang mặc, túi 30 ô, chi tiết, so sánh, cường hoá (M1); khung Phân rã nhanh, chấm đỏ ở món khớp lọc (SN-11) |
+| `scripts/ui/bulk_box.gd` | Khung bộ lọc dùng chung: Phân rã nhanh (túi đồ) / Bán nhanh (cửa hàng), hỏi xác nhận (SN-10…12) |
 | `scripts/ui/intro_screen.gd` | Cảnh mở đầu 5 trang (C1-10) |
 | `scripts/ui/create_screen.gd` | Tạo nhân vật + ô xem trước động (C1-02); lớp `Preview` dùng lại ở túi đồ |
 | `scripts/ui/dialog_box.gd` | Hộp thoại có chân dung; chờ khi đang mở bảng (C1-11) |
@@ -128,7 +130,7 @@ Main (Node, main.gd)
 | `scripts/ui/talent_panel.gd` | Bảng Thiên phú: hiệu ứng, kỹ năng L, hiệu ứng phụ, luyện cấp (M2) |
 | `scripts/ui/screens.gd` | Màn hình tiêu đề, Lễ Thức Tỉnh, chiến thắng |
 | `scripts/main.gd` | Điểm vào + chế độ smoke test |
-| `tests/run_tests.gd` | 76 test logic chạy headless; chạy một phần bằng `-- --only=<chuỗi trong tên test>` |
+| `tests/run_tests.gd` | 82 test logic chạy headless; chạy một phần bằng `-- --only=<chuỗi trong tên test>` |
 | `tools/audio/*.py` (ngoài `godot/`) | Sinh âm thanh bằng code (thư viện chuẩn Python): `python tools/audio/gen_audio.py [id …]`; danh sách id ở `tools/audio/README.md` |
 | `godot/export_presets.cfg`, `tools/build_windows.sh` | Preset xuất Windows và script build `build/ThienPhuKhaiGioi.exe` (C1-50) |
 | `tools/art/*.py` (ngoài `godot/`) | Bộ sinh hình pixel art (Python 3 + Pillow): `pixel.py` thư viện vẽ, `builders.py` dáng nhân vật/quái, `catalog.py` danh mục sprite, `icons.py`, `env.py`, `build_all.py`. Quy trình ở skill `.claude/skills/game-art/SKILL.md` |
@@ -188,7 +190,7 @@ Giai đoạn `windup` là cửa sổ để người chơi né; `world_view.gd` v
 | Trên Windows | `%APPDATA%\Godot\app_userdata\Thiên Phú Khai Giới\save.json` |
 | Smoke test | `user://smoke_save.json` (tự xoá sau khi chạy, không đụng save thật) |
 | Định dạng | JSON một dòng |
-| Phiên bản hiện tại | **6** (M1 trang bị · M2 Thiên phú, công trình · M3 lớp, INT/LUK, điểm cướp · v5 M4.1 nhiều bản đồ · **v6 C1**: tên, ngoại hình, nhiệm vụ/thoại chương 1, lưới 40 ô, boss hiếm, Thương nhân, Vườn). Save v1–v5 được chuyển đổi tự động khi nạp |
+| Phiên bản hiện tại | **7** (M1 trang bị · M2 Thiên phú, công trình · M3 lớp, INT/LUK, điểm cướp · v5 M4.1 nhiều bản đồ · v6 C1: tên, ngoại hình, nhiệm vụ/thoại chương 1, lưới 40 ô, boss hiếm, Thương nhân, Vườn · **v7 SN2**: sương che từng map, thưởng khám phá, bộ lọc phân rã/bán nhanh). Save v1–v6 được chuyển đổi tự động khi nạp |
 
 ```json
 {
@@ -223,6 +225,7 @@ Giai đoạn `windup` là cửa sổ để người chơi né; `world_view.gd` v
 - Đổi cấu trúc save thì **tăng `Profile.VERSION`** và cho `load_dict()` đọc được cả bản cũ: trường mới đọc bằng `d.get(khoá, mặc định)`. Cách làm mẫu: chuyển đổi v1 → v2 ở M1. Save có version lớn hơn bản game hiện tại sẽ bị từ chối.
 - `boss_respawn_at` tính theo `play_seconds` (giây đã chơi), không theo giờ thực, nên boss không hồi khi tắt game.
 - `buildings[khoá]` là thời điểm xong theo `build_clock`. Khác `play_seconds`, `build_clock` **chạy cả khi offline** (cộng trong `apply_offline`), nên công trình xây xong trong lúc tắt game. Công trình xong khi `build_clock >= buildings[khoá]`.
+- `fog`: {map_id: base64 của bitset}, bit i = ô `(i % w, i / w)` với `w = ⌈rộng / 64⌉`. Map đổi kích thước thì chuỗi cũ lệch ô — khi đổi kích thước map phải xoá `fog` của map đó. Khi chuyển từ v6: `fog`, `fog_rewards` rỗng (mọi map phủ sương), `bulk_filter` = mặc định (`Items.default_filter()`). Món đồ thêm `style` = `"staff"` (vũ khí Pháp Sư tên Trượng).
 - Khi chuyển từ v5 (C1): tên `Khai Giới Giả`, ngoại hình mặc định; `quest_step` = 12 nếu đã hạ Sói Chúa, ngược lại 5 (bỏ qua phần hướng dẫn); lưới vùng 1 có 10 ô được thêm 30 ô (`Explore.upgrade_region1`), ô cũ `zone` = 1. `tiles[].zone` = 1 Bìa Rừng · 2 Rừng Sâu · 3 Lõi Sương.
 - `rare_boss_at`, `merchant.until` là **giờ Unix** (boss hiếm 2 lần/ngày, thương nhân 1 giờ theo giờ thực) — khác `boss_respawn_at` tính theo giờ chơi.
 - Khi chuyển từ v3: `class_id` = `kiem-khach`, `points` thêm `int`, `luk` = 0, `stolen` rỗng. Món đồ có thêm trường `style` (`"bow"` = vũ khí tên Cung), save cũ không có thì là `""`.
@@ -237,12 +240,17 @@ Dạng axial `(q, r)`, lục giác đỉnh nhọn. Khoảng cách: `(|dq| + |dr|
 
 | Hạng mục | Giá trị |
 | --- | --- |
-| Kích thước | 2600 × 1600 đơn vị |
-| Làng | tâm (230, 800), bán kính 170 |
-| Hang boss | tâm (2290, 800), bán kính 270 |
-| Tường sương mù | x = 1960 |
-| Cấp quái | `1 + ⌊(x − 450) / 260⌋`, giới hạn 1–6 |
-| Số quái thường | duy trì 16 con, sinh thêm mỗi 1,2 giây, cách người chơi ≥ 450 |
+Map 1-1 (Rừng Sương); các map khác xem `scripts/data/maps.gd`. SN-30: mọi map ×1,6 mỗi chiều so với M4.
+
+| Hạng mục | Giá trị |
+| --- | --- |
+| Kích thước | 4160 × 2560 đơn vị (M4: 2600 × 1600) |
+| Làng | tâm (368, 1280), bán kính 170 |
+| Hang boss | tâm (3664, 1280), bán kính 270 |
+| Tường sương mù | x = 3334 |
+| Cấp quái | `1 + ⌊(x − 720) / 416⌋`, giới hạn 1–6 |
+| Số quái thường | `16 × diện tích / (2600 × 1600)`, trần 40 (1-1: 40 con); sinh thêm mỗi 1,2 giây, cách người chơi ≥ 450. Thảo dược, rương, mảng cỏ cũng nhân theo diện tích |
+| Sương che | ô 64 px (1-1: 65 × 40 ô), mở bán kính 360 quanh người chơi 5 lần/giây; vẽ bằng texture 1 điểm ảnh/ô lọc tuyến tính, `z_index` 50 (`world_view.FogLayer`) |
 
 ## 4. Điều khiển (Input Map)
 
@@ -285,7 +293,7 @@ Chơi chỉ bằng bàn phím: nếu chuột đứng yên quá 1,5 giây mà ng�
 - Chạy một phần: `... --script res://tests/run_tests.gd -- --only=TL-B` (TL-B riêng khoảng 13 giây).
 - 12 test C1 (`C1-T1…T12`, 08 mục 3.4). Hồ sơ test mặc định đặt `quest_step = 12` (đã qua hướng dẫn) để không sinh quái nhiệm vụ/thoại trong test cũ; test chuỗi nhiệm vụ dùng hồ sơ mới. Test thời gian thực đặt `GameWorld.debug_now`.
 - 11 test M4.2–M4.3 (03 mục 6.6, 6.8); TL-B2 đánh Huyền Ảnh 2 lớp × 20 Thiên phú × 2 seed (khoảng 2 phút).
-- Kết quả gần nhất: **76/76 qua**. Toàn bộ chạy khoảng 1 phút vì có 2 mô phỏng 15 phút chơi và 20 trận boss.
+- Kết quả gần nhất: **82/82 qua** (SN2). Toàn bộ chạy khoảng 1 phút vì có 2 mô phỏng 15 phút chơi và 20 trận boss.
 - **Đọc log, không chỉ dòng tổng kết**: có `SCRIPT ERROR` trong log thì coi như hỏng, kể cả khi test báo `ok` (xem mục 7).
 
 ### 5.2. Smoke test (có cửa sổ, khoảng 1–2 phút)
@@ -340,6 +348,9 @@ Chạy bot trên nhiều seed, có né và không né, rồi chỉnh HP/ATK boss
 | D27 | Gió là trạng thái của `GameWorld` (hướng, đồng hồ, gió mạnh), áp lên vận tốc người chơi và hướng đạn lúc bắn | Một chỗ đọc, test được headless | Thêm map có gió chỉ cần `wind` trong `maps.gd` |
 | D28 | Lưới khai phá theo vùng: `tiles` = vùng đang đứng, `grids` cất vùng khác; khoá công trình vùng ≥ 2 là `<loại>_r<vùng>_<id ô>` (`Explore.tile_key`) | Id ô trùng giữa các vùng | Sản lượng phải duyệt mọi lưới (`Explore.region_grids`) |
 | D29 | Ảo ảnh hút đòn (`decoys`): quái trong 30 m đi tới ảo ảnh gần nhất thay vì người chơi | Không cần hệ mục tiêu chung cho mọi quái | Ảo ảnh không có máu, chỉ hết theo thời gian |
+| D30 | Sương che là bitset trong `core/fog.gd`, view dựng lại texture khi `fog.version` đổi | Logic test được headless; texture nhỏ (≤ 70 × 40) dựng lại rẻ | Mép sương mờ theo ô 64 px, không mịn theo bán kính |
+| D31 | Chuyển cường hoá = **đổi** cấp giữa 2 món khi đồ cũ cao hơn (Q47) | Không bao giờ mất cấp; mặc lại đồ cũ thì về như cũ | Đồ trong túi có thể mang cấp thấp hơn lúc nhặt |
+| D32 | Test cân bằng boss (TL-B, TL-B2) tắt sinh quái thường (`GameWorld.field_spawn = false`) | Map ×1,6 có tới 40 quái: test chậm > 10 phút và số đo nhiễu theo RNG | Số đo chỉ phản ánh trận boss, không tính quái lạc vào hang |
 | D16 | Đồng hồ xây riêng (`build_clock`) thay vì giờ thực | Không phụ thuộc đồng hồ máy (người chơi chỉnh giờ để gian lận); vẫn chạy offline qua `apply_offline` | Phải nhớ cộng `build_clock` ở cả `update()` và `apply_offline()` |
 
 ## 7. Lỗi đã gặp và cách xử lý

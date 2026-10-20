@@ -29,15 +29,15 @@ File này liệt kê **mọi hạng mục trong kịch bản**: trạng thái hi
 | --- | --- | --- | --- | --- | --- |
 | Thế giới quan, cốt truyện (mục 2) | 13 | 6 | 1 | 6 | 0 |
 | Thiên phú (mục 3) | 42 | 28 | 6 | 8 | 0 |
-| Nhân vật, chỉ số (mục 4) | 26 | 17 | 3 | 6 | 0 |
+| Nhân vật, chỉ số (mục 4) | 26 | 19 | 2 | 5 | 0 |
 | Chiến đấu, quái (mục 5) | 23 | 19 | 1 | 2 | 1 |
-| Bản đồ, vượt map (mục 6) | 11 | 7 | 0 | 4 | 0 |
+| Bản đồ, vượt map (mục 6) | 13 | 9 | 0 | 4 | 0 |
 | Khai phá, lãnh địa (mục 7) | 22 | 14 | 1 | 7 | 0 |
-| Trang bị, kinh tế (mục 8) | 14 | 10 | 2 | 1 | 1 |
+| Trang bị, kinh tế (mục 8) | 17 | 13 | 2 | 1 | 1 |
 | 30 phút đầu (mục 9) | 9 | 9 | 0 | 0 | 0 |
 | Đồ hoạ, âm thanh | 13 | 12 | 1 | 0 | 0 |
 | Kỹ thuật, phát hành | 10 | 4 | 3 | 3 | 0 |
-| **Tổng** | **183** | **126** (69%) | **18** (10%) | **37** (20%) | **2** |
+| **Tổng** | **188** | **133** (71%) | **17** (9%) | **36** (19%) | **2** |
 
 ### Các giai đoạn
 
@@ -49,6 +49,7 @@ File này liệt kê **mọi hạng mục trong kịch bản**: trạng thái hi
 | MVP — M3 | Lớp Thợ Săn, chọn lớp khi tạo nhân vật, đủ 4 kỹ năng mỗi lớp | ✅ Xong 20/10/2026 |
 | MVP — C1 | **Hoàn chỉnh Chương 1**: tạo nhân vật, sửa hướng đánh, cốt truyện + hướng dẫn, 3 map con + 40 ô, boss hiếm, Xưởng Rèn, cửa hàng, âm thanh — [08](08-chuong-1-hoan-chinh.md) | ✅ Xong 20/10/2026 (còn .exe chờ tải templates) |
 | MVP — M4 | Chương 2: Đồng Bằng Gió Hú, boss Huyền Ảnh, Thành Biên Đài, bản đồ lục địa, di chuyển giữa vùng | ✅ Xong 20/10/2026 (M4.1 phiên game-bc · M4.2, M4.3) |
+| MVP — SN2 | **Spec_Notes đợt 2**: lớp Pháp Sư, phân rã/bán nhanh có bộ lọc, chuyển cấp cường hoá khi mặc đồ, map ×1,6, sương che bản đồ — [09](09-spec-notes-dot-2.md) | ✅ Xong 20/10/2026 (phiên game-bc) |
 | MVP — M5 | Cốt truyện có thoại, hướng dẫn, nhiệm vụ, boss hiếm, Xưởng Rèn, cân bằng 1 → 20 | ⬜ |
 | MVP — G | Đồ hoạ nhân vật, quái, bản đồ, hiệu ứng, âm thanh cho chương 1–2 | 🟡 G1 (hình chương 1, sinh bằng code) xong 20/10/2026 — [07](07-do-hoa-ke-hoach.md); còn âm thanh, khung giao diện, vùng 2 |
 | Thử nghiệm kín | 50–100 người chơi (kịch bản mục 9) | ⬜ Cần M3–M5 + G |
@@ -113,7 +114,7 @@ Thiết kế chi tiết từng Thiên phú (hiệu ứng Lv1 → Lv10, 2 bậc t
 | TP-31 | Mắt Ưng | A | ✅ | |
 | TP-32 | Hấp Huyết | A | ✅ | |
 | TP-33 | Bàn Tay Vàng | A | 🟡 | "Nguyên liệu hiếm" được định nghĩa là Tinh Kim, **chờ duyệt Q10** |
-| TP-34 | Ngũ Hành Linh Căn | S | 🟡 | Kịch bản ghi "dùng cả 5 hệ phép" (dành cho Pháp Sư); với Kiếm Khách làm thành đòn đánh mang hệ. Xem lại khi có Pháp Sư (Alpha) |
+| TP-34 | Ngũ Hành Linh Căn | S | 🟡 | Kịch bản ghi "dùng cả 5 hệ phép" (dành cho Pháp Sư); với Kiếm Khách làm thành đòn đánh mang hệ. SN2: Pháp Sư có Hỏa Cầu mang hệ + Bộc Phá theo Băng Ngục; 10 phép kết hợp 2 hệ để Alpha (Q46). Xem lại khi có Pháp Sư (Alpha) |
 | TP-35 | Thời Gian Ngưng Đọng | S | ✅ | |
 | TP-36 | Bầy Đàn Bóng Tối | S | ✅ | Có kỹ năng L Bóng Tối Trỗi Dậy (bổ sung) |
 | TP-37 | Thiên Mệnh Khai Giới | SS | ✅ | |
@@ -137,8 +138,8 @@ Thiết kế chi tiết từng Thiên phú (hiệu ứng Lv1 → Lv10, 2 bậc t
 | Mã | Hạng mục | Trạng thái | Đợt | Kiểm chứng | Ghi chú |
 | --- | --- | --- | --- | --- | --- |
 | NV-01 | Lớp Kiếm Khách | ✅ | Proto | — | Mới có 1 kỹ năng (Xoáy Kiếm), cần đủ 4 (CB-01) |
-| NV-02 | Lớp Thợ Săn | ✅ | M3 | CL-T1, CL-T2 | Bắn tên 45 m, Tấn công từ AGI, HP thấp hơn, né gốc 5%; vũ khí tên Cung |
-| NV-03 | Lớp Pháp Sư | ⬜ | Alpha | — | |
+| NV-02 | Lớp Thợ Săn | ✅ | M3 | CL-T1, CL-T2 | Bắn tên 45 m, Tấn công từ AGI, HP thấp hơn, né gốc 5%; vũ khí tên Cung. SN-07: AGI của Thợ Săn chỉ +0,6% tốc đánh (lớp khác +1%) để cân bằng vùng 2 |
+| NV-03 | Lớp Pháp Sư | ✅ | SN2 | SN-T1, SN-T2, TL-B, TL-B2 | Hỏa Cầu nổ lan, Lôi Xích, Băng Ngục (trói), Thiên Thạch, Pháp Thuẫn; Tấn công từ INT, HP thấp nhất, MP +30; vũ khí tên Trượng ([09](09-spec-notes-dot-2.md)) |
 | NV-04 | Lớp Hộ Vệ | ⬜ | Alpha | — | |
 | NV-05 | Chọn lớp khi tạo nhân vật | ✅ | M3 | Smoke `02b-class` | Màn hình sau Lễ Thức Tỉnh; không đổi lớp giữa chừng (Q34) |
 | NV-06 | Chuyển chức 1 (cấp 30) và 2 (cấp 60) | ⬜ | Alpha | — | |
@@ -146,7 +147,7 @@ Thiết kế chi tiết từng Thiên phú (hiệu ứng Lv1 → Lv10, 2 bậc t
 | NV-08 | Cấp tối đa 100 | ✅ | Proto | CHR-01 | |
 | NV-09 | Cấp Thần Vực vô hạn (endgame) | ⬜ | Beta | — | |
 | NV-10 | Chỉ số gốc STR, AGI, VIT | ✅ | Proto | — | |
-| NV-11 | Chỉ số gốc INT | 🟡 | M3 / Alpha | CL-T1 | M3: +MP, hồi MP, +sát thương kỹ năng. Vai trò chính khi có Pháp Sư (Alpha) |
+| NV-11 | Chỉ số gốc INT | ✅ | M3 / SN2 | CL-T1, SN-T1 | +MP, hồi MP, +sát thương kỹ năng; Pháp Sư: +2 Tấn công mỗi điểm |
 | NV-12 | Chỉ số gốc LUK | ✅ | M3 | CL-T1 | +0,3% chí mạng, +0,2 điểm % rơi đồ mỗi điểm (Q30) |
 | NV-13 | 5 điểm mỗi cấp, tẩy điểm miễn phí trước cấp 30 | ✅ | Proto | CHR-02, 04 | |
 | NV-14 | HP, Tấn công, Phòng thủ, Chí mạng, Sát thương chí mạng, Tốc đánh | ✅ | Proto / M1 | — | |
@@ -210,6 +211,8 @@ Chi tiết 9 vùng × 3 map con, cơ chế môi trường có số liệu, bộ 
 | BD-09 | Thử thách vượt ải: vào map cao hơn 5 cấp, thắng được EXP ×2 | ✅ | M4.1 | MP-T2 | |
 | BD-10 | 3 độ khó mỗi vùng (Thường / Ác mộng / Địa ngục) | ⬜ | Beta | — | |
 | BD-11 | Dungeon cổng ngẫu nhiên hạng E → S, tồn tại 2 giờ | ⬜ | Alpha | — | |
+| BD-12 | Bản đồ rộng hơn (Spec_Notes S6) | ✅ | SN2 | SN-T5 | Mọi map ×1,6 mỗi chiều; quái, cây, thảo dược, rương nhân theo diện tích (trần 40 quái) |
+| BD-13 | Sương che bản đồ: đi tới đâu thấy đất tới đó (Spec_Notes S7) | ✅ | SN2 | SN-T5, SN-T6 | Ô 64 px, mở 36 m quanh nhân vật; % khám phá ở HUD và bảng N; thưởng 50% (+1 Đuốc), 90% (+1 Tinh Hoa, vàng) |
 
 ## 7. Khai phá vùng đất mới (kịch bản mục 7)
 
@@ -255,6 +258,9 @@ Chi tiết 9 vùng × 3 map con, cơ chế môi trường có số liệu, bộ 
 | TB-11 | Đá, Sắt, Tinh Thạch | 🟡 | M4.3 | KP-T1b | Đá, Sắt từ Mỏ; Thiết Ngưu đổi 10 Đá → Đá Cường Hoá, 20 Đá + 10 Sắt → Tinh Kim. Tinh Thạch: vùng 3 (Alpha) |
 | TB-12 | Mua bình thuốc bằng vàng, bán đồ lấy vàng | ✅ | C1 | C1-T10 | Cửa hàng làng (phím E) (C1-32) |
 | TB-13 | Vòng lặp chiến đấu ↔ khai phá ↔ lãnh địa | ✅ | Proto | — | |
+| TB-15 | Mặc đồ mới nhận cấp cường hoá của đồ cũ (Spec_Notes S4) | ✅ | SN2 | SN-T4 | Đồ cũ cao hơn thì 2 món **đổi cấp** (Q47); chi tiết đồ báo trước, Lực chiến so sánh tính cả cấp chuyển |
+| TB-16 | Phân rã nhanh có bộ lọc (Spec_Notes S2, S3) | ✅ | SN2 | SN-T3 | Lọc theo phẩm chất, giữ đồ cường hoá, giữ đồ bộ, chỉ đồ yếu hơn; lưu trong save |
+| TB-17 | Bán nhanh ở cửa hàng có bộ lọc (Spec_Notes S5) | ✅ | SN2 | SN-T3 | Cùng bộ lọc với phân rã nhanh |
 | TB-14 | Ngọc Thiên Đạo (tiền nạp), Battle Pass, thẻ tháng, ngoại hình | ⛔ | Beta | — | Cần backend; nếu bán mua đứt trên Steam thì bỏ |
 
 ## 9. Kịch bản 30 phút đầu (kịch bản mục 9)
@@ -381,6 +387,7 @@ Mỗi đợt theo quy trình: **viết spec → duyệt → code → test → c�
 | 6 | ~~Khởi tạo Git cho dự án (KT-05)~~ | An toàn mã nguồn | **Đã xong** 20/10/2026, có remote GitHub |
 | 7 | Q13–Q16: số liệu Đạo Tặc cướp thuộc tính, độc nhất server — [CR-01](03-mvp-spec.md) | Thiên phú SSS | Như CR-01 (đã code ở M3) |
 | 10 | Q28–Q34: 8 kỹ năng, phím 1–4, INT/LUK, né tránh, MP, tinh anh vùng 1, không đổi lớp — [03 mục 5.11](03-mvp-spec.md) | Combat 2 lớp | Như spec M3 (đã code) |
+| 11 | Q46–Q50: phép kết hợp Ngũ Hành của Pháp Sư, cách chuyển cường hoá, bộ lọc mặc định, kích thước map, sương che quái — [09 mục 5](09-spec-notes-dot-2.md) | Pháp Sư, túi đồ, bản đồ | Như 09 mục 5 (đã code) |
 
 ### 13.1. Đã chốt
 

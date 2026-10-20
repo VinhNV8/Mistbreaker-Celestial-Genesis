@@ -64,6 +64,9 @@ def humanoid(spec):
     style = spec.get("hair_style", "ngan")
     collar = spec.get("collar")
     collar = R[collar] if isinstance(collar, str) else collar
+    # SN-06: Pháp Sư — áo choàng dài (robe) và trượng có ngọc (weapon "staff").
+    robe = spec.get("robe", False)
+    orb = _ramp(spec, "orb", "purple")
 
     def draw_hair(cv, hy):
         if style == "none":
@@ -101,6 +104,16 @@ def humanoid(spec):
                 c.line(hx + math.cos(pw) * 2.2, hy2 + math.sin(pw) * 2.2,
                        hx - math.cos(pw) * 2.2, hy2 - math.sin(pw) * 2.2, trim[2], 1.4)
                 c.set(hx - math.cos(w) * 2, hy2 - math.sin(w) * 2, trim[1])
+            if weapon == "staff":
+                ang = math.radians(wpn if wpn != -60 else -70)
+                bot = (hx - math.cos(ang) * 7, hy2 - math.sin(ang) * 7)
+                top = (hx + math.cos(ang) * 11, hy2 + math.sin(ang) * 11)
+                c.line(bot[0], bot[1], top[0], top[1], R["wood"][1], 1.8)
+                c.line(bot[0] + 0.4, bot[1], top[0] + 0.4, top[1], R["wood"][3])
+                if smear:
+                    glow(c, top[0], top[1], 6, orb[3], 150)
+                c.shade_ellipse(top[0], top[1] - 0.5, 2.2 if smear else 1.8, 2.2 if smear else 1.8, orb)
+                c.set(top[0] - 0.6, top[1] - 1.2, (255, 255, 255, 255))
             c.line(sx, sy, hx, hy2, cloth[2], 2.4)
             c.ellipse(hx, hy2, 1.3, 1.3, skin[2])
             if weapon == "bow":
@@ -156,6 +169,10 @@ def humanoid(spec):
         if collar:
             cv.shade_poly([(11.5, 13.5 + b), (20.5, 13.5 + b), (19, 16.5 + b), (13, 16.5 + b)], collar)
         leg(17, nx, nl, pants, boots)
+        if robe:
+            cv.shade_poly([(12.2, 20.5 + b), (19.8, 20.5 + b), (21.4, 27.4), (10.6, 27.4)], cloth)
+            cv.rect(10.8, 26.4, 21.2, 27.4, trim[1])
+            cv.line(16, 21 + b, 16, 26.4, _darker(cloth)[2])
         cv.shade_ellipse(16.5, hy, 5.0 if female else 5.2, 4.6 if female else 4.8, skin,
                          light=(0.35, -0.5), bands=(0.5, 0.95, 1.4))
         if hood:
@@ -175,7 +192,10 @@ def humanoid(spec):
     idle = [frame(0), frame(1)]
     run_legs = [((2, 0), (-2, 2)), ((0, 1), (0, 0)), ((-2, 2), (2, 0)), ((0, 0), (0, 1))]
     run = [frame(i % 2, run_legs[i], arm=50 + (i % 2) * 20) for i in range(4)]
-    if weapon == "sword":
+    if weapon == "staff":
+        atk = [frame(0, arm=-30, wpn=-70), frame(0, ((1, 0), (2, 0)), arm=-10, wpn=-35, smear=True),
+               frame(1, arm=20, wpn=-60, smear=True)]
+    elif weapon == "sword":
         atk = [frame(0, arm=-100, wpn=-130), frame(0, ((1, 0), (2, 0)), arm=-15, wpn=-5, smear=True),
                frame(1, ((1, 0), (2, 0)), arm=45, wpn=55)]
     else:

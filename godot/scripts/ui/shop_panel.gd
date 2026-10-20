@@ -6,6 +6,7 @@ const ItemData = preload("res://scripts/data/items.gd")
 const Explore = preload("res://scripts/core/explore.gd")
 const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
 const GameWorld = preload("res://scripts/core/game_world.gd")
+const BulkBox = preload("res://scripts/ui/bulk_box.gd")
 
 const W := 860.0
 var _sell_id := -1
@@ -148,6 +149,9 @@ func _render(content: VBoxContainer) -> void:
 			_sell_id = -1
 			refresh())
 		right.add_child(sb)
+	# SN-12: bán nhanh theo bộ lọc
+	right.add_child(HSeparator.new())
+	right.add_child(BulkBox.build(world, "sell", refresh, 420.0))
 
 
 func _icon(tex: Texture2D) -> TextureRect:
