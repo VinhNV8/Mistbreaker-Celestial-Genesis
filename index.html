@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10151a">
+  <title>Thiên Phú Khai Giới — Realmbreaker: Celestial Genesis</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #10151a;
+      color: #e8e3d7;
+      font-synthesis: none;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; background: radial-gradient(ellipse at 50% -20%, #263a3c, #10151a 70%); }
+    button { font: inherit; }
+    .shell { width: min(1120px, 100% - 32px); margin: 0 auto; padding: 26px 0 36px; }
+    header { display: flex; justify-content: space-between; align-items: end; gap: 16px; margin-bottom: 18px; }
+    .eyebrow { color: #d3aa63; font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; }
+    h1 { font-family: Georgia, serif; font-size: clamp(1.6rem, 4vw, 2.5rem); line-height: 1.05; margin: 5px 0; font-weight: 600; }
+    header p { color: #aab3ae; margin: 0; font-size: .9rem; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 16px; align-items: start; }
+    .panel { background: #192126; border: 1px solid #35413f; border-radius: 10px; box-shadow: 0 16px 40px #0005; }
+    .game-panel { overflow: hidden; }
+    .hud { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #35413f; }
+    .hud-label { color: #91a09a; font-size: .76rem; }
+    .hud strong { font-size: .88rem; }
+    .health { display: flex; align-items: center; gap: 9px; min-width: 145px; }
+    .meter { width: 105px; height: 8px; border-radius: 9px; background: #353a3a; overflow: hidden; }
+    .meter span { display: block; height: 100%; background: #d77865; transition: width .2s; }
+    .stage { color: #ecc981; }
+    .canvas-wrap { position: relative; background: #15201d; }
+    canvas { display: block; width: 100%; height: auto; image-rendering: pixelated; }
+    .toast { position: absolute; left: 50%; top: 13px; transform: translateX(-50%); max-width: 90%; text-align: center; padding: 8px 13px; border: 1px solid #b48f58; border-radius: 8px; background: #17201de8; color: #f2d99f; font-size: .84rem; pointer-events: none; opacity: 0; transition: opacity .2s; }
+    .toast.show { opacity: 1; }
+    .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px 14px; border-top: 1px solid #35413f; }
+    .controls button, .primary { border: 1px solid #596157; color: #e9e1ce; background: #28322f; border-radius: 6px; padding: 8px 12px; cursor: pointer; }
+    .controls button:hover, .primary:hover { background: #36443d; border-color: #b48f58; }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    kbd { font-size: .72rem; color: #c8b783; margin-left: 5px; }
+    .side { display: grid; gap: 12px; }
+    .card { padding: 15px; }
+    .card h2 { font-family: Georgia, serif; margin: 0 0 11px; font-size: 1.1rem; font-weight: 500; color: #efca82; }
+    .card p { margin: 7px 0; color: #b6c0b8; line-height: 1.45; font-size: .85rem; }
+    .talent-rank { display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 27px; border-radius: 5px; margin-right: 7px; background: #b78e50; color: #1b1c18; font-weight: 800; }
+    .map { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+    .map-cell { aspect-ratio: 1.35; display: grid; place-items: center; border: 1px solid #46514a; border-radius: 4px; color: #75817b; background: #202a29; font-size: .72rem; }
+    .map-cell.current { border-color: #edc77e; color: #f5d99d; box-shadow: inset 0 0 0 1px #edc77e; }
+    .map-cell.claimed { border-color: #628e6f; color: #bad2a6; background: #253a30; }
+    .chapter-list { color: #98a59e !important; font-size: .77rem !important; }
+    .hint { padding: 0 15px 14px; color: #88958e; font-size: .77rem; }
+    .overlay { position: fixed; inset: 0; display: grid; place-items: center; padding: 18px; background: #080c0dde; z-index: 5; }
+    .overlay[hidden] { display: none; }
+    .dialog { width: min(460px, 100%); padding: 26px; text-align: center; border: 1px solid #9a7c4e; border-radius: 12px; background: #1b2524; box-shadow: 0 20px 80px #0009; }
+    .dialog h2 { font: 500 1.7rem Georgia, serif; color: #f0cc88; margin: 0 0 10px; }
+    .dialog p { color: #bdc6bd; line-height: 1.55; }
+    .dialog-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 9px; margin-top: 18px; }
+    .primary { background: #967341; border-color: #c6a368; color: #fff1d1; padding: 10px 16px; }
+    .secondary { background: #283431; }
+    @media (max-width: 780px) {
+      .layout { grid-template-columns: 1fr; }
+      .side { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .side .card:first-child { grid-column: 1 / -1; }
+      header { align-items: start; flex-direction: column; }
+    }
+    @media (max-width: 480px) {
+      .shell { width: min(100% - 20px, 1120px); padding-top: 18px; }
+      .side { grid-template-columns: 1fr; }
+      .side .card:first-child { grid-column: auto; }
+      .controls button { flex: 1; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div>
+        <div class="eyebrow">Realmbreaker: Celestial Genesis</div>
+        <h1>Thiên Phú Khai Giới</h1>
+        <p>Chín vùng đất. Một thiên phú được ban — và một bí mật bị phong ấn.</p>
+      </div>
+      <div class="eyebrow">ARPG · chơi đơn</div>
+    </header>
+    <div class="layout">
+      <section class="panel game-panel" aria-label="Chiến trường">
+        <div class="hud">
+          <div><span class="hud-label">Chương </span><strong class="stage" id="stage">Chưa bắt đầu</strong></div>
+          <div class="health"><span class="hud-label">Sinh lực</span><div class="meter"><span id="health-bar" style="width:100%"></span></div><strong id="health">100 / 100</strong></div>
+          <div><span class="hud-label">Thủ lĩnh </span><strong id="boss-health">—</strong></div>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="arena" width="780" height="468" aria-label="Đấu trường nhìn từ trên xuống"></canvas>
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+        <div class="controls" aria-label="Điều khiển">
+          <button data-action="attack">Đánh thường <kbd>Space</kbd></button>
+          <button data-action="skill">Kỹ năng <kbd>E</kbd></button>
+          <button data-action="talent">Thiên phú <kbd>Q</kbd></button>
+          <button data-action="dodge">Né lăn <kbd>Shift</kbd></button>
+          <button id="advance" hidden>Tiến vào chương kế →</button>
+        </div>
+        <div class="hint">Di chuyển bằng WASD hoặc phím mũi tên. Hạ thủ lĩnh để xua tan sương mù và chiếm vùng đất.</div>
+      </section>
+      <aside class="side">
+        <section class="panel card">
+          <h2>Thiên phú thức tỉnh</h2>
+          <div id="talent"><p>Thiên Đạo đang chờ Lễ Thức Tỉnh.</p></div>
+          <p id="sealed">Mảnh thiên phú thứ hai vẫn đang ngủ yên…</p>
+        </section>
+        <section class="panel card">
+          <h2>Lãnh địa Huyền Thổ</h2>
+          <div class="map" id="territory" aria-label="Bản đồ chín vùng đất"></div>
+          <p id="territory-count">0 / 9 vùng đất được khai phá</p>
+        </section>
+        <section class="panel card">
+          <h2>Hành trình</h2>
+          <p id="objective">Bắt đầu Lễ Thức Tỉnh để nhận thiên phú và bước vào sương mù.</p>
+          <p class="chapter-list">Thanh Thạch · Rừng Tịch Diệt · Đầm Lưu Ly · Sa Mạc Huyết · Vực Cổ · Băng Nguyên · Thiên Thành · Hư Không · Tâm Thiên Liệt</p>
+        </section>
+      </aside>
+    </div>
+  </main>
+  <div class="overlay" id="modal">
+    <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <h2 id="modal-title">Lễ Thức Tỉnh</h2>
+      <p id="modal-copy">Sương mù Hư Vô đang phủ kín Huyền Thổ. Hãy nhận thiên phú, hạ thủ lĩnh và mở đường qua chín chương.</p>
+      <div class="dialog-actions" id="modal-actions">
+        <button class="primary" id="begin">Nhận Thiên Phú</button>
+      </div>
+    </section>
+  </div>
+  <script>
+    (() => {
+      const canvas = document.querySelector("#arena");
+      const ctx = canvas.getContext("2d");
+      const cell = 52;
+      const cols = canvas.width / cell;
+      const rows = canvas.height / cell;
+      const chapters = [
+        "Làng Thanh Thạch", "Rừng Tịch Diệt", "Đầm Lưu Ly",
+        "Sa Mạc Huyết", "Vực Cổ", "Băng Nguyên",
+        "Thiên Thành", "Hư Không", "Tâm Thiên Liệt"
+      ];
+      const bosses = ["Nanh Sương", "Mẫu Thụ Héo", "Kẻ Nuốt Trăng", "Tướng Quân Cát", "Cổ Thú Vực Sâu", "Băng Hồn Vương", "Thiên Khôi", "Hư Vô Sứ", "Thiên Liệt Chi Chủ"];
+      const talents = [
+        { name: "Mắt Ưng", rank: "C", color: "#9fba78", detail: "Nhìn xuyên sương mù trong phạm vi rộng hơn.", ability: "Q · Soi tỏ bản đồ trong 8 giây; đòn đánh mạnh hơn 15%.", sight: 4, damage: 1.15, skill: "reveal" },
+        { name: "Mạch Gió", rank: "B", color: "#70c5bc", detail: "Bước chân nhẹ, di chuyển nhanh hơn.", ability: "Q · Lốc xoáy gây sát thương quanh bạn.", speed: 1.35, skill: "spin" },
+        { name: "Thạch Thân", rank: "A", color: "#c5a468", detail: "Giảm sát thương nhận vào 35%.", ability: "Q · Tạo lá chắn, miễn nhiễm sát thương trong 5 giây.", reduction: .35, skill: "shield" },
+        { name: "Tâm Hỏa", rank: "S", color: "#e08c61", detail: "Hỏa lực khiến kỹ năng gây thêm sát thương.", ability: "Q · Hỏa bạo gây sát thương lớn lên kẻ địch gần bạn.", damage: 1.25, skill: "burst" },
+        { name: "Bước Hư Không", rank: "SS", color: "#cf91de", detail: "Lướt qua chiến trường, tăng tầm nhìn và sát thương.", ability: "Q · Lướt tới trước, chém tất cả kẻ địch trên đường.", sight: 3, speed: 1.15, damage: 1.35, skill: "blink" }
+      ];
+      let game = {
+        started: false, chapter: 0, claimed: 0, player: { x: 2.5, y: 4.5, hp: 100, facing: 1 },
+        enemies: [], boss: null, talent: null, defeated: false, ended: false,
+        keys: new Set(), lastFrame: 0, enemyTick: 0, skillCooldown: 0, talentCooldown: 0,
+        dodgeTime: 0, shieldTime: 0, revealTime: 0, toastTime: 0, mode: null, wave: 0, moveTarget: null
+      };
+      const $ = (id) => document.getElementById(id);
+      const modal = $("modal");
+
+      function notify(text) {
+        $("toast").textContent = text;
+        $("toast").classList.add("show");
+        game.toastTime = 2.2;
+      }
+      function randomTalent() {
+        const roll = Math.random();
+        const index = roll < .04 ? 4 : roll < .16 ? 3 : roll < .38 ? 2 : roll < .68 ? 1 : 0;
+        return talents[index];
+      }
+      function beginGame() {
+        game.started = true;
+        game.talent = randomTalent();
+        game.chapter = 0;
+        game.claimed = 0;
+        game.ended = false;
+        game.mode = null;
+        game.wave = 0;
+        game.player = { x: 2.5, y: 4.5, hp: 100, facing: 1 };
+        spawnChapter();
+        updateUI();
+        $("modal-title").textContent = `${game.talent.rank} · ${game.talent.name}`;
+        $("modal-copy").textContent = `${game.talent.detail} ${game.talent.ability}`;
+        $("modal-actions").replaceChildren();
+        const start = document.createElement("button");
+        start.className = "primary";
+        start.textContent = "Bước vào sương mù";
+        start.addEventListener("click", () => { modal.hidden = true; notify("Hãy tìm thủ lĩnh và khai phá vùng đất đầu tiên."); });
+        $("modal-actions").append(start);
+        modal.hidden = false;
+      }
+      function spawnChapter() {
+        game.defeated = false;
+        game.player.x = 2.5;
+        game.player.y = 4.5;
+        game.moveTarget = null;
+        game.enemies = [
+          { x: 7.5, y: 2.2, hp: 55 + game.chapter * 8, maxHp: 55 + game.chapter * 8, boss: false },
+          { x: 9.5, y: 6.5, hp: 65 + game.chapter * 8, maxHp: 65 + game.chapter * 8, boss: false }
+        ];
+        const hp = 220 + game.chapter * 38;
+        game.boss = { x: 12.1, y: 4.5, hp, maxHp: hp, boss: true };
+        game.enemies.push(game.boss);
+        game.skillCooldown = 0;
+        game.talentCooldown = 0;
+        game.shieldTime = 0;
+        game.revealTime = 0;
+        updateUI();
+        draw();
+      }
+      function updateUI() {
+        $("stage").textContent = game.started ? `${game.chapter + 1} / 9 · ${chapters[game.chapter] || "Endgame"}` : "Chưa bắt đầu";
+        const hp = Math.max(0, Math.ceil(game.player.hp));
+        $("health").textContent = `${hp} / 100`;
+        $("health-bar").style.width = `${hp}%`;
+        $("boss-health").textContent = game.boss ? `${Math.max(0, Math.ceil(game.boss.hp))} / ${game.boss.maxHp}` : "—";
+        $("advance").hidden = !game.defeated || game.ended;
+        $("advance").textContent = game.chapter === 8 ? "Đối mặt hồi kết →" : "Tiến vào chương kế →";
+        $("objective").textContent = !game.started ? "Bắt đầu Lễ Thức Tỉnh để nhận thiên phú và bước vào sương mù." :
+          game.ended || game.mode ? `Chế độ endgame: ${game.mode}. ${game.wave ? `Đợt ${game.wave}.` : ""}` :
+          game.defeated ? `Đã chiếm ${chapters[game.chapter]}. ${game.chapter === 8 ? "Chọn kết thúc để mở chế độ endgame." : "Sẵn sàng tiến vào vùng đất tiếp theo."}` :
+          `Đánh bại ${bosses[game.chapter] || "thủ lĩnh"} để xua tan sương mù.`;
+        $("talent").innerHTML = game.talent ? `<p><span class="talent-rank" style="background:${game.talent.color}">${game.talent.rank}</span><strong>${game.talent.name}</strong></p><p>${game.talent.detail}</p><p>${game.talent.ability}</p>` : "<p>Thiên Đạo đang chờ Lễ Thức Tỉnh.</p>";
+        $("sealed").textContent = game.chapter >= 8 && game.defeated ? "Mảnh thiên phú thứ hai thức tỉnh — bí mật của bạn đã lộ diện." : "Mảnh thiên phú thứ hai vẫn đang ngủ yên…";
+        $("territory-count").textContent = `${game.claimed} / 9 vùng đất được khai phá`;
+        $("territory").replaceChildren();
+        chapters.forEach((name, i) => {
+          const tile = document.createElement("div");
+          tile.className = `map-cell${i < game.claimed ? " claimed" : ""}${i === game.chapter && game.started && !game.ended ? " current" : ""}`;
+          tile.textContent = i < game.claimed ? "✓" : `${i + 1}`;
+          tile.title = name;
+          $("territory").append(tile);
+        });
+      }
+      function distance(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+      function nearestEnemy(range) {
+        return game.enemies.filter((enemy) => enemy.hp > 0 && distance(enemy, game.player) <= range).sort((a, b) => distance(a, game.player) - distance(b, game.player))[0];
+      }
+      function damage(enemy, amount) {
+        enemy.hp = Math.max(0, enemy.hp - amount);
+        if (enemy.hp <= 0 && enemy.boss) {
+          game.defeated = true;
+          game.enemies = game.enemies.filter((item) => item.hp > 0);
+          if (game.mode) {
+            notify(`${game.mode} · đợt ${game.wave} hoàn thành!`);
+            updateUI();
+            setTimeout(() => {
+              if (game.mode && game.defeated) startEndgame();
+            }, 900);
+            return;
+          }
+          game.claimed = Math.max(game.claimed, game.chapter + 1);
+          notify(`Thủ lĩnh gục ngã — ${chapters[game.chapter]} đã được khai phá!`);
+          if (game.chapter === 8) {
+            game.ended = true;
+            updateUI();
+            draw();
+            setTimeout(showEnding, 600);
+            return;
+          }
+        }
+        updateUI();
+      }
+      function attack() {
+        if (!game.started || game.defeated) return;
+        const enemy = nearestEnemy(1.8);
+        if (enemy) damage(enemy, 26 * (game.talent?.damage || 1));
+        else notify("Tiến lại gần kẻ địch để tấn công.");
+        draw();
+      }
+      function skill() {
+        if (!game.started || game.defeated || game.skillCooldown > 0) return;
+        game.skillCooldown = 3;
+        game.enemies.filter((enemy) => enemy.hp > 0 && distance(enemy, game.player) <= 2.6).forEach((enemy) => damage(enemy, 58 * (game.talent?.damage || 1)));
+        notify("Kỹ năng đã tung!");
+        draw();
+      }
+      function talent() {
+        if (!game.started || game.defeated || game.talentCooldown > 0) return;
+        game.talentCooldown = 8;
+        switch (game.talent.skill) {
+          case "reveal": game.revealTime = 8; notify("Mắt Ưng soi tỏ toàn bộ vùng đất!"); break;
+          case "spin": case "burst":
+            game.enemies.filter((enemy) => enemy.hp > 0 && distance(enemy, game.player) <= 3.3).forEach((enemy) => damage(enemy, game.talent.skill === "burst" ? 115 : 75));
+            notify(game.talent.skill === "burst" ? "Tâm Hỏa bùng nổ!" : "Lốc xoáy cuốn phăng kẻ địch!");
+            break;
+          case "shield": game.shieldTime = 5; notify("Thạch Thân bảo vệ bạn trong 5 giây!"); break;
+          case "blink":
+            game.player.x = Math.min(cols - 1.3, game.player.x + game.player.facing * 3);
+            game.enemies.filter((enemy) => enemy.hp > 0 && distance(enemy, game.player) <= 2.2).forEach((enemy) => damage(enemy, 95));
+            notify("Bước Hư Không xuyên phá chiến trường!");
+            break;
+        }
+        draw();
+      }
+      function dodge() {
+        if (!game.started || game.defeated || game.dodgeTime > 0) return;
+        game.dodgeTime = .42;
+        game.player.x = Math.max(.7, Math.min(cols - .7, game.player.x + game.player.facing * 1.5));
+        draw();
+      }
+      function showEnding() {
+        $("modal-title").textContent = "Bí mật trong Tâm Thiên Liệt";
+        $("modal-copy").textContent = "Mảnh thiên phú thứ hai bừng tỉnh. Huyền Thổ được cứu, nhưng con đường phía trước phụ thuộc vào lựa chọn của bạn.";
+        $("modal-actions").replaceChildren();
+        [["Phong Ấn Hư Vô", "Vực Vô Tận"], ["Hợp Nhất Thiên Phú", "Tháp Thiên Đạo"]].forEach(([ending, mode]) => {
+          const button = document.createElement("button");
+          button.className = "primary";
+          button.textContent = ending;
+          button.addEventListener("click", () => {
+            game.mode = mode;
+            game.ended = true;
+            game.wave = 0;
+            $("modal-title").textContent = `Endgame · ${mode}`;
+            $("modal-copy").textContent = mode === "Vực Vô Tận" ? "Sống sót qua những đợt quái vật bất tận. Mỗi đợt thủ lĩnh mạnh hơn." : "Thử thách chuỗi thủ lĩnh liên tiếp trong Tháp Thiên Đạo.";
+            $("modal-actions").replaceChildren();
+            const enter = document.createElement("button");
+            enter.className = "primary";
+            enter.textContent = "Bắt đầu endgame";
+            enter.addEventListener("click", startEndgame);
+            $("modal-actions").append(enter);
+          });
+          $("modal-actions").append(button);
+        });
+        modal.hidden = false;
+      }
+      function startEndgame(advanceWave = true) {
+        modal.hidden = true;
+        game.ended = false;
+        game.defeated = false;
+        if (advanceWave) game.wave++;
+        game.player.hp = 100;
+        game.moveTarget = null;
+        game.boss = { x: 12.1, y: 4.5, hp: 260 + game.wave * 50, maxHp: 260 + game.wave * 50, boss: true };
+        game.enemies = [
+          { x: 8, y: 2.5, hp: 80 + game.wave * 12, maxHp: 80 + game.wave * 12 },
+          { x: 9, y: 6, hp: 80 + game.wave * 12, maxHp: 80 + game.wave * 12 },
+          game.boss
+        ];
+        updateUI();
+        notify(`${game.mode}: bắt đầu đợt ${game.wave}.`);
+        draw();
+      }
+      function nextChapter() {
+        if (!game.defeated) return;
+        if (game.chapter === 8) { showEnding(); return; }
+        game.chapter++;
+        game.player.hp = Math.min(100, game.player.hp + 25);
+        spawnChapter();
+        notify(`Chương ${game.chapter + 1}: ${chapters[game.chapter]}.`);
+      }
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#26372e";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
+          const shade = (x * 13 + y * 7 + game.chapter * 11) % 3;
+          ctx.fillStyle = ["#314239", "#35473c", "#2e4038"][shade];
+          ctx.fillRect(x * cell, y * cell, cell - 1, cell - 1);
+          if ((x * 5 + y * 11 + game.chapter) % 13 === 0) {
+            ctx.fillStyle = "#647457";
+            ctx.fillRect(x * cell + 9, y * cell + 12, 3, 3);
+          }
+        }
+        game.enemies.forEach((enemy) => {
+          if (enemy.hp <= 0) return;
+          ctx.fillStyle = enemy.boss ? "#a74f49" : "#667d68";
+          ctx.beginPath();
+          ctx.arc(enemy.x * cell, enemy.y * cell, enemy.boss ? 17 : 12, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = enemy.boss ? "#f3bf79" : "#becbb3";
+          ctx.fillRect(enemy.x * cell - 5, enemy.y * cell - 4, 3, 3);
+          ctx.fillRect(enemy.x * cell + 3, enemy.y * cell - 4, 3, 3);
+          if (enemy.boss) {
+            const barWidth = 52;
+            ctx.fillStyle = "#342524";
+            ctx.fillRect(enemy.x * cell - barWidth / 2, enemy.y * cell - 29, barWidth, 5);
+            ctx.fillStyle = "#dd7560";
+            ctx.fillRect(enemy.x * cell - barWidth / 2, enemy.y * cell - 29, barWidth * enemy.hp / enemy.maxHp, 5);
+          }
+        });
+        const player = game.player;
+        ctx.fillStyle = game.dodgeTime > 0 ? "#d6f1df" : "#e2c16f";
+        ctx.beginPath();
+        ctx.arc(player.x * cell, player.y * cell, 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#f7e7b6";
+        ctx.fillRect(player.x * cell + player.facing * 5 - 2, player.y * cell - 3, 4, 6);
+        if (game.shieldTime > 0) {
+          ctx.strokeStyle = "#81d8d0";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(player.x * cell, player.y * cell, 18, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        if (!game.defeated && game.started) {
+          const radius = game.revealTime > 0 ? 20 : (game.talent?.sight || 2.5);
+          ctx.fillStyle = "rgba(9, 13, 16, .86)";
+          for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
+            if (game.revealTime <= 0 && Math.hypot(x + .5 - player.x, y + .5 - player.y) <= radius) continue;
+            ctx.fillRect(x * cell, y * cell, cell - 1, cell - 1);
+          }
+        }
+        ctx.strokeStyle = "#859485";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(1, 1, canvas.width - 2, canvas.height - 2);
+      }
+      function frame(timestamp) {
+        const dt = Math.min(.05, (timestamp - game.lastFrame) / 1000 || 0);
+        game.lastFrame = timestamp;
+        if (game.started && !game.defeated && modal.hidden) {
+          game.skillCooldown = Math.max(0, game.skillCooldown - dt);
+          game.talentCooldown = Math.max(0, game.talentCooldown - dt);
+          game.dodgeTime = Math.max(0, game.dodgeTime - dt);
+          game.shieldTime = Math.max(0, game.shieldTime - dt);
+          game.revealTime = Math.max(0, game.revealTime - dt);
+          game.toastTime = Math.max(0, game.toastTime - dt);
+          $("toast").classList.toggle("show", game.toastTime > 0);
+          const dx = Number(game.keys.has("ArrowRight") || game.keys.has("d") || game.keys.has("D")) - Number(game.keys.has("ArrowLeft") || game.keys.has("a") || game.keys.has("A"));
+          const dy = Number(game.keys.has("ArrowDown") || game.keys.has("s") || game.keys.has("S")) - Number(game.keys.has("ArrowUp") || game.keys.has("w") || game.keys.has("W"));
+          if (dx || dy) {
+            const length = Math.hypot(dx, dy);
+            game.moveTarget = null;
+            playerMove(dx / length * dt * 4.1 * (game.talent?.speed || 1), dy / length * dt * 4.1 * (game.talent?.speed || 1));
+            if (dx) game.player.facing = Math.sign(dx);
+          } else if (game.moveTarget) {
+            const targetX = game.moveTarget.x - game.player.x;
+            const targetY = game.moveTarget.y - game.player.y;
+            const distanceToTarget = Math.hypot(targetX, targetY);
+            if (distanceToTarget < .08) game.moveTarget = null;
+            else {
+              const step = Math.min(distanceToTarget, dt * 4.1 * (game.talent?.speed || 1));
+              playerMove(targetX / distanceToTarget * step, targetY / distanceToTarget * step);
+              if (targetX) game.player.facing = Math.sign(targetX);
+            }
+          }
+          game.enemyTick += dt;
+          if (game.enemyTick >= .75) {
+            game.enemyTick = 0;
+            game.enemies.forEach((enemy) => {
+              if (enemy.hp <= 0) return;
+              const d = distance(enemy, game.player);
+              if (d > 1.1) {
+                const speed = enemy.boss ? .55 : .75;
+                enemy.x += (game.player.x - enemy.x) / d * speed;
+                enemy.y += (game.player.y - enemy.y) / d * speed;
+              } else if (!game.dodgeTime && !game.shieldTime) {
+                game.player.hp = Math.max(0, game.player.hp - (enemy.boss ? 13 : 7) * (1 - (game.talent?.reduction || 0)));
+                updateUI();
+                if (game.player.hp <= 0) {
+                  game.defeated = true;
+                  game.keys.clear();
+                  $("modal-title").textContent = "Gục ngã trong sương mù";
+                  $("modal-copy").textContent = game.mode ? "Bạn đã mất sinh lực. Hãy thử lại đợt này; tiến trình endgame được giữ nguyên." : "Bạn đã mất sinh lực. Hãy thử lại chương này; thiên phú và tiến trình khai phá được giữ nguyên.";
+                  $("modal-actions").replaceChildren();
+                  const retry = document.createElement("button");
+                  retry.className = "primary";
+                  retry.textContent = "Đứng dậy";
+                  retry.addEventListener("click", () => {
+                    game.player.hp = 100;
+                    if (game.mode) startEndgame(false);
+                    else {
+                      spawnChapter();
+                      modal.hidden = true;
+                    }
+                  });
+                  $("modal-actions").append(retry);
+                  modal.hidden = false;
+                }
+              }
+            });
+          }
+          draw();
+        }
+        requestAnimationFrame(frame);
+      }
+      function playerMove(dx, dy) {
+        game.player.x = Math.max(.55, Math.min(cols - .55, game.player.x + dx));
+        game.player.y = Math.max(.55, Math.min(rows - .55, game.player.y + dy));
+      }
+      $("begin").addEventListener("click", beginGame);
+      $("advance").addEventListener("click", nextChapter);
+      document.querySelectorAll("[data-action]").forEach((button) => button.addEventListener("click", () => ({
+        attack, skill, talent, dodge
+      }[button.dataset.action])()));
+      document.addEventListener("keydown", (event) => {
+        if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(event.key)) event.preventDefault();
+        if (event.repeat) return;
+        if (event.key === " " || event.key.toLowerCase() === "j") attack();
+        else if (event.key.toLowerCase() === "e") skill();
+        else if (event.key.toLowerCase() === "q") talent();
+        else if (event.key === "Shift") dodge();
+        else game.keys.add(event.key);
+      });
+      document.addEventListener("keyup", (event) => game.keys.delete(event.key));
+      window.addEventListener("blur", () => game.keys.clear());
+      canvas.addEventListener("pointerdown", (event) => {
+        if (!game.started || game.defeated) return;
+        const bounds = canvas.getBoundingClientRect();
+        const x = (event.clientX - bounds.left) * canvas.width / bounds.width / cell;
+        const y = (event.clientY - bounds.top) * canvas.height / bounds.height / cell;
+        game.moveTarget = {
+          x: Math.max(.55, Math.min(cols - .55, x)),
+          y: Math.max(.55, Math.min(rows - .55, y))
+        };
+      });
+      updateUI();
+      draw();
+      requestAnimationFrame(frame);
+    })();
+  </script>
+</body>
+</html>
