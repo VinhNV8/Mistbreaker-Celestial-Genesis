@@ -50,6 +50,11 @@ SPRITES = {
              "spec": {"size": 48, "fur": "fur_void", "mane": "void", "eye": "#ff3b4e", "aura": "#9b6ee0"}},
 }
 SPRITES.update(_custom_sprites())
+# C1-23: boss hiếm Lão Thụ Sương Mù (cây cổ thụ, lá tím sương) và Gốc Rễ — dáng treant, phóng to bằng size_mul
+SPRITES["lao-thu"] = {"builder": "treant", "name": "Lão Thụ Sương Mù", "size_mul": 2.2,
+                      "spec": {"bark": "bark", "leaf": "purple", "eye": "#ff5470"}}
+SPRITES["goc-re"] = {"builder": "treant", "name": "Gốc Rễ", "size_mul": 0.8,
+                     "spec": {"bark": "wood", "leaf": "leaf", "eye": "#c878ff"}}
 # C1-11: NPC làng Thanh Thạch (hộp thoại + đứng trong làng)
 SPRITES["npc-elder"] = {"builder": "humanoid", "name": "Trưởng làng Thạch Lão",
                         "spec": {"skin": "skin", "hair": "white", "hair_style": "bui", "cloth": "wood", "pants": "leather",

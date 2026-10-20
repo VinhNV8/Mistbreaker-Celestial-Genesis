@@ -74,6 +74,12 @@ const UNIQUES := {
 		"slot": "weapon",
 		"text": "Mỗi đòn chém thứ 3 gây thêm 60% sát thương.",
 	},
+	## C1-23: rơi từ boss hiếm Lão Thụ Sương Mù.
+	"lao_thu_bark": {
+		"name": "Vỏ Lão Thụ",
+		"slot": "amulet",
+		"text": "Đứng yên 1 giây thì hồi 2% HP mỗi giây.",
+	},
 }
 const BOSS_UNIQUE := "wolf_fang"
 

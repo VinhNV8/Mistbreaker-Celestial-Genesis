@@ -107,6 +107,11 @@ func _draw() -> void:
 		for e in world.enemies:
 			_draw_enemy(e)
 	_draw_player_skills()
+	# C1-24: vũng độc Nấm Độc
+	for hz in world.hazards:
+		var a: float = clampf(hz.ttl, 0.0, 1.0)
+		draw_circle(hz.pos, hz.radius, Color(0.55, 0.85, 0.3, 0.25 * a))
+		draw_arc(hz.pos, hz.radius, 0.0, TAU, 32, Color(0.7, 0.4, 0.9, 0.6 * a), 2.0, true)
 	for pr in world.projectiles:
 		if _art:
 			SpriteLib.draw_env(self, "fx-spore", pr.pos)
@@ -377,6 +382,9 @@ func _draw_enemy_sprite(e) -> void:
 	if world.freeze_timer > 0.0:
 		mod = mod * Color(0.7, 0.85, 1.3)
 	mod.a = 0.15 if hidden else 1.0
+	# C1-22: Lõi Sương — quái ở xa bị sương che mờ
+	if world.map_id == "1-3" and not hidden and e.pos.distance_to(world.player.pos) > GameWorld.FOG_SIGHT:
+		mod.a = 0.5
 	if e.elite or e.role == "boss":
 		var ring := Color("#ff5470") if e.role == "boss" else Color("#ffc940")
 		_ground_ring(_feet(e.pos, e.radius), e.radius + 4.0, Color(ring, 0.8 * mod.a))
@@ -439,6 +447,13 @@ func _draw_player_sprite() -> void:
 		anim = "attack"
 	if p.eagle_time > 0.0:
 		mod = mod * Color(1.2, 1.15, 0.85)
+	if p.poison_timer > 0.0:
+		mod = mod * Color(0.75, 1.15, 0.7)
+	if p.root_timer > 0.0:
+		var feet := _feet(p.pos, GameWorld.PLAYER_RADIUS)
+		for k in 5:
+			var a := TAU * k / 5.0 + 0.3
+			draw_line(feet + Vector2.from_angle(a) * 20.0, feet + Vector2(0, -18) + Vector2.from_angle(a) * 6.0, Color("#674a32"), 4.0, true)
 	SpriteLib.draw_hero(self, world.profile.class_id, world.profile.look, anim, frame, _feet(p.pos, GameWorld.PLAYER_RADIUS), left, mod)
 	# C1-02: tên trên đầu
 	if p.dead_timer <= 0.0:
@@ -626,6 +641,19 @@ func _draw_telegraph(e: GameWorld.Enemy) -> void:
 			draw_circle(e.target, GameWorld.POUNCE_RADIUS * progress, Color(1, 0.24, 0.31, 0.35))
 		"spore":
 			draw_dashed_line(e.pos, e.target, Color(0.78, 0.47, 1.0, 0.25 + progress * 0.5), 2.0, 6.0)
+		"roots":
+			for k in 3:
+				var c: Vector2 = e.target + Vector2.from_angle(k * TAU / 3.0) * GameWorld.ROOT_R * 0.9
+				draw_circle(c, GameWorld.ROOT_R, Color(0.6, 0.4, 0.2, 0.15))
+				draw_circle(c, GameWorld.ROOT_R * progress, Color(0.6, 0.4, 0.2, 0.35))
+		"leaf":
+			var dir: float = (e.target - e.pos).angle()
+			var pts := PackedVector2Array([e.pos])
+			for i in 9:
+				pts.append(e.pos + Vector2.from_angle(dir - GameWorld.LEAF_ARC + 2.0 * GameWorld.LEAF_ARC * i / 8.0) * (GameWorld.LEAF_RANGE + e.radius))
+			draw_colored_polygon(pts, Color(0.4, 0.85, 0.45, 0.12 + progress * 0.25))
+		"dash":
+			draw_line(e.pos, e.pos + (e.target - e.pos).limit_length(150.0), Color(0.6, 0.9, 1.0, 0.2 + progress * 0.5), 6.0, true)
 		"stomp", "explode":
 			var r: float = GameWorld.STOMP_R if e.attack_kind == "stomp" else GameWorld.EXPLODE_R
 			draw_circle(e.pos, r, Color(1, 0.4, 0.2, 0.12))

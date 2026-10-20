@@ -388,8 +388,20 @@ def talent_icon(glyph, rank, group):
     return cv
 
 
+def g_bark(cv):
+    """Vỏ Lão Thụ (bùa Cam, C1-23)."""
+    glow(cv, 16, 16, 15, hexc("#ff9a3c"), 60)
+    cv.line(10, 3, 16, 9, R["leather"][2], 1.2)
+    cv.line(22, 3, 16, 9, R["leather"][2], 1.2)
+    cv.shade_poly([(9, 10), (23, 10), (25, 22), (16, 29), (7, 22)], R["bark"])
+    for x in (12, 16, 20):
+        cv.line(x, 12, x - 1, 25, R["bark"][0])
+    cv.shade_ellipse(16, 17, 3.2, 3.2, R["purple"])
+    cv.set(15, 16, (255, 255, 255, 255))
+
+
 ITEMS = {"weapon": g_sword, "helm": g_helm, "armor": g_armor, "gloves": g_gloves, "boots": g_boots,
-         "necklace": g_necklace, "ring": g_ring, "amulet": g_amulet, "wolf_fang": g_wolf_fang}
+         "necklace": g_necklace, "ring": g_ring, "amulet": g_amulet, "wolf_fang": g_wolf_fang, "lao_thu_bark": g_bark}
 RESOURCES = {"gold": g_gold, "wood": g_wood, "stone": g_stone, "essence": g_essence, "tinh_kim": g_tinh_kim,
              "torch": g_torch, "herb": g_herb, "potion": g_potion}
 # ---------------------------------------------------------------------- kỹ năng M3 (03-mvp-spec mục 5.4)

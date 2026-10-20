@@ -88,6 +88,9 @@ func _init() -> void:
 	_run("C1-T6 lưới 40 ô: 3 map con, Lõi Sương khoá, Khứu Giác", _test_c1_grid40)
 	_run("C1-T3 thoại theo mốc, không lặp, được lưu", _test_c1_dialogs)
 	_run("C1-T4 chuỗi 11 nhiệm vụ chương 1", _test_c1_quests)
+	_run("C1-T5 Lõi Sương: khoá, cấp 7–10, sương che Tinh Linh", _test_c1_core_map)
+	_run("C1-T7 boss hiếm Lão Thụ: chỉ số, Rễ Trói, Rừng Thức Tỉnh, rơi đồ, lịch 12 giờ", _test_c1_rare_boss)
+	_run("C1-T8 vũng độc Nấm Độc, Lao sương", _test_c1_mob_mechanics)
 
 	print("")
 	if _failed.is_empty():
@@ -1381,3 +1384,102 @@ func _test_c1_quests() -> void:
 	w._load_map("1-3")
 	_tick(w, {}, 40)
 	_check(p.quest_step == Story.DONE_STEP and "done" in p.seen_dialogs, "vào Lõi Sương → hoàn thành chương 1")
+
+
+func _test_c1_core_map() -> void:
+	var w := _world("kiem-tam")
+	_check(w.travel_blocker("1-3") != "", "Lõi Sương khoá khi chưa hạ Sói Chúa")
+	w.profile.boss_defeated = true
+	w.profile.level = 7
+	_check(w.travel_blocker("1-3") == "", "hạ boss rồi thì đi được Lõi Sương")
+	w._load_map("1-3")
+	var lv := w.level_at(2000.0)
+	_check(lv >= 7 and lv <= 10, "quái Lõi Sương cấp 7–10 (%d)" % lv)
+	w.enemies = []
+	w.player.pos = Vector2(600, 750)
+	var far := w.spawn_enemy("wisp", 8, w.player.pos + Vector2(300, 0))
+	var near := w.spawn_enemy("wisp", 8, w.player.pos + Vector2(120, 0))
+	_check(w.is_hidden(far) and not w.is_hidden(near), "Tinh Linh Sương xa hơn 20 m tàng hình")
+
+
+func _test_c1_rare_boss() -> void:
+	var w := _world("kiem-tam")
+	w.profile.boss_defeated = true
+	w.profile.level = 9
+	w._refresh_stats()
+	w.debug_now = 1000.0
+	w._load_map("1-3")
+	w._check_rare_boss()
+	var b := w.rare_boss()
+	_check(b != null, "lần đầu vào Lõi Sương: Lão Thụ xuất hiện")
+	var ms := Formulas.mob_stats(9, "hiem", "li")
+	_check(is_equal_approx(b.max_hp, ms.hp) and int(b.max_hp) == 16566, "chỉ số theo công thức 06 (%d HP)" % b.max_hp)
+	# Rễ Trói
+	w.player.pos = b.pos + Vector2(-300, 0)
+	w.player.dodge_time = 0.0
+	b.target = w.player.pos
+	b.attack_kind = "roots"
+	w._perform_attack(b)
+	_check(w.player.root_timer > 1.0 or w.player.hp >= w.stats.max_hp, "Rễ Trói trúng thì bị trói")
+	w.player.root_timer = 1.0
+	var before := w.player.pos
+	_tick(w, {"move": Vector2.RIGHT}, 10)
+	_check(w.player.pos.distance_to(before) < 1.0, "bị trói thì không đi được")
+	# Rừng Thức Tỉnh
+	b.hp = b.max_hp * 0.35
+	w._update_rare(b, 0.1)
+	var roots := w.enemies.filter(func(e): return e.kind == "goc-re")
+	_check(b.phase == 2 and roots.size() == 3, "dưới 40%: gọi 3 Gốc Rễ")
+	var hp0 := b.hp
+	w._update_rare(b, 1.0)
+	_check(b.hp > hp0, "còn Gốc Rễ thì Lão Thụ hồi máu")
+	for r in roots:
+		r.dead = true
+	w.enemies = w.enemies.filter(func(e): return not e.dead)
+	var hp1 := b.hp
+	w._update_rare(b, 1.0)
+	_check(is_equal_approx(b.hp, hp1), "phá hết rễ thì ngừng hồi")
+	# hạ boss hiếm
+	var ess: int = w.profile.essence
+	w.pickups = []
+	w._kill_enemy(b)
+	var bark := w.pickups.filter(func(pk): return pk.kind == "item" and pk.item.unique == "lao_thu_bark")
+	_check(bark.size() == 1, "rơi Vỏ Lão Thụ")
+	_check(w.profile.essence == ess + 5 and w.profile.evo_essence == 1, "+5 Tinh Hoa, +1 Tinh Hoa Tiến Hoá")
+	_check(is_equal_approx(w.profile.rare_boss_at, 1000.0 + Config.RARE_BOSS_PERIOD), "hẹn 12 giờ sau")
+	w.enemies = []
+	w._check_rare_boss()
+	_check(w.rare_boss() == null, "chưa tới giờ thì chưa xuất hiện lại")
+	w.debug_now = 1000.0 + Config.RARE_BOSS_PERIOD + 1.0
+	w._check_rare_boss()
+	_check(w.rare_boss() != null, "sau 12 giờ xuất hiện lại")
+	# Vỏ Lão Thụ: đứng yên hồi máu
+	var it := Items.new_item(w.profile, 9, "orange", RngUtil.make(1), "", "", "lao_thu_bark")
+	Items.add_item(w.profile, it)
+	w.equip(int(it.id))
+	w.enemies = []
+	w.player.hp = w.stats.max_hp * 0.5
+	_tick(w, {}, 120)
+	_check(w.player.hp > w.stats.max_hp * 0.51, "Vỏ Lão Thụ: đứng yên hồi máu")
+
+
+func _test_c1_mob_mechanics() -> void:
+	var w := _world("kiem-tam")
+	w.player.pos = Vector2(900, 800)
+	var m := w.spawn_enemy("mushroom", 3, w.player.pos + Vector2(10, 0))
+	w._kill_enemy(m)
+	_check(w.hazards.size() == 1, "Nấm Độc chết để lại vũng độc")
+	var hp0 := w.player.hp
+	_tick(w, {}, 60)
+	_check(w.player.hp < hp0, "đứng trong vũng độc mất máu")
+	_tick(w, {}, 180)
+	_check(w.hazards.is_empty(), "vũng độc tan sau 3 giây")
+	var w2 := _world("kiem-tam")
+	w2.player.pos = Vector2(900, 800)
+	var wisp := w2.spawn_enemy("wisp", 5, w2.player.pos + Vector2(130, 0))
+	wisp.target = w2.player.pos
+	wisp.attack_kind = "dash"
+	var hp1 := w2.player.hp
+	w2._perform_attack(wisp)
+	_check(wisp.pos.distance_to(w2.player.pos) < 40.0, "Lao sương: lao tới chỗ người chơi")
+	_check(w2.player.hp < hp1 or w2.player.hp == hp1, "Lao sương chạy được")

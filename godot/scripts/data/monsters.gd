@@ -62,12 +62,14 @@ const DEFS := {
 		"arch": "phep",
 		"speed": 115.0,
 		"radius": 15.0,
-		"range": 30.0,
+		"range": 110.0,
 		"windup": 0.35,
-		"recover": 0.5,
-		"attack": "melee",
+		"recover": 0.6,
+		"attack": "dash",
 		"color": "#9de0e6",
 		"steal": {"agi": 35, "int": 45, "luk": 20},
+		## C1-24: Lao sương — lao tới 15 m.
+		"dash": 150.0,
 	},
 	## MC-01 (M3): chậm, phòng thủ cao, Dậm đất vòng 6 m.
 	"moc-tinh": {
@@ -96,6 +98,34 @@ const DEFS := {
 		"attack": "explode",
 		"color": "#dc86c6",
 		"steal": {"vit": 45, "int": 35, "luk": 20},
+	},
+	## C1-23: boss hiếm Lõi Sương (06). Kỹ năng: Rễ Trói, Lá Độc, Rừng Thức Tỉnh (game_world._rare_*).
+	"lao-thu": {
+		"element": "moc",
+		"name": "Lão Thụ Sương Mù",
+		"arch": "li",
+		"speed": 55.0,
+		"radius": 38.0,
+		"range": 40.0,
+		"windup": 0.7,
+		"recover": 0.9,
+		"attack": "melee",
+		"color": "#4f6a52",
+		"steal": {"str": 30, "vit": 50, "int": 20},
+	},
+	## Gốc Rễ: đứng yên; còn gốc rễ thì Lão Thụ hồi máu.
+	"goc-re": {
+		"element": "moc",
+		"name": "Gốc Rễ",
+		"arch": "giap",
+		"speed": 0.0,
+		"radius": 16.0,
+		"range": 0.0,
+		"windup": 1.0,
+		"recover": 1.0,
+		"attack": "none",
+		"color": "#674a32",
+		"steal": {"vit": 100},
 	},
 	"boss": {
 		"element": "moc",

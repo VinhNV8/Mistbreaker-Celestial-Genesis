@@ -1206,6 +1206,92 @@
    "name": "tóc tho-san duoi",
    "size_mul": 1.0
   },
+  "lao-thu": {
+   "path": "res://assets/sprites/lao-thu.png",
+   "w": 24,
+   "h": 24,
+   "origin": [
+    12,
+    22
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Lão Thụ Sương Mù",
+   "size_mul": 2.2
+  },
+  "goc-re": {
+   "path": "res://assets/sprites/goc-re.png",
+   "w": 24,
+   "h": 24,
+   "origin": [
+    12,
+    22
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Gốc Rễ",
+   "size_mul": 0.8
+  },
   "npc-elder": {
    "path": "res://assets/sprites/npc-elder.png",
    "w": 32,
@@ -1303,6 +1389,7 @@
   "item-ring": "res://assets/icons/item-ring.png",
   "item-amulet": "res://assets/icons/item-amulet.png",
   "item-wolf_fang": "res://assets/icons/item-wolf_fang.png",
+  "item-lao_thu_bark": "res://assets/icons/item-lao_thu_bark.png",
   "res-gold": "res://assets/icons/res-gold.png",
   "res-wood": "res://assets/icons/res-wood.png",
   "res-stone": "res://assets/icons/res-stone.png",

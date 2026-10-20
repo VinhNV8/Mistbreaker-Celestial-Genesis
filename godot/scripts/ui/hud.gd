@@ -391,7 +391,7 @@ func update_from(w: GameWorld) -> void:
 	_extra.visible = not extra.is_empty()
 	_talent_panel.add_theme_stylebox_override("panel", UiTheme.box(UiTheme.PANEL, 10, 1, rank_color, 12))
 
-	var boss := w.boss()
+	var boss := w.big_enemy()
 	_boss_box.visible = boss != null
 	if boss != null:
 		var tags := (" · Giai đoạn 2" if boss.phase > 1 else "") + (" · CHOÁNG" if boss.broken else "")
