@@ -12,6 +12,15 @@ static var PANEL := Color(0.063, 0.078, 0.11, 0.88)
 static var PANEL_SOLID := Color("#161b25")
 static var LINE := Color(1, 1, 1, 0.1)
 
+## DH-11: font chính thức đóng gói kèm game (Be Vietnam Pro, giấy phép OFL — assets/fonts/OFL.txt).
+const FONT_MEDIUM := "res://assets/fonts/BeVietnamPro-Medium.ttf"
+const FONT_BOLD := "res://assets/fonts/BeVietnamPro-ExtraBold.ttf"
+const FrameBox = preload("res://scripts/ui/frame_box.gd")
+## Màu khung gỗ / vàng (DH-11, cùng thanh kỹ năng).
+static var WOOD := Color("#22180f")
+static var WOOD_HUD := Color(0.11, 0.08, 0.05, 0.86)
+static var GOLD_DARK := Color("#7a5a2a")
+
 static var _font: Font
 static var _bold: Font
 static var _theme: Theme
@@ -20,14 +29,26 @@ static var _theme: Theme
 ## Font hệ thống có đủ dấu tiếng Việt (Segoe UI trên Windows); thiếu thì Godot tự dùng font dự phòng.
 static func font() -> Font:
 	if _font == null:
-		_font = _system_font(500)
+		_font = _file_font(FONT_MEDIUM, 500)
 	return _font
 
 
 static func bold_font() -> Font:
 	if _bold == null:
-		_bold = _system_font(800)
+		_bold = _file_font(FONT_BOLD, 800)
 	return _bold
+
+
+## Font trong assets/fonts; thiếu file thì dùng font hệ thống. Font hệ thống làm dự phòng cho ký tự lạ (biểu tượng ✦ ◆ …).
+static func _file_font(path: String, weight: int) -> Font:
+	if not ResourceLoader.exists(path):
+		return _system_font(weight)
+	var f = load(path)
+	if not (f is FontFile):
+		return _system_font(weight)
+	var ff: FontFile = (f as FontFile).duplicate()
+	ff.fallbacks = [_system_font(weight)]
+	return ff
 
 
 static func _system_font(weight: int) -> SystemFont:
@@ -54,9 +75,10 @@ static func get_theme() -> Theme:
 	t.default_font = font()
 	t.default_font_size = 15
 
-	t.set_stylebox("panel", "PanelContainer", box(PANEL))
+	# DH-11: khung trang trí — bảng phủ (SolidPanel) khung lớn, khung HUD (PanelContainer) khung nhỏ.
+	t.set_stylebox("panel", "PanelContainer", FrameBox.new().setup(WOOD_HUD, 12, "small"))
 	t.set_type_variation("SolidPanel", "PanelContainer")
-	t.set_stylebox("panel", "SolidPanel", box(PANEL_SOLID, 14, 1, LINE, 20))
+	t.set_stylebox("panel", "SolidPanel", FrameBox.new().setup(WOOD, 22, "large"))
 	for tone in [["LogInfo", MUTED], ["LogGood", GOOD], ["LogBad", BAD]]:
 		var sb := box(PANEL, 8, 0, LINE, 8)
 		sb.border_width_left = 3
@@ -75,9 +97,12 @@ static func get_theme() -> Theme:
 	t.set_color("font_outline_color", "HudLabel", Color(0, 0, 0, 0.85))
 	t.set_constant("outline_size", "HudLabel", 5)
 
-	_button_styles(t, "Button", Color(1, 1, 1, 0.06), Color(1, 1, 1, 0.13), TEXT)
+	# DH-11: nút gỗ viền vàng; nút chính màu vàng có gờ dưới tối (nổi khối).
+	_button_styles(t, "Button", Color("#2e2216"), Color("#3e2e1d"), TEXT, GOLD_DARK, ACCENT)
 	t.set_type_variation("PrimaryButton", "Button")
-	_button_styles(t, "PrimaryButton", Color("#c9a45c"), Color("#dfbd78"), Color("#1b1408"))
+	_button_styles(t, "PrimaryButton", Color("#c9a45c"), Color("#e0bf7c"), Color("#1b1408"), Color("#7a5a2a"), Color("#f3d27a"))
+	t.set_stylebox("normal", "LineEdit", box(Color("#140e09"), 6, 1, GOLD_DARK, 8))
+	t.set_stylebox("focus", "LineEdit", box(Color("#140e09"), 6, 2, ACCENT, 8))
 
 	t.set_stylebox("background", "ProgressBar", box(Color(0, 0, 0, 0.55), 5, 0, LINE, 0))
 	for bar in [["HpBar", Color("#e0484f")], ["ExpBar", Color("#4a9df8")], ["MpBar", Color("#7a6cf0")], ["BossBar", Color("#8a63e6")], ["PoiseBar", GOLD]]:
@@ -87,12 +112,15 @@ static func get_theme() -> Theme:
 	return t
 
 
-static func _button_styles(t: Theme, type_name: String, normal: Color, hover: Color, text: Color) -> void:
-	var border := Color(1, 1, 1, 0.18)
-	t.set_stylebox("normal", type_name, box(normal, 8, 1, border, 10))
-	t.set_stylebox("hover", type_name, box(hover, 8, 1, Color(1, 1, 1, 0.3), 10))
-	t.set_stylebox("pressed", type_name, box(hover.darkened(0.15), 8, 1, border, 10))
-	t.set_stylebox("disabled", type_name, box(Color(normal, normal.a * 0.4), 8, 1, Color(border, 0.08), 10))
+static func _button_styles(t: Theme, type_name: String, normal: Color, hover: Color, text: Color,
+		border := Color(1, 1, 1, 0.18), hover_border := Color(1, 1, 1, 0.3)) -> void:
+	t.set_stylebox("normal", type_name, _bevel(normal, border))
+	t.set_stylebox("hover", type_name, _bevel(hover, hover_border))
+	var pressed := box(hover.darkened(0.15), 6, 1, border, 10)
+	pressed.content_margin_top = 11
+	pressed.content_margin_bottom = 9
+	t.set_stylebox("pressed", type_name, pressed)
+	t.set_stylebox("disabled", type_name, box(Color(normal.darkened(0.3), 0.55), 6, 1, Color(border, 0.35), 10))
 	t.set_stylebox("focus", type_name, StyleBoxEmpty.new())
 	t.set_color("font_color", type_name, text)
 	t.set_color("font_hover_color", type_name, text)
@@ -100,6 +128,14 @@ static func _button_styles(t: Theme, type_name: String, normal: Color, hover: Co
 	t.set_color("font_focus_color", type_name, text)
 	t.set_color("font_disabled_color", type_name, Color(text, 0.4))
 	t.set_font("font", type_name, bold_font())
+
+
+## Nút nổi khối: gờ dưới dày, tối hơn viền.
+static func _bevel(bg: Color, border: Color) -> StyleBoxFlat:
+	var sb := box(bg, 6, 1, border, 10)
+	sb.border_width_bottom = 3
+	sb.content_margin_bottom = 8
+	return sb
 
 
 # ------------------------------------------------------------------ dựng nhanh

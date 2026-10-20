@@ -110,7 +110,9 @@ Main (Node, main.gd)
 | `scripts/view/world_view.gd` | Vẽ bản đồ, quái, vòng báo hiệu, hiệu ứng chém, chữ bay. Có hình thì vẽ sprite (sắp xếp theo chiều sâu, hoạt ảnh theo trạng thái, xác quái, tia trúng đòn); thiếu hình thì vẽ hình khối tạm |
 | `scripts/view/sprite_lib.gd` | Nạp `assets/art_manifest.json`, cắt frame, lật ngang, lát ô bằng đa giác UV, lấy icon (G1) |
 | `assets/sprites/`, `assets/icons/`, `assets/env/`, `assets/art_manifest.json` | Hình do `tools/art` sinh ra — **không sửa tay**, sửa code sinh rồi chạy lại |
-| `scripts/ui/ui_theme.gd` | Theme, màu, font, hàm dựng Control nhanh |
+| `scripts/ui/ui_theme.gd` | Theme, màu, font, hàm dựng Control nhanh. DH-11: font Be Vietnam Pro từ `assets/fonts` (thiếu file thì dùng font hệ thống; font hệ thống làm dự phòng cho ký tự lạ), nút gỗ/vàng nổi khối |
+| `scripts/ui/frame_box.gd` | StyleBox tự vẽ khung trang trí (nền gỗ, viền vàng 2 lớp, hoa văn góc) — `SolidPanel` khung lớn, `PanelContainer` khung nhỏ (DH-11) |
+| `assets/fonts/` | Be Vietnam Pro Medium + ExtraBold, giấy phép SIL OFL 1.1 (`OFL.txt`) |
 | `scripts/ui/hud.gd` | HUD khi chơi |
 | `scripts/ui/skill_bar.gd` | Thanh kỹ năng 8 ô có khung trang trí, tự vẽ bằng `_draw`: icon cắt tròn, hồi chiêu quét tròn, nhãn phím, tên + dòng phụ; HUD gọi `set_slot(i, {...})` mỗi khung hình (DH-11) |
 | `scripts/ui/modal.gd` | Lớp cha của bảng phủ |

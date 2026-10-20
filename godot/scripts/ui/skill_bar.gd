@@ -152,7 +152,8 @@ func _draw_slot(i: int, c: Vector2, d: Dictionary) -> void:
 	draw_arc(c, R + 1.5, PI * 1.05, PI * 1.45, 12, Color(1, 1, 1, 0.55), 1.5, true)
 	var f := UiTheme.bold_font()
 	var cd_text: String = d.get("cd_text", "")
-	if cd_text != "":
+	# số giây làm tròn về 0 ("0.0", "0") thì không hiện
+	if cd_text != "" and cd_text.to_float() > 0.0:
 		_text_center(f, c + Vector2(0, 7), cd_text, 20, Color.WHITE)
 	# nhãn phím: viên thuốc ở góc dưới phải
 	var key: String = d.get("key", "")
