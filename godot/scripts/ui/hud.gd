@@ -354,7 +354,7 @@ func _update_skill_bar(w: GameWorld, t: Dictionary, rank_color: Color) -> void:
 		var low := pl.mp < mp
 		_skills.set_slot(i + 1, {"key": str(i + 1), "name": sk.name, "icon": SpriteLib.icon("skill-" + str(sk.icon)),
 			"cd": cd_left / maxf(0.1, w.skill_cd_of(i)), "cd_text": str(ceili(cd_left)) if cd_left > 0.0 else "",
-			"sub": ("Thiếu MP · %d" % mp) if low else ("%d MP" % mp), "dim": low})
+			"sub": "%d MP" % mp, "dim": low})
 	_skills.set_slot(SLOT_DODGE, {"key": "Space", "name": "Né lăn", "icon": SpriteLib.icon("skill-dodge"),
 		"cd": pl.dodge_cd / GameWorld.DODGE_CD, "cd_text": ("%.1f" % pl.dodge_cd) if pl.dodge_cd > 0.0 else ""})
 	var tal := {"key": "L", "icon": SpriteLib.talent_icon(t.id), "ring": rank_color}

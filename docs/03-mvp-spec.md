@@ -509,7 +509,7 @@ Công thức giả định **người chơi chuẩn mặc đồ đúng vùng** (
 
 | Mã | Yêu cầu |
 | --- | --- |
-| UI-01 | HUD: thanh MP dưới thanh HP; thanh kỹ năng 8 ô: Đánh thường · 1 · 2 · 3 · 4 · Né · L · Q, mỗi ô có icon, hồi chiêu; ô thiếu MP tô xanh mờ. *Cập nhật DH-11:* ô tròn viền vàng trong khung "Kỹ năng", phím ở góc ô, tên + MP dưới icon, hồi chiêu quét tròn kèm số giây |
+| UI-01 | HUD: thanh MP dưới thanh HP; thanh kỹ năng 8 ô: Đánh thường · 1 · 2 · 3 · 4 · Né · L · Q, mỗi ô có icon, hồi chiêu; ô thiếu MP: viền + icon xanh (không thêm chữ). *Cập nhật DH-11:* ô tròn viền vàng trong khung "Kỹ năng", phím ở góc ô, tên + MP dưới icon, hồi chiêu quét tròn kèm số giây |
 | UI-02 | Nhật ký dời lên trên thanh kỹ năng để không đè ở 1366 × 768 |
 | UI-03 | Bảng Chỉ số: 5 chỉ số gốc (STR, AGI, INT, VIT, LUK) + phần cướp được (Đạo Tặc), MP, Né tránh; mô tả tác dụng theo lớp |
 | UI-04 | Màn hình tiêu đề, phím điều khiển cập nhật phím 1–4 |

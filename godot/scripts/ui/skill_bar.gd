@@ -9,7 +9,7 @@ const UiTheme = preload("res://scripts/ui/ui_theme.gd")
 
 const R := 26.0                 # bán kính ô tròn
 const PITCH := 82.0             # khoảng cách tâm 2 ô
-const PAD := Vector2(18, 12)    # lề trong khung
+const PAD := Vector2(18, 26)    # lề trong khung (trên chừa chỗ bảng tên)
 const TITLE := "Kỹ năng"
 const GOLD_DARK := Color("#7a5a2a")
 const GOLD := Color("#c9a45c")
