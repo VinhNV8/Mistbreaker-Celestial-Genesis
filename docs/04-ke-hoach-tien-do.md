@@ -376,7 +376,7 @@ Mỗi đợt theo quy trình: **viết spec → duyệt → code → test → c�
 | 3 | Q1–Q5 (trang bị) — [03-mvp-spec mục 3.9](03-mvp-spec.md) | Rơi đồ, boss, túi đồ | Như spec |
 | 4 | Q6–Q12 (Thiên phú) — [03-mvp-spec mục 4.10](03-mvp-spec.md) | Kỹ năng L, Tinh Kim, công trình | Như spec |
 | 5 | Tốc độ hồi Đuốc khi phát hành (KP-02) | Nhịp độ khai phá | 2 phút/cái (kịch bản: 20 phút) |
-| 6 | Khởi tạo Git cho dự án (KT-05) | An toàn mã nguồn | Chưa có |
+| 6 | ~~Khởi tạo Git cho dự án (KT-05)~~ | An toàn mã nguồn | **Đã xong** 20/10/2026, có remote GitHub |
 | 7 | Q13–Q16: số liệu Đạo Tặc cướp thuộc tính, độc nhất server — [CR-01](03-mvp-spec.md) | Thiên phú SSS | Như CR-01 (đã code ở M3) |
 | 10 | Q28–Q34: 8 kỹ năng, phím 1–4, INT/LUK, né tránh, MP, tinh anh vùng 1, không đổi lớp — [03 mục 5.11](03-mvp-spec.md) | Combat 2 lớp | Như spec M3 (đã code) |
 
