@@ -1,0 +1,3 @@
+- Có inventory chưa?
+- Nhân vật, quá chưa có hình ảnh -> cần build đầy đủ.
+- Chưa có plan cụ thể nên không rõ cái gì đã build cái gì chưa build.

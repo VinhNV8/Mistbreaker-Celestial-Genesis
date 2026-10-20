@@ -1,0 +1,175 @@
+"""Môi trường và vật thể nhỏ (AR-05): ô đất, cây, nhà, Bia Đá, rương, thảo dược, vật rơi, hiệu ứng.
+
+Mỗi hình trả về (Image, origin): origin là điểm ảnh đặt vào toạ độ thực thể trong game
+(chân với vật đứng, tâm với vật rơi/hiệu ứng).
+"""
+import math
+import random
+from pixel import Canvas, R, OUTLINE, shadow, glow, hexc, mix
+
+
+def tile(base, seed, tufts=True):
+    rnd = random.Random(seed)
+    cv = Canvas(32, 32)
+    cv.rect(0, 0, 32, 32, base[1])
+    for _ in range(70):
+        x, y = rnd.randrange(32), rnd.randrange(32)
+        cv.set(x, y, base[rnd.choice((0, 2, 2))])
+    if tufts:
+        for _ in range(5):
+            x, y = rnd.randrange(2, 30), rnd.randrange(3, 31)
+            cv.set(x, y, base[3]); cv.set(x - 1, y + 1, base[2]); cv.set(x + 1, y + 1, base[2])
+    return cv
+
+
+def tree(seed, kind="round"):
+    rnd = random.Random(seed)
+    cv = Canvas(40, 52)
+    shadow(cv, 20, 48.5, 13, 3.2, 100)
+    cv.shade_poly([(17, 34), (23, 34), (24, 49), (16, 49)], R["bark"])
+    cv.line(19, 36, 19, 47, R["bark"][0])
+    leaf = R["leaf"]
+    if kind == "pine":
+        for i, (y, w) in enumerate(((10, 7), (20, 11), (30, 15))):
+            cv.shade_poly([(20, y - 9), (20 + w, y + 7), (20 - w, y + 7)], leaf)
+    else:
+        blobs = [(20, 22, 14, 12), (12, 26, 8, 7), (28, 26, 8, 7), (20, 14, 9, 8)]
+        for (x, y, rx, ry) in blobs:
+            cv.shade_ellipse(x + rnd.uniform(-1, 1), y + rnd.uniform(-1, 1), rx, ry, leaf)
+        for _ in range(10):
+            cv.set(rnd.uniform(10, 28), rnd.uniform(10, 24), leaf[3])
+    cv.outline(OUTLINE)
+    return cv, [20, 48]
+
+
+def bush(seed):
+    rnd = random.Random(seed)
+    cv = Canvas(24, 18)
+    shadow(cv, 12, 15.5, 9, 2)
+    for (x, y, r) in ((8, 10, 5), (16, 10, 5), (12, 7, 5)):
+        cv.shade_ellipse(x, y, r, r * 0.85, R["leaf_light"])
+    for _ in range(3):
+        cv.set(rnd.uniform(6, 18), rnd.uniform(5, 12), hexc("#f4d070"))
+    cv.outline(OUTLINE)
+    return cv, [12, 15]
+
+
+def hut():
+    cv = Canvas(48, 44)
+    shadow(cv, 24, 40.5, 20, 3.5, 100)
+    cv.shade_poly([(8, 22), (40, 22), (40, 40), (8, 40)], R["wood"])
+    for x in range(10, 40, 5):
+        cv.line(x, 23, x, 39, R["wood"][1])
+    cv.rect(20, 29, 28, 40, R["bark"][0])
+    cv.rect(31, 27, 37, 32, hexc("#ffd877"))
+    cv.line(34, 27, 34, 32, R["wood"][0])
+    cv.shade_poly([(24, 3), (46, 23), (2, 23)], R["dirt"])
+    for i in range(5):
+        y = 8 + i * 3.4
+        cv.line(24 - (y - 3) * 1.05, y, 24 + (y - 3) * 1.05, y, R["dirt"][1])
+    cv.outline(OUTLINE)
+    return cv, [24, 40]
+
+
+def stele():
+    cv = Canvas(24, 40)
+    shadow(cv, 12, 36.5, 10, 2.5, 100)
+    cv.shade_poly([(4, 33), (20, 33), (21, 37), (3, 37)], R["stone"])
+    cv.shade_poly([(6, 6), (12, 2), (18, 6), (18, 33), (6, 33)], R["stone"])
+    for y in range(9, 31, 4):
+        cv.line(9, y, 15, y, R["gold"][2])
+    cv.outline(OUTLINE)
+    glow(cv, 12, 18, 11, R["gold"][3], 60)
+    return cv, [12, 36]
+
+
+def chest():
+    cv = Canvas(24, 20)
+    shadow(cv, 12, 17.5, 10, 2)
+    cv.shade_poly([(3, 8), (21, 8), (21, 17), (3, 17)], R["wood"])
+    cv.shade_ellipse(12, 8, 9, 4.5, R["wood"])
+    cv.clear(0, 8.5, 24, 9.5)
+    cv.rect(3, 8.5, 21, 10, R["gold"][1])
+    cv.rect(10.5, 7.5, 13.5, 12, R["gold"][2])
+    cv.set(12, 10, R["gold"][0])
+    cv.rect(3, 15, 21, 16, R["gold"][1])
+    cv.outline(OUTLINE)
+    return cv, [12, 13]
+
+
+def herb():
+    cv = Canvas(16, 16)
+    shadow(cv, 8, 13.5, 5, 1.4)
+    cv.line(8, 13, 8, 6, R["leaf"][2])
+    for (x, y) in ((5, 9), (11, 8), (6, 5.5), (10.5, 11)):
+        cv.shade_ellipse(x, y, 2.8, 1.8, R["leaf_light"])
+    cv.ellipse(8, 4.5, 1.6, 1.6, hexc("#e8f7a0"))
+    cv.outline(OUTLINE)
+    return cv, [8, 10]
+
+
+def coin():
+    cv = Canvas(10, 10)
+    cv.shade_ellipse(5, 5, 3.6, 3.6, R["gold"])
+    cv.set(4, 4, (255, 255, 255, 255))
+    cv.outline(OUTLINE)
+    return cv, [5, 5]
+
+
+def heal_orb():
+    cv = Canvas(14, 14)
+    glow(cv, 7, 7, 7, hexc("#5bd16a"), 120)
+    cv.shade_ellipse(7, 7, 3.6, 3.6, R["leaf_light"])
+    cv.rect(6.5, 5, 7.5, 9, (255, 255, 255, 255))
+    cv.rect(5, 6.5, 9, 7.5, (255, 255, 255, 255))
+    return cv, [7, 7]
+
+
+def stone_pickup():
+    cv = Canvas(12, 12)
+    cv.shade_poly([(6, 1), (10, 5), (8, 11), (4, 11), (2, 5)], R["crystal"])
+    cv.outline(OUTLINE)
+    return cv, [6, 6]
+
+
+def spore():
+    cv = Canvas(12, 12)
+    glow(cv, 6, 6, 6, hexc("#c878ff"), 160)
+    cv.shade_ellipse(6, 6, 2.8, 2.8, R["purple"])
+    return cv, [6, 6]
+
+
+def hit_spark(frame):
+    cv = Canvas(16, 16)
+    r = 3 + frame * 2.5
+    a = 255 - frame * 70
+    for i in range(6):
+        ang = math.radians(i * 60 + frame * 15)
+        cv.line(8 + math.cos(ang) * (r - 2.5), 8 + math.sin(ang) * (r - 2.5), 8 + math.cos(ang) * r, 8 + math.sin(ang) * r, (255, 240, 200, a))
+    if frame == 0:
+        cv.ellipse(8, 8, 2, 2, (255, 255, 255, 255))
+    return cv, [8, 8]
+
+
+def build_all():
+    out = {}
+    for i in range(3):
+        out["tile-grass-%d" % i] = (tile(R["grass"], 100 + i), [0, 0])
+    out["tile-dirt"] = (tile(R["dirt"], 200, tufts=False), [0, 0])
+    out["tile-village"] = (tile([mix(c, (0, 0, 0, 255), 0.15) for c in R["dirt"]], 201, tufts=False), [0, 0])
+    out["tile-void"] = (tile(R["void"], 300, tufts=False), [0, 0])
+    for i in range(3):
+        out["tree-%d" % i] = tree(10 + i)
+    out["tree-pine"] = tree(20, "pine")
+    out["bush"] = bush(30)
+    out["hut"] = hut()
+    out["stele"] = stele()
+    out["chest"] = chest()
+    out["herb"] = herb()
+    out["pickup-gold"] = coin()
+    out["pickup-orb"] = heal_orb()
+    out["pickup-stone"] = stone_pickup()
+    out["fx-spore"] = spore()
+    for f in range(3):
+        out["fx-hit-%d" % f] = hit_spark(f)
+    return {k: (cv.to_image(), origin) for k, (cv, origin) in out.items()}

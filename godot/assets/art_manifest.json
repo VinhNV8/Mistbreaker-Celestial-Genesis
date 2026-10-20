@@ -1,0 +1,543 @@
+{
+ "version": 1,
+ "scale": 2,
+ "sprites": {
+  "hero-kiem-khach": {
+   "path": "res://assets/sprites/hero-kiem-khach.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Kiếm Khách"
+  },
+  "hero-tho-san": {
+   "path": "res://assets/sprites/hero-tho-san.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Thợ Săn"
+  },
+  "wolf": {
+   "path": "res://assets/sprites/wolf.png",
+   "w": 24,
+   "h": 24,
+   "origin": [
+    12,
+    22
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Sói Sương"
+  },
+  "mushroom": {
+   "path": "res://assets/sprites/mushroom.png",
+   "w": 24,
+   "h": 24,
+   "origin": [
+    12,
+    22
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Nấm Độc"
+  },
+  "wisp": {
+   "path": "res://assets/sprites/wisp.png",
+   "w": 24,
+   "h": 24,
+   "origin": [
+    12,
+    22
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Tinh Linh Sương"
+  },
+  "moc-tinh": {
+   "path": "res://assets/sprites/moc-tinh.png",
+   "w": 24,
+   "h": 24,
+   "origin": [
+    12,
+    22
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Mộc Tinh"
+  },
+  "boss": {
+   "path": "res://assets/sprites/boss.png",
+   "w": 48,
+   "h": 48,
+   "origin": [
+    24,
+    44
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Sói Chúa Hư Vô"
+  }
+ },
+ "icons": {
+  "item-weapon": "res://assets/icons/item-weapon.png",
+  "item-helm": "res://assets/icons/item-helm.png",
+  "item-armor": "res://assets/icons/item-armor.png",
+  "item-gloves": "res://assets/icons/item-gloves.png",
+  "item-boots": "res://assets/icons/item-boots.png",
+  "item-necklace": "res://assets/icons/item-necklace.png",
+  "item-ring": "res://assets/icons/item-ring.png",
+  "item-amulet": "res://assets/icons/item-amulet.png",
+  "item-wolf_fang": "res://assets/icons/item-wolf_fang.png",
+  "res-gold": "res://assets/icons/res-gold.png",
+  "res-wood": "res://assets/icons/res-wood.png",
+  "res-stone": "res://assets/icons/res-stone.png",
+  "res-essence": "res://assets/icons/res-essence.png",
+  "res-tinh_kim": "res://assets/icons/res-tinh_kim.png",
+  "res-torch": "res://assets/icons/res-torch.png",
+  "res-herb": "res://assets/icons/res-herb.png",
+  "res-potion": "res://assets/icons/res-potion.png",
+  "skill-slash": "res://assets/icons/skill-slash.png",
+  "skill-spin": "res://assets/icons/skill-spin.png",
+  "skill-dodge": "res://assets/icons/skill-dodge.png",
+  "skill-potion": "res://assets/icons/skill-potion.png",
+  "talent-than-the": "res://assets/icons/talent-than-the.png",
+  "talent-tay-nhanh": "res://assets/icons/talent-tay-nhanh.png",
+  "talent-may-man": "res://assets/icons/talent-may-man.png",
+  "talent-chan-khong": "res://assets/icons/talent-chan-khong.png",
+  "talent-huyet-chien": "res://assets/icons/talent-huyet-chien.png",
+  "talent-tho-ren": "res://assets/icons/talent-tho-ren.png",
+  "talent-khuu-giac": "res://assets/icons/talent-khuu-giac.png",
+  "talent-kiem-tam": "res://assets/icons/talent-kiem-tam.png",
+  "talent-thao-duoc": "res://assets/icons/talent-thao-duoc.png",
+  "talent-trai-tim": "res://assets/icons/talent-trai-tim.png",
+  "talent-thuan-thu": "res://assets/icons/talent-thuan-thu.png",
+  "talent-mat-ung": "res://assets/icons/talent-mat-ung.png",
+  "talent-hap-huyet": "res://assets/icons/talent-hap-huyet.png",
+  "talent-ban-tay-vang": "res://assets/icons/talent-ban-tay-vang.png",
+  "talent-ngu-hanh": "res://assets/icons/talent-ngu-hanh.png",
+  "talent-thoi-gian-ngung-dong": "res://assets/icons/talent-thoi-gian-ngung-dong.png",
+  "talent-bay-dan": "res://assets/icons/talent-bay-dan.png",
+  "talent-thien-menh": "res://assets/icons/talent-thien-menh.png",
+  "talent-long-mach": "res://assets/icons/talent-long-mach.png",
+  "talent-dao-tac": "res://assets/icons/talent-dao-tac.png"
+ },
+ "env": {
+  "tile-grass-0": {
+   "path": "res://assets/env/tile-grass-0.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    0,
+    0
+   ]
+  },
+  "tile-grass-1": {
+   "path": "res://assets/env/tile-grass-1.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    0,
+    0
+   ]
+  },
+  "tile-grass-2": {
+   "path": "res://assets/env/tile-grass-2.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    0,
+    0
+   ]
+  },
+  "tile-dirt": {
+   "path": "res://assets/env/tile-dirt.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    0,
+    0
+   ]
+  },
+  "tile-village": {
+   "path": "res://assets/env/tile-village.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    0,
+    0
+   ]
+  },
+  "tile-void": {
+   "path": "res://assets/env/tile-void.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    0,
+    0
+   ]
+  },
+  "tree-0": {
+   "path": "res://assets/env/tree-0.png",
+   "w": 40,
+   "h": 52,
+   "origin": [
+    20,
+    48
+   ]
+  },
+  "tree-1": {
+   "path": "res://assets/env/tree-1.png",
+   "w": 40,
+   "h": 52,
+   "origin": [
+    20,
+    48
+   ]
+  },
+  "tree-2": {
+   "path": "res://assets/env/tree-2.png",
+   "w": 40,
+   "h": 52,
+   "origin": [
+    20,
+    48
+   ]
+  },
+  "tree-pine": {
+   "path": "res://assets/env/tree-pine.png",
+   "w": 40,
+   "h": 52,
+   "origin": [
+    20,
+    48
+   ]
+  },
+  "bush": {
+   "path": "res://assets/env/bush.png",
+   "w": 24,
+   "h": 18,
+   "origin": [
+    12,
+    15
+   ]
+  },
+  "hut": {
+   "path": "res://assets/env/hut.png",
+   "w": 48,
+   "h": 44,
+   "origin": [
+    24,
+    40
+   ]
+  },
+  "stele": {
+   "path": "res://assets/env/stele.png",
+   "w": 24,
+   "h": 40,
+   "origin": [
+    12,
+    36
+   ]
+  },
+  "chest": {
+   "path": "res://assets/env/chest.png",
+   "w": 24,
+   "h": 20,
+   "origin": [
+    12,
+    13
+   ]
+  },
+  "herb": {
+   "path": "res://assets/env/herb.png",
+   "w": 16,
+   "h": 16,
+   "origin": [
+    8,
+    10
+   ]
+  },
+  "pickup-gold": {
+   "path": "res://assets/env/pickup-gold.png",
+   "w": 10,
+   "h": 10,
+   "origin": [
+    5,
+    5
+   ]
+  },
+  "pickup-orb": {
+   "path": "res://assets/env/pickup-orb.png",
+   "w": 14,
+   "h": 14,
+   "origin": [
+    7,
+    7
+   ]
+  },
+  "pickup-stone": {
+   "path": "res://assets/env/pickup-stone.png",
+   "w": 12,
+   "h": 12,
+   "origin": [
+    6,
+    6
+   ]
+  },
+  "fx-spore": {
+   "path": "res://assets/env/fx-spore.png",
+   "w": 12,
+   "h": 12,
+   "origin": [
+    6,
+    6
+   ]
+  },
+  "fx-hit-0": {
+   "path": "res://assets/env/fx-hit-0.png",
+   "w": 16,
+   "h": 16,
+   "origin": [
+    8,
+    8
+   ]
+  },
+  "fx-hit-1": {
+   "path": "res://assets/env/fx-hit-1.png",
+   "w": 16,
+   "h": 16,
+   "origin": [
+    8,
+    8
+   ]
+  },
+  "fx-hit-2": {
+   "path": "res://assets/env/fx-hit-2.png",
+   "w": 16,
+   "h": 16,
+   "origin": [
+    8,
+    8
+   ]
+  }
+ }
+}
