@@ -93,7 +93,7 @@ def main():
     for eid, (img, origin) in env_imgs.items():
         manifest["env"][eid] = {"path": _save(img, "env", eid + ".png"), "w": img.width, "h": img.height, "origin": origin}
     contact("env", [(k, v[0]) for k, v in env_imgs.items()], scale=3, cols=8)
-    with open(os.path.join(ASSETS, "art_manifest.json"), "w", encoding="utf-8") as f:
+    with open(os.path.join(ASSETS, "art_manifest.json"), "w", encoding="utf-8", newline=chr(10)) as f:
         json.dump(manifest, f, ensure_ascii=False, indent=1)
     print("ok: %d sprite, %d icon, %d env" % (len(manifest["sprites"]), len(manifest["icons"]), len(manifest["env"])))
 

@@ -449,6 +449,18 @@ func _draw_player_sprite() -> void:
 		mod = mod * Color(1.2, 1.15, 0.85)
 	if p.poison_timer > 0.0:
 		mod = mod * Color(0.75, 1.15, 0.7)
+	# Spec_Notes N8: vũ khí cường hoá cao toả hào quang quanh nhân vật.
+	var wpn: Dictionary = world.profile.equipment.get("weapon", {})
+	var plus: int = int(wpn.get("plus", 0))
+	var tier := Items.enhance_tier(plus)
+	if tier > 0 and p.dead_timer <= 0.0:
+		var gc := Items.enhance_color(plus)
+		var mid := p.pos + Vector2(0, -6)
+		draw_circle(mid, 26.0 + tier * 3.0, Color(gc, 0.06 + 0.03 * tier + 0.03 * sin(world.time * 3.0)))
+		for k in tier * 2:
+			var ang := world.time * (1.2 + 0.2 * tier) + k * TAU / (tier * 2)
+			var rr := 22.0 + 6.0 * sin(world.time * 2.0 + k)
+			draw_circle(mid + Vector2(cos(ang) * rr, sin(ang) * rr * 0.55), 1.5 + 0.4 * tier, Color(gc, 0.9))
 	if p.root_timer > 0.0:
 		var feet := _feet(p.pos, GameWorld.PLAYER_RADIUS)
 		for k in 5:

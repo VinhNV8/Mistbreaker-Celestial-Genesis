@@ -13,6 +13,69 @@ const DETAIL_W := 300.0
 var _selected_id := -1
 ## "bag" | "res"
 var _tab := "bag"
+## Hiệu ứng vừa cường hoá: {item_id, success, plus, t}
+var _fx := {}
+
+
+## Spec_Notes N8: khung phát sáng theo cấp cường hoá + số "+N" trên ô đồ.
+class PlusGlow:
+	extends Control
+	var plus := 0
+	var t := 0.0
+
+	func _process(delta: float) -> void:
+		t += delta
+		queue_redraw()
+
+	func _draw() -> void:
+		var c := Items.enhance_color(plus)
+		var tier := Items.enhance_tier(plus)
+		if tier > 0:
+			var a := 0.45 + 0.35 * sin(t * (2.0 + tier))
+			for i in tier:
+				draw_rect(Rect2(Vector2.ONE * (1 + i * 2), size - Vector2.ONE * (2 + i * 4)), Color(c, a / (i + 1)), false, 2.0)
+			for k in tier * 2:
+				var ang := t * 1.5 + k * TAU / (tier * 2)
+				var r := size.x * 0.42
+				draw_circle(size / 2.0 + Vector2.from_angle(ang) * r, 1.5 + tier * 0.4, Color(c, 0.9))
+		if plus > 0:
+			var f := UiTheme.bold_font()
+			var col := c if tier > 0 else Color.WHITE
+			draw_string_outline(f, Vector2(0, size.y - 4), "+%d" % plus, HORIZONTAL_ALIGNMENT_RIGHT, size.x - 4, 12, 3, Color.BLACK)
+			draw_string(f, Vector2(0, size.y - 4), "+%d" % plus, HORIZONTAL_ALIGNMENT_RIGHT, size.x - 4, 12, col)
+
+
+## Hiệu ứng khi bấm Cường hoá: thành công = chùm sáng toả ra; thất bại = tia xám rơi xuống.
+class EnhanceBurst:
+	extends Control
+	var success := true
+	var plus := 0
+	var t := 0.0
+
+	func _process(delta: float) -> void:
+		t += delta
+		queue_redraw()
+		if t > 1.2:
+			queue_free()
+
+	func _draw() -> void:
+		var c := size / 2.0
+		var k := clampf(t / 1.0, 0.0, 1.0)
+		var f := UiTheme.bold_font()
+		if success:
+			var col := Items.enhance_color(plus) if Items.enhance_tier(plus) > 0 else UiTheme.GOLD
+			draw_circle(c, 20.0 + 70.0 * k, Color(col, 0.35 * (1.0 - k)))
+			for i in 14:
+				var a := TAU * i / 14.0
+				draw_line(c + Vector2.from_angle(a) * (10.0 + 40.0 * k), c + Vector2.from_angle(a) * (24.0 + 90.0 * k), Color(col, 1.0 - k), 3.0, true)
+			draw_string_outline(f, c + Vector2(-100, -50 - 30 * k), "+%d!" % plus, HORIZONTAL_ALIGNMENT_CENTER, 200, 30, 5, Color(0, 0, 0, 1.0 - k))
+			draw_string(f, c + Vector2(-100, -50 - 30 * k), "+%d!" % plus, HORIZONTAL_ALIGNMENT_CENTER, 200, 30, Color(col, 1.0 - k))
+		else:
+			for i in 8:
+				var x := -60.0 + i * 17.0
+				draw_line(c + Vector2(x, -20 + 60 * k), c + Vector2(x + 4, -4 + 60 * k), Color(0.6, 0.6, 0.65, 1.0 - k), 3.0)
+			draw_string_outline(f, c + Vector2(-100, -40), "Thất bại", HORIZONTAL_ALIGNMENT_CENTER, 200, 24, 4, Color(0, 0, 0, 1.0 - k))
+			draw_string(f, c + Vector2(-100, -40), "Thất bại", HORIZONTAL_ALIGNMENT_CENTER, 200, 24, Color(0.8, 0.8, 0.85, 1.0 - k))
 
 
 func _render(content: VBoxContainer) -> void:
@@ -164,6 +227,11 @@ func _item_button(item: Dictionary, text: String) -> Button:
 	var c := Items.rarity_color(item)
 	b.icon = SpriteLib.item_icon(item)
 	b.tooltip_text = Items.display_name(item)
+	var glow := PlusGlow.new()
+	glow.plus = int(item.plus)
+	glow.mouse_filter = MOUSE_FILTER_IGNORE
+	glow.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	b.add_child(glow)
 	var selected := int(item.id) == _selected_id
 	var normal := UiTheme.box(Color(c, 0.22 if selected else 0.08), 6, 2 if selected else 1, c, 6)
 	b.add_theme_stylebox_override("normal", normal)
@@ -280,11 +348,24 @@ func _enhance_block(col: VBoxContainer, p, item: Dictionary) -> void:
 	b.size_flags_horizontal = SIZE_SHRINK_BEGIN
 	b.disabled = blocker != ""
 	b.pressed.connect(func():
-		world.enhance(int(item.id))
-		refresh())
+		var res: Dictionary = world.enhance(int(item.id))
+		refresh()
+		if res.ok:
+			_play_burst(res.get("success", false), int(Items.find_item(world.profile, int(item.id)).item.plus)))
 	col.add_child(b)
 	if blocker != "":
 		var w := UiTheme.label(blocker, "", DETAIL_W)
 		w.add_theme_color_override("font_color", Color("#ffb27a"))
 		w.add_theme_font_size_override("font_size", 13)
 		col.add_child(w)
+
+
+func _play_burst(success: bool, plus: int) -> void:
+	var fx := EnhanceBurst.new()
+	fx.success = success
+	fx.plus = plus
+	fx.mouse_filter = MOUSE_FILTER_IGNORE
+	fx.custom_minimum_size = Vector2(240, 200)
+	fx.size = Vector2(240, 200)
+	add_child(fx)
+	fx.position = get_viewport_rect().size / 2.0 + Vector2(220, -120)

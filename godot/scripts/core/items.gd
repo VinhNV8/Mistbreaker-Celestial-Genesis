@@ -265,6 +265,19 @@ static func salvage(p, id: int, rng := Callable()) -> Dictionary:
 # ------------------------------------------------------------------ hiển thị
 
 
+## Spec_Notes N8: bậc hiệu ứng theo cấp cường hoá — 0 (+0…+3) · 1 (+4…+6) · 2 (+7…+9) · 3 (+10…+12) · 4 (+13…+15).
+const ENHANCE_TIER_HEX := ["", "#4a9df8", "#b36bff", "#ffc940", "#ff5470"]
+
+
+static func enhance_tier(plus: int) -> int:
+	return clampi(int((plus - 1) / 3), 0, 4) if plus >= 4 else 0
+
+
+static func enhance_color(plus: int) -> Color:
+	var t := enhance_tier(plus)
+	return Color(ENHANCE_TIER_HEX[t]) if t > 0 else Color(1, 1, 1, 0)
+
+
 static func _type_name(item: Dictionary) -> String:
 	return "Cung" if item.get("style", "") == "bow" else str(ItemData.SLOTS[item.slot].item)
 

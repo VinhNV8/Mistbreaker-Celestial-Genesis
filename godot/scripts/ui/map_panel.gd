@@ -13,6 +13,7 @@ const CLAIM_LABEL := {
 	"relic": "Mở rương di tích",
 	"survivor": "Mời gia nhập lãnh địa",
 	"wonder": "Chiếm Kỳ quan",
+	"merchant": "Mời thương nhân về làng",
 }
 
 var _selected := 0
@@ -26,10 +27,17 @@ func _render(content: VBoxContainer) -> void:
 	var owned := Explore.owned_count(p.tiles)
 	var total := Explore.explore_total(p.tiles)
 	var rate := Explore.production_per_minute(p)
-	var summary := "Khai phá %d/%d ô (%d%% · cần %d%% để mở hang Sói Chúa)     Đuốc %d · Vàng %d · Gỗ %d     Sản lượng +%.1f vàng, +%.1f gỗ / phút" % [
-		owned, total, roundi(100.0 * owned / total), roundi(Config.EXPLORE_REQ * 100), p.torches, int(p.gold), int(p.wood), rate.gold, rate.wood
+	# Spec_Notes N10: thông tin tách 2 dòng ngắn, không chồng lên lưới.
+	var summary := "Lãnh địa %d/%d ô · Đuốc %d · Sản lượng +%.1f vàng, +%.1f gỗ mỗi phút · Mở hang Sói Chúa: cấp %d + chiếm %d ô" % [
+		owned, total, p.torches, rate.gold, rate.wood, Config.BOSS_LEVEL_REQ, Config.BOSS_TILES_REQ
 	]
 	content.add_child(UiTheme.label(summary, "Muted", 790))
+	var zones := PackedStringArray()
+	for z in [1, 2, 3]:
+		var n: int = p.tiles.filter(func(t): return t.event != "camp" and Explore.zone_of(t) == z).size()
+		zones.append("%s %d/%d%s" % [Explore.ZONE_NAMES[z], Explore.zone_owned(p.tiles, z), n,
+			" (khoá — hạ Sói Chúa)" if z == 3 and not p.boss_defeated else ""])
+	content.add_child(UiTheme.label("   ·   ".join(zones), "Small", 790))
 
 	var body := UiTheme.hbox(20)
 	var map := HexMap.new()
@@ -50,7 +58,8 @@ func _render(content: VBoxContainer) -> void:
 ## TL-22: mục Công trình — Thôn, Đền Thiên Phú, Long Mạch Đàn.
 func _buildings(info: VBoxContainer, p) -> void:
 	info.add_child(UiTheme.label("CÔNG TRÌNH", "Eyebrow"))
-	var kinds := [["camp2", "+20% sản lượng"], ["temple", "luyện cấp Thiên phú (phím T)"]]
+	var kinds := [["camp2", "+20% sản lượng"], ["temple", "luyện cấp Thiên phú (phím T)"],
+		["forge", "chế trang bị (phím E ở làng)"], ["garden", "1 thảo dược mỗi 3 phút, cả khi offline"]]
 	if p.talent == "long-mach":
 		kinds.append(["dragon", "+10% Tấn công và HP cho nhân vật, đồng minh"])
 	for k in kinds:
@@ -86,6 +95,7 @@ func _on_tile(id: int) -> void:
 func _tile_info(info: VBoxContainer, t: Dictionary) -> void:
 	var p = world.profile
 	var ev: Dictionary = Explore.EVENT_INFO[t.event]
+	info.add_child(UiTheme.label(str(Explore.ZONE_NAMES[Explore.zone_of(t)]).to_upper(), "Eyebrow"))
 	if t.status == "fog":
 		info.add_child(UiTheme.label("Ô đất bị sương mù che", "Heading"))
 		if Explore.is_event_visible(p.tiles, t, p.talent):

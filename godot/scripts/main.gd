@@ -550,8 +550,13 @@ func _run_smoke(dir: String) -> void:
 	await _wait(0.3)
 	await _shot(dir, "05b-inventory")
 	world.enhance(int(fang.id))
+	# N8: cho Nanh Sói Chúa lên +10 để chụp hiệu ứng theo cấp cường hoá.
+	Items.find_item(pp, int(fang.id)).item.plus = 10
+	world._refresh_stats()
 	inventory_panel._selected_id = int(fang.id)
 	inventory_panel.refresh()
+	inventory_panel._play_burst(true, 10)
+	await _wait(0.25)
 	await _wait(0.3)
 	await _shot(dir, "05c-inventory-equipped")
 	inventory_panel.close()

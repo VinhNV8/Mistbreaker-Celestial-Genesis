@@ -821,13 +821,32 @@ func _auto_face(reach: float, half_arc: float) -> bool:
 	return true
 
 
+## Spec_Notes N9: Thợ Săn luôn bắn quái gần nhất trong tầm (kể cả khi đang chạy, không cần ngắm).
+func _face_nearest(reach: float) -> bool:
+	var p := player
+	var nearest: Enemy = null
+	var best := INF
+	for e in enemies:
+		if e.dead or is_hidden(e):
+			continue
+		var d: float = e.pos.distance_to(p.pos) - e.radius
+		if d <= reach and d < best:
+			best = d
+			nearest = e
+	if nearest == null:
+		return false
+	p.facing = (nearest.pos - p.pos).angle()
+	_face_lock = 0.35
+	return true
+
+
 func world_hidden(e: Enemy) -> bool:
 	return is_hidden(e)
 
 
 func _shoot() -> void:
 	var p := player
-	_auto_face(SHOT_RANGE, deg_to_rad(15.0))
+	_face_nearest(SHOT_RANGE)
 	p.attack_cd = SHOT_INTERVAL / atk_speed()
 	p.swing = 0.16
 	p.swing_kind = "shot"
@@ -929,7 +948,7 @@ func use_skill(i: int) -> bool:
 		"rain":
 			_rain(mul)
 		"pierce":
-			_auto_face(PIERCE_RANGE, deg_to_rad(15.0))
+			_face_nearest(PIERCE_RANGE)
 			_fire(PIERCE_SPEED, PIERCE_RANGE, mul, true, "pierce", false, 12.0)
 			p.swing = 0.16
 			p.swing_kind = "shot"
@@ -2020,6 +2039,9 @@ func enhance(item_id: int) -> Dictionary:
 	_message(res.message, "good" if res.get("success", false) else "bad")
 	if res.ok:
 		_refresh_stats()
+		var found := Items.find_item(profile, item_id)
+		var plus: int = int(found.item.plus) if not found.is_empty() else 0
+		_events.append({"type": "enhance", "success": res.get("success", false), "plus": plus, "item_id": item_id})
 	return res
 
 
