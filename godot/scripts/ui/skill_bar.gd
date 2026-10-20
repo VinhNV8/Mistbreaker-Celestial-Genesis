@@ -1,5 +1,5 @@
 extends Control
-## UI-03: thanh kỹ năng kiểu khung trang trí — ô tròn viền vàng, phím ở góc, tên dưới icon,
+## DH-11: thanh kỹ năng kiểu khung trang trí — ô tròn viền vàng, phím ở góc, tên dưới icon,
 ## hồi chiêu quét tròn kèm số giây, lóe sáng khi hồi xong. Tự vẽ bằng _draw (không cần ảnh khung).
 ## HUD gọi set_slot(i, {...}) mỗi khung hình; khoá dữ liệu:
 ##   key: String, name: String, icon: Texture2D, cd: 0..1 (phần còn lại), cd_text: String,

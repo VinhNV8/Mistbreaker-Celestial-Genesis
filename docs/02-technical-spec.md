@@ -111,6 +111,7 @@ Main (Node, main.gd)
 | `assets/sprites/`, `assets/icons/`, `assets/env/`, `assets/art_manifest.json` | Hình do `tools/art` sinh ra — **không sửa tay**, sửa code sinh rồi chạy lại |
 | `scripts/ui/ui_theme.gd` | Theme, màu, font, hàm dựng Control nhanh |
 | `scripts/ui/hud.gd` | HUD khi chơi |
+| `scripts/ui/skill_bar.gd` | Thanh kỹ năng 8 ô có khung trang trí, tự vẽ bằng `_draw`: icon cắt tròn, hồi chiêu quét tròn, nhãn phím, tên + dòng phụ; HUD gọi `set_slot(i, {...})` mỗi khung hình (DH-11) |
 | `scripts/ui/modal.gd` | Lớp cha của bảng phủ |
 | `scripts/ui/stats_panel.gd` | Bảng chỉ số |
 | `scripts/ui/map_panel.gd`, `hex_map.gd` | Bản đồ khai phá |

@@ -15,6 +15,12 @@ const Resources = preload("res://scripts/data/resources.gd")
 ## C1-03: tài nguyên hiện trên HUD (icon + số, rê chuột xem chú thích).
 const HUD_RESOURCES := ["gold", "wood", "torches", "stones", "essence"]
 const Maps = preload("res://scripts/data/maps.gd")
+const SkillBar = preload("res://scripts/ui/skill_bar.gd")
+## DH-11: thứ tự ô trên thanh kỹ năng.
+const SLOT_BASIC := 0
+const SLOT_DODGE := 5
+const SLOT_TALENT := 6
+const SLOT_POTION := 7
 
 var _tl: PanelContainer
 var _level: Label
@@ -43,19 +49,8 @@ var _boss_poise: ProgressBar
 
 var _combo: Label
 var _wind: Label
-var _skills: HBoxContainer
-## UI-01: ô 0 = đánh thường, 1–4 = kỹ năng lớp. Mỗi phần tử: [panel, lớp phủ hồi chiêu, nhãn tên, nhãn phím, icon]
-var _class_slots: Array = []
-var _slots_class := ""
-var _cd_dodge: ColorRect
-var _cd_talent: ColorRect
-var _talent_slot: Label
-var _talent_panel: PanelContainer
-var _talent_key: Label
-var _talent_icon: TextureRect
-var _talent_icon_id := ""
-var _cd_potion: ColorRect
-var _potion_label: Label
+## DH-11: ô 0 = đánh thường, 1–4 = kỹ năng lớp, 5 né, 6 Thiên phú (L), 7 bình máu.
+var _skills: Control
 var _extra: Label
 
 var _log: VBoxContainer
@@ -166,25 +161,8 @@ func _ready() -> void:
 	_combo.add_theme_color_override("font_color", UiTheme.GOLD)
 	add_child(_combo)
 
-	_skills = UiTheme.hbox(8)
-	for i in 5:
-		var cs := _slot("Chuột trái / J" if i == 0 else str(i), "")
-		_class_slots.append(cs)
-		_skills.add_child(cs[0])
-	var d := _slot("Space", "Né lăn", "skill-dodge")
-	_skills.add_child(d[0])
-	_cd_dodge = d[1]
-	var t := _slot("L", "")
-	_talent_panel = t[0]
-	_cd_talent = t[1]
-	_talent_slot = t[2]
-	_talent_key = t[3]
-	_talent_icon = t[4]
-	_skills.add_child(_talent_panel)
-	var q := _slot("Q", "", "skill-potion")
-	_cd_potion = q[1]
-	_potion_label = q[2]
-	_skills.add_child(q[0])
+	_skills = SkillBar.new()
+	_skills.set_count(8)
 	add_child(_skills)
 
 	_log = UiTheme.vbox(4)
@@ -256,51 +234,6 @@ func _bar_label(bar: ProgressBar, font_size: int) -> Label:
 	l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	bar.add_child(l)
 	return l
-
-
-## Trả về [panel, lớp phủ hồi chiêu, nhãn tên, nhãn phím, icon]. Nhãn tên tối đa 2 dòng.
-func _slot(key: String, title: String, icon_id := "") -> Array:
-	var panel := PanelContainer.new()
-	var inner := Control.new()
-	inner.custom_minimum_size = Vector2(100, 50)
-	panel.add_child(inner)
-	# AR-33: icon kỹ năng 32×32 bên trái
-	var icon := TextureRect.new()
-	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	icon.position = Vector2(0, 16)
-	icon.size = Vector2(32, 32)
-	icon.mouse_filter = MOUSE_FILTER_IGNORE
-	if icon_id != "":
-		icon.texture = SpriteLib.icon(icon_id)
-	inner.add_child(icon)
-	var k := UiTheme.label(key, "Small")
-	k.set_anchors_and_offsets_preset(PRESET_TOP_WIDE)
-	k.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	k.add_theme_font_size_override("font_size", 11)
-	inner.add_child(k)
-	var n := UiTheme.label(title)
-	n.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
-	n.offset_top = 16
-	n.offset_left = 33
-	n.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	n.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	n.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	n.add_theme_font_size_override("font_size", 12)
-	n.max_lines_visible = 2
-	n.add_theme_font_override("font", UiTheme.bold_font())
-	inner.add_child(n)
-	var cd := ColorRect.new()
-	cd.color = Color(0, 0, 0, 0.6)
-	cd.anchor_left = 0.0
-	cd.anchor_right = 1.0
-	cd.anchor_bottom = 1.0
-	cd.anchor_top = 1.0
-	cd.offset_left = -12
-	cd.offset_right = 12
-	cd.offset_bottom = 12
-	inner.add_child(cd)
-	return [panel, cd, n, k, icon]
 
 
 func log_message(text: String, tone := "info") -> void:
@@ -375,26 +308,7 @@ func update_from(w: GameWorld) -> void:
 	_combo.visible = w.combo >= 5
 	_combo.text = "%d combo · +%d%% EXP" % [w.combo, roundi((Formulas.combo_exp_multiplier(w.combo) - 1.0) * 100.0)]
 
-	_update_class_slots(w)
-	_cooldown(_cd_dodge, pl.dodge_cd / GameWorld.DODGE_CD)
-	if _talent_icon_id != t.id:
-		_talent_icon_id = t.id
-		_talent_icon.texture = SpriteLib.talent_icon(t.id)
-	if Talents.has_skill(t):
-		var skill_name := w.talent_skill_name()
-		_talent_key.text = ("L · %ds" % ceili(pl.talent_cd)) if pl.talent_cd > 0.0 else "L"
-		_talent_slot.text = skill_name
-		_cooldown(_cd_talent, pl.talent_cd / maxf(0.1, w.talent_skill_cd()))
-	else:
-		_talent_key.text = "L · bị động"
-		_talent_slot.text = t.name
-		_cooldown(_cd_talent, 0.0)
-	if p.talent == "hap-huyet":
-		_potion_label.text = "Bình máu\nbị khoá"
-		_cooldown(_cd_potion, 1.0)
-	else:
-		_potion_label.text = "Bình ×%d · Thảo %d/2" % [p.potions, p.herbs]
-		_cooldown(_cd_potion, pl.potion_cd / GameWorld.POTION_CD)
+	_update_skill_bar(w, t, rank_color)
 	var extra: Array[String] = []
 	if p.talent_level > 1:
 		extra.append("Thiên phú cấp %d" % p.talent_level)
@@ -404,7 +318,6 @@ func update_from(w: GameWorld) -> void:
 		extra.append("Hệ %s" % Monsters.ELEMENT_NAMES[p.element])
 	_extra.text = "   ·   ".join(extra)
 	_extra.visible = not extra.is_empty()
-	_talent_panel.add_theme_stylebox_override("panel", UiTheme.box(UiTheme.PANEL, 10, 1, rank_color, 12))
 
 	var boss := w.big_enemy()
 	_boss_box.visible = boss != null
@@ -428,25 +341,42 @@ func update_from(w: GameWorld) -> void:
 	_layout()
 
 
-func _update_class_slots(w: GameWorld) -> void:
+func _update_skill_bar(w: GameWorld, t: Dictionary, rank_color: Color) -> void:
 	var pl := w.player
-	var cid: String = w.profile.class_id
-	var c: Dictionary = Classes.get_class_def(cid)
-	if _slots_class != cid:
-		_slots_class = cid
-		_class_slots[0][2].text = c.basic.name
-		_class_slots[0][4].texture = SpriteLib.icon("skill-" + str(c.basic.icon))
-		for i in 4:
-			var sk: Dictionary = c.skills[i]
-			_class_slots[i + 1][2].text = sk.name
-			_class_slots[i + 1][4].texture = SpriteLib.icon("skill-" + str(sk.icon))
+	var p = w.profile
+	var c: Dictionary = Classes.get_class_def(p.class_id)
+	_skills.set_slot(SLOT_BASIC, {"key": "J", "name": c.basic.name, "icon": SpriteLib.icon("skill-" + str(c.basic.icon)),
+		"sub": "Đánh thường"})
 	for i in 4:
-		var slot: Array = _class_slots[i + 1]
-		_cooldown(slot[1], pl.skill_cds[i] / maxf(0.1, w.skill_cd_of(i)))
+		var sk: Dictionary = c.skills[i]
 		var cd_left: float = pl.skill_cds[i]
-		slot[3].text = ("%d · %ds" % [i + 1, ceili(cd_left)]) if cd_left > 0.0 else ("%d · %d MP" % [i + 1, int(w.skill_mp(i))])
-		# Thiếu MP: tô xanh mờ.
-		slot[0].modulate = Color(0.55, 0.65, 1.0, 0.8) if pl.mp < w.skill_mp(i) else Color.WHITE
+		var mp := int(w.skill_mp(i))
+		var low := pl.mp < mp
+		_skills.set_slot(i + 1, {"key": str(i + 1), "name": sk.name, "icon": SpriteLib.icon("skill-" + str(sk.icon)),
+			"cd": cd_left / maxf(0.1, w.skill_cd_of(i)), "cd_text": str(ceili(cd_left)) if cd_left > 0.0 else "",
+			"sub": ("Thiếu MP · %d" % mp) if low else ("%d MP" % mp), "dim": low})
+	_skills.set_slot(SLOT_DODGE, {"key": "Space", "name": "Né lăn", "icon": SpriteLib.icon("skill-dodge"),
+		"cd": pl.dodge_cd / GameWorld.DODGE_CD, "cd_text": ("%.1f" % pl.dodge_cd) if pl.dodge_cd > 0.0 else ""})
+	var tal := {"key": "L", "icon": SpriteLib.talent_icon(t.id), "ring": rank_color}
+	if Talents.has_skill(t):
+		tal.name = w.talent_skill_name()
+		tal.cd = pl.talent_cd / maxf(0.1, w.talent_skill_cd())
+		tal.cd_text = str(ceili(pl.talent_cd)) if pl.talent_cd > 0.0 else ""
+		tal.sub = t.name
+	else:
+		tal.name = t.name
+		tal.sub = "Bị động"
+	_skills.set_slot(SLOT_TALENT, tal)
+	var pot := {"key": "Q", "name": "Bình máu", "icon": SpriteLib.icon("skill-potion")}
+	if p.talent == "hap-huyet":
+		pot.sub = "Bị khoá"
+		pot.locked = true
+	else:
+		pot.sub = "×%d · Thảo %d/2" % [p.potions, p.herbs]
+		pot.cd = pl.potion_cd / GameWorld.POTION_CD
+		pot.cd_text = str(ceili(pl.potion_cd)) if pl.potion_cd > 0.0 else ""
+		pot.dim = p.potions <= 0
+	_skills.set_slot(SLOT_POTION, pot)
 
 
 ## C1-12: bảng nhiệm vụ chương 1 (thay 3 mục tiêu cũ).
@@ -484,13 +414,6 @@ func _objective(i: int, done: bool, text: String) -> void:
 	_objectives[i].add_theme_color_override("font_color", UiTheme.GOOD if done else UiTheme.MUTED)
 
 
-func _cooldown(cd: ColorRect, frac: float) -> void:
-	var f := clampf(frac, 0.0, 1.0)
-	cd.visible = f > 0.0
-	cd.anchor_top = 1.0 - f
-	cd.offset_top = -12.0 * f
-
-
 func _layout() -> void:
 	var sz := size
 	_tl.position = Vector2(12, 12)
@@ -504,7 +427,6 @@ func _layout() -> void:
 	_wind.position = Vector2((sz.x - _wind.size.x) / 2.0, 92.0 if _boss_box.visible else 18.0)
 	_combo.reset_size()
 	_combo.position = Vector2(sz.x - _combo.size.x - 24, sz.y / 2.0)
-	_skills.reset_size()
 	_skills.position = Vector2((sz.x - _skills.size.x) / 2.0, sz.y - _skills.size.y - 14)
 	# UI-02: nhật ký nằm trên thanh kỹ năng.
 	_log.reset_size()

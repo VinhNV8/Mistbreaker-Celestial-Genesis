@@ -35,9 +35,9 @@ File này liệt kê **mọi hạng mục trong kịch bản**: trạng thái hi
 | Khai phá, lãnh địa (mục 7) | 22 | 13 | 1 | 8 | 0 |
 | Trang bị, kinh tế (mục 8) | 14 | 8 | 2 | 3 | 1 |
 | 30 phút đầu (mục 9) | 9 | 9 | 0 | 0 | 0 |
-| Đồ hoạ, âm thanh | 13 | 11 | 0 | 2 | 0 |
+| Đồ hoạ, âm thanh | 13 | 11 | 1 | 1 | 0 |
 | Kỹ thuật, phát hành | 10 | 4 | 3 | 3 | 0 |
-| **Tổng** | **183** | **107** (58%) | **21** (11%) | **53** (29%) | **2** |
+| **Tổng** | **183** | **107** (58%) | **22** (12%) | **52** (28%) | **2** |
 
 ### Các giai đoạn
 
@@ -287,7 +287,7 @@ Phong cách đã chốt: **pixel art góc trên xuống 3/4, sinh bằng code** 
 | DH-08 | Tileset Đồng Bằng Gió Hú, Thành Biên Đài | ⬜ | G | Sau M4 |
 | DH-09 | Icon 8 ô trang bị × 5 phẩm chất, icon tài nguyên, icon 20 Thiên phú | ✅ | G1 | AR-17…20: 41 icon; phẩm chất vẽ bằng khung màu |
 | DH-10 | Hiệu ứng (VFX): chém, kỹ năng, vòng báo hiệu, ánh sáng Bia Đá theo hạng | ✅ | G1 / C1 | Thêm: Bia Đá theo hạng, hiệu ứng cường hoá (N8), Rễ Trói, Lá Độc, vũng độc |
-| DH-11 | Giao diện có art (khung, nút, font chính thức) | ⬜ | G | Hiện dùng theme tối mặc định + font hệ thống |
+| DH-11 | Giao diện có art (khung, nút, font chính thức) | 🟡 | G | Thanh kỹ năng có khung trang trí (20/10/2026): ô tròn viền vàng, phím ở góc, tên + MP dưới icon, hồi chiêu quét tròn, lóe sáng khi hồi xong — `ui/skill_bar.gd`, vẽ bằng code. Còn: khung bảng, nút, font chính thức |
 | DH-12 | Âm thanh: đánh, trúng đòn, nhặt đồ, lên cấp, giao diện | ✅ | C1 | 16 hiệu ứng sinh bằng code (`tools/audio`) |
 | DH-13 | Nhạc nền: làng, rừng, boss | ✅ | C1 | Làng, Rừng Sương, Lõi Sương, Boss — vòng lặp sinh bằng code |
 
