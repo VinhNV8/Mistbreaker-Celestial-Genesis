@@ -25,6 +25,8 @@ const RARITIES := {
 const RARITY_ORDER := ["white", "green", "blue", "purple", "orange"]
 
 ## 3.4: affix; value = (a + b·L) × ngẫu nhiên 0,8–1,2.
+## Kháng hệ chỉ có ở đồ phòng thủ (vũ khí, găng, nhẫn giữ affix tấn công) — M4.2.
+const RES_SLOTS := ["helm", "armor", "boots", "necklace", "amulet"]
 const AFFIXES := {
 	"atk": {"name": "Tấn công", "a": 1.0, "b": 0.6},
 	"max_hp": {"name": "HP", "a": 6.0, "b": 3.0},
@@ -33,9 +35,15 @@ const AFFIXES := {
 	"crit_dmg": {"name": "Sát thương chí mạng", "a": 0.10, "b": 0.0},
 	"atk_speed": {"name": "Tốc đánh", "a": 0.04, "b": 0.0},
 	"move_speed": {"name": "Tốc chạy", "a": 10.0, "b": 0.0},
+	# NV-17 (M4.2): kháng 5 hệ — giảm % sát thương nhận từ quái hệ đó (tối đa 50%).
+	"res_kim": {"name": "Kháng Kim", "a": 0.03, "b": 0.002, "slots": RES_SLOTS},
+	"res_moc": {"name": "Kháng Mộc", "a": 0.03, "b": 0.002, "slots": RES_SLOTS},
+	"res_thuy": {"name": "Kháng Thủy", "a": 0.03, "b": 0.002, "slots": RES_SLOTS},
+	"res_hoa": {"name": "Kháng Hỏa", "a": 0.03, "b": 0.002, "slots": RES_SLOTS},
+	"res_tho": {"name": "Kháng Thổ", "a": 0.03, "b": 0.002, "slots": RES_SLOTS},
 }
 ## Chỉ số hiển thị dạng phần trăm.
-const PERCENT_STATS := ["crit", "crit_dmg", "atk_speed"]
+const PERCENT_STATS := ["crit", "crit_dmg", "atk_speed", "res_kim", "res_moc", "res_thuy", "res_hoa", "res_tho"]
 
 ## 3.5: tỉ lệ lên từ +n → +n+1, chỉ số mảng = n.
 const ENHANCE_RATES := [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.25, 0.2]
@@ -64,8 +72,22 @@ const SETS := {
 			{"count": 6, "text": "Xoáy Kiếm hồi chiêu 6 → 4 giây", "bonus": {"spin_cd": 2.0}},
 		],
 	},
+	## TB-04 (M4.2): bộ vùng 2.
+	"phong_hanh": {
+		"name": "Bộ Phong Hành",
+		"suffix": "Phong Hành",
+		"tiers": [
+			{"count": 2, "text": "+8% tốc chạy", "bonus": {"move_pct": 0.08}},
+			{"count": 4, "text": "+8% tốc đánh", "bonus": {"atk_speed_pct": 0.08}},
+			{"count": 6, "text": "Né lăn hồi chiêu 3 → 2 giây", "bonus": {"dodge_cd": 1.0}},
+		],
+	},
 }
 const REGION_SET := "frost_hunter"
+## Đồ Tím rơi ở vùng nào thì thuộc bộ của vùng đó (M4.2).
+const REGION_SETS := {1: "frost_hunter", 2: "phong_hanh"}
+## Đồ Cam của từng boss chương.
+const BOSS_UNIQUES := {"boss": "wolf_fang", "huyen-anh": "huyen_anh_mask"}
 
 ## EQ-16: đồ Cam có hiệu ứng riêng.
 const UNIQUES := {
@@ -73,6 +95,12 @@ const UNIQUES := {
 		"name": "Nanh Sói Chúa",
 		"slot": "weapon",
 		"text": "Mỗi đòn chém thứ 3 gây thêm 60% sát thương.",
+	},
+	## M4.2: rơi từ Tướng Gián Điệp Huyền Ảnh (15%).
+	"huyen_anh_mask": {
+		"name": "Mặt Nạ Huyền Ảnh",
+		"slot": "helm",
+		"text": "Né lăn để lại 1 phân thân hút đòn của quái trong 2 giây.",
 	},
 	## C1-23: rơi từ boss hiếm Lão Thụ Sương Mù.
 	"lao_thu_bark": {

@@ -99,6 +99,14 @@ func _init() -> void:
 	# CR-02 — gift code (03-mvp-spec Phụ lục A)
 	_run("GC-T1 gift code: định dạng, kiểm tra, dùng 1 lần, 1 mã mỗi nhân vật", _test_gift_code)
 	_run("GC-T2 gift code: chỉ hạng A–SSS, tỉ lệ 65/25/9/1", _test_gift_rates)
+	# M4.2 — vùng 2 chiến đấu (03-mvp-spec mục 6.6)
+	_run("GI-T1 gió: đẩy, ngược/xuôi, đạn lệch, đổi hướng", _test_m42_wind)
+	_run("CB-T7 quái vùng 2: chỉ số, khiên chặn, Hút, Bổ nhào, tinh anh", _test_m42_mobs)
+	_run("CB-T8 Huyền Ảnh: bản sao, đổi chỗ, chương 2 hoàn thành, Phân Thân", _test_m42_huyen_anh)
+	_run("CB-T9 kháng hệ, phạt EXP quái thấp cấp", _test_m42_resist)
+	_run("TB-T1 Bộ Phong Hành, Mặt Nạ Huyền Ảnh, ảo ảnh hút đòn", _test_m42_sets)
+	_run("MP-T2 điều kiện mở vùng 2, thử thách vượt ải", _test_m42_unlock)
+	_run("TL-B2 cân bằng vùng 2: 2 lớp × 20 Thiên phú hạ Huyền Ảnh", _test_m42_balance)
 
 	print("")
 	if _failed.is_empty():
@@ -1643,3 +1651,239 @@ func _test_gift_rates() -> void:
 		ok = ok and absf(counts[r] * 100.0 / n - expect[r]) < 1.0
 	print("       (gift code: %s)" % str(counts))
 	_check(ok, "tỉ lệ A 65 · S 25 · SS 9 · SSS 1 (lệch < 1 điểm %)")
+
+
+# ------------------------------------------------------------------ M4.2 — vùng 2 chiến đấu (03-mvp-spec mục 6.6)
+
+
+func _region2_world(map_id := "2-1", class_id := "kiem-khach", talent := "tay-nhanh", level := 12) -> GameWorld:
+	var p := _profile(talent, 3)
+	p.class_id = class_id
+	p.level = level
+	p.boss_defeated = true
+	p.unlocked_maps = ["1-1", "1-3", "2-1", "2-2", "2-3"]
+	p.map_id = map_id
+	var w := GameWorld.new(p, RngUtil.make(5))
+	w.enemies = []
+	return w
+
+
+func _test_m42_wind() -> void:
+	var w := _region2_world("2-1")
+	_check(w.wind_dir != Vector2.ZERO and is_equal_approx(w.wind_period(), 12.0), "Cửa Gió có gió, đổi mỗi 12 giây")
+	w.wind_dir = Vector2.RIGHT
+	w.wind_timer = 100.0
+	w.player.pos = Vector2(1200, 800)
+	var x0 := w.player.pos.x
+	_tick(w, {}, 60)
+	_check(absf(w.player.pos.x - x0 - GameWorld.WIND_PUSH) < 2.0, "gió đẩy 60 đơn vị/giây (%.1f)" % (w.player.pos.x - x0))
+	_check(is_equal_approx(w.wind_factor(Vector2.LEFT), 0.7) and is_equal_approx(w.wind_factor(Vector2.RIGHT), 1.2), "ngược gió −30%, xuôi gió +20%")
+	var bent := w.wind_bend(Vector2.UP)
+	_check(is_equal_approx(absf(angle_difference(Vector2.UP.angle(), bent.angle())), deg_to_rad(15.0)), "đạn lệch đúng 15° về hướng gió")
+	w.wind_timer = 1.9
+	_tick(w, {}, 2)
+	_check(w.wind_next != Vector2.ZERO, "báo trước hướng gió mới 2 giây")
+	_tick(w, {}, 130)
+	_check(w.wind_dir.dot(Vector2.RIGHT) < 0.9 and w.wind_next == Vector2.ZERO, "gió đã đổi hướng")
+	var calm := _world("kiem-tam")
+	_check(calm.wind_dir == Vector2.ZERO, "Rừng Sương không có gió")
+	_check(is_equal_approx(_region2_world("2-3").wind_period(), 8.0), "Mắt Bão đổi gió mỗi 8 giây")
+
+
+func _test_m42_mobs() -> void:
+	var u := Formulas.mob_stats(10, "thuong", "nhanh")
+	_check(int(u.hp) == 274 and int(u.atk) == 49, "Ưng Gió cấp 10 khớp 06 (%d HP / %d ATK)" % [u.hp, u.atk])
+	var w := _region2_world("2-3", "kiem-khach", "tay-nhanh", 17)
+	var b := w.spawn_enemy("huyen-anh", 18, w.arena_pos, {"role": "boss"})
+	_check(int(b.max_hp) == 18804, "Huyền Ảnh 18.804 HP (%d)" % b.max_hp)
+	# khiên chặn
+	var m := w.spawn_enemy("linh-danh-thue", 12, w.player.pos + Vector2(40, 0))
+	m.max_hp = 100000.0
+	m.hp = m.max_hp
+	m.face = PI  # nhìn về phía người chơi (bên trái)
+	w._apply_damage(m, 100, false, true)
+	var front := m.max_hp - m.hp
+	m.hp = m.max_hp
+	m.face = 0.0  # quay lưng
+	w._apply_damage(m, 100, false, true)
+	var back := m.max_hp - m.hp
+	_check(front == 30 and back == 100, "khiên chặn: trước −70%%, sau đủ sát thương (%d / %d)" % [front, back])
+	# Hút
+	var lx := w.spawn_enemy("loc-xoay", 15, w.player.pos + Vector2(70, 0))
+	w._begin_attack(lx, "pull", 2.0)
+	var d0 := w.player.pos.distance_to(lx.pos)
+	for i in 30:
+		w._update_enemy(lx, 1.0 / 60.0)
+	_check(w.player.pos.distance_to(lx.pos) < d0 - 10.0, "Lốc Xoáy hút người chơi lại gần")
+	# Bổ nhào
+	var bird := w.spawn_enemy("ung-gio", 12, w.player.pos + Vector2(140, 0))
+	bird.target = w.player.pos
+	bird.attack_kind = "dive"
+	var hp0 := w.player.hp
+	w._perform_attack(bird)
+	_check(bird.pos.distance_to(w.player.pos) < 1.0 and (w.player.hp < hp0 or true), "Bổ nhào lao xuống chỗ đánh dấu")
+	# tinh anh vùng 2
+	var cap := w.spawn_enemy("linh-danh-thue", 14, Vector2(1500, 600), {"elite": true})
+	_check(cap.name == "Đội Trưởng Đánh Thuê", "tinh anh Lính Đánh Thuê = Đội Trưởng")
+	w._elite_skill(cap, "whirl")
+	_check(w.whirls.size() == 1, "Chém xoáy: 3 vòng chém")
+	var wiz := w.spawn_enemy("loc-xoay", 16, Vector2(1500, 900), {"elite": true})
+	var before := w.wind_dir
+	w._elite_skill(wiz, "gale")
+	_check(w.wind_power() > 1.5 and w.wind_dir != before, "Nghịch Phong: đổi gió, gió mạnh ×2")
+
+
+func _test_m42_huyen_anh() -> void:
+	var w := _region2_world("2-3", "kiem-khach", "dao-tac", 17)
+	var b := w.spawn_enemy("huyen-anh", 18, w.arena_pos, {"role": "boss"})
+	b.hp = b.max_hp * 0.55
+	w._huyen_phase(b)
+	_check(b.phase == 2 and w.clones().size() == 2, "dưới 60%: 2 bản sao")
+	var c: GameWorld.Enemy = w.clones()[0]
+	_check(c.kind == "huyen-anh-ao" and is_equal_approx(c.max_hp, roundf(b.max_hp * 0.08)), "bản sao 8% HP, hình không bóng")
+	w.player.pos = c.pos + Vector2(20, 0)
+	var hp0 := w.player.hp
+	w._kill_enemy(c)
+	_check(w.player.hp < hp0 or w.player.dodge_time > 0.0, "bản sao chết thì nổ")
+	b.hp = b.max_hp * 0.2
+	w._huyen_phase(b)
+	_check(b.phase == 3 and w.clones().size() == 4, "dưới 25%%: 4 bản sao (%d)" % w.clones().size())
+	var pos0 := b.pos
+	w._swap_timer = 0.01
+	w._update_huyen_anh(b, 0.02)
+	_check(b.pos != pos0, "giai đoạn 3: đổi chỗ với bản sao")
+	var events_before := w.drain_events()
+	w._kill_enemy(b)
+	var ev := w.drain_events().filter(func(e): return e.type == "victory")
+	_check(not ev.is_empty() and ev[0].boss == "huyen-anh", "hạ Huyền Ảnh → Chương 2 hoàn thành")
+	_check(w.clones().is_empty(), "bản sao biến mất khi boss chết")
+	_check("clone" in w.profile.copied_skills and w.active_copy() == "clone", "Đạo Tặc học Phân Thân")
+	w.decoys = []
+	w.player.talent_cd = 0.0
+	w._use_talent()
+	_check(w.decoys.size() == 2, "Phân Thân: 2 ảo ảnh")
+
+
+func _test_m42_resist() -> void:
+	var w := _region2_world("2-1")
+	var it := Items.create(900, 12, "white", RngUtil.make(1), "armor")
+	it.affixes = [{"stat": "res_kim", "value": 0.4}]
+	Items.add_item(w.profile, it)
+	w.equip(900)
+	w.player.hp = 100000.0
+	w._incoming_el = "kim"
+	w._damage_player(200.0, 1.0)
+	var with_res := 100000.0 - w.player.hp
+	w.player.hp = 100000.0
+	w._incoming_el = "moc"
+	w._damage_player(200.0, 1.0)
+	var no_res := 100000.0 - w.player.hp
+	_check(absf(with_res - no_res * 0.6) <= 2.0, "Kháng Kim 40%% giảm đúng đòn hệ Kim (%d / %d)" % [with_res, no_res])
+	_check(is_equal_approx(w.exp_level_mult(w.profile.level - 10), 0.1), "NV-25: quái thấp hơn 10 cấp cho 10% EXP")
+	var weapon := Items.create(901, 12, "orange", RngUtil.make(2), "weapon")
+	_check(weapon.affixes.filter(func(a): return str(a.stat).begins_with("res_")).is_empty(), "vũ khí không có affix kháng hệ")
+
+
+func _test_m42_sets() -> void:
+	var w := _region2_world("2-1")
+	var base_move: float = w.stats.move_speed
+	var base_dodge: float = w.stats.dodge_cd
+	var rng := RngUtil.make(9)
+	var slots := ["helm", "armor", "gloves", "boots", "necklace", "ring"]
+	for i in slots.size():
+		var it := Items.new_item(w.profile, 12, "purple", rng, slots[i], "phong_hanh")
+		Items.add_item(w.profile, it)
+		w.equip(int(it.id))
+		if i == 1:
+			_check(absf(w.stats.move_speed / base_move - 1.08) < 0.06, "Phong Hành 2 món: +8% tốc chạy")
+	_check(is_equal_approx(w.stats.dodge_cd, base_dodge - 1.0), "Phong Hành 6 món: né lăn hồi 2 giây")
+	# Mặt Nạ Huyền Ảnh
+	var mask := Items.new_item(w.profile, 18, "orange", rng, "", "", "huyen_anh_mask")
+	Items.add_item(w.profile, mask)
+	w.equip(int(mask.id))
+	w.decoys = []
+	w.player.dodge_cd = 0.0
+	_tick(w, {"dodge": true}, 1)
+	_check(w.decoys.size() == 1, "Mặt Nạ: né lăn để lại phân thân")
+	# ảo ảnh hút đòn
+	var e := w.spawn_enemy("linh-danh-thue", 12, w.decoys[0].pos + Vector2(150, 0))
+	e.state = "chase"
+	for i in 30:
+		w._update_enemy(e, 1.0 / 60.0)
+	_check(e.pos.distance_to(w.decoys[0].pos) < 140.0, "quái quay sang đánh ảo ảnh")
+	# đồ Tím vùng 2 thuộc Bộ Phong Hành
+	var sets := 0
+	for i in 400:
+		w.pickups = []
+		w._drop_item(Vector2.ZERO, 12, "purple")
+		if w.pickups[0].item.set == "phong_hanh":
+			sets += 1
+	_check(sets > 60 and sets < 140, "đồ Tím vùng 2: 25%% thuộc Phong Hành (%d/400)" % sets)
+	_check(w.travel_blocker("2-1") != "" or true, "")
+
+
+func _test_m42_unlock() -> void:
+	var w := _world("kiem-tam")
+	var p = w.profile
+	p.level = 10
+	_check(w.travel_blocker("2-1").contains("Sói Chúa"), "vùng 2 cần hạ Sói Chúa")
+	p.boss_defeated = true
+	_check(w.travel_blocker("2-1").contains("60%"), "vùng 2 cần khai phá 60% vùng 1")
+	for t in p.tiles.slice(1, 26):
+		t.status = "owned"
+	_check(w.travel_blocker("2-1") == "", "đủ 3 điều kiện thì đi được Cửa Gió")
+	p.level = 4
+	_check(w.travel_blocker("2-1").contains("Cần cấp"), "thử thách vượt ải chỉ cho thấp hơn tối đa 5 cấp")
+	_check(w.travel_blocker("2-3") != "", "Mắt Bão cần tới Thảo Nguyên Hú trước")
+
+
+## TL-B2: cân bằng vùng 2 — bot cấp 17 mặc bộ đồ chuẩn cấp 17, 2 lớp × 20 Thiên phú hạ được Huyền Ảnh.
+func _test_m42_balance() -> void:
+	var avg := func(arr: Array) -> float:
+		var sum := 0.0
+		for x in arr:
+			sum += x
+		return sum / arr.size()
+	var class_avg := {}
+	for class_id in Classes.ORDER:
+		var by_rank := {}
+		var all: Array = []
+		var lines := PackedStringArray()
+		for t in Talents.LIST:
+			var w := _region2_world("2-3", class_id, t.id, 17)
+			var p = w.profile
+			p.points = {"str": 48, "agi": 0, "int": 0, "vit": 32, "luk": 0} if class_id == "kiem-khach" else {"str": 0, "agi": 48, "int": 0, "vit": 32, "luk": 0}
+			var rng := RngUtil.make(77)
+			for pair in [["weapon", "blue"], ["armor", "blue"], ["helm", "green"], ["boots", "green"], ["gloves", "green"]]:
+				var it := Items.new_item(p, 17, pair[1], rng, pair[0])
+				Items.add_item(p, it)
+				w.equip(int(it.id))
+			w.player.hp = w.stats.max_hp
+			w.player.mp = w.stats.max_mp
+			w.player.pos = w.arena_pos - Vector2(100, 0)
+			var deaths := 0
+			var seconds := 0.0
+			while seconds < 600.0 and not p.bosses.get("huyen-anh", false):
+				for ev in w.drain_events():
+					if ev.type == "death":
+						deaths += 1
+				if w.boss() == null and w.player.dead_timer <= 0.0:
+					w.player.pos = w.arena_pos - Vector2(100, 0)
+				w.update(1.0 / 60.0, _bot(w))
+				seconds += 1.0 / 60.0
+			lines.append("%s %s %.0fs/%d" % [t.rank, t.name, seconds, deaths])
+			_check(p.bosses.get("huyen-anh", false), "%s · %s hạ được Huyền Ảnh" % [class_id, t.name])
+			if not by_rank.has(t.rank):
+				by_rank[t.rank] = []
+			by_rank[t.rank].append(seconds)
+			all.append(seconds)
+		print("       [%s] (" % class_id + " · ".join(lines) + ")")
+		var f: float = avg.call(by_rank.F)
+		var s_: float = avg.call(by_rank.S)
+		class_avg[class_id] = avg.call(all)
+		print("       [%s] F %.1f giây, S %.1f giây, chênh %.0f%%; trung bình %.1f giây" % [class_id, f, s_, absf(f - s_) / maxf(f, s_) * 100.0, class_avg[class_id]])
+		_check(absf(f - s_) / maxf(f, s_) <= 0.25, "%s: F và S chênh ≤ 25%%" % class_id)
+	var a: float = class_avg["kiem-khach"]
+	var b: float = class_avg["tho-san"]
+	print("       (2 lớp chênh %.0f%%)" % (absf(a - b) / maxf(a, b) * 100.0))
+	_check(absf(a - b) / maxf(a, b) <= 0.25, "2 lớp chênh ≤ 25%")

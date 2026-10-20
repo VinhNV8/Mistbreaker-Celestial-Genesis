@@ -23,7 +23,7 @@ static func create(id: int, level: int, rarity: String, rng: Callable, slot := "
 		slot = ItemData.UNIQUES[unique].slot
 	if slot == "":
 		slot = ItemData.SLOT_ORDER[int(float(rng.call()) * ItemData.SLOT_ORDER.size()) % ItemData.SLOT_ORDER.size()]
-	var pool := RngUtil.shuffle(ItemData.AFFIXES.keys(), rng)
+	var pool := RngUtil.shuffle(ItemData.AFFIXES.keys().filter(func(k): return slot in ItemData.AFFIXES[k].get("slots", [slot])), rng)
 	var affixes: Array = []
 	var count: int = ItemData.RARITIES[rarity].affixes
 	for i in count:
@@ -95,7 +95,8 @@ static func equipment_bonus(equipment: Dictionary) -> Dictionary:
 			sets[item.set] = sets.get(item.set, 0) + 1
 		if item.unique != "":
 			uniques.append(item.unique)
-	var bonus := {"flat": flat, "sets": sets, "uniques": uniques, "max_hp_pct": 0.0, "atk_pct": 0.0, "spin_cd": 0.0}
+	var bonus := {"flat": flat, "sets": sets, "uniques": uniques, "max_hp_pct": 0.0, "atk_pct": 0.0, "spin_cd": 0.0,
+		"move_pct": 0.0, "atk_speed_pct": 0.0, "dodge_cd": 0.0}
 	for set_id in sets:
 		for tier in ItemData.SETS[set_id].tiers:
 			if sets[set_id] >= tier.count:

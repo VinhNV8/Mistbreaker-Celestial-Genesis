@@ -262,11 +262,13 @@ func _read_input() -> Dictionary:
 		_kb_dir = move.normalized()
 	# C1-01: chuột không di chuyển trong 1,5 giây = chơi bàn phím → đánh theo hướng di chuyển cuối cùng,
 	# kể cả khi đã dừng (trước đây dừng lại thì hướng nhảy về chỗ con trỏ chuột).
-	if Time.get_ticks_msec() - _last_mouse_move > 1500:
+	var kb_aim := Time.get_ticks_msec() - _last_mouse_move > 1500
+	if kb_aim:
 		aim = world.player.pos + _kb_dir * 100.0
 	return {
 		"move": move,
 		"aim": aim,
+		"kb_aim": kb_aim,
 		"attack": Input.is_action_pressed("attack"),
 		"skill": Input.is_action_just_pressed("skill"),
 		"skill_1": Input.is_action_just_pressed("skill_1"),
@@ -667,6 +669,15 @@ func _run_smoke(dir: String) -> void:
 	await _shot(dir, "08-settings")
 	_close_pause()
 	print("SMOKE audio music=%s" % audio.current_music())
+	# M4.2: vùng 2 Cửa Gió (gió, quái mới, Thành Biên Đài)
+	p.level = 12
+	world._refresh_stats()
+	world._load_map("2-1")
+	world.player.pos = world.safe_pos + Vector2(420, 0)
+	for k in ["ung-gio", "linh-danh-thue", "cung-thu", "loc-xoay"]:
+		world.spawn_enemy(k, 12, world.player.pos + Vector2(220 + randf() * 200, randf() * 300 - 150))
+	await _wait(3.0)
+	await _shot(dir, "09-region2")
 	print("SMOKE done: boss_defeated=%s level=%d kills=%d" % [p.boss_defeated, p.level, p.kills])
 	SaveSystem.clear_save()
 	get_tree().quit()

@@ -140,6 +140,28 @@ const RARE_SKILL_CD := 3.5
 const BARK_STILL := 1.0
 const BARK_REGEN := 0.02
 const FOG_SIGHT := 200.0
+# --- M4.2: vùng 2 (03-mvp-spec mục 6.3)
+## GI-01…04: gió đẩy 6 m/giây, ngược gió −30%, xuôi gió +20%, đạn lệch tối đa 15°.
+const WIND_PUSH := 60.0
+const WIND_WARN := 2.0
+const WIND_BEND := deg_to_rad(15.0)
+const SHIELD_ARC := deg_to_rad(60.0)
+const SHIELD_REDUCE := 0.3
+const DIVE_R := 30.0
+const PULL_R := 80.0
+const PULL_SPEED := 30.0
+const PULL_BLAST := 40.0
+const WHIRL_R := 50.0
+const GALE_TIME := 6.0
+const DECOY_RANGE := 300.0
+const MASK_DECOY := 2.0
+const CLONE_DECOY := 6.0
+const CLONE_HP := 0.08
+const CLONE_ATK := 0.5
+const CLONE_BLAST := 40.0
+const SWAP_PERIOD := 6.0
+const BLINK_CD := 6.0
+const DARTS_CD := 3.0
 
 # --- MVP M4: nhiều bản đồ (03-mvp-spec mục 6.2)
 ## MP-03: thời gian đi đường giữa 2 map.
@@ -222,6 +244,8 @@ class Enemy:
 	var haste_timer := 0.0
 	var skill_cd := 4.0
 	var fuse := -1.0
+	## M4.2: hướng nhìn (khiên chặn); đứng yên khi đang vung đòn.
+	var face := 0.0
 
 
 ## Đạn của người chơi: tên, kiếm khí, tên xuyên phá.
@@ -269,6 +293,8 @@ class Blast:
 
 
 class Projectile:
+	## Hệ của đạn (kháng hệ, M4.2).
+	var element := ""
 	var pos := Vector2.ZERO
 	var vel := Vector2.ZERO
 	var ttl := 0.0
@@ -335,6 +361,17 @@ var rains: Array = []
 var traps: Array = []
 var blasts: Array = []
 var hazards: Array = []
+## M4.2: gió (vector đơn vị, ZERO = không gió), hướng sắp đổi, đồng hồ, gió mạnh ×2 (Nghịch Phong).
+var wind_dir := Vector2.ZERO
+var wind_next := Vector2.ZERO
+var wind_timer := 0.0
+var wind_strong := 0.0
+## Ảo ảnh hút đòn (Mặt Nạ Huyền Ảnh, Đạo Tặc — Phân Thân): [{pos, ttl}]
+var decoys: Array = []
+## Chém xoáy của Đội Trưởng: [{e, left, wait}]
+var whirls: Array = []
+var _incoming_el := ""
+var _swap_timer := SWAP_PERIOD
 ## Giờ Unix (test đặt để giả lập thời gian thực; < 0 = đồng hồ máy).
 var debug_now := -1.0
 ## C1-33: tự đánh (phím Z).
@@ -371,6 +408,11 @@ var _super_slash := false
 var _element_switch_at := -99.0
 var _face_lock := 0.0
 var _quest_poll := 0.0
+## Đòn bắn vừa tự nhắm (N9) — ngắm bù gió, chỉ lệch 1/3 (5°).
+var _auto_aimed := false
+## Người chơi đang dùng bàn phím (chuột đứng yên) — main.gd gửi qua input "kb_aim".
+var _kb_aim := false
+const AUTO_AIM_BEND := 1.0 / 3.0
 
 
 func _init(p, rng: Callable) -> void:
@@ -407,7 +449,10 @@ func _load_map(id: String) -> void:
 	traps = []
 	blasts = []
 	hazards = []
+	decoys = []
+	whirls = []
 	pickups = []
+	_init_wind()
 	allies = []
 	herbs = []
 	chests = []
@@ -506,6 +551,16 @@ func map_requirement(id: String) -> String:
 	match id:
 		"1-3":
 			return "" if profile.boss_defeated else "Hạ Sói Chúa Hư Vô để mở Lõi Sương."
+		"2-1":
+			# Kịch bản mục 6: hạ boss vùng + khai phá ≥ 60% vùng 1 (cấp: thử thách vượt ải ≤ 5 cấp).
+			if not profile.boss_defeated:
+				return "Hạ Sói Chúa Hư Vô trước."
+			if Explore.explored_ratio(profile.grid_of(1)) < Config.EXPLORE_REQ:
+				return "Khai phá ≥ %d%% vùng 1 (đang %d%%)." % [roundi(Config.EXPLORE_REQ * 100), roundi(Explore.explored_ratio(profile.grid_of(1)) * 100)]
+		"2-2":
+			return "" if "2-1" in profile.unlocked_maps else "Tới Cửa Gió trước."
+		"2-3":
+			return "" if "2-2" in profile.unlocked_maps else "Tới Thảo Nguyên Hú trước."
 	return ""
 
 
@@ -626,6 +681,11 @@ func update(dt: float, input: Dictionary) -> void:
 		p.skill_cds[i] -= dt
 	p.guard_time -= dt
 	p.eagle_time -= dt
+	_update_wind(dt)
+	for dc in decoys:
+		dc.ttl -= dt
+	decoys = decoys.filter(func(dc): return dc.ttl > 0.0)
+	_update_whirls(dt)
 	_update_player_effects(dt, input)
 	p.mp = minf(float(stats.max_mp), p.mp + float(stats.mp_regen) * dt)
 	p.talent_cd -= dt
@@ -645,6 +705,7 @@ func update(dt: float, input: Dictionary) -> void:
 		combo = 0
 
 	input = _auto_input(input)
+	_kb_aim = bool(input.get("kb_aim", false))
 	var aim: Vector2 = input.aim
 	_aim = aim
 	_face_lock -= dt
@@ -701,7 +762,10 @@ func _move_player(dt: float, input: Dictionary) -> void:
 		p.dodge_time = DODGE_TIME
 		quest_event("dodge")
 		_sfx("dodge")
-		p.dodge_cd = DODGE_CD
+		p.dodge_cd = float(stats.get("dodge_cd", DODGE_CD))
+		# Mặt Nạ Huyền Ảnh: né lăn để lại phân thân hút đòn.
+		if has_unique("huyen_anh_mask"):
+			_add_decoy(p.pos, MASK_DECOY)
 		p.perfect_used = false
 
 	var vel := Vector2.ZERO
@@ -715,7 +779,10 @@ func _move_player(dt: float, input: Dictionary) -> void:
 		p.dodge_time -= dt
 		vel = p.dodge_dir * DODGE_SPEED
 	elif move.length() > 0.0:
-		vel = move / maxf(1.0, move.length()) * move_speed()
+		vel = move / maxf(1.0, move.length()) * move_speed() * wind_factor(move)
+	# GI-02/04: gió đẩy (không đẩy khi né lăn, Đột Kích, bị trói).
+	if wind_dir != Vector2.ZERO and p.dodge_time <= 0.0 and p.dash_time <= 0.0 and p.root_timer <= 0.0:
+		vel += wind_dir * WIND_PUSH * wind_power()
 	p.pos = (p.pos + vel * dt).clamp(Vector2.ONE * PLAYER_RADIUS, world_size - Vector2.ONE * PLAYER_RADIUS)
 	_enforce_gate()
 	_enforce_arena_lock()
@@ -844,7 +911,30 @@ func _face_nearest(reach: float) -> bool:
 		return false
 	p.facing = (nearest.pos - p.pos).angle()
 	_face_lock = 0.35
+	_auto_aimed = true
 	return true
+
+
+## Khoá mục tiêu mềm: dùng chuột → quái gần nhất trong hướng ngắm (±15°); bàn phím hoặc hướng ngắm trống → quái gần nhất.
+## Đòn đã khoá được ngắm bù gió (chỉ lệch 1/3).
+func _soft_lock(reach: float) -> bool:
+	if not _kb_aim:
+		var best: Enemy = null
+		var bd := INF
+		for e in enemies:
+			if e.dead or is_hidden(e):
+				continue
+			var to_e: Vector2 = e.pos - player.pos
+			var d: float = to_e.length()
+			if d <= reach + e.radius and absf(angle_difference(player.facing, to_e.angle())) <= deg_to_rad(15.0) and d < bd:
+				bd = d
+				best = e
+		if best != null:
+			player.facing = (best.pos - player.pos).angle()
+			_face_lock = 0.35
+			_auto_aimed = true
+			return true
+	return _face_nearest(reach)
 
 
 func world_hidden(e: Enemy) -> bool:
@@ -853,7 +943,9 @@ func world_hidden(e: Enemy) -> bool:
 
 func _shoot() -> void:
 	var p := player
-	_face_nearest(SHOT_RANGE)
+	# N9: chơi bàn phím → luôn bắn quái gần nhất; dùng chuột → quái trong hướng ngắm (±15°) trước,
+	# không có mới bắn quái gần nhất (để chủ động nhắm được bản thật của Huyền Ảnh).
+	_soft_lock(SHOT_RANGE)
 	p.attack_cd = SHOT_INTERVAL / atk_speed()
 	p.swing = 0.16
 	p.swing_kind = "shot"
@@ -864,7 +956,8 @@ func _shoot() -> void:
 
 func _fire(speed: float, reach: float, mul: float, pierce: bool, kind: String, force_crit := false, radius := 10.0) -> PlayerShot:
 	var p := player
-	var dir := Vector2.from_angle(p.facing)
+	var dir := wind_bend(Vector2.from_angle(p.facing), AUTO_AIM_BEND if _auto_aimed else 1.0)
+	_auto_aimed = false
 	var s := PlayerShot.new()
 	s.pos = p.pos + dir * PLAYER_RADIUS
 	s.vel = dir * speed
@@ -957,7 +1050,7 @@ func use_skill(i: int) -> bool:
 		"rain":
 			_rain(mul)
 		"pierce":
-			_face_nearest(PIERCE_RANGE)
+			_soft_lock(PIERCE_RANGE)
 			_fire(PIERCE_SPEED, PIERCE_RANGE, mul, true, "pierce", false, 12.0)
 			p.swing = 0.16
 			p.swing_kind = "shot"
@@ -1136,6 +1229,11 @@ func _use_talent() -> void:
 			if profile.copied_skills.is_empty():
 				_message("Đạo Tặc chưa sao chép kỹ năng nào — hãy hạ một boss.", "info")
 				used = false
+			elif active_copy() == "clone":
+				# Phân Thân: 2 ảo ảnh hút đòn 6 giây.
+				for k in 2:
+					_add_decoy(p.pos + Vector2.from_angle(k * PI + 0.6) * 60.0, CLONE_DECOY)
+				_text(p.pos + Vector2(0, -40), "Phân Thân!", Color("#b36bff"), true)
 			else:
 				_leap()
 	if used:
@@ -1166,7 +1264,7 @@ func talent_skill_name() -> String:
 	if not Talents.has_skill(t):
 		return ""
 	if t.id == "dao-tac":
-		return "Vồ Mồi" if "pounce" in profile.copied_skills else "Chưa sao chép"
+		return str(COPY_NAMES.get(active_copy(), "Chưa sao chép"))
 	if t.id == "ngu-hanh":
 		return "Đổi hệ (%s)" % Monsters.ELEMENT_NAMES[profile.element]
 	return t.skill.name
@@ -1337,7 +1435,10 @@ func _damage_player(atk: float, mul: float) -> bool:
 	if _r() < float(stats.evasion):
 		_text(p.pos + Vector2(0, -28), "Né!", Color("#9de0e6"), false)
 		return false
-	var dmg := maxi(1, int(round(Formulas.compute_damage(atk, stats.def, mul) * (GUARD_REDUCE if p.guard_time > 0.0 else 1.0))))
+	# NV-17: kháng hệ của đòn (quái đánh mang hệ của nó).
+	var res: float = float(stats.get("res", {}).get(_incoming_el, 0.0))
+	_incoming_el = ""
+	var dmg := maxi(1, int(round(Formulas.compute_damage(atk, stats.def, mul) * (GUARD_REDUCE if p.guard_time > 0.0 else 1.0) * (1.0 - res))))
 	_last_combat = time
 	p.hp -= dmg
 	p.hurt = 0.2
@@ -1414,6 +1515,11 @@ func element_bonus(e: Enemy) -> float:
 
 
 func _apply_damage(e: Enemy, dmg: int, crit: bool, by_player: bool) -> void:
+	# M4.2: Khiên chặn — giảm 70% sát thương đến từ phía trước (±60° hướng nhìn).
+	if by_player and Monsters.DEFS[e.kind].get("shield", false) and e.state != "stunned" \
+			and absf(angle_difference(e.face, (player.pos - e.pos).angle())) <= SHIELD_ARC:
+		dmg = maxi(1, roundi(dmg * SHIELD_REDUCE))
+		_text(e.pos + Vector2(0, -e.radius - 22), "Chặn!", Color("#9ba8bc"), false)
 	e.hp -= dmg
 	e.hit_flash = 0.12
 	var color := (Color("#ffc940") if crit else Color.WHITE) if by_player else Color("#c9b6ff")
@@ -1431,6 +1537,8 @@ func _apply_damage(e: Enemy, dmg: int, crit: bool, by_player: bool) -> void:
 
 	if e.hp <= 0.0:
 		_kill_enemy(e)
+	elif e.role == "boss" and e.kind == "huyen-anh":
+		_huyen_phase(e)
 	elif e.role == "boss" and e.phase == 1 and e.hp <= e.max_hp * 0.5:
 		_boss_phase_two(e)
 
@@ -1464,6 +1572,13 @@ func _boss_phase_two(e: Enemy) -> void:
 func _kill_enemy(e: Enemy) -> void:
 	e.dead = true
 	_sfx("enemy_die")
+	if e.role == "bossClone":
+		# Bản sao Huyền Ảnh bị hạ: nổ vòng 4 m ×0,8, không cho EXP/đồ.
+		_blast(e.pos, CLONE_BLAST, Color("#b36bff"))
+		if e.pos.distance_to(player.pos) <= CLONE_BLAST + PLAYER_RADIUS:
+			_incoming_el = "kim"
+			_damage_player(e.atk, 0.8)
+		return
 	profile.kills += 1
 	if e.role == "quest":
 		quest_event("kill_quest")
@@ -1580,6 +1695,12 @@ func _on_boss_killed(e: Enemy) -> void:
 	profile.essence += ESSENCE_PER_BOSS
 	profile.tinh_kim += 1
 	_message("%s đã ngã xuống! +%d Thiên Phú Tinh Hoa, +1 Tinh Kim." % [e.name, ESSENCE_PER_BOSS], "good")
+	# TP-39: Đạo Tặc sao chép kỹ năng boss.
+	var copy: String = {"huyen-anh": "clone"}.get(e.kind, "")
+	if profile.talent == "dao-tac" and copy != "" and not (copy in profile.copied_skills):
+		profile.copied_skills.append(copy)
+		profile.active_copy = copy
+		_message("Đạo Tặc sao chép kỹ năng của %s: %s (phím L; đổi ở bảng Thiên phú)." % [e.name, COPY_NAMES[copy]], "good")
 	if first:
 		_events.append({"type": "victory", "boss": e.kind})
 
@@ -1593,7 +1714,7 @@ func _drop_loot(e: Enemy) -> void:
 	if e.role == "boss":
 		_drop_item(e.pos, e.level, "purple")
 		if _r() < ItemData.BOSS_UNIQUE_CHANCE:
-			_drop_item(e.pos + Vector2(20, 0), e.level, "orange", ItemData.BOSS_UNIQUE)
+			_drop_item(e.pos + Vector2(20, 0), e.level, "orange", str(ItemData.BOSS_UNIQUES.get(e.kind, ItemData.BOSS_UNIQUE)))
 		return
 	if e.elite:
 		_drop_item(e.pos, e.level, Items.roll_rarity("elite", _rng))
@@ -1614,7 +1735,7 @@ func _drop_loot(e: Enemy) -> void:
 func _drop_item(pos: Vector2, level: int, rarity: String, unique := "") -> void:
 	var set_id := ""
 	if rarity == "purple" and unique == "" and _r() < ItemData.SET_CHANCE:
-		set_id = ItemData.REGION_SET
+		set_id = str(ItemData.REGION_SETS.get(int(map.get("region", 1)), ItemData.REGION_SET))
 	var pk := Pickup.new()
 	pk.pos = pos + Vector2(_r() - 0.5, _r() - 0.5) * 24.0
 	pk.kind = "item"
@@ -1633,6 +1754,21 @@ func _update_enemy(e: Enemy, dt: float) -> void:
 	e.haste_timer -= dt
 	if e.role == "rare":
 		_update_rare(e, dt)
+	# M4.2: hướng nhìn (khiên chặn) — không quay người khi đang vung đòn.
+	if e.state != "windup" and e.state != "stunned":
+		e.face = (p.pos - e.pos).angle()
+	# Ảo ảnh hút đòn: quái trong 30 m quay sang đánh ảo ảnh gần nhất.
+	var dc := _nearest_decoy(e.pos)
+	if not dc.is_empty() and e.state in ["idle", "chase"] and e.kind != "goc-re":
+		e.state = "chase"
+		e.face = (dc.pos - e.pos).angle()
+		if e.pos.distance_to(dc.pos) > e.radius + 24.0:
+			_move_toward(e, dc.pos, e.speed, dt)
+		return
+	if e.kind == "huyen-anh" and e.role == "boss":
+		_update_huyen_anh(e, dt)
+	if e.state == "windup" and e.attack_kind == "pull" and e.pos.distance_to(p.pos) <= PULL_R + PLAYER_RADIUS and p.dodge_time <= 0.0:
+		p.pos = p.pos.move_toward(e.pos, PULL_SPEED * dt)
 	# Nấm Con tự nổ sau 3 giây.
 	if e.fuse > 0.0:
 		e.fuse -= dt
@@ -1671,7 +1807,20 @@ func _update_enemy(e: Enemy, dt: float) -> void:
 				e.home = e.pos
 				e.timer = 0.0
 				return
-			if e.role == "boss":
+			if e.role == "boss" and e.kind == "huyen-anh":
+				e.skill_cd -= dt
+				e.pounce_cd -= dt
+				if e.pounce_cd <= 0.0:
+					# Thoắt ẩn: ra sau lưng người chơi rồi chém.
+					e.pos = _clamp_to_arena(p.pos - Vector2.from_angle(p.facing) * 70.0, e.radius)
+					_begin_attack(e, "blink", 0.4)
+					e.pounce_cd = BLINK_CD
+					return
+				if e.skill_cd <= 0.0 and d > 110.0:
+					_begin_attack(e, "darts", 0.5)
+					e.skill_cd = DARTS_CD
+					return
+			if e.role == "boss" and e.kind == "boss":
 				e.pounce_cd -= dt
 				if e.pounce_cd <= 0.0 and d > 150.0:
 					_begin_attack(e, "pounce", 0.85)
@@ -1718,16 +1867,45 @@ func _begin_attack(e: Enemy, kind: String, windup: float) -> void:
 
 func _perform_attack(e: Enemy) -> void:
 	var p := player
+	var def: Dictionary = Monsters.DEFS[e.kind]
+	_incoming_el = str(def.element)
 	match e.attack_kind:
 		"melee":
 			if e.pos.distance_to(p.pos) <= e.radius + e.attack_range + PLAYER_RADIUS + 12.0:
-				_damage_player(e.atk, 1.0)
+				_damage_player(e.atk, float(def.get("melee_mul", 1.0)))
+		"dive":
+			# Ưng Gió — Bổ nhào: lao xuống chỗ đã đánh dấu.
+			e.pos = e.target
+			_blast(e.target, DIVE_R, Color("#e8e2c8"))
+			if e.target.distance_to(p.pos) <= DIVE_R + PLAYER_RADIUS:
+				_damage_player(e.atk, 1.3)
+		"volley":
+			# Cung Thủ — Bắn ba mũi, nón 30°, mỗi mũi ×0,7.
+			for k in [-1, 0, 1]:
+				_enemy_shot(e, (e.target - e.pos).angle() + k * deg_to_rad(15.0), 0.7, 300.0)
+		"darts":
+			# Huyền Ảnh — Ám tiễn: 3 phi tiêu nón 40°, mỗi phi tiêu ×0,8.
+			for k in [-1, 0, 1]:
+				_enemy_shot(e, (e.target - e.pos).angle() + k * deg_to_rad(20.0), 0.8, 340.0)
+		"dart1":
+			# Bản sao: 1 phi tiêu (đánh ×0,5 qua chỉ số).
+			_enemy_shot(e, (e.target - e.pos).angle(), 1.0, 320.0)
+		"blink":
+			_blast(e.pos, 60.0, Color("#b36bff"))
+			if e.pos.distance_to(p.pos) <= 60.0 + PLAYER_RADIUS:
+				_damage_player(e.atk, 1.5)
+		"pull":
+			# Lốc Xoáy — Hút xong thì nổ.
+			_blast(e.pos, PULL_BLAST, Color("#e2e6ee"))
+			if e.pos.distance_to(p.pos) <= PULL_BLAST + PLAYER_RADIUS:
+				_damage_player(e.atk, 1.5)
 		"spore":
 			var pr := Projectile.new()
 			pr.pos = e.pos
-			pr.vel = (e.target - e.pos).normalized() * 280.0
+			pr.vel = wind_bend((e.target - e.pos).normalized()) * 280.0
 			pr.ttl = 1.6
 			pr.atk = e.atk
+			pr.element = str(def.element)
 			projectiles.append(pr)
 		"pounce":
 			e.pos = e.target
@@ -1744,6 +1922,7 @@ func _perform_attack(e: Enemy) -> void:
 				Vector2(20, 20), world_size - Vector2(20, 20))
 			e.pos = to
 			if Geometry2D.get_closest_point_to_segment(p.pos, from, to).distance_to(p.pos) <= e.radius + PLAYER_RADIUS:
+				_incoming_el = str(def.element)
 				_damage_player(e.atk, 1.0)
 		"roots":
 			for k in 3:
@@ -1776,6 +1955,8 @@ func _perform_attack(e: Enemy) -> void:
 
 ## CB-12: Hú gọi (Sói Đầu Đàn), Sinh sôi (Nấm Mẹ).
 func _elite_skill(e: Enemy, kind: String) -> void:
+	if _elite_skill_m42(e, kind):
+		return
 	var summons := 0
 	for m in enemies:
 		if not m.dead and m.role == "summon":
@@ -1843,6 +2024,7 @@ func _update_projectiles(dt: float) -> void:
 		pr.pos += pr.vel * dt
 		pr.ttl -= dt
 		if pr.ttl > 0.0 and pr.pos.distance_to(player.pos) <= pr.radius + PLAYER_RADIUS:
+			_incoming_el = pr.element
 			_damage_player(pr.atk, 1.0)
 			pr.ttl = 0.0
 	projectiles = projectiles.filter(func(pr): return pr.ttl > 0.0)
@@ -1926,7 +2108,11 @@ func _pick_kind(level: int) -> String:
 ## CB-13: loại có tinh anh ở cấp này (Sói Đầu Đàn từ cấp 3, Nấm Mẹ từ cấp 5); "" nếu không có.
 func _elite_kind(level: int) -> String:
 	var opts: Array = []
-	for k in ["wolf", "mushroom"]:
+	var kinds: Array = ["wolf", "mushroom"]
+	var table = map.get("mobs", "legacy") if not map.is_empty() else "legacy"
+	if table is Array:
+		kinds = table.map(func(row): return str(row[0]))
+	for k in kinds:
 		if Monsters.elite_capable(k, level):
 			opts.append(k)
 	if opts.is_empty():
@@ -2670,3 +2856,189 @@ func _auto_input(input: Dictionary) -> Dictionary:
 func _sfx(id: String) -> void:
 	if sfx.size() < 32:
 		sfx.append(id)
+
+
+# ------------------------------------------------------------------ M4.2: gió, quái vùng 2, Huyền Ảnh, ảo ảnh
+
+const COPY_NAMES := {"pounce": "Vồ Mồi", "clone": "Phân Thân"}
+const WIND_DIRS := [Vector2(1, 0), Vector2(1, 1), Vector2(0, 1), Vector2(-1, 1), Vector2(-1, 0), Vector2(-1, -1), Vector2(0, -1), Vector2(1, -1)]
+
+
+func active_copy() -> String:
+	if profile.active_copy in profile.copied_skills:
+		return profile.active_copy
+	return str(profile.copied_skills[-1]) if not profile.copied_skills.is_empty() else ""
+
+
+func set_active_copy(id: String) -> void:
+	if id in profile.copied_skills:
+		profile.active_copy = id
+
+
+func wind_period() -> float:
+	return float(map.get("wind", 0.0)) if not map.is_empty() else 0.0
+
+
+func _init_wind() -> void:
+	wind_strong = 0.0
+	wind_next = Vector2.ZERO
+	if wind_period() <= 0.0:
+		wind_dir = Vector2.ZERO
+		return
+	wind_dir = WIND_DIRS[int(_r() * 8) % 8].normalized()
+	wind_timer = wind_period()
+
+
+func _pick_wind() -> Vector2:
+	for _i in 10:
+		var d: Vector2 = WIND_DIRS[int(_r() * 8) % 8].normalized()
+		if d.dot(wind_dir) < 0.9:
+			return d
+	return -wind_dir
+
+
+## GI-01: đổi hướng theo chu kỳ, báo trước 2 giây (HUD đọc wind_next).
+func _update_wind(dt: float) -> void:
+	wind_strong -= dt
+	if wind_dir == Vector2.ZERO:
+		return
+	wind_timer -= dt
+	if wind_timer <= WIND_WARN and wind_next == Vector2.ZERO:
+		wind_next = _pick_wind()
+	if wind_timer <= 0.0:
+		wind_dir = wind_next if wind_next != Vector2.ZERO else _pick_wind()
+		wind_next = Vector2.ZERO
+		wind_timer = wind_period()
+
+
+func wind_power() -> float:
+	return 2.0 if wind_strong > 0.0 else 1.0
+
+
+## GI-02: ngược gió −30%, xuôi gió +20% (theo độ lệch giữa hướng chạy và hướng gió).
+func wind_factor(move: Vector2) -> float:
+	if wind_dir == Vector2.ZERO or move.length() < 0.01:
+		return 1.0
+	var dot: float = move.normalized().dot(wind_dir)
+	return 1.0 + (0.2 * dot if dot > 0.0 else 0.3 * dot)
+
+
+## GI-03: đạn lệch tối đa 15° về hướng gió.
+## strength < 1: đòn tự nhắm (Thợ Săn, N9) đã ngắm bù gió một phần.
+func wind_bend(dir: Vector2, strength := 1.0) -> Vector2:
+	if wind_dir == Vector2.ZERO:
+		return dir
+	var diff := angle_difference(dir.angle(), wind_dir.angle())
+	return dir.rotated(clampf(diff, -WIND_BEND * strength, WIND_BEND * strength))
+
+
+func _enemy_shot(e: Enemy, angle: float, mul: float, speed: float) -> void:
+	var pr := Projectile.new()
+	pr.pos = e.pos
+	pr.vel = wind_bend(Vector2.from_angle(angle)) * speed
+	pr.ttl = 1.6
+	pr.atk = e.atk * mul
+	pr.element = str(Monsters.DEFS[e.kind].element)
+	projectiles.append(pr)
+
+
+func _add_decoy(pos: Vector2, ttl: float) -> void:
+	decoys.append({"pos": pos, "ttl": ttl})
+
+
+func _nearest_decoy(pos: Vector2) -> Dictionary:
+	var best := {}
+	var bd := DECOY_RANGE
+	for dc in decoys:
+		var d: float = pos.distance_to(dc.pos)
+		if d < bd:
+			bd = d
+			best = dc
+	return best
+
+
+## Tinh anh vùng 2: Chém xoáy (Đội Trưởng), Nghịch Phong (Phù Thuỷ Gió).
+func _update_whirls(dt: float) -> void:
+	for w in whirls:
+		w.wait -= dt
+		if w.wait > 0.0:
+			continue
+		var e: Enemy = w.e
+		if e.dead:
+			w.left = 0
+			continue
+		_blast(e.pos, WHIRL_R + e.radius, Color("#ff9a3c"))
+		if e.pos.distance_to(player.pos) <= WHIRL_R + e.radius + PLAYER_RADIUS:
+			_incoming_el = "kim"
+			_damage_player(e.atk, 1.6)
+		w.left -= 1
+		w.wait = 0.5
+	whirls = whirls.filter(func(w): return w.left > 0)
+
+
+func _elite_skill_m42(e: Enemy, kind: String) -> bool:
+	match kind:
+		"whirl":
+			e.skill_cd = 10.0
+			whirls.append({"e": e, "left": 3, "wait": 0.0})
+			_text(e.pos + Vector2(0, -e.radius - 24), "Chém xoáy!", Color("#ff9a3c"), true)
+			return true
+		"gale":
+			e.skill_cd = 14.0
+			if wind_dir != Vector2.ZERO:
+				wind_dir = _pick_wind()
+				wind_next = Vector2.ZERO
+				wind_timer = wind_period()
+				wind_strong = GALE_TIME
+			_text(e.pos + Vector2(0, -e.radius - 24), "Nghịch Phong!", Color("#e8e2c8"), true)
+			return true
+	return false
+
+
+## Huyền Ảnh: 60% → 2 bản sao; 25% → 4 bản sao; giai đoạn 3 đổi chỗ mỗi 6 giây.
+func _huyen_phase(e: Enemy) -> void:
+	if e.phase == 1 and e.hp <= e.max_hp * 0.6:
+		e.phase = 2
+		_spawn_clones(e, 2)
+		_message("Huyền Ảnh phân thân! Chỉ bản thật có bóng.", "bad")
+	elif e.phase == 2 and e.hp <= e.max_hp * 0.25:
+		e.phase = 3
+		_spawn_clones(e, 4)
+		_swap_timer = SWAP_PERIOD
+		_message("Vạn Ảnh! Bản thật và bản sao đổi chỗ cho nhau.", "bad")
+
+
+func _spawn_clones(e: Enemy, want: int) -> void:
+	var have := 0
+	for m in enemies:
+		if m.role == "bossClone" and not m.dead:
+			have += 1
+	for i in maxi(0, want - have):
+		var c := spawn_enemy("huyen-anh-ao", e.level, _clamp_to_arena(e.pos + Vector2.from_angle(_r() * TAU) * 120.0, e.radius), {"role": "bossClone"})
+		c.name = e.name
+		c.max_hp = roundf(e.max_hp * CLONE_HP)
+		c.hp = c.max_hp
+		c.atk = e.atk * CLONE_ATK
+		c.poise = 0.0
+		c.max_poise = 0.0
+		c.state = "chase"
+
+
+func clones() -> Array:
+	return enemies.filter(func(m): return m.role == "bossClone" and not m.dead)
+
+
+func _update_huyen_anh(e: Enemy, dt: float) -> void:
+	if e.phase < 3:
+		return
+	_swap_timer -= dt
+	if _swap_timer > 0.0:
+		return
+	_swap_timer = SWAP_PERIOD
+	var cs := clones()
+	if cs.is_empty():
+		return
+	var c: Enemy = cs[int(_r() * cs.size()) % cs.size()]
+	var tmp := e.pos
+	e.pos = c.pos
+	c.pos = tmp

@@ -8,7 +8,7 @@ extends RefCounted
 
 const REGIONS := [
 	{"id": 1, "name": "Làng Thanh Thạch & Rừng Sương", "levels": [1, 10], "element": "moc", "maps": ["1-1", "1-3"]},
-	{"id": 2, "name": "Đồng Bằng Gió Hú", "levels": [10, 20], "element": "kim", "maps": [], "unlock": "Hạ Sói Chúa · cấp 10 · khai phá vùng 1 ≥ 60%"},
+	{"id": 2, "name": "Đồng Bằng Gió Hú", "levels": [10, 20], "element": "kim", "maps": ["2-1", "2-2", "2-3"], "unlock": "Hạ Sói Chúa · cấp 10 · khai phá vùng 1 ≥ 60%"},
 	{"id": 3, "name": "Sa Mạc Xích Sa", "levels": [20, 32], "element": "tho", "maps": [], "unlock": "Lực chiến 5.000 (Alpha)"},
 	{"id": 4, "name": "Đầm Lầy U Minh", "levels": [32, 45], "element": "thuy", "maps": [], "unlock": "Chuyển chức 1 (Alpha)"},
 	{"id": 5, "name": "Núi Viêm Long", "levels": [45, 60], "element": "hoa", "maps": [], "unlock": "Thiên phú tiến hoá 1 lần (Alpha)"},
@@ -53,10 +53,62 @@ const MAPS := {
 		"wind": 0.0,
 		"trees": 300,
 	},
+	## M4.2: vùng 2 Đồng Bằng Gió Hú (06 vùng 2). wind = chu kỳ đổi hướng gió (giây), 0 = không gió.
+	"2-1": {
+		"region": 2,
+		"name": "Cửa Gió",
+		"size": Vector2(2800, 1600),
+		"levels": [10, 13],
+		"zone_x": [500.0, 600.0],
+		"safe": {"pos": Vector2(300, 800), "r": 230.0, "name": "Thành Biên Đài", "kind": "town"},
+		"arena": null,
+		"gate": false,
+		"mobs": [["ung-gio", 10, 40], ["linh-danh-thue", 11, 35], ["cung-thu", 12, 25]],
+		"ground": "tile-plain",
+		"fog": 0.15,
+		"tint": Color(0.3, 0.26, 0.08),
+		"wind": 12.0,
+		"trees": 110,
+		"decor": "plains",
+	},
+	"2-2": {
+		"region": 2,
+		"name": "Thảo Nguyên Hú",
+		"size": Vector2(2800, 1600),
+		"levels": [13, 17],
+		"zone_x": [450.0, 500.0],
+		"safe": {"pos": Vector2(220, 800), "r": 140.0, "name": "Trạm Gió", "kind": "camp"},
+		"arena": null,
+		"gate": false,
+		"mobs": [["ung-gio", 13, 25], ["linh-danh-thue", 13, 25], ["cung-thu", 13, 30], ["loc-xoay", 14, 20]],
+		"ground": "tile-plain",
+		"fog": 0.2,
+		"tint": Color(0.3, 0.26, 0.08),
+		"wind": 12.0,
+		"trees": 120,
+		"decor": "plains",
+	},
+	"2-3": {
+		"region": 2,
+		"name": "Mắt Bão",
+		"size": Vector2(2800, 1600),
+		"levels": [17, 20],
+		"zone_x": [450.0, 550.0],
+		"safe": {"pos": Vector2(220, 800), "r": 140.0, "name": "Trạm Mắt Bão", "kind": "camp"},
+		"arena": {"pos": Vector2(2420, 800), "r": 280.0, "boss": "huyen-anh", "level": 18, "chapter": 2, "name": "Phủ Huyền Ảnh"},
+		"gate": true,
+		"mobs": [["ung-gio", 17, 20], ["linh-danh-thue", 17, 25], ["cung-thu", 17, 25], ["loc-xoay", 17, 30]],
+		"ground": "tile-plain",
+		"fog": 0.35,
+		"tint": Color(0.22, 0.2, 0.3),
+		"wind": 8.0,
+		"trees": 90,
+		"decor": "plains",
+	},
 }
 
 ## Thứ tự để hiển thị và kiểm điều kiện "đã tới map trước".
-const ORDER := ["1-1", "1-3"]
+const ORDER := ["1-1", "1-3", "2-1", "2-2", "2-3"]
 
 
 static func get_map(map_id: String) -> Dictionary:

@@ -42,6 +42,7 @@ var _boss_hp: ProgressBar
 var _boss_poise: ProgressBar
 
 var _combo: Label
+var _wind: Label
 var _skills: HBoxContainer
 ## UI-01: ô 0 = đánh thường, 1–4 = kỹ năng lớp. Mỗi phần tử: [panel, lớp phủ hồi chiêu, nhãn tên, nhãn phím, icon]
 var _class_slots: Array = []
@@ -155,6 +156,10 @@ func _ready() -> void:
 	_boss_box.add_child(_boss_poise)
 	add_child(_boss_box)
 
+	_wind = UiTheme.label("", "HudLabel")
+	_wind.add_theme_font_override("font", UiTheme.bold_font())
+	_wind.add_theme_font_size_override("font_size", 16)
+	add_child(_wind)
 	_combo = UiTheme.label("", "HudLabel")
 	_combo.add_theme_font_override("font", UiTheme.bold_font())
 	_combo.add_theme_font_size_override("font_size", 24)
@@ -356,6 +361,16 @@ func update_from(w: GameWorld) -> void:
 	_resources.text = ("Đuốc hồi%s · rê chuột vào icon để xem chú thích" % torch_note) if torch_note != "" else "Rê chuột vào icon để xem chú thích"
 
 	_update_quest(w)
+	# M4.2 (GI-01): hướng gió + báo trước 2 giây.
+	_wind.visible = w.wind_dir != Vector2.ZERO
+	if _wind.visible:
+		var txt := "Gió thổi %s%s" % [_arrow(w.wind_dir), " (mạnh ×2)" if w.wind_power() > 1.0 else ""]
+		if w.wind_next != Vector2.ZERO:
+			txt += "   ·   sắp đổi %s sau %.0f giây" % [_arrow(w.wind_next), ceilf(w.wind_timer)]
+			_wind.add_theme_color_override("font_color", UiTheme.GOLD)
+		else:
+			_wind.add_theme_color_override("font_color", Color("#e8e2c8"))
+		_wind.text = txt
 
 	_combo.visible = w.combo >= 5
 	_combo.text = "%d combo · +%d%% EXP" % [w.combo, roundi((Formulas.combo_exp_multiplier(w.combo) - 1.0) * 100.0)]
@@ -435,6 +450,11 @@ func _update_class_slots(w: GameWorld) -> void:
 
 
 ## C1-12: bảng nhiệm vụ chương 1 (thay 3 mục tiêu cũ).
+static func _arrow(d: Vector2) -> String:
+	var arrows := ["về Đông", "về Đông Nam", "về Nam", "về Tây Nam", "về Tây", "về Tây Bắc", "về Bắc", "về Đông Bắc"]
+	return arrows[posmod(roundi(d.angle() / (PI / 4.0)), 8)]
+
+
 func _update_quest(w: GameWorld) -> void:
 	var p = w.profile
 	var q := w.quest()
@@ -480,6 +500,8 @@ func _layout() -> void:
 	var boss_w := clampf(sz.x - 680.0, 260.0, 520.0)
 	_boss_box.size = Vector2(boss_w, 0)
 	_boss_box.position = Vector2((sz.x - boss_w) / 2.0, 14)
+	_wind.reset_size()
+	_wind.position = Vector2((sz.x - _wind.size.x) / 2.0, 92.0 if _boss_box.visible else 18.0)
 	_combo.reset_size()
 	_combo.position = Vector2(sz.x - _combo.size.x - 24, sz.y / 2.0)
 	_skills.reset_size()

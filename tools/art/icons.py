@@ -400,8 +400,20 @@ def g_bark(cv):
     cv.set(15, 16, (255, 255, 255, 255))
 
 
+def g_huyen_mask(cv):
+    """Mặt Nạ Huyền Ảnh (mũ Cam, M4.2)."""
+    glow(cv, 16, 16, 15, hexc("#ff9a3c"), 60)
+    cv.shade_poly([(6, 9), (16, 5), (26, 9), (25, 20), (16, 28), (7, 20)], R["void"])
+    cv.shade_poly([(9, 13), (14, 12), (14, 16), (9, 16)], [hexc("#140a22")] * 4)
+    cv.shade_poly([(18, 12), (23, 13), (23, 16), (18, 16)], [hexc("#140a22")] * 4)
+    cv.set(11, 14, hexc("#ff3b4e"))
+    cv.set(21, 14, hexc("#ff3b4e"))
+    cv.line(16, 5, 16, 26, R["gold"][2])
+    cv.line(8, 22, 24, 22, R["gold"][1])
+
+
 ITEMS = {"weapon": g_sword, "helm": g_helm, "armor": g_armor, "gloves": g_gloves, "boots": g_boots,
-         "necklace": g_necklace, "ring": g_ring, "amulet": g_amulet, "wolf_fang": g_wolf_fang, "lao_thu_bark": g_bark}
+         "necklace": g_necklace, "ring": g_ring, "amulet": g_amulet, "wolf_fang": g_wolf_fang, "lao_thu_bark": g_bark, "huyen_anh_mask": g_huyen_mask}
 RESOURCES = {"gold": g_gold, "wood": g_wood, "stone": g_stone, "essence": g_essence, "tinh_kim": g_tinh_kim,
              "torch": g_torch, "herb": g_herb, "potion": g_potion}
 # ---------------------------------------------------------------------- kỹ năng M3 (03-mvp-spec mục 5.4)

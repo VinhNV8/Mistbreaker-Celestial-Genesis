@@ -55,6 +55,32 @@ SPRITES["lao-thu"] = {"builder": "treant", "name": "Lão Thụ Sương Mù", "si
                       "spec": {"bark": "bark", "leaf": "purple", "eye": "#ff5470"}}
 SPRITES["goc-re"] = {"builder": "treant", "name": "Gốc Rễ", "size_mul": 0.8,
                      "spec": {"bark": "wood", "leaf": "leaf", "eye": "#c878ff"}}
+# M4.2: quái vùng 2 Đồng Bằng Gió Hú (06 vùng 2) — hệ Kim: trắng bạc, thép
+SPRITES["ung-gio"] = {"builder": "bird", "name": "Ưng Gió", "spec": {"body": "white", "wing": "steel", "eye": "#ff5470"}}
+SPRITES["linh-danh-thue"] = {"builder": "humanoid", "name": "Lính Đánh Thuê Hư Vô",
+                             "spec": {"cloth": "steel", "pants": "leather", "hair": "hair_dark", "hood": True, "trim": "void",
+                                      "weapon": "sword", "cape": "void"}}
+SPRITES["doi-truong"] = {"builder": "humanoid", "name": "Đội Trưởng Đánh Thuê", "size_mul": 1.25,
+                         "spec": {"cloth": "steel", "pants": "cloth_red", "hood": True, "trim": "gold", "weapon": "sword", "cape": "cloth_red"}}
+SPRITES["cung-thu"] = {"builder": "humanoid", "name": "Cung Thủ Thảo Nguyên",
+                       "spec": {"cloth": "leaf", "pants": "leather", "hair": "hair_brown", "hair_style": "duoi", "trim": "leather",
+                                "weapon": "bow", "collar": "dirt"}}
+SPRITES["loc-xoay"] = {"builder": "wisp", "name": "Lốc Xoáy Con", "spec": {"body": "white", "glow": "#e8e2c8"}}
+SPRITES["phu-thuy-gio"] = {"builder": "humanoid", "name": "Phù Thuỷ Gió", "size_mul": 1.15,
+                           "spec": {"cloth": "purple", "pants": "purple", "hood": True, "trim": "white", "weapon": "none"}}
+# Boss chương 2: Tướng Gián Điệp Huyền Ảnh — bản thật có bóng, bản sao (huyen-anh-ao) không có bóng (kịch bản)
+SPRITES["huyen-anh"] = {"builder": "humanoid", "name": "Tướng Gián Điệp Huyền Ảnh", "size_mul": 1.5,
+                        "spec": {"cloth": "void", "pants": "hair_dark", "hood": True, "trim": "blood", "weapon": "sword", "cape": "purple"}}
+SPRITES["huyen-anh-ao"] = {"builder": "humanoid", "name": "Bản sao Huyền Ảnh", "size_mul": 1.5,
+                           "spec": {"cloth": "void", "pants": "hair_dark", "hood": True, "trim": "blood", "weapon": "sword", "cape": "purple",
+                                    "no_shadow": True}}
+# M4.3: NPC Thành Biên Đài
+SPRITES["npc-lac-phong"] = {"builder": "humanoid", "name": "Đội trưởng Lạc Phong",
+                            "spec": {"cloth": "cloth_blue", "pants": "steel", "hair": "hair_brown", "hair_style": "bui", "trim": "gold", "weapon": "sword", "cape": "cloth_blue"}}
+SPRITES["npc-thiet-nguu"] = {"builder": "humanoid", "name": "Thợ rèn Thiết Ngưu",
+                             "spec": {"cloth": "leather", "pants": "bark", "skin": "skin_dark", "hair": "hair_dark", "weapon": "none"}}
+SPRITES["npc-mac-tam"] = {"builder": "humanoid", "name": "Thương nhân Mạc Tam",
+                          "spec": {"cloth": "gold", "pants": "cloth_red", "hood": True, "trim": "purple", "weapon": "none", "skin": "skin_light"}}
 # C1-11: NPC làng Thanh Thạch (hộp thoại + đứng trong làng)
 SPRITES["npc-elder"] = {"builder": "humanoid", "name": "Trưởng làng Thạch Lão",
                         "spec": {"skin": "skin", "hair": "white", "hair_style": "bui", "cloth": "wood", "pants": "leather",

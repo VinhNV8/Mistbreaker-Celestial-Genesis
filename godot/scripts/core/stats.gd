@@ -7,6 +7,7 @@ const BASE_SPIN_CD := 6.0
 const STATS := ["str", "agi", "int", "vit", "luk"]
 ## ST-04: trần né tránh.
 const EVASION_CAP := 0.3
+const RES_CAP := 0.5
 
 
 ## Đọc điểm an toàn với save/test cũ chỉ có str/agi/vit.
@@ -54,12 +55,13 @@ static func derive(level: int, pts: Dictionary, talent: String, bonus := {}, tal
 		"max_hp": int(round((base_hp + vit_pts * 12 + flat.get("max_hp", 0.0)) * (1.0 + hp_pct))),
 		"atk": (10.0 + lv * 2 + atk_from_pts + flat.get("atk", 0.0)) * (1.0 + atk_pct),
 		"def": 5.0 + lv * 1.5 + vit_pts * 0.5 + flat.get("def", 0.0),
-		"atk_speed": 1.0 + agi_pts * 0.01 + (Talents.lv_value(0.05, 0.075, tlv) if talent == "tay-nhanh" else 0.0) + flat.get("atk_speed", 0.0),
+		"atk_speed": 1.0 + agi_pts * 0.01 + (Talents.lv_value(0.05, 0.075, tlv) if talent == "tay-nhanh" else 0.0) + flat.get("atk_speed", 0.0)
+			+ float(bonus.get("atk_speed_pct", 0.0)),
 		"crit": minf(0.6, 0.05 + agi_pts * 0.005 + luk_pts * 0.003
 			+ (Talents.lv_value(0.1, 0.15, tlv) if talent == "mat-ung" else 0.0) + flat.get("crit", 0.0) + crit_bonus),
 		## Chí mạng gây ×(1 + crit_dmg); gốc 0,5 → ×1,5.
 		"crit_dmg": 0.5 + flat.get("crit_dmg", 0.0) + crit_dmg_bonus,
-		"move_speed": 230.0 + flat.get("move_speed", 0.0),
+		"move_speed": (230.0 + flat.get("move_speed", 0.0)) * (1.0 + float(bonus.get("move_pct", 0.0))),
 		"spin_cd": BASE_SPIN_CD - float(bonus.get("spin_cd", 0.0)),
 		"uniques": bonus.get("uniques", []),
 		# ST-01…04 (M3)
@@ -68,4 +70,11 @@ static func derive(level: int, pts: Dictionary, talent: String, bonus := {}, tal
 		"skill_mul": 1.0 + int_pts * 0.005,
 		"drop_bonus": minf(0.10, luk_pts * 0.002),
 		"evasion": minf(EVASION_CAP, (0.05 if hunter else 0.0) + agi_pts * 0.003),
+		# NV-17: kháng hệ (tối đa 50%), M4.2
+		"res": {
+			"kim": minf(RES_CAP, flat.get("res_kim", 0.0)), "moc": minf(RES_CAP, flat.get("res_moc", 0.0)),
+			"thuy": minf(RES_CAP, flat.get("res_thuy", 0.0)), "hoa": minf(RES_CAP, flat.get("res_hoa", 0.0)),
+			"tho": minf(RES_CAP, flat.get("res_tho", 0.0)),
+		},
+		"dodge_cd": 3.0 - float(bonus.get("dodge_cd", 0.0)),
 	}

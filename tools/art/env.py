@@ -190,6 +190,61 @@ def fx_trap():
     return cv, [9, 9]
 
 
+# ------------------------------------------------------------ M4: Đồng Bằng Gió Hú, Thành Biên Đài
+def rock(seed):
+    rnd = random.Random(seed)
+    cv = Canvas(28, 20)
+    shadow(cv, 14, 17, 12, 2.5, 90)
+    cv.shade_poly([(3, 16), (6, 8), (12, 4), (20, 5), (25, 11), (24, 16)], R["stone"])
+    for _ in range(3):
+        x = rnd.uniform(8, 20)
+        cv.line(x, 7, x + rnd.uniform(-3, 3), 14, R["stone"][0])
+    cv.outline(OUTLINE)
+    return cv, [14, 16]
+
+
+def tall_grass(seed):
+    rnd = random.Random(seed)
+    cv = Canvas(20, 18)
+    shadow(cv, 10, 15.5, 8, 1.6, 60)
+    for i in range(9):
+        x = 3 + i * 1.8 + rnd.uniform(-0.6, 0.6)
+        top = rnd.uniform(2, 7)
+        cv.line(x, 15, x + rnd.uniform(1.5, 3.5), top, R["leaf_light"][rnd.choice((1, 2, 3))], 1.2)
+    return cv, [10, 15]
+
+
+def house_stone():
+    cv = Canvas(48, 46)
+    shadow(cv, 24, 42.5, 21, 3.5, 100)
+    cv.shade_poly([(7, 20), (41, 20), (41, 42), (7, 42)], R["stone"])
+    for y in (25, 31, 37):
+        cv.line(8, y, 40, y, R["stone"][0])
+    for x, y0 in ((14, 20), (24, 25), (33, 31), (19, 31), (29, 37)):
+        cv.line(x, y0, x, y0 + 5, R["stone"][0])
+    cv.rect(20, 31, 28, 42, R["wood"][1])
+    cv.rect(10, 24, 15, 29, hexc("#ffd877"))
+    cv.rect(33, 24, 38, 29, hexc("#ffd877"))
+    cv.shade_poly([(24, 4), (45, 21), (3, 21)], R["cloth_red"])
+    cv.outline(OUTLINE)
+    return cv, [24, 42]
+
+
+def tower():
+    cv = Canvas(32, 64)
+    shadow(cv, 16, 60.5, 13, 3, 100)
+    cv.shade_poly([(7, 18), (25, 18), (24, 60), (8, 60)], R["stone"])
+    for y in range(22, 58, 6):
+        cv.line(8, y, 24, y, R["stone"][0])
+    cv.rect(13, 30, 19, 38, hexc("#2a2430"))
+    for x in (5, 11, 17, 23):
+        cv.rect(x, 12, x + 4, 18, R["stone"][2])
+    cv.rect(15, 2, 16, 12, R["wood"][1])
+    cv.shade_poly([(16, 2), (24, 5), (16, 8)], R["cloth_blue"])
+    cv.outline(OUTLINE)
+    return cv, [16, 60]
+
+
 def build_all():
     out = {}
     for i in range(3):
@@ -197,10 +252,17 @@ def build_all():
     out["tile-dirt"] = (tile(R["dirt"], 200, tufts=False), [0, 0])
     out["tile-village"] = (tile([mix(c, (0, 0, 0, 255), 0.15) for c in R["dirt"]], 201, tufts=False), [0, 0])
     out["tile-void"] = (tile(R["void"], 300, tufts=False), [0, 0])
+    out["tile-plain"] = (tile([hexc("#3e4a24"), hexc("#55642e"), hexc("#6a7a38"), hexc("#8a9a4a")], 400), [0, 0])
+    out["tile-town"] = (tile(R["stone"], 401, tufts=False), [0, 0])
     for i in range(3):
         out["tree-%d" % i] = tree(10 + i)
     out["tree-pine"] = tree(20, "pine")
     out["bush"] = bush(30)
+    for i in range(2):
+        out["rock-%d" % i] = rock(40 + i)
+    out["tall-grass"] = tall_grass(50)
+    out["house-stone"] = house_stone()
+    out["tower"] = tower()
     out["hut"] = hut()
     out["stele"] = stele()
     out["chest"] = chest()

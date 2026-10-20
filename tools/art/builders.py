@@ -127,7 +127,8 @@ def humanoid(spec):
                         cv.px[y][x] = None
             return _finish(cv)
 
-        shadow(cv, 16, 29.5, 7, 2)
+        if not spec.get("no_shadow"):
+            shadow(cv, 16, 29.5, 7, 2)
         if cape:
             cv.shade_poly([(12, 14 + b), (16, 14 + b), (14, 26 + b), (9, 25 + b)], cape)
         if weapon == "bow":
@@ -355,4 +356,39 @@ def treant(spec):
     return [("idle", idle), ("run", run), ("attack", atk), ("hurt", hurt), ("death", death)]
 
 
-BUILDERS = {"humanoid": humanoid, "quadruped": quadruped, "mushroom": mushroom, "wisp": wisp, "treant": treant}
+# ====================================================================== chim
+def bird(spec):
+    """Chim săn 24×24 (Ưng Gió, M4.2). spec: body, wing, beak (hex), eye (hex)."""
+    body = _ramp(spec, "body", "white")
+    wing = _ramp(spec, "wing", "stone")
+    beak = hexc(spec.get("beak", "#ffc940"))
+    eye = hexc(spec.get("eye", "#ff5470"))
+
+    def frame(flap=0.0, lift=0.0, dive=0.0):
+        cv = Canvas(24, 24)
+        shadow(cv, 12, 21.5, 5 + lift * 0.3, 1.4, 70)
+        cy = 11 - lift + dive
+        # cánh xa
+        cv.shade_poly([(11, cy), (5, cy - 5 - flap * 4), (3, cy - 2 - flap * 3), (9, cy + 2)], _darker(wing))
+        # thân
+        cv.shade_ellipse(12, cy + 1, 5.2, 3.2, body)
+        cv.shade_poly([(7, cy + 1), (3.5, cy + 3), (4, cy - 0.5)], wing)          # đuôi
+        # đầu + mỏ
+        cv.shade_ellipse(17, cy - 1, 2.8, 2.6, body)
+        cv.shade_poly([(19, cy - 1.5), (22.5, cy), (19, cy + 0.6)], [beak] * 4)
+        cv.set(17.6, cy - 1.8, eye)
+        # cánh gần
+        cv.shade_poly([(12, cy), (16, cy - 6 - flap * 4), (19, cy - 4 - flap * 3), (14, cy + 2)], wing)
+        cv.line(10, cy + 4, 9.5, cy + 6, beak)
+        cv.line(13, cy + 4, 13.5, cy + 6, beak)
+        return _finish(cv)
+
+    idle = [frame(0.0), frame(1.0)]
+    run = [frame(0.0), frame(1.0), frame(0.5), frame(-0.3)]
+    atk = [frame(1.0, lift=4), frame(0.6, lift=6), frame(-0.5, dive=2)]
+    hurt = [_hurt(lambda: frame(0.5))]
+    death = [frame(0.0, dive=2).fade(0.85), frame(0.0, dive=5).fade(0.6), frame(0.0, dive=7).fade(0.35)]
+    return [("idle", idle), ("run", run), ("attack", atk), ("hurt", hurt), ("death", death)]
+
+
+BUILDERS = {"humanoid": humanoid, "quadruped": quadruped, "mushroom": mushroom, "wisp": wisp, "treant": treant, "bird": bird}

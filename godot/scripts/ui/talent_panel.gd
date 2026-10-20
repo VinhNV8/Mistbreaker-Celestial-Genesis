@@ -39,6 +39,19 @@ func _render(content: VBoxContainer) -> void:
 		content.add_child(UiTheme.label("KỸ NĂNG (PHÍM L)", "Eyebrow"))
 		content.add_child(UiTheme.label("%s — %s Hồi chiêu %.1f giây." % [world.talent_skill_name(), t.skill.text, world.talent_skill_cd()], "", W))
 	_talent_state(content, p, t)
+	# TP-39 (M4.2): Đạo Tặc có ≥ 2 kỹ năng sao chép thì chọn kỹ năng dùng bằng phím L.
+	if t.id == "dao-tac" and p.copied_skills.size() >= 2:
+		var copy_row := UiTheme.hbox(8)
+		copy_row.add_child(UiTheme.label("Kỹ năng L:", "Small"))
+		for sk in p.copied_skills:
+			var b := UiTheme.button(str(world.COPY_NAMES.get(sk, sk)), sk == world.active_copy())
+			b.name = "Copy_" + str(sk)
+			var id: String = sk
+			b.pressed.connect(func():
+				world.set_active_copy(id)
+				refresh())
+			copy_row.add_child(b)
+		content.add_child(copy_row)
 	_evolution(content, t)
 
 	content.add_child(UiTheme.label("HIỆU ỨNG THEO CẤP", "Eyebrow"))

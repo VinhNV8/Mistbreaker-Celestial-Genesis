@@ -107,6 +107,12 @@ func _draw() -> void:
 		for e in world.enemies:
 			_draw_enemy(e)
 	_draw_player_skills()
+	_draw_wind()
+	# Ảo ảnh hút đòn (Mặt Nạ Huyền Ảnh, Phân Thân)
+	for dc in world.decoys:
+		var a: float = clampf(dc.ttl, 0.0, 1.0)
+		SpriteLib.draw_hero(self, world.profile.class_id, world.profile.look, "idle", int(world.time * 3.0) % 2,
+			_feet(dc.pos, GameWorld.PLAYER_RADIUS), false, Color(0.7, 0.5, 1.0, 0.55 * a))
 	# C1-24: vũng độc Nấm Độc
 	for hz in world.hazards:
 		var a: float = clampf(hz.ttl, 0.0, 1.0)
@@ -275,6 +281,11 @@ func _feet(pos: Vector2, r: float) -> Vector2:
 
 func _draw_tree_sprite(t: Dictionary) -> void:
 	var base: Vector2 = t.pos + Vector2(0, t.r * 0.6)
+	# M4.2: thảo nguyên — đá, cỏ cao, bụi thay cho cây rừng.
+	if str(world.map.get("decor", "forest")) == "plains":
+		var pid: String = ["rock-0", "tall-grass", "rock-1", "bush"][t.variant]
+		SpriteLib.draw_env(self, pid if SpriteLib.has_env(pid) else "bush", base, Color.WHITE, 1.0 if t.r < 28.0 else 1.4, t.shade > 0.5)
+		return
 	if t.r < 20.0:
 		SpriteLib.draw_env(self, "bush", base, Color.WHITE, 1.0, t.shade > 0.5)
 		return
@@ -358,17 +369,23 @@ func _draw_enemy_sprite(e) -> void:
 	if not SpriteLib.has_sprite(e.kind):
 		_draw_enemy(e)
 		return
+	# M4.2: tinh anh vùng 2 có hình riêng (Đội Trưởng, Phù Thuỷ Gió).
+	var sid: String = e.kind
+	if e.elite:
+		var es: String = str(Monsters.DEFS[e.kind].get("elite_sprite", e.kind))
+		if SpriteLib.has_sprite(es):
+			sid = es
 	var hidden := world.is_hidden(e)
 	var anim := "idle"
 	var frame := 0
 	if e.state == "windup":
 		anim = "attack"
-		frame = SpriteLib.frame_progress(e.kind, anim, 1.0 - maxf(0.0, e.timer) / e.windup_total)
+		frame = SpriteLib.frame_progress(sid, anim, 1.0 - maxf(0.0, e.timer) / e.windup_total)
 	elif e.state == "stunned" or e.hit_flash > 0.0:
 		anim = "hurt"
 	else:
 		anim = "run" if _moving(e.id, e.pos) else "idle"
-		frame = SpriteLib.frame_at(e.kind, anim, _anim_time(e.id, anim))
+		frame = SpriteLib.frame_at(sid, anim, _anim_time(e.id, anim))
 	if anim != "idle" and anim != "run":
 		_anim_time(e.id, anim)
 	var left: bool = world.player.pos.x < e.pos.x if e.state in ["windup", "chase"] else _facing_left(e.id, e.pos, false)
@@ -385,10 +402,14 @@ func _draw_enemy_sprite(e) -> void:
 	# C1-22: Lõi Sương — quái ở xa bị sương che mờ
 	if world.map_id == "1-3" and not hidden and e.pos.distance_to(world.player.pos) > GameWorld.FOG_SIGHT:
 		mod.a = 0.5
-	if e.elite or e.role == "boss":
+	# Huyền Ảnh không có vòng chân: chỉ bóng phân biệt bản thật (kịch bản).
+	if (e.elite or e.role == "boss") and e.kind != "huyen-anh":
 		var ring := Color("#ff5470") if e.role == "boss" else Color("#ffc940")
 		_ground_ring(_feet(e.pos, e.radius), e.radius + 4.0, Color(ring, 0.8 * mod.a))
-	SpriteLib.draw_frame(self, e.kind, anim, frame, _feet(e.pos, e.radius), left, mod, _enemy_size(e))
+	# M4.2: khiên chặn phía trước
+	if Monsters.DEFS[e.kind].get("shield", false) and not hidden:
+		draw_arc(e.pos, e.radius + 9.0, e.face - GameWorld.SHIELD_ARC, e.face + GameWorld.SHIELD_ARC, 16, Color(0.8, 0.85, 0.95, 0.75), 4.0, true)
+	SpriteLib.draw_frame(self, sid, anim, frame, _feet(e.pos, e.radius), left, mod, _enemy_size(e))
 
 
 func _draw_corpse(k: Dictionary) -> void:
@@ -481,6 +502,23 @@ func _ground_ring(pos: Vector2, r: float, c: Color) -> void:
 	draw_set_transform(pos, 0.0, Vector2(1.0, 0.45))
 	draw_arc(Vector2.ZERO, r, 0.0, TAU, 40, c, 2.5, true)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+
+## M4.2: vệt gió chạy theo hướng gió.
+func _draw_wind() -> void:
+	if world.wind_dir == Vector2.ZERO:
+		return
+	var view := _view_rect()
+	var d: Vector2 = world.wind_dir
+	var power: float = world.wind_power()
+	for i in 46:
+		var seed_x := float((i * 7919) % 1000) / 1000.0
+		var seed_y := float((i * 104729) % 1000) / 1000.0
+		var travel := fposmod(world.time * 420.0 * power + i * 173.0, view.size.x + view.size.y)
+		var start := view.position + Vector2(seed_x * view.size.x, seed_y * view.size.y)
+		var at := start + d * travel
+		at = Vector2(view.position.x + fposmod(at.x - view.position.x, view.size.x), view.position.y + fposmod(at.y - view.position.y, view.size.y))
+		draw_line(at, at + d * (26.0 + 14.0 * power), Color(1, 1, 1, 0.12 * power), 1.5, true)
 
 
 ## M3: tên bay, kiếm khí, mưa tên, bẫy, vòng nổ.
@@ -653,6 +691,19 @@ func _draw_telegraph(e: GameWorld.Enemy) -> void:
 			draw_circle(e.target, GameWorld.POUNCE_RADIUS * progress, Color(1, 0.24, 0.31, 0.35))
 		"spore":
 			draw_dashed_line(e.pos, e.target, Color(0.78, 0.47, 1.0, 0.25 + progress * 0.5), 2.0, 6.0)
+		"dive":
+			draw_circle(e.target, GameWorld.DIVE_R, Color(1, 1, 1, 0.12))
+			draw_circle(e.target, GameWorld.DIVE_R * progress, Color(1, 1, 1, 0.3))
+		"volley", "darts", "dart1":
+			var ang: float = (e.target - e.pos).angle()
+			var spread: float = deg_to_rad(15.0 if e.attack_kind == "volley" else 20.0)
+			for k in [-1, 0, 1]:
+				draw_line(e.pos, e.pos + Vector2.from_angle(ang + k * spread) * 220.0, Color(1, 0.6, 0.3, 0.15 + progress * 0.4), 2.0, true)
+		"pull":
+			draw_circle(e.pos, GameWorld.PULL_R, Color(0.85, 0.9, 1.0, 0.08 + 0.06 * sin(world.time * 10.0)))
+			draw_arc(e.pos, GameWorld.PULL_R * (1.0 - progress * 0.6), 0.0, TAU, 32, Color(0.9, 0.95, 1.0, 0.7), 2.0, true)
+		"blink":
+			draw_circle(e.pos, 60.0, Color(0.7, 0.4, 1.0, 0.12 + progress * 0.25))
 		"roots":
 			for k in 3:
 				var c: Vector2 = e.target + Vector2.from_angle(k * TAU / 3.0) * GameWorld.ROOT_R * 0.9
