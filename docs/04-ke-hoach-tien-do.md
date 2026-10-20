@@ -28,7 +28,7 @@ File này liệt kê **mọi hạng mục trong kịch bản**: trạng thái hi
 | Phần | Tổng | ✅ Xong | 🟡 Một phần | ⬜ Chưa làm | ⛔ Không làm |
 | --- | --- | --- | --- | --- | --- |
 | Thế giới quan, cốt truyện (mục 2) | 13 | 3 | 1 | 9 | 0 |
-| Thiên phú (mục 3) | 41 | 26 | 7 | 8 | 0 |
+| Thiên phú (mục 3) | 42 | 27 | 7 | 8 | 0 |
 | Nhân vật, chỉ số (mục 4) | 26 | 14 | 3 | 9 | 0 |
 | Chiến đấu, quái (mục 5) | 23 | 17 | 2 | 3 | 1 |
 | Bản đồ, vượt map (mục 6) | 11 | 1 | 2 | 8 | 0 |
