@@ -439,9 +439,32 @@ def g_tiger_claw(cv):
     cv.rect(8, 24, 23, 28, R["gold"][2])
 
 
+# M6: đồ Cam vùng 3
+def g_scorpion_tail(cv):
+    """Đuôi Sa Hoàng — vũ khí Cam: đuôi bọ cạp cong, ngòi độc xanh."""
+    glow(cv, 22, 9, 7, hexc("#8cff5a"), 90)
+    for i in range(6):
+        a = math.radians(200 + i * 26)
+        x, y = 15 + math.cos(a) * 10, 17 + math.sin(a) * 11
+        cv.shade_ellipse(x, y, 3.0 - i * 0.2, 2.6 - i * 0.2, R["chitin"])
+    cv.shade_poly([(22, 7), (28, 11), (23, 12)], [hexc("#4a9a2a"), hexc("#6ad040"), hexc("#8cff5a"), hexc("#d0ffb0")])
+    cv.line(7, 29, 6, 15, R["leather"][1], 2.4)
+    cv.rect(3, 23, 10, 25, R["gold"][2])
+
+
+def g_sphinx_eye(cv):
+    """Mắt Nhân Sư — dây chuyền Cam: viên ngọc hình mắt trong khung đá vàng."""
+    cv.arc(16, 8, 9, math.radians(20), math.radians(160), R["gold"][2], 1.4)
+    glow(cv, 16, 19, 9, hexc("#4fc3ff"), 90)
+    cv.shade_poly([(6, 19), (16, 12), (26, 19), (16, 26)], R["sand"])
+    cv.shade_ellipse(16, 19, 5.5, 4, R["crystal"])
+    cv.shade_ellipse(16, 19, 2, 2.6, [hexc("#0a1a30")] * 4)
+    cv.set(14.6, 17.6, (255, 255, 255, 255))
+
+
 ITEMS = {"weapon": g_sword, "helm": g_helm, "armor": g_armor, "gloves": g_gloves, "boots": g_boots,
          "necklace": g_necklace, "ring": g_ring, "amulet": g_amulet, "wolf_fang": g_wolf_fang, "lao_thu_bark": g_bark, "huyen_anh_mask": g_huyen_mask,
-         "bach_ho_claw": g_tiger_claw}
+         "bach_ho_claw": g_tiger_claw, "sa_hoang_tail": g_scorpion_tail, "nhan_su_eye": g_sphinx_eye}
 RESOURCES = {"gold": g_gold, "wood": g_wood, "stone": g_stone, "essence": g_essence, "tinh_kim": g_tinh_kim,
              "torch": g_torch, "herb": g_herb, "potion": g_potion, "ore": g_ore, "iron": g_iron}
 # ---------------------------------------------------------------------- kỹ năng M3 (03-mvp-spec mục 5.4)

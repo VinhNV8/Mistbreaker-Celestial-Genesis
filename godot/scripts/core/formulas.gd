@@ -6,8 +6,19 @@ static func exp_to_next(level: int) -> int:
 	return int(floor(100.0 * pow(level, 2.2) + 500.0 * pow(floor(level / 10.0), 3.0)))
 
 
+## M5-02 (Spec_Notes đợt 3 "lên cấp nhanh quá"): 30·L^1,5 → 6,5·L^1,3 — chỉ đánh quái thì cấp 10 cần ~600 quái,
+## cấp 20 ~2.300 quái; phần còn lại đến từ nhiệm vụ, boss, khai phá theo tỉ lệ kịch bản mục 4 (03 mục 8.3).
+const MOB_EXP_K := 6.5
+const MOB_EXP_POW := 1.3
+
+
 static func mob_exp(level: int, elite: bool) -> int:
-	return int(round(30.0 * pow(level, 1.5) * (3.0 if elite else 1.0)))
+	return int(round(MOB_EXP_K * pow(level, MOB_EXP_POW) * (3.0 if elite else 1.0)))
+
+
+## M5-02: EXP khai phá mỗi phát hiện khi dọn sương một ô (cũ: 40 × cấp).
+static func explore_exp(level: int) -> int:
+	return int(round(8.0 * pow(level, 1.6)))
 
 
 ## DMG = ATK · HệSốKỹNăng · ATK/(ATK+DEF) · (1+KhắcHệ) · (1+ThiênPhú) (tài liệu mục 5).

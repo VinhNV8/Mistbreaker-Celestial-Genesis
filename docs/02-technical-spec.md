@@ -356,6 +356,7 @@ Chạy bot trên nhiều seed, có né và không né, rồi chỉnh HP/ATK boss
 | D32 | Test cân bằng boss (TL-B, TL-B2) tắt sinh quái thường (`GameWorld.field_spawn = false`) | Map ×1,6 có tới 40 quái: test chậm > 10 phút và số đo nhiễu theo RNG | Số đo chỉ phản ánh trận boss, không tính quái lạc vào hang |
 | D33 | Boss hiếm khai báo bằng bảng `GameWorld.RARE_BOSSES` (map → loại, cấp, boss vùng phải ngã trước, đồ Cam, thoại); lịch lưu theo loại boss (`profile.rare_at`) | Thêm boss hiếm vùng mới = 1 dòng bảng + nhánh AI | Kỹ năng riêng của từng boss vẫn viết tay trong `_update_rare` / `_perform_attack` |
 | D34 | Test cân bằng boss hiếm (M5-T3) cho bot mang 3 bình máu, uống khi dưới 40% HP | Boss hiếm khó hơn boss chương (200 đòn); người chơi thật luôn mang bình | Số đo không so trực tiếp được với TL-B/TL-B2 (không dùng bình) |
+| D35 | Bài đo nhịp lên cấp (`PACE-*`) nằm trong `run_tests.gd` nhưng chỉ chạy khi gọi `--only=PACE` | Cần chạy lại mỗi lần chỉnh EXP mà không làm bộ test thường chậm thêm vài phút | Dễ quên chạy: M5-T5 kiểm nhanh ngân sách EXP bằng công thức để bắt lỗi lớn |
 | D16 | Đồng hồ xây riêng (`build_clock`) thay vì giờ thực | Không phụ thuộc đồng hồ máy (người chơi chỉnh giờ để gian lận); vẫn chạy offline qua `apply_offline` | Phải nhớ cộng `build_clock` ở cả `update()` và `apply_offline()` |
 
 ## 7. Lỗi đã gặp và cách xử lý

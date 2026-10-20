@@ -245,6 +245,99 @@ def tower():
     return cv, [16, 60]
 
 
+# ------------------------------------------------------------ M6: Sa Mạc Xích Sa (docs/10)
+def rock_desert(seed):
+    """Tảng đá lớn đỏ — bóng râm (C3-11) vẽ ở game, không vẽ ở đây."""
+    rnd = random.Random(seed)
+    cv = Canvas(44, 34)
+    shadow(cv, 22, 30, 19, 3.5, 110)
+    cv.shade_poly([(3, 30), (6, 16), (14, 6), (26, 4), (37, 10), (42, 22), (40, 30)], R["sand_red"])
+    cv.shade_poly([(26, 4), (37, 10), (42, 22), (33, 18)], [R["sand_red"][2], R["sand_red"][3], R["sand_red"][3], R["sand_red"][3]])
+    for _ in range(4):
+        x = rnd.uniform(10, 34)
+        cv.line(x, 10, x + rnd.uniform(-4, 4), 26, R["sand_red"][0])
+    cv.outline(OUTLINE)
+    return cv, [22, 29]
+
+
+def cactus(seed):
+    rnd = random.Random(seed)
+    cv = Canvas(20, 32)
+    shadow(cv, 10, 29.5, 6, 1.6, 90)
+    g = R["leaf"]
+    cv.shade_poly([(8, 29), (8, 6), (10, 4), (12, 6), (12, 29)], g)
+    arm = rnd.choice((0, 1))
+    cv.shade_poly([(12, 16), (16, 16), (16, 9), (18, 9), (18, 18), (12, 19)], g)
+    if arm:
+        cv.shade_poly([(8, 20), (4, 20), (4, 13), (2, 13), (2, 22), (8, 23)], g)
+    for y in range(8, 28, 4):
+        cv.set(10, y, g[3])
+    cv.set(10, 3.5, hexc("#ff7aa8"))
+    cv.outline(OUTLINE)
+    return cv, [10, 29]
+
+
+def palm(seed):
+    rnd = random.Random(seed)
+    cv = Canvas(44, 56)
+    shadow(cv, 22, 52.5, 12, 2.8, 100)
+    bend = rnd.uniform(-3, 3)
+    for i in range(10):
+        y = 52 - i * 3.6
+        x = 21 + bend * (i / 10.0) ** 2
+        cv.shade_ellipse(x, y, 2.6, 2.0, R["wood"])
+    top = (21 + bend, 17)
+    for i, ang in enumerate((-160, -125, -90, -55, -20, 15, -195)):
+        a = math.radians(ang)
+        ex, ey = top[0] + math.cos(a) * 16, top[1] + math.sin(a) * 9 + 6
+        cv.line(top[0], top[1], ex, ey, R["leaf"][2], 3.0)
+        cv.line(top[0], top[1] - 0.6, ex, ey - 0.6, R["leaf"][3], 1.0)
+    cv.shade_ellipse(top[0] - 2, top[1] + 3, 2, 2, R["bark"])
+    cv.shade_ellipse(top[0] + 2, top[1] + 3, 2, 2, R["bark"])
+    cv.outline(OUTLINE)
+    return cv, [21, 52]
+
+
+def oasis():
+    """Hồ nước ốc đảo 96×56 (C3-13); vẽ phẳng dưới đất."""
+    cv = Canvas(96, 56)
+    cv.shade_ellipse(48, 28, 46, 25, R["sand"])
+    cv.shade_ellipse(48, 28, 40, 20, [hexc("#2a6b4a"), hexc("#3a8a5a"), hexc("#4aa46a"), hexc("#6ac07a")])
+    cv.shade_ellipse(48, 29, 33, 15, [hexc("#173a6e"), hexc("#1f5a9a"), hexc("#3a86c8"), hexc("#7ac0f0")])
+    for (x, y) in ((36, 25), (54, 31), (60, 24)):
+        cv.line(x, y, x + 6, y, (220, 240, 255, 200), 1.0)
+    return cv, [48, 28]
+
+
+def pillar(seed):
+    """Cột đá di tích (3-3)."""
+    rnd = random.Random(seed)
+    cv = Canvas(20, 48)
+    shadow(cv, 10, 45, 8, 2, 100)
+    h = rnd.choice((0, 8))
+    cv.shade_poly([(4, 45), (4, 8 + h), (16, 8 + h), (16, 45)], R["sand"])
+    cv.rect(2, 4 + h, 18, 8 + h, R["sand"][3])
+    cv.rect(2, 41, 18, 45, R["sand"][1])
+    for y in range(14 + h, 40, 6):
+        cv.line(5, y, 15, y, R["sand"][0])
+    cv.set(9, 22 + h, hexc("#4fc3ff"))
+    cv.outline(OUTLINE)
+    return cv, [10, 44]
+
+
+def tent():
+    cv = Canvas(48, 40)
+    shadow(cv, 24, 36.5, 20, 3, 100)
+    cv.shade_poly([(24, 4), (45, 36), (3, 36)], R["sand_red"])
+    cv.shade_poly([(24, 4), (45, 36), (30, 36)], [R["sand_red"][2], R["sand_red"][3], R["sand_red"][3], R["sand_red"][3]])
+    cv.shade_poly([(24, 16), (30, 36), (18, 36)], [hexc("#2a1a12")] * 4)
+    for x in (10, 38):
+        cv.line(24, 4, x, 37, R["bandage"][2], 0.8)
+    cv.line(24, 1, 24, 6, R["wood"][1], 1.2)
+    cv.outline(OUTLINE)
+    return cv, [24, 36]
+
+
 def build_all():
     out = {}
     for i in range(3):
@@ -277,4 +370,16 @@ def build_all():
     out["fx-pierce"] = fx_pierce()
     out["fx-wave"] = fx_wave()
     out["fx-trap"] = fx_trap()
+    # M6: Sa Mạc Xích Sa
+    out["tile-sand"] = (tile(R["sand"], 500, tufts=False), [0, 0])
+    out["tile-sand-red"] = (tile(R["sand_red"], 501, tufts=False), [0, 0])
+    out["tile-ruins"] = (tile([mix(c, (40, 30, 20, 255), 0.25) for c in R["sand"]], 502, tufts=False), [0, 0])
+    for i in range(2):
+        out["rock-desert-%d" % i] = rock_desert(60 + i)
+        out["cactus-%d" % i] = cactus(70 + i)
+    out["palm"] = palm(80)
+    out["oasis"] = oasis()
+    for i in range(2):
+        out["pillar-%d" % i] = pillar(90 + i)
+    out["tent"] = tent()
     return {k: (cv.to_image(), origin) for k, (cv, origin) in out.items()}

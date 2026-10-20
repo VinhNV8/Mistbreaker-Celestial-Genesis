@@ -156,7 +156,7 @@ Thiết kế chi tiết từng Thiên phú (hiệu ứng Lv1 → Lv10, 2 bậc t
 | NV-17 | Kháng 5 hệ | ✅ | M4.2 | CB-T9 | 5 affix Kháng hệ trên đồ phòng thủ (mũ, áo, giày, dây chuyền, bùa); quái đánh mang hệ |
 | NV-18 | Lực chiến, dùng để mở map và xếp hạng | 🟡 | M1 | EQ-17 | Đã tính và hiện ở HUD; chưa hiện "trên đầu" nhân vật; chưa dùng mở map (vùng 3, Alpha) |
 | NV-19 | Công thức EXP | ✅ | Proto | CHR-01 | |
-| NV-20 | Nhịp độ 1 → 10 trong 30 phút | 🟡 | C1 / M5 | — | Đo bằng bot (08 mục 5): cấp 6 sau 111 giây; chờ playtest người thật để chỉnh |
+| NV-20 | Nhịp độ 1 → 10 trong 30 phút | 🟡 | C1 / M5 | M5-T5, PACE-T1/T2 | M5-02 (Spec_Notes đợt 3): EXP quái 30·L^1,5 → 6,5·L^1,3, thưởng nhiệm vụ/boss tăng theo tỉ lệ nguồn EXP kịch bản. Bot chỉ đánh quái: cấp 10 sau 17–22 phút (cũ 2–3 phút), cấp 10 → 20 mất 86–89 phút. Còn chờ playtest người thật ([03 mục 8.3](03-mvp-spec.md)) |
 | NV-21 | Nguồn EXP: quái, boss, khai phá | ✅ | Proto | — | |
 | NV-22 | Nguồn EXP: nhiệm vụ cốt truyện (25%) | ✅ | C1 | C1-T4 | Chuỗi 11 nhiệm vụ chương 1 (C1-12) |
 | NV-23 | Nguồn EXP: dungeon | ⬜ | Alpha | — | |
@@ -364,7 +364,7 @@ Mỗi đợt theo quy trình: **viết spec → duyệt → code → test → c�
 - [x] KP-15, KP-16: Xưởng Rèn, Vườn Thảo Dược (xong ở C1)
 - [x] KP-09, TB-12: Thương nhân lữ hành, mua bán (xong ở C1)
 - [x] CB-02: Tự đánh; NV-26: tự cộng điểm (xong ở C1)
-- [ ] M5-02, NV-20: nhịp lên cấp — Spec_Notes đợt 3 "lên level nhanh quá" (nghiên cứu ARPG, chỉnh hệ số EXP)
+- [x] M5-02, NV-20: nhịp lên cấp — Spec_Notes đợt 3 "lên level nhanh quá" (nghiên cứu ARPG, chỉnh hệ số EXP); lính khiên quay chậm (F-M5-1)
 - [ ] M5-03: bản đồ nhỏ theo thời gian thực (Spec_Notes đợt 3)
 - [ ] M5-04, KP-04: chinh phục Di tích bằng câu đố
 - [x] KT-06: build .exe (game-bc, 20/10/2026)

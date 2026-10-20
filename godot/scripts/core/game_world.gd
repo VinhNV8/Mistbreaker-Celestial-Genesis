@@ -194,6 +194,8 @@ const WIND_WARN := 2.0
 const WIND_BEND := deg_to_rad(15.0)
 const SHIELD_ARC := deg_to_rad(60.0)
 const SHIELD_REDUCE := 0.3
+## M5-02: lính khiên quay người tối đa 120°/giây — chạy vòng thì đánh được vào hông (lời Lạc Phong).
+const SHIELD_TURN := deg_to_rad(120.0)
 const DIVE_R := 30.0
 const PULL_R := 80.0
 const PULL_SPEED := 30.0
@@ -2155,7 +2157,11 @@ func _update_enemy(e: Enemy, dt: float) -> void:
 		_update_rare(e, dt)
 	# M4.2: hướng nhìn (khiên chặn) — không quay người khi đang vung đòn.
 	if e.state != "windup" and e.state != "stunned":
-		e.face = (p.pos - e.pos).angle()
+		var want := (p.pos - e.pos).angle()
+		if def.get("shield", false):
+			e.face = rotate_toward(e.face, want, SHIELD_TURN * dt)
+		else:
+			e.face = want
 	# Ảo ảnh hút đòn: quái trong 30 m quay sang đánh ảo ảnh gần nhất.
 	var dc := _nearest_decoy(e.pos)
 	if not dc.is_empty() and e.state in ["idle", "chase"] and e.kind != "goc-re":

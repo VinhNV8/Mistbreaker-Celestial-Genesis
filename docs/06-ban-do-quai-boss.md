@@ -33,7 +33,7 @@ Sát thương dùng công thức kịch bản mục 5: `DMG = ATK × hệ số �
 | Phòng thủ quái | `(3 + 1,5·L) × hệ số bậc × hệ số loại` |
 | HP quái | `số đòn mục tiêu × sát thương 1 đòn của người chơi chuẩn × hệ số loại` |
 | Tấn công quái | Chọn sao cho 1 đòn thường của quái lấy đúng `% HP mục tiêu` của người chơi chuẩn, rồi × hệ số loại |
-| EXP | Quái thường `30·L^1,5` (đã code); tinh anh ×3 (đã code); boss vùng `0,3 × EXP lên cấp L`; boss hiếm `0,5 × EXP lên cấp L` |
+| EXP | Quái thường `6,5·L^1,3` (M5-02, cũ `30·L^1,5`); tinh anh ×3; boss vùng `0,6 × EXP lên cấp L` (M5-02, cũ 0,3); boss hiếm `0,5 × EXP lên cấp L` — đã code |
 | Vàng | Quái thường `3·L`, tinh anh `12·L` (đã code); boss vùng `50·L`; boss hiếm `80·L` |
 | Phá Thế | Boss: 1/6 HP (Sói Chúa đang dùng 600/3600); tinh anh: 30% HP (CB-07, M3) |
 
@@ -119,23 +119,23 @@ Mỗi vùng gồm 3 map con (Ngoài rìa → Trung tâm → Lõi) và 1 dungeon 
 
 | Quái | Loại | Hệ | Cấp | HP | Tấn công | Phòng thủ | Tốc · Tầm | EXP | Kỹ năng | Đạo Tặc cướp |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Sói Sương ✅ | Nhanh | Mộc | 1–7 | 18 → 188 | 8 → 36 | 4 → 11 | 160 · 3,4 m | 30 → 556 | **Cắn** (vung 0,45 s, ×1,0). Đi bầy 2–3 con | STR 35 · AGI 50 · VIT 15 |
-| Nấm Độc ✅ | Xa | Thổ | 2–7 | 51 → 212 | 13 → 36 | 5 → 11 | 70 · 24 m | 85 → 556 | **Phun bào tử** (vung 0,7 s, đạn 28 m/s, ×1,0). Chết để lại vũng độc 3 m, 2% HP/giây trong 3 giây | VIT 45 · INT 35 · LUK 20 |
-| Tinh Linh Sương ✅ | Phép | Thủy | 5–10 | 147 → 308 | 35 → 66 | 8 → 14 | 110 · 18 m | 335 → 949 | **Lao sương** (vung 0,35 s, lao 15 m, ×1,0). Ở Lõi Sương: tàng hình khi cách hơn 20 m | AGI 35 · INT 45 · LUK 20 |
-| Mộc Tinh | Giáp | Mộc | 6–10 | 205 → 356 | 35 → 55 | 24 → 36 | 70 · 4,0 m | 441 → 949 | **Dậm đất** (vung 1,0 s, vòng 6 m, ×1,4). Chậm nhưng khó hạ | STR 40 · VIT 60 |
+| Sói Sương ✅ | Nhanh | Mộc | 1–7 | 18 → 188 | 8 → 36 | 4 → 11 | 160 · 3,4 m | 6 → 82 | **Cắn** (vung 0,45 s, ×1,0). Đi bầy 2–3 con | STR 35 · AGI 50 · VIT 15 |
+| Nấm Độc ✅ | Xa | Thổ | 2–7 | 51 → 212 | 13 → 36 | 5 → 11 | 70 · 24 m | 16 → 82 | **Phun bào tử** (vung 0,7 s, đạn 28 m/s, ×1,0). Chết để lại vũng độc 3 m, 2% HP/giây trong 3 giây | VIT 45 · INT 35 · LUK 20 |
+| Tinh Linh Sương ✅ | Phép | Thủy | 5–10 | 147 → 308 | 35 → 66 | 8 → 14 | 110 · 18 m | 53 → 130 | **Lao sương** (vung 0,35 s, lao 15 m, ×1,0). Ở Lõi Sương: tàng hình khi cách hơn 20 m | AGI 35 · INT 45 · LUK 20 |
+| Mộc Tinh | Giáp | Mộc | 6–10 | 205 → 356 | 35 → 55 | 24 → 36 | 70 · 4,0 m | 67 → 130 | **Dậm đất** (vung 1,0 s, vòng 6 m, ×1,4). Chậm nhưng khó hạ | STR 40 · VIT 60 |
 
 **Quái tinh anh** (viền sáng, có 1 kỹ năng riêng; luôn rơi đồ Xanh dương/Tím; 30% Đạo Tặc cướp)
 
 | Quái | Loại | Hệ | Cấp | HP | Tấn công | Phòng thủ | Tốc · Tầm | EXP | Kỹ năng | Đạo Tặc cướp |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Sói Đầu Đàn | Nhanh | Mộc | 3–8 | 276 → 823 | 24 → 54 | 9 → 18 | 160 · 3,4 m | 468 → 2.037 | **Hú gọi** (hồi 15 s): gọi 2 Sói Sương; cả bầy +20% tốc chạy 6 giây | STR 35 · AGI 50 · VIT 15 |
-| Nấm Mẹ | Lì | Thổ | 5–10 | 783 → 1.672 | 36 → 67 | 20 → 35 | 80 · 3,6 m | 1.005 → 2.847 | **Sinh sôi** (mỗi 8 s): đẻ 2 nấm con (loại Bầy), nấm con tự nổ sau 3 giây, vòng 3 m, ×1,5 | VIT 45 · INT 35 · LUK 20 |
+| Sói Đầu Đàn | Nhanh | Mộc | 3–8 | 276 → 823 | 24 → 54 | 9 → 18 | 160 · 3,4 m | 81 → 291 | **Hú gọi** (hồi 15 s): gọi 2 Sói Sương; cả bầy +20% tốc chạy 6 giây | STR 35 · AGI 50 · VIT 15 |
+| Nấm Mẹ | Lì | Thổ | 5–10 | 783 → 1.672 | 36 → 67 | 20 → 35 | 80 · 3,6 m | 159 → 390 | **Sinh sôi** (mỗi 8 s): đẻ 2 nấm con (loại Bầy), nấm con tự nổ sau 3 giây, vòng 3 m, ×1,5 | VIT 45 · INT 35 · LUK 20 |
 
 **Boss chương 1: Sói Chúa Hư Vô** — **đã có trong game** (chỉ số theo công thức mục 1 từ M3)
 
 | Cấp | Hệ | HP | Tấn công | Phòng thủ | Phá Thế | Cấp khuyến nghị | EXP | Vàng |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 6 | Mộc | 4.023 | 43 | 24 | 670 | 5 | 1.545 | 300 |
+| 6 | Mộc | 4.023 | 43 | 24 | 670 | 5 | 3.091 | 300 |
 
 | Giai đoạn | Kỹ năng |
 | --- | --- |
@@ -182,23 +182,23 @@ Mỗi vùng gồm 3 map con (Ngoài rìa → Trung tâm → Lõi) và 1 dungeon 
 
 | Quái | Loại | Hệ | Cấp | HP | Tấn công | Phòng thủ | Tốc · Tầm | EXP | Kỹ năng | Đạo Tặc cướp |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Ưng Gió | Nhanh | Kim | 10–16 | 274 → 445 | 49 → 77 | 14 → 22 | 160 · 3,4 m | 949 → 1.920 | **Bổ nhào** (bay lên 0,6 s rồi lao 12 m, ×1,3). Xuôi gió +50% tốc | AGI 60 · LUK 40 |
-| Lính Đánh Thuê Hư Vô | Giáp | Kim | 11–18 | 394 → 660 | 60 → 95 | 39 → 60 | 70 · 4,0 m | 1.094 → 2.291 | **Khiên chặn**: giảm 70% sát thương từ phía trước — đánh từ bên hoặc sau. **Đâm** (vung 0,6 s, ×1,2) | STR 50 · VIT 50 |
-| Cung Thủ Thảo Nguyên | Xa | Mộc | 12–19 | 372 → 597 | 59 → 91 | 17 → 25 | 70 · 24 m | 1.247 → 2.485 | **Bắn ba mũi** (vung 0,8 s, nón 30°, mỗi mũi ×0,7) | AGI 70 · LUK 30 |
-| Lốc Xoáy Con | Phép | Kim | 14–20 | 436 → 629 | 90 → 127 | 19 → 26 | 110 · 18 m | 1.571 → 2.683 | **Hút** (vung 1,0 s): kéo người chơi trong 8 m về phía nó 3 m/giây trong 2 giây, rồi nổ vòng 4 m ×1,5 | INT 60 · AGI 40 |
+| Ưng Gió | Nhanh | Kim | 10–16 | 274 → 445 | 49 → 77 | 14 → 22 | 160 · 3,4 m | 130 → 239 | **Bổ nhào** (bay lên 0,6 s rồi lao 12 m, ×1,3). Xuôi gió +50% tốc | AGI 60 · LUK 40 |
+| Lính Đánh Thuê Hư Vô | Giáp | Kim | 11–18 | 394 → 660 | 60 → 95 | 39 → 60 | 70 · 4,0 m | 147 → 278 | **Khiên chặn**: giảm 70% sát thương từ phía trước — đánh từ bên hoặc sau. **Đâm** (vung 0,6 s, ×1,2) | STR 50 · VIT 50 |
+| Cung Thủ Thảo Nguyên | Xa | Mộc | 12–19 | 372 → 597 | 59 → 91 | 17 → 25 | 70 · 24 m | 164 → 299 | **Bắn ba mũi** (vung 0,8 s, nón 30°, mỗi mũi ×0,7) | AGI 70 · LUK 30 |
+| Lốc Xoáy Con | Phép | Kim | 14–20 | 436 → 629 | 90 → 127 | 19 → 26 | 110 · 18 m | 201 → 319 | **Hút** (vung 1,0 s): kéo người chơi trong 8 m về phía nó 3 m/giây trong 2 giây, rồi nổ vòng 4 m ×1,5 | INT 60 · AGI 40 |
 
 **Quái tinh anh** (viền sáng, có 1 kỹ năng riêng; luôn rơi đồ Xanh dương/Tím; 30% Đạo Tặc cướp)
 
 | Quái | Loại | Hệ | Cấp | HP | Tấn công | Phòng thủ | Tốc · Tầm | EXP | Kỹ năng | Đạo Tặc cướp |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Đội Trưởng Đánh Thuê | Giáp | Kim | 13–19 | 1.699 → 2.533 | 94 → 135 | 68 → 94 | 70 · 4,0 m | 4.218 → 7.455 | **Chém xoáy** (hồi 10 s): 3 vòng chém 360°, 5 m, mỗi vòng ×1,6 | STR 60 · VIT 40 |
-| Phù Thuỷ Gió | Phép | Kim | 15–20 | 1.789 → 2.405 | 130 → 170 | 31 → 40 | 110 · 18 m | 5.229 → 8.049 | **Nghịch Phong** (hồi 14 s): đổi hướng gió ngay lập tức, gió mạnh ×2 trong 6 giây | INT 60 · LUK 40 |
+| Đội Trưởng Đánh Thuê | Giáp | Kim | 13–19 | 1.699 → 2.533 | 94 → 135 | 68 → 94 | 70 · 4,0 m | 546 → 897 | **Chém xoáy** (hồi 10 s): 3 vòng chém 360°, 5 m, mỗi vòng ×1,6 | STR 60 · VIT 40 |
+| Phù Thuỷ Gió | Phép | Kim | 15–20 | 1.789 → 2.405 | 130 → 170 | 31 → 40 | 110 · 18 m | 660 → 957 | **Nghịch Phong** (hồi 14 s): đổi hướng gió ngay lập tức, gió mạnh ×2 trong 6 giây | INT 60 · LUK 40 |
 
 **Boss chương 2: Tướng Gián Điệp Huyền Ảnh**
 
 | Cấp | Hệ | HP | Tấn công | Phòng thủ | Phá Thế | Cấp khuyến nghị | EXP | Vàng |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 18 | Kim | 18.804 | 132 | 60 | 3.134 | 17 | 17.477 | 900 |
+| 18 | Kim | 18.804 | 132 | 60 | 3.134 | 17 | 34.954 | 900 |
 
 | Giai đoạn | Kỹ năng |
 | --- | --- |
@@ -247,23 +247,23 @@ Mỗi vùng gồm 3 map con (Ngoài rìa → Trung tâm → Lõi) và 1 dungeon 
 
 | Quái | Loại | Hệ | Cấp | HP | Tấn công | Phòng thủ | Tốc · Tầm | EXP | Kỹ năng | Đạo Tặc cướp |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Bọ Cát | Bầy | Thổ | 20–26 | 358 → 467 | 63 → 82 | 20 → 25 | 140 · 3,0 m | 2.683 → 3.977 | Đi bầy 5 con. **Cắn** (vung 0,4 s, ×1,0) | VIT 50 · STR 50 |
-| Rắn Đồi Cát | Nhanh | Thổ | 21–28 | 588 → 788 | 100 → 132 | 28 → 36 | 160 · 3,4 m | 2.887 → 4.445 | **Chui cát** 1,5 giây (bất tử, có vệt cát báo), trồi lên dưới chân người chơi, ×1,4 | AGI 60 · STR 40 |
-| Xác Ướp Khai Giới | Lì | Thổ | 24–32 | 1.115 → 1.495 | 113 → 150 | 51 → 66 | 80 · 3,6 m | 3.527 → 5.431 | **Nguyền rủa** (vung 0,8 s): −20% hồi máu trong 6 giây | VIT 60 · INT 40 |
-| Pháp Sư Cát | Phép | Hỏa | 26–32 | 822 → 1.015 | 163 → 200 | 34 → 41 | 110 · 18 m | 3.977 → 5.431 | **Lốc cát** (vung 1,0 s, vòng 7 m, ×1,0, làm chậm 40% trong 3 giây) | INT 70 · LUK 30 |
+| Bọ Cát | Bầy | Thổ | 20–26 | 358 → 467 | 63 → 82 | 20 → 25 | 140 · 3,0 m | 319 → 449 | Đi bầy 5 con. **Cắn** (vung 0,4 s, ×1,0) | VIT 50 · STR 50 |
+| Rắn Đồi Cát | Nhanh | Thổ | 21–28 | 588 → 788 | 100 → 132 | 28 → 36 | 160 · 3,4 m | 340 → 495 | **Chui cát** 1,5 giây (bất tử, có vệt cát báo), trồi lên dưới chân người chơi, ×1,4 | AGI 60 · STR 40 |
+| Xác Ướp Khai Giới | Lì | Thổ | 24–32 | 1.115 → 1.495 | 113 → 150 | 51 → 66 | 80 · 3,6 m | 405 → 588 | **Nguyền rủa** (vung 0,8 s): −20% hồi máu trong 6 giây | VIT 60 · INT 40 |
+| Pháp Sư Cát | Phép | Hỏa | 26–32 | 822 → 1.015 | 163 → 200 | 34 → 41 | 110 · 18 m | 449 → 588 | **Lốc cát** (vung 1,0 s, vòng 7 m, ×1,0, làm chậm 40% trong 3 giây) | INT 70 · LUK 30 |
 
 **Quái tinh anh** (viền sáng, có 1 kỹ năng riêng; luôn rơi đồ Xanh dương/Tím; 30% Đạo Tặc cướp)
 
 | Quái | Loại | Hệ | Cấp | HP | Tấn công | Phòng thủ | Tốc · Tầm | EXP | Kỹ năng | Đạo Tặc cướp |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Bọ Hung Giáp Vàng | Giáp | Kim | 23–30 | 3.089 → 4.062 | 162 → 210 | 112 → 144 | 70 · 4,0 m | 9.927 → 14.790 | **Lăn cầu** (hồi 9 s): lăn thẳng 20 m, ×1,8; giáp phía trước như Lính Đánh Thuê | VIT 70 · STR 30 |
-| Thủ Lĩnh Xác Ướp | Lì | Thổ | 27–32 | 4.701 → 5.592 | 171 → 201 | 85 → 99 | 80 · 3,6 m | 12.627 → 16.293 | **Hồi sinh** (hồi 20 s): dựng lại 2 Xác Ướp vừa bị hạ | INT 50 · VIT 50 |
+| Bọ Hung Giáp Vàng | Giáp | Kim | 23–30 | 3.089 → 4.062 | 162 → 210 | 112 → 144 | 70 · 4,0 m | 1.149 → 1.623 | **Lăn cầu** (hồi 9 s): lăn thẳng 20 m, ×1,8; giáp phía trước như Lính Đánh Thuê | VIT 70 · STR 30 |
+| Thủ Lĩnh Xác Ướp | Lì | Thổ | 27–32 | 4.701 → 5.592 | 171 → 201 | 85 → 99 | 80 · 3,6 m | 1.416 → 1.764 | **Hồi sinh** (hồi 20 s): dựng lại 2 Xác Ướp vừa bị hạ | INT 50 · VIT 50 |
 
 **Boss chương 3: Bọ Cạp Sa Hoàng**
 
 | Cấp | Hệ | HP | Tấn công | Phòng thủ | Phá Thế | Cấp khuyến nghị | EXP | Vàng |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 30 | Thổ | 32.737 | 220 | 96 | 5.456 | 29 | 57.357 | 1.500 |
+| 30 | Thổ | 32.737 | 220 | 96 | 5.456 | 29 | 114.715 | 1.500 |
 
 | Giai đoạn | Kỹ năng |
 | --- | --- |
@@ -309,23 +309,23 @@ Mỗi vùng gồm 3 map con (Ngoài rìa → Trung tâm → Lõi) và 1 dungeon 
 
 | Quái | Loại | Hệ | Cấp | HP | Tấn công | Phòng thủ | Tốc · Tầm | EXP | Kỹ năng | Đạo Tặc cướp |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Ếch Độc | Xa | Thủy | 32–38 | 1.015 → 1.208 | 150 → 177 | 41 → 48 | 70 · 24 m | 5.431 → 7.027 | **Lưỡi độc** (vung 0,7 s, 12 m): kéo người chơi 4 m, +1 tầng độc | AGI 50 · VIT 50 |
-| Đỉa Hút Máu | Nhanh | Thủy | 33–40 | 931 → 1.131 | 154 → 186 | 42 → 50 | 160 · 3,4 m | 5.687 → 7.589 | **Bám**: dính vào người chơi, hút 1% HP/giây và hồi cho nó; né lăn để gỡ | VIT 60 · LUK 40 |
-| Hồn Ma Đầm | Phép | Thủy | 36–45 | 1.143 → 1.433 | 224 → 279 | 46 → 56 | 110 · 18 m | 6.480 → 9.056 | **Phân ảnh** (hồi 12 s): tạo 2 ảo ảnh 1 HP · **Tiếng than** (vòng 8 m, ×1,1) | INT 70 · LUK 30 |
-| Cá Sấu Bùn | Giáp | Thổ | 38–45 | 1.420 → 1.687 | 197 → 232 | 120 → 141 | 70 · 4,0 m | 7.027 → 9.056 | **Đớp** (vung 0,8 s, ×1,8) + kéo xuống nước: choáng 1 giây | STR 60 · VIT 40 |
+| Ếch Độc | Xa | Thủy | 32–38 | 1.015 → 1.208 | 150 → 177 | 41 → 48 | 70 · 24 m | 588 → 736 | **Lưỡi độc** (vung 0,7 s, 12 m): kéo người chơi 4 m, +1 tầng độc | AGI 50 · VIT 50 |
+| Đỉa Hút Máu | Nhanh | Thủy | 33–40 | 931 → 1.131 | 154 → 186 | 42 → 50 | 160 · 3,4 m | 612 → 786 | **Bám**: dính vào người chơi, hút 1% HP/giây và hồi cho nó; né lăn để gỡ | VIT 60 · LUK 40 |
+| Hồn Ma Đầm | Phép | Thủy | 36–45 | 1.143 → 1.433 | 224 → 279 | 46 → 56 | 110 · 18 m | 686 → 916 | **Phân ảnh** (hồi 12 s): tạo 2 ảo ảnh 1 HP · **Tiếng than** (vòng 8 m, ×1,1) | INT 70 · LUK 30 |
+| Cá Sấu Bùn | Giáp | Thổ | 38–45 | 1.420 → 1.687 | 197 → 232 | 120 → 141 | 70 · 4,0 m | 736 → 916 | **Đớp** (vung 0,8 s, ×1,8) + kéo xuống nước: choáng 1 giây | STR 60 · VIT 40 |
 
 **Quái tinh anh** (viền sáng, có 1 kỹ năng riêng; luôn rơi đồ Xanh dương/Tím; 30% Đạo Tặc cướp)
 
 | Quái | Loại | Hệ | Cấp | HP | Tấn công | Phòng thủ | Tốc · Tầm | EXP | Kỹ năng | Đạo Tặc cướp |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Phù Thuỷ Đầm Lầy | Phép | Thủy | 36–43 | 4.378 → 5.241 | 301 → 358 | 68 → 81 | 110 · 18 m | 19.440 → 25.377 | **Mưa độc** (hồi 12 s): vùng 10 m trong 5 giây, +2 tầng độc mỗi giây | INT 70 · VIT 30 |
-| Cá Sấu Chúa | Giáp | Thổ | 40–45 | 5.452 → 6.147 | 278 → 312 | 189 → 212 | 70 · 4,0 m | 22.767 → 27.168 | **Cuộn tử thần** (hồi 14 s): giữ người chơi 2 giây, ×0,6 mỗi 0,5 s; né lăn đúng lúc vung để thoát | STR 70 · VIT 30 |
+| Phù Thuỷ Đầm Lầy | Phép | Thủy | 36–43 | 4.378 → 5.241 | 301 → 358 | 68 → 81 | 110 · 18 m | 2.058 → 2.592 | **Mưa độc** (hồi 12 s): vùng 10 m trong 5 giây, +2 tầng độc mỗi giây | INT 70 · VIT 30 |
+| Cá Sấu Chúa | Giáp | Thổ | 40–45 | 5.452 → 6.147 | 278 → 312 | 189 → 212 | 70 · 4,0 m | 2.358 → 2.748 | **Cuộn tử thần** (hồi 14 s): giữ người chơi 2 giây, ×0,6 mỗi 0,5 s; né lăn đúng lúc vung để thoát | STR 70 · VIT 30 |
 
 **Boss chương 4: Nữ Vương Phệ Mộng**
 
 | Cấp | Hệ | HP | Tấn công | Phòng thủ | Phá Thế | Cấp khuyến nghị | EXP | Vàng |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 43 | Thủy | 56.534 | 316 | 135 | 9.422 | 42 | 127.293 | 2.150 |
+| 43 | Thủy | 56.534 | 316 | 135 | 9.422 | 42 | 254.587 | 2.150 |
 
 | Giai đoạn | Kỹ năng |
 | --- | --- |
@@ -373,23 +373,23 @@ Mỗi vùng gồm 3 map con (Ngoài rìa → Trung tâm → Lõi) và 1 dungeon 
 
 | Quái | Loại | Hệ | Cấp | HP | Tấn công | Phòng thủ | Tốc · Tầm | EXP | Kỹ năng | Đạo Tặc cướp |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Thằn Lằn Lửa | Nhanh | Hỏa | 45–52 | 1.273 → 1.473 | 209 → 241 | 56 → 65 | 160 · 3,4 m | 9.056 → 11.249 | Chạy để lại vệt lửa 3 giây (×0,2 mỗi giây). **Cắn** ×1,0 | AGI 60 · STR 40 |
-| Người Đá Dung Nham | Giáp | Thổ | 47–56 | 1.763 → 2.105 | 243 → 288 | 147 → 174 | 70 · 4,0 m | 9.666 → 12.572 | **Đấm** (×1,3). Khi bị hạ vỡ thành 3 mảnh đá nhỏ (loại Bầy) | VIT 60 · STR 40 |
-| Linh Hồn Lửa | Tự nổ | Hỏa | 48–58 | 1.054 → 1.275 | 619 → 746 | 38 → 45 | 170 · 2,0 m | 9.977 → 13.251 | Lao tới người chơi, **tự nổ** sau vung 0,8 s, vòng 5 m | INT 50 · LUK 50 |
-| Pháp Sư Hoả Diệm | Phép | Hỏa | 52–60 | 1.658 → 1.915 | 321 → 370 | 65 → 74 | 110 · 18 m | 11.249 → 13.943 | **Cột lửa** (vung 1,0 s: 3 cột nối tiếp về phía người chơi, mỗi cột ×1,2) | INT 70 · LUK 30 |
+| Thằn Lằn Lửa | Nhanh | Hỏa | 45–52 | 1.273 → 1.473 | 209 → 241 | 56 → 65 | 160 · 3,4 m | 916 → 1.106 | Chạy để lại vệt lửa 3 giây (×0,2 mỗi giây). **Cắn** ×1,0 | AGI 60 · STR 40 |
+| Người Đá Dung Nham | Giáp | Thổ | 47–56 | 1.763 → 2.105 | 243 → 288 | 147 → 174 | 70 · 4,0 m | 970 → 1.218 | **Đấm** (×1,3). Khi bị hạ vỡ thành 3 mảnh đá nhỏ (loại Bầy) | VIT 60 · STR 40 |
+| Linh Hồn Lửa | Tự nổ | Hỏa | 48–58 | 1.054 → 1.275 | 619 → 746 | 38 → 45 | 170 · 2,0 m | 997 → 1.275 | Lao tới người chơi, **tự nổ** sau vung 0,8 s, vòng 5 m | INT 50 · LUK 50 |
+| Pháp Sư Hoả Diệm | Phép | Hỏa | 52–60 | 1.658 → 1.915 | 321 → 370 | 65 → 74 | 110 · 18 m | 1.106 → 1.332 | **Cột lửa** (vung 1,0 s: 3 cột nối tiếp về phía người chơi, mỗi cột ×1,2) | INT 70 · LUK 30 |
 
 **Quái tinh anh** (viền sáng, có 1 kỹ năng riêng; luôn rơi đồ Xanh dương/Tím; 30% Đạo Tặc cướp)
 
 | Quái | Loại | Hệ | Cấp | HP | Tấn công | Phòng thủ | Tốc · Tầm | EXP | Kỹ năng | Đạo Tặc cướp |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Rồng Non Lửa | Nhanh | Hỏa | 50–58 | 5.426 → 6.303 | 312 → 361 | 94 → 108 | 160 · 3,4 m | 31.821 → 39.753 | **Phun lửa** (hồi 10 s): nón 60°, 12 m, ×0,5 mỗi 0,2 s trong 2 giây | STR 50 · INT 50 |
-| Thợ Rèn Hư Vô | Giáp | Kim | 54–60 | 7.398 → 8.233 | 374 → 415 | 252 → 279 | 70 · 4,0 m | 35.715 → 41.829 | **Búa rèn** (hồi 12 s): đập vòng 6 m ×2,0; quái trong 10 m +20% Tấn công 8 giây | STR 70 · VIT 30 |
+| Rồng Non Lửa | Nhanh | Hỏa | 50–58 | 5.426 → 6.303 | 312 → 361 | 94 → 108 | 160 · 3,4 m | 3.153 → 3.825 | **Phun lửa** (hồi 10 s): nón 60°, 12 m, ×0,5 mỗi 0,2 s trong 2 giây | STR 50 · INT 50 |
+| Thợ Rèn Hư Vô | Giáp | Kim | 54–60 | 7.398 → 8.233 | 374 → 415 | 252 → 279 | 70 · 4,0 m | 3.486 → 3.996 | **Búa rèn** (hồi 12 s): đập vòng 6 m ×2,0; quái trong 10 m +20% Tấn công 8 giây | STR 70 · VIT 30 |
 
 **Boss chương 5: Viêm Long**
 
 | Cấp | Hệ | HP | Tấn công | Phòng thủ | Phá Thế | Cấp khuyến nghị | EXP | Vàng |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 58 | Hỏa | 77.128 | 427 | 180 | 12.855 | 57 | 246.083 | 2.900 |
+| 58 | Hỏa | 77.128 | 427 | 180 | 12.855 | 57 | 492.166 | 2.900 |
 
 | Giai đoạn | Kỹ năng |
 | --- | --- |
@@ -437,23 +437,23 @@ Mỗi vùng gồm 3 map con (Ngoài rìa → Trung tâm → Lõi) và 1 dungeon 
 
 | Quái | Loại | Hệ | Cấp | HP | Tấn công | Phòng thủ | Tốc · Tầm | EXP | Kỹ năng | Đạo Tặc cướp |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Sói Băng | Bầy | Thủy | 60–66 | 1.087 → 1.197 | 185 → 203 | 56 → 61 | 140 · 3,0 m | 13.943 → 16.086 | Đi bầy 4 con. **Cắn** ×1,0 + 1 tầng băng giá | AGI 60 · STR 40 |
-| Người Tuyết | Lì | Thủy | 61–68 | 2.871 → 3.204 | 282 → 314 | 123 → 136 | 80 · 3,6 m | 14.293 → 16.822 | **Ném cầu tuyết** (vung 0,9 s, ×1,3, vòng 3 m) | VIT 60 · STR 40 |
-| Tinh Linh Băng | Phép | Thủy | 63–72 | 2.011 → 2.300 | 388 → 443 | 78 → 89 | 110 · 18 m | 15.001 → 18.328 | **Băng trụ** (vung 1,0 s, vòng 4 m, ×1,1, đóng băng 1 giây) | INT 70 · LUK 30 |
-| Cung Thủ Băng | Xa | Kim | 65–72 | 2.075 → 2.300 | 300 → 332 | 80 → 89 | 70 · 24 m | 15.721 → 18.328 | **Mũi tên xuyên** (xuyên mọi mục tiêu trên đường, ×1,0) | AGI 70 · LUK 30 |
+| Sói Băng | Bầy | Thủy | 60–66 | 1.087 → 1.197 | 185 → 203 | 56 → 61 | 140 · 3,0 m | 1.332 → 1.508 | Đi bầy 4 con. **Cắn** ×1,0 + 1 tầng băng giá | AGI 60 · STR 40 |
+| Người Tuyết | Lì | Thủy | 61–68 | 2.871 → 3.204 | 282 → 314 | 123 → 136 | 80 · 3,6 m | 1.361 → 1.567 | **Ném cầu tuyết** (vung 0,9 s, ×1,3, vòng 3 m) | VIT 60 · STR 40 |
+| Tinh Linh Băng | Phép | Thủy | 63–72 | 2.011 → 2.300 | 388 → 443 | 78 → 89 | 110 · 18 m | 1.419 → 1.688 | **Băng trụ** (vung 1,0 s, vòng 4 m, ×1,1, đóng băng 1 giây) | INT 70 · LUK 30 |
+| Cung Thủ Băng | Xa | Kim | 65–72 | 2.075 → 2.300 | 300 → 332 | 80 → 89 | 70 · 24 m | 1.478 → 1.688 | **Mũi tên xuyên** (xuyên mọi mục tiêu trên đường, ×1,0) | AGI 70 · LUK 30 |
 
 **Quái tinh anh** (viền sáng, có 1 kỹ năng riêng; luôn rơi đồ Xanh dương/Tím; 30% Đạo Tặc cướp)
 
 | Quái | Loại | Hệ | Cấp | HP | Tấn công | Phòng thủ | Tốc · Tầm | EXP | Kỹ năng | Đạo Tặc cướp |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Gấu Băng Khổng Lồ | Lì | Thủy | 63–70 | 11.118 → 12.366 | 391 → 434 | 190 → 211 | 80 · 3,6 m | 45.003 → 52.710 | **Đập băng** (hồi 10 s): nứt nền 3 đường thẳng 15 m, mỗi đường ×1,8 | STR 60 · VIT 40 |
-| Pháp Sư Bão Tuyết | Phép | Kim | 66–72 | 8.078 → 8.818 | 547 → 596 | 122 → 133 | 110 · 18 m | 48.258 → 54.984 | **Bão tuyết** (hồi 15 s): vùng 14 m trong 6 giây, +1 tầng băng giá mỗi giây | INT 70 · VIT 30 |
+| Gấu Băng Khổng Lồ | Lì | Thủy | 63–70 | 11.118 → 12.366 | 391 → 434 | 190 → 211 | 80 · 3,6 m | 4.257 → 4.884 | **Đập băng** (hồi 10 s): nứt nền 3 đường thẳng 15 m, mỗi đường ×1,8 | STR 60 · VIT 40 |
+| Pháp Sư Bão Tuyết | Phép | Kim | 66–72 | 8.078 → 8.818 | 547 → 596 | 122 → 133 | 110 · 18 m | 4.524 → 5.064 | **Bão tuyết** (hồi 15 s): vùng 14 m trong 6 giây, +1 tầng băng giá mỗi giây | INT 70 · VIT 30 |
 
 **Boss chương 6: Bản Ngã Bóng Tối**
 
 | Cấp | Hệ | HP | Tấn công | Phòng thủ | Phá Thế | Cấp khuyến nghị | EXP | Vàng |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 70 | theo hệ người chơi | 93.604 | 515 | 216 | 15.601 | 69 | 395.274 | 3.500 |
+| 70 | theo hệ người chơi | 93.604 | 515 | 216 | 15.601 | 69 | 790.549 | 3.500 |
 
 | Giai đoạn | Kỹ năng |
 | --- | --- |
@@ -501,23 +501,23 @@ Mỗi vùng gồm 3 map con (Ngoài rìa → Trung tâm → Lõi) và 1 dungeon 
 
 | Quái | Loại | Hệ | Cấp | HP | Tấn công | Phòng thủ | Tốc · Tầm | EXP | Kỹ năng | Đạo Tặc cướp |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Đại Bàng Mây | Nhanh | Kim | 72–78 | 2.045 → 2.216 | 332 → 360 | 89 → 96 | 160 · 3,4 m | 18.328 → 20.666 | **Quạt cánh** (vung 0,6 s): đẩy lùi 5 m (thường về phía mép đảo) | AGI 70 · LUK 30 |
-| Người Gỗ Đảo Bay | Giáp | Mộc | 73–80 | 2.751 → 3.017 | 374 → 410 | 225 → 246 | 70 · 4,0 m | 18.711 → 21.466 | **Rễ quật** (vòng 5 m, ×1,3) | VIT 60 · STR 40 |
-| Tiên Gió | Phép | Mộc | 75–84 | 2.397 → 2.686 | 461 → 516 | 92 → 103 | 110 · 18 m | 19.486 → 23.096 | **Hồi phục**: hồi 5% HP cho đồng bọn trong 10 m mỗi 2 giây — nên hạ trước | INT 60 · LUK 40 |
-| Hiệp Sĩ Thiên Không | Lì | Kim | 78–84 | 3.679 → 3.963 | 360 → 387 | 156 → 168 | 80 · 3,6 m | 20.666 → 23.096 | **Thương phá** (vung 0,8 s, đâm xuyên 15 m, ×1,6) | STR 60 · VIT 40 |
+| Đại Bàng Mây | Nhanh | Kim | 72–78 | 2.045 → 2.216 | 332 → 360 | 89 → 96 | 160 · 3,4 m | 1.688 → 1.873 | **Quạt cánh** (vung 0,6 s): đẩy lùi 5 m (thường về phía mép đảo) | AGI 70 · LUK 30 |
+| Người Gỗ Đảo Bay | Giáp | Mộc | 73–80 | 2.751 → 3.017 | 374 → 410 | 225 → 246 | 70 · 4,0 m | 1.719 → 1.936 | **Rễ quật** (vòng 5 m, ×1,3) | VIT 60 · STR 40 |
+| Tiên Gió | Phép | Mộc | 75–84 | 2.397 → 2.686 | 461 → 516 | 92 → 103 | 110 · 18 m | 1.780 → 2.063 | **Hồi phục**: hồi 5% HP cho đồng bọn trong 10 m mỗi 2 giây — nên hạ trước | INT 60 · LUK 40 |
+| Hiệp Sĩ Thiên Không | Lì | Kim | 78–84 | 3.679 → 3.963 | 360 → 387 | 156 → 168 | 80 · 3,6 m | 1.873 → 2.063 | **Thương phá** (vung 0,8 s, đâm xuyên 15 m, ×1,6) | STR 60 · VIT 40 |
 
 **Quái tinh anh** (viền sáng, có 1 kỹ năng riêng; luôn rơi đồ Xanh dương/Tím; 30% Đạo Tặc cướp)
 
 | Quái | Loại | Hệ | Cấp | HP | Tấn công | Phòng thủ | Tốc · Tầm | EXP | Kỹ năng | Đạo Tặc cướp |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Thủ Hộ Đảo | Giáp | Kim | 75–82 | 10.318 → 11.292 | 517 → 564 | 346 → 378 | 70 · 4,0 m | 58.458 → 66.828 | **Khiên trời** (hồi 18 s): đồng bọn trong 10 m bất tử 4 giây | VIT 70 · INT 30 |
-| Rồng Mây | Nhanh | Mộc | 78–84 | 8.496 → 9.153 | 483 → 520 | 144 → 155 | 160 · 3,4 m | 61.998 → 69.288 | Bay vòng quanh; **Lao mây** (hồi 8 s, ×2,0) | AGI 60 · STR 40 |
+| Thủ Hộ Đảo | Giáp | Kim | 75–82 | 10.318 → 11.292 | 517 → 564 | 346 → 378 | 70 · 4,0 m | 5.340 → 5.997 | **Khiên trời** (hồi 18 s): đồng bọn trong 10 m bất tử 4 giây | VIT 70 · INT 30 |
+| Rồng Mây | Nhanh | Mộc | 78–84 | 8.496 → 9.153 | 483 → 520 | 144 → 155 | 160 · 3,4 m | 5.619 → 6.189 | Bay vòng quanh; **Lao mây** (hồi 8 s, ×2,0) | AGI 60 · STR 40 |
 
 **Boss chương 7: Thiên Không Cự Thần**
 
 | Cấp | Hệ | HP | Tấn công | Phòng thủ | Phá Thế | Cấp khuyến nghị | EXP | Vàng |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 82 | Kim | 110.081 | 604 | 252 | 18.347 | 81 | 563.780 | 4.100 |
+| 82 | Kim | 110.081 | 604 | 252 | 18.347 | 81 | 1.127.561 | 4.100 |
 
 | Giai đoạn | Kỹ năng |
 | --- | --- |
@@ -564,23 +564,23 @@ Mỗi vùng gồm 3 map con (Ngoài rìa → Trung tâm → Lõi) và 1 dungeon 
 
 | Quái | Loại | Hệ | Cấp | HP | Tấn công | Phòng thủ | Tốc · Tầm | EXP | Kỹ năng | Đạo Tặc cướp |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Bóng Hư Vô | Nhanh | Hư Vô | 84–90 | 2.387 → 2.559 | 387 → 415 | 103 → 110 | 160 · 3,4 m | 23.096 → 25.614 | Tàng hình khi đứng yên; **Đâm lén** từ sau lưng ×1,8 | AGI 70 · LUK 30 |
-| Kẻ Nuốt Thiên Phú | Phép | Hư Vô | 85–92 | 2.718 → 2.943 | 522 → 565 | 104 → 113 | 110 · 18 m | 23.510 → 26.473 | Đòn trúng xoá 1 hiệu ứng có lợi và làm Thiên phú yếu thêm 5% | INT 70 · LUK 30 |
-| Giáp Sĩ Hư Vô | Giáp | Hư Vô | 87–95 | 3.284 → 3.588 | 445 → 486 | 267 → 291 | 70 · 4,0 m | 24.344 → 27.778 | **Chém nặng** (vung 1,0 s, ×1,6) | STR 50 · VIT 50 |
-| Mắt Hư Vô | Xa | Hư Vô | 89–95 | 2.846 → 3.039 | 410 → 437 | 109 → 116 | 70 · 24 m | 25.189 → 27.778 | **Tia nhìn**: chiếu liên tục ×0,3 mỗi 0,2 s; nấp sau vật cản để tránh | INT 60 · AGI 40 |
+| Bóng Hư Vô | Nhanh | Hư Vô | 84–90 | 2.387 → 2.559 | 387 → 415 | 103 → 110 | 160 · 3,4 m | 2.063 → 2.256 | Tàng hình khi đứng yên; **Đâm lén** từ sau lưng ×1,8 | AGI 70 · LUK 30 |
+| Kẻ Nuốt Thiên Phú | Phép | Hư Vô | 85–92 | 2.718 → 2.943 | 522 → 565 | 104 → 113 | 110 · 18 m | 2.095 → 2.322 | Đòn trúng xoá 1 hiệu ứng có lợi và làm Thiên phú yếu thêm 5% | INT 70 · LUK 30 |
+| Giáp Sĩ Hư Vô | Giáp | Hư Vô | 87–95 | 3.284 → 3.588 | 445 → 486 | 267 → 291 | 70 · 4,0 m | 2.159 → 2.421 | **Chém nặng** (vung 1,0 s, ×1,6) | STR 50 · VIT 50 |
+| Mắt Hư Vô | Xa | Hư Vô | 89–95 | 2.846 → 3.039 | 410 → 437 | 109 → 116 | 70 · 24 m | 2.224 → 2.421 | **Tia nhìn**: chiếu liên tục ×0,3 mỗi 0,2 s; nấp sau vật cản để tránh | INT 60 · AGI 40 |
 
 **Quái tinh anh** (viền sáng, có 1 kỹ năng riêng; luôn rơi đồ Xanh dương/Tím; 30% Đạo Tặc cướp)
 
 | Quái | Loại | Hệ | Cấp | HP | Tấn công | Phòng thủ | Tốc · Tầm | EXP | Kỹ năng | Đạo Tặc cướp |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Tư Tế Hư Vô | Phép | Hư Vô | 88–94 | 10.791 → 11.531 | 726 → 775 | 162 → 173 | 110 · 18 m | 74.295 → 82.023 | **Tế lễ** (hồi 15 s): hiến 1 quái gần đó để hồi 30% HP và +30% Tấn công cho đồng bọn trong 12 m | INT 70 · VIT 30 |
-| Quái Vật Không Mặt | Lì | Hư Vô | 90–95 | 15.932 → 16.823 | 557 → 588 | 269 → 284 | 80 · 3,6 m | 76.842 → 83.334 | **Vô diện**: miễn nhiễm sát thương từ phía trước, chỉ đánh được sau lưng | VIT 60 · STR 40 |
+| Tư Tế Hư Vô | Phép | Hư Vô | 88–94 | 10.791 → 11.531 | 726 → 775 | 162 → 173 | 110 · 18 m | 6.573 → 7.164 | **Tế lễ** (hồi 15 s): hiến 1 quái gần đó để hồi 30% HP và +30% Tấn công cho đồng bọn trong 12 m | INT 70 · VIT 30 |
+| Quái Vật Không Mặt | Lì | Hư Vô | 90–95 | 15.932 → 16.823 | 557 → 588 | 269 → 284 | 80 · 3,6 m | 6.768 → 7.263 | **Vô diện**: miễn nhiễm sát thương từ phía trước, chỉ đánh được sau lưng | VIT 60 · STR 40 |
 
 **Boss chương 8: Giáo Chủ Hư Vô**
 
 | Cấp | Hệ | HP | Tấn công | Phòng thủ | Phá Thế | Cấp khuyến nghị | EXP | Vàng |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 93 | Hư Vô | 125.184 | 685 | 285 | 20.864 | 92 | 751.718 | 4.650 |
+| 93 | Hư Vô | 125.184 | 685 | 285 | 20.864 | 92 | 1.503.435 | 4.650 |
 
 | Giai đoạn | Kỹ năng |
 | --- | --- |
@@ -627,23 +627,23 @@ Mỗi vùng gồm 3 map con (Ngoài rìa → Trung tâm → Lõi) và 1 dungeon 
 
 | Quái | Loại | Hệ | Cấp | HP | Tấn công | Phòng thủ | Tốc · Tầm | EXP | Kỹ năng | Đạo Tặc cướp |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Thiên Binh Ngũ Hành | Giáp | theo tầng | 95–100 | 3.588 → 3.778 | 486 → 511 | 291 → 306 | 70 · 4,0 m | 27.778 → 30.000 | **Kích ngũ hành** (×1,4, hệ của tầng) | STR 50 · VIT 50 |
-| Tàn Hồn Khai Giới Giả | Phép | theo tầng | 95–100 | 3.039 → 3.200 | 583 → 614 | 116 → 122 | 110 · 18 m | 27.778 → 30.000 | Mang 1 Thiên phú ngẫu nhiên trong 20 và dùng kỹ năng L của Thiên phú đó | INT 50 · LUK 50 |
-| Thiên Mã | Nhanh | theo tầng | 96–100 | 2.730 → 2.844 | 442 → 460 | 118 → 122 | 160 · 3,4 m | 28.218 → 30.000 | **Phi nước đại** (lao 20 m, ×1,5) | AGI 70 · VIT 30 |
-| Ngũ Hành Linh Thú | Lì | theo tầng | 97–100 | 4.581 → 4.723 | 446 → 460 | 193 → 199 | 80 · 3,6 m | 28.660 → 30.000 | **Gầm ngũ hành** (vòng 8 m, ×1,2): người chơi mất thưởng khắc hệ 5 giây | VIT 50 · STR 50 |
+| Thiên Binh Ngũ Hành | Giáp | theo tầng | 95–100 | 3.588 → 3.778 | 486 → 511 | 291 → 306 | 70 · 4,0 m | 2.421 → 2.588 | **Kích ngũ hành** (×1,4, hệ của tầng) | STR 50 · VIT 50 |
+| Tàn Hồn Khai Giới Giả | Phép | theo tầng | 95–100 | 3.039 → 3.200 | 583 → 614 | 116 → 122 | 110 · 18 m | 2.421 → 2.588 | Mang 1 Thiên phú ngẫu nhiên trong 20 và dùng kỹ năng L của Thiên phú đó | INT 50 · LUK 50 |
+| Thiên Mã | Nhanh | theo tầng | 96–100 | 2.730 → 2.844 | 442 → 460 | 118 → 122 | 160 · 3,4 m | 2.454 → 2.588 | **Phi nước đại** (lao 20 m, ×1,5) | AGI 70 · VIT 30 |
+| Ngũ Hành Linh Thú | Lì | theo tầng | 97–100 | 4.581 → 4.723 | 446 → 460 | 193 → 199 | 80 · 3,6 m | 2.487 → 2.588 | **Gầm ngũ hành** (vòng 8 m, ×1,2): người chơi mất thưởng khắc hệ 5 giây | VIT 50 · STR 50 |
 
 **Quái tinh anh** (viền sáng, có 1 kỹ năng riêng; luôn rơi đồ Xanh dương/Tím; 30% Đạo Tặc cướp)
 
 | Quái | Loại | Hệ | Cấp | HP | Tấn công | Phòng thủ | Tốc · Tầm | EXP | Kỹ năng | Đạo Tặc cướp |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Thiên Tướng | Giáp | theo tầng | 96–100 | 13.239 → 13.795 | 660 → 687 | 441 → 459 | 70 · 4,0 m | 84.654 → 90.000 | **Thiên phạt** (hồi 12 s): 5 cột sét vòng 4 m, mỗi cột ×1,6 | STR 60 · VIT 40 |
-| Ngũ Hành Sứ Giả | Phép | đổi mỗi 8 s | 97–100 | 11.901 → 12.271 | 800 → 824 | 178 → 184 | 110 · 18 m | 85.980 → 90.000 | Đổi hệ mỗi 8 giây; chỉ nhận sát thương từ hệ khắc hệ hiện tại | INT 60 · LUK 40 |
+| Thiên Tướng | Giáp | theo tầng | 96–100 | 13.239 → 13.795 | 660 → 687 | 441 → 459 | 70 · 4,0 m | 7.362 → 7.764 | **Thiên phạt** (hồi 12 s): 5 cột sét vòng 4 m, mỗi cột ×1,6 | STR 60 · VIT 40 |
+| Ngũ Hành Sứ Giả | Phép | đổi mỗi 8 s | 97–100 | 11.901 → 12.271 | 800 → 824 | 178 → 184 | 110 · 18 m | 7.461 → 7.764 | Đổi hệ mỗi 8 giây; chỉ nhận sát thương từ hệ khắc hệ hiện tại | INT 60 · LUK 40 |
 
 **Boss chương 9: Ma Tôn Vô Diện**
 
 | Cấp | Hệ | HP | Tấn công | Phòng thủ | Phá Thế | Cấp khuyến nghị | EXP | Vàng |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 100 | đổi mỗi 10 s | 134.796 | 736 | 306 | 22.466 | 99 | 903.566 | 5.000 |
+| 100 | đổi mỗi 10 s | 134.796 | 736 | 306 | 22.466 | 99 | 1.807.132 | 5.000 |
 
 | Giai đoạn | Kỹ năng |
 | --- | --- |

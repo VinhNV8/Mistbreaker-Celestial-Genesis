@@ -96,3 +96,31 @@ SPRITES["npc-elder"] = {"builder": "humanoid", "name": "Trưởng làng Thạch 
 SPRITES["npc-merchant"] = {"builder": "humanoid", "name": "Thương nhân lữ hành",
                            "spec": {"skin": "skin_light", "cloth": "gold", "pants": "cloth_red", "trim": "cloth_red",
                                     "weapon": "none", "hood": True, "gender": "nam"}}
+
+# M6: quái vùng 3 Sa Mạc Xích Sa (docs/10, 06 vùng 3) — hệ Thổ: cát, nâu đỏ
+SPRITES["bo-cat"] = {"builder": "insect", "name": "Bọ Cát", "size_mul": 0.8, "spec": {"shell": "sand_red", "leg": "chitin", "eye": "#ffd23c"}}
+SPRITES["ran-cat"] = {"builder": "snake", "name": "Rắn Đồi Cát", "spec": {"body": "sand_red", "belly": "sand", "eye": "#ffd23c"}}
+SPRITES["xac-uop"] = {"builder": "humanoid", "name": "Xác Ướp Khai Giới",
+                      "spec": {"skin": "bandage", "cloth": "bandage", "pants": "bandage", "boots": "bandage", "hair_style": "none",
+                               "trim": "sand", "weapon": "none"}}
+SPRITES["phap-su-cat"] = {"builder": "humanoid", "name": "Pháp Sư Cát",
+                          "spec": {"cloth": "sand", "pants": "sand_red", "hood": True, "trim": "fire", "weapon": "staff",
+                                   "robe": True, "orb": "fire", "skin": "skin_dark"}}
+SPRITES["bo-hung"] = {"builder": "insect", "name": "Bọ Hung Giáp Vàng", "spec": {"size": 32, "shell": "gold", "leg": "chitin", "horn": True, "eye": "#ff5470"}}
+SPRITES["thu-linh-xac-uop"] = {"builder": "humanoid", "name": "Thủ Lĩnh Xác Ướp", "size_mul": 1.3,
+                               "spec": {"skin": "bandage", "cloth": "gold", "pants": "bandage", "boots": "bandage", "hair_style": "none",
+                                        "trim": "blood", "weapon": "staff", "orb": "purple", "cape": "purple"}}
+# Boss chương 3 + boss hiếm
+SPRITES["sa-hoang"] = {"builder": "scorpion", "name": "Bọ Cạp Sa Hoàng", "size_mul": 1.4,
+                       "spec": {"shell": "chitin", "sting": "#8cff5a", "eye": "#ff3b4e"}}
+SPRITES["nhan-su"] = {"builder": "quadruped", "name": "Nhân Sư Đá", "size_mul": 1.4,
+                      "spec": {"size": 48, "fur": "sand", "mane": "gold", "eye": "#4fc3ff"}}
+# NPC Trại Cát Đỏ
+SPRITES["npc-sa-lao"] = {"builder": "humanoid", "name": "Học giả Sa Lão",
+                         "spec": {"skin": "skin_dark", "hair": "white", "hair_style": "bui", "cloth": "sand", "pants": "leather",
+                                  "trim": "cloth_blue", "weapon": "staff", "orb": "crystal", "robe": True}}
+SPRITES["npc-a-moc"] = {"builder": "humanoid", "name": "Người dẫn đường A Mộc",
+                        "spec": {"skin": "skin_dark", "cloth": "sand_red", "pants": "sand", "hood": True, "trim": "gold", "weapon": "none"}}
+SPRITES["npc-thach-thu"] = {"builder": "humanoid", "name": "Hộ vệ Thạch Thủ",
+                            "spec": {"skin": "skin", "hair": "hair_dark", "cloth": "stone", "pants": "sand_red", "trim": "gold",
+                                     "weapon": "sword", "cape": "sand"}}

@@ -2366,6 +2366,479 @@
    },
    "name": "Thương nhân lữ hành",
    "size_mul": 1.0
+  },
+  "bo-cat": {
+   "path": "res://assets/sprites/bo-cat.png",
+   "w": 24,
+   "h": 24,
+   "origin": [
+    12,
+    22
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Bọ Cát",
+   "size_mul": 0.8
+  },
+  "ran-cat": {
+   "path": "res://assets/sprites/ran-cat.png",
+   "w": 24,
+   "h": 24,
+   "origin": [
+    12,
+    22
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Rắn Đồi Cát",
+   "size_mul": 1.0
+  },
+  "xac-uop": {
+   "path": "res://assets/sprites/xac-uop.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Xác Ướp Khai Giới",
+   "size_mul": 1.0
+  },
+  "phap-su-cat": {
+   "path": "res://assets/sprites/phap-su-cat.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Pháp Sư Cát",
+   "size_mul": 1.0
+  },
+  "bo-hung": {
+   "path": "res://assets/sprites/bo-hung.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Bọ Hung Giáp Vàng",
+   "size_mul": 1.0
+  },
+  "thu-linh-xac-uop": {
+   "path": "res://assets/sprites/thu-linh-xac-uop.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Thủ Lĩnh Xác Ướp",
+   "size_mul": 1.3
+  },
+  "sa-hoang": {
+   "path": "res://assets/sprites/sa-hoang.png",
+   "w": 48,
+   "h": 48,
+   "origin": [
+    24,
+    44
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Bọ Cạp Sa Hoàng",
+   "size_mul": 1.4
+  },
+  "nhan-su": {
+   "path": "res://assets/sprites/nhan-su.png",
+   "w": 48,
+   "h": 48,
+   "origin": [
+    24,
+    44
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Nhân Sư Đá",
+   "size_mul": 1.4
+  },
+  "npc-sa-lao": {
+   "path": "res://assets/sprites/npc-sa-lao.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Học giả Sa Lão",
+   "size_mul": 1.0
+  },
+  "npc-a-moc": {
+   "path": "res://assets/sprites/npc-a-moc.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Người dẫn đường A Mộc",
+   "size_mul": 1.0
+  },
+  "npc-thach-thu": {
+   "path": "res://assets/sprites/npc-thach-thu.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Hộ vệ Thạch Thủ",
+   "size_mul": 1.0
   }
  },
  "icons": {
@@ -2381,6 +2854,8 @@
   "item-lao_thu_bark": "res://assets/icons/item-lao_thu_bark.png",
   "item-huyen_anh_mask": "res://assets/icons/item-huyen_anh_mask.png",
   "item-bach_ho_claw": "res://assets/icons/item-bach_ho_claw.png",
+  "item-sa_hoang_tail": "res://assets/icons/item-sa_hoang_tail.png",
+  "item-nhan_su_eye": "res://assets/icons/item-nhan_su_eye.png",
   "res-gold": "res://assets/icons/res-gold.png",
   "res-wood": "res://assets/icons/res-wood.png",
   "res-stone": "res://assets/icons/res-stone.png",
@@ -2725,6 +3200,114 @@
    "origin": [
     9,
     9
+   ]
+  },
+  "tile-sand": {
+   "path": "res://assets/env/tile-sand.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    0,
+    0
+   ]
+  },
+  "tile-sand-red": {
+   "path": "res://assets/env/tile-sand-red.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    0,
+    0
+   ]
+  },
+  "tile-ruins": {
+   "path": "res://assets/env/tile-ruins.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    0,
+    0
+   ]
+  },
+  "rock-desert-0": {
+   "path": "res://assets/env/rock-desert-0.png",
+   "w": 44,
+   "h": 34,
+   "origin": [
+    22,
+    29
+   ]
+  },
+  "cactus-0": {
+   "path": "res://assets/env/cactus-0.png",
+   "w": 20,
+   "h": 32,
+   "origin": [
+    10,
+    29
+   ]
+  },
+  "rock-desert-1": {
+   "path": "res://assets/env/rock-desert-1.png",
+   "w": 44,
+   "h": 34,
+   "origin": [
+    22,
+    29
+   ]
+  },
+  "cactus-1": {
+   "path": "res://assets/env/cactus-1.png",
+   "w": 20,
+   "h": 32,
+   "origin": [
+    10,
+    29
+   ]
+  },
+  "palm": {
+   "path": "res://assets/env/palm.png",
+   "w": 44,
+   "h": 56,
+   "origin": [
+    21,
+    52
+   ]
+  },
+  "oasis": {
+   "path": "res://assets/env/oasis.png",
+   "w": 96,
+   "h": 56,
+   "origin": [
+    48,
+    28
+   ]
+  },
+  "pillar-0": {
+   "path": "res://assets/env/pillar-0.png",
+   "w": 20,
+   "h": 48,
+   "origin": [
+    10,
+    44
+   ]
+  },
+  "pillar-1": {
+   "path": "res://assets/env/pillar-1.png",
+   "w": 20,
+   "h": 48,
+   "origin": [
+    10,
+    44
+   ]
+  },
+  "tent": {
+   "path": "res://assets/env/tent.png",
+   "w": 48,
+   "h": 40,
+   "origin": [
+    24,
+    36
    ]
   }
  }

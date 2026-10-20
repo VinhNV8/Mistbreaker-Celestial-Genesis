@@ -793,7 +793,7 @@ Phần lớn hạng mục M5 trong lộ trình ban đầu (thoại, nhiệm vụ
 | Mã | Nội dung | Trạng thái |
 | --- | --- | --- |
 | M5-01 | Boss hiếm vùng 2 **Bạch Hổ Phong Vân** ở Mắt Bão (06 vùng 2), rơi **Vuốt Bạch Hổ** | ✅ |
-| M5-02 | Nhịp lên cấp: Spec_Notes đợt 3 "nhân vật lên level nhanh quá" — nghiên cứu nhịp ARPG, chỉnh hệ số EXP (NV-20) | ⬜ đang làm |
+| M5-02 | Nhịp lên cấp: Spec_Notes đợt 3 "nhân vật lên level nhanh quá" — nghiên cứu nhịp ARPG, chỉnh hệ số EXP (NV-20) | ✅ |
 | M5-03 | Bản đồ nhỏ theo thời gian thực (Spec_Notes đợt 3) | ⬜ |
 | M5-04 | KP-04: chinh phục ô Di tích bằng câu đố | ⬜ |
 | M5-05 | KT-07: cài đặt cỡ chữ (hook `UiTheme.set_font_scale` đã có) | ⬜ |
@@ -826,13 +826,55 @@ Phần lớn hạng mục M5 trong lộ trình ban đầu (thoại, nhiệm vụ
 
 Lúc đầu Gầm Gió dùng chung nhịp 3,2 giây với Hổ Vồ: Kiếm Khách bị đẩy ra và choáng gần một nửa thời gian, chết 17 lần trong 600 giây. Sau khi tách Gầm Gió ra hồi riêng 9 giây và cho đòn cắn thường nghỉ 1,2 giây, Kiếm Khách thắng mà không chết lần nào. Lớp cận chiến vẫn chậm hơn lớp đánh xa khoảng 50%. Chấp nhận được với boss hiếm, xem lại khi có playtest.
 
-### 8.3. Kiểm thử
+### 8.3. M5-02 — Nhịp lên cấp
+
+**Vấn đề (Spec_Notes đợt 3):** "Nhân vật lên level nhanh quá." Bot chỉ đánh quái, không làm nhiệm vụ, boss hay khai phá mà vẫn lên **cấp 10 sau 2,3–3,2 phút, cấp 17 sau khoảng 10 phút**. Kịch bản đặt mục tiêu cấp 10 sau 30 phút. Chỉ cần hạ khoảng 89 quái là lên cấp 10.
+
+**Tham khảo thị trường:**
+
+| Game | Nhịp |
+| --- | --- |
+| Diablo 4 | Cấp 20 khoảng hết Màn 1, 8–10 giờ (bản thử nghiệm); cấp 100 trung bình 150 giờ (Blizzard) |
+| Path of Exile 2 | Lần chơi đầu: cả cốt truyện 20–25 giờ |
+| Game mobile / idle | Cấp 5–10 đạt trong phiên đầu (phiên đầu trung bình 9 phút, phiên > 9 phút giữ chân ngày 1 tốt hơn: 31% so với 20%) |
+| Kịch bản Thiên Phú Khai Giới | Cấp 1 → 10 trong 30 phút, 10 → 30 trong 6 giờ (chặng 10 → 20 chiếm 24% EXP, khoảng 86 phút) |
+
+Game là ARPG lai idle, nên nhanh hơn Diablo nhưng giữ đúng mốc của kịch bản. Mục tiêu cho người chơi thật: **cấp 5 ở phút 10–15** (mở hang Sói Chúa), **cấp 10 ở phút 30** (mở vùng 2), **cấp 20 sau khoảng 2 giờ**.
+
+**Ngân sách EXP theo nguồn (kịch bản mục 4):** quái 40% · nhiệm vụ 25% · boss + boss hiếm 20% · khai phá 10% · offline 5%.
+
+| Thay đổi | Cũ | Mới |
+| --- | --- | --- |
+| EXP quái thường (`Formulas.mob_exp`) | 30·L^1,5 | **6,5·L^1,3** (tinh anh ×3 như cũ) |
+| EXP boss chương (`boss_exp`) | 0,3 × EXP cấp | **0,6 × EXP cấp** |
+| EXP khai phá mỗi phát hiện (`Formulas.explore_exp`) | 40 × cấp | **8·L^1,6** (cấp 5: 105, cấp 15: 609) |
+| Thưởng nhiệm vụ chương 1 | tổng 420 EXP | tổng **9.650 EXP** (80 → 3.500 tăng dần theo bước) |
+| Thưởng nhiệm vụ chương 2 | tổng 3.000 EXP | tổng **95.000 EXP** (5.000 · 15.000 · 20.000 · 25.000 · 30.000) |
+| Lính khiên quay người | tức thì | **tối đa 120°/giây** (xem dưới) |
+
+Với số mới: chỉ đánh quái thì lên cấp 10 cần khoảng 600 quái, cấp 20 khoảng 2.300 quái. Nhiệm vụ chiếm 23% (chương 1) và 25% (chương 2) EXP của chặng. Boss + boss hiếm chiếm 22% và 19%.
+
+**Số đo (bot cày, chỉ EXP từ quái; `--only=PACE`):**
+
+| | Cũ | Mới |
+| --- | --- | --- |
+| Cấp 1 → 10 (3 lớp) | 2,3–3,2 phút, 250–270 quái | **16,8–22,5 phút**, khoảng 530 quái, 0 lần chết với lớp đánh xa |
+| Cấp 10 → 20 vùng 2 (3 lớp) | khoảng 7 phút | **86–89 phút**, khoảng 1.400–1.550 quái |
+
+Bot đánh nhanh hơn người (không đi lạc, không mở bảng, không đọc thoại), nhưng người lại nhận thêm khoảng 60% EXP từ nhiệm vụ, boss và khai phá. Ước tính người chơi thật lên cấp 10 ở phút 25–35 và cấp 20 sau 2–2,5 giờ. Phải kiểm lại bằng playtest người thật.
+
+**Phát hiện F-M5-1, lính khiên:** khi người chơi ngang cấp quái (trước đây người chơi luôn cao cấp hơn nên không lộ ra), Kiếm Khách chết **52 lần** trên chặng 10 → 20. Lính Đánh Thuê luôn quay mặt về người chơi ngay lập tức, nên lời dặn "đánh từ bên hông hoặc sau lưng" không làm được, và cận chiến luôn bị khiên chặn 70%. Sửa: lính khiên quay tối đa 120°/giây, chạy vòng thì đánh được vào hông. Bot Kiếm Khách được dạy chạy vòng. Kết quả: Kiếm Khách chết **16 lần**, mất 86 phút, ngang lớp đánh xa. TL-B, TL-B2 và M5-T3 không đổi.
+
+### 8.4. Kiểm thử
 
 | Mã | Nội dung |
 | --- | --- |
 | M5-T1 | Bạch Hổ: chưa hạ Huyền Ảnh thì không xuất hiện; chỉ số 06; không xuất hiện trong Phủ; Hổ Vồ đúng 3 cú, tầm 22 m; Gầm Gió đẩy 8 m + choáng (không đi/đánh/né); né lăn tránh được; Phá Thế ngắt chuỗi; Cưỡi Gió ×1,5; rơi Vuốt (không Tím); lịch riêng từng boss; save v8 và chuyển đổi v7 |
 | M5-T2 | Vuốt Bạch Hổ: chí mạng → chảy máu 4 giây, 30% Tấn công mỗi giây; không mặc thì không chảy máu |
 | M5-T3 | 3 lớp cấp 20 hạ Bạch Hổ không chết lần nào, tối đa 3 bình máu |
+| M5-T4 | Lính khiên quay tối đa 2° mỗi khung hình; đánh sau lưng không bị chặn; sau 1,5 giây quay lại đối mặt |
+| M5-T5 | Chỉ đánh quái: cấp 10 cần 500–700 quái, cấp 20 cần 2.000–2.700 quái; nhiệm vụ 18–32% EXP mỗi chương; boss + boss hiếm 15–30% |
+| PACE-T1, T2 | Đo nhịp (chạy riêng `--only=PACE`, vài phút): bot cày từ cấp 1 và từ cấp 10, in phút tới từng mốc cấp, số quái, số lần chết theo map |
 
 ## Phụ lục A — Yêu cầu thay đổi (CR)
 

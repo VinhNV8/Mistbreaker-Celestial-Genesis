@@ -13,7 +13,8 @@ def exp_to_next(L):
     return math.floor(100 * L ** 2.2 + 500 * (L // 10) ** 3)
 
 def mob_exp(L):
-    return round(30 * L ** 1.5)
+    # M5-02: giống formulas.gd mob_exp (6,5·L^1,3)
+    return round(6.5 * L ** 1.3)
 
 TIERS = {  # số đòn để hạ (H), đòn của quái lấy bao nhiêu % HP người chơi (h), hệ số phòng thủ
     "thuong": (3, 0.06, 1.0),
@@ -346,7 +347,7 @@ Sát thương dùng công thức kịch bản mục 5: `DMG = ATK × hệ số �
 | Phòng thủ quái | `(3 + 1,5·L) × hệ số bậc × hệ số loại` |
 | HP quái | `số đòn mục tiêu × sát thương 1 đòn của người chơi chuẩn × hệ số loại` |
 | Tấn công quái | Chọn sao cho 1 đòn thường của quái lấy đúng `% HP mục tiêu` của người chơi chuẩn, rồi × hệ số loại |
-| EXP | Quái thường `30·L^1,5` (đã code); tinh anh ×3 (đã code); boss vùng `0,3 × EXP lên cấp L`; boss hiếm `0,5 × EXP lên cấp L` |
+| EXP | Quái thường `6,5·L^1,3` (M5-02, cũ `30·L^1,5`); tinh anh ×3; boss vùng `0,6 × EXP lên cấp L` (M5-02, cũ 0,3); boss hiếm `0,5 × EXP lên cấp L` — đã code |
 | Vàng | Quái thường `3·L`, tinh anh `12·L` (đã code); boss vùng `50·L`; boss hiếm `80·L` |
 | Phá Thế | Boss: 1/6 HP (Sói Chúa đang dùng 600/3600); tinh anh: 30% HP (CB-07, M3) |
 
@@ -439,7 +440,7 @@ for R in REGIONS:
     B = R["boss"]
     s = stats(B["lv"], "boss", "Boss", B["ref"], boss_hits(R["n"]))
     poise = round(s["hp"] / 6)
-    bexp = round(0.3 * exp_to_next(B["lv"]))
+    bexp = round(0.6 * exp_to_next(B["lv"]))
     code_note = " — **đã có trong game** (chỉ số theo công thức mục 1 từ M3)" if R["n"] == 1 else ""
     w(f"\n**Boss chương {R['n']}: {B['name']}**{code_note}\n")
     w(f"| Cấp | Hệ | HP | Tấn công | Phòng thủ | Phá Thế | Cấp khuyến nghị | EXP | Vàng |\n| --- | --- | --- | --- | --- | --- | --- | --- | --- |")

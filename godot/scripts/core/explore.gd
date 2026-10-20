@@ -4,6 +4,7 @@ extends RefCounted
 ## Các hàm nhận `p` là Profile (không khai báo kiểu để tránh preload vòng tròn).
 
 const Config = preload("res://scripts/core/config.gd")
+const Formulas = preload("res://scripts/core/formulas.gd")
 const RngUtil = preload("res://scripts/core/rng_util.gd")
 const Talents = preload("res://scripts/data/talents.gd")
 
@@ -314,7 +315,7 @@ static func reveal_tile(p, id: int) -> Dictionary:
 				t.status = "revealed"
 				names.append(EVENT_INFO[t.event].name)
 				extra += 1
-	var exp_gain: int = 40 * int(p.level) * names.size()
+	var exp_gain: int = Formulas.explore_exp(int(p.level)) * names.size()
 	return _result(true, "Sương mù tan: phát hiện %s." % ", ".join(names), exp_gain)
 
 

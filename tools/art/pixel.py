@@ -55,6 +55,11 @@ R = {
     "crystal": ramp("#173a6e", "#2b64b4", "#58a0f0", "#c4e4ff"),
     "fire": ramp("#7a1e0a", "#d0481a", "#ff9a3c", "#ffe08a"),
     "purple": ramp("#2c1442", "#52287a", "#8248b8", "#c28af0"),
+    # M6 (vùng 3 Sa Mạc Xích Sa)
+    "sand": ramp("#6e4e2a", "#a87a44", "#d6a865", "#f2d79a"),
+    "sand_red": ramp("#5a2a1a", "#8a4428", "#b8663a", "#dc9256"),
+    "bandage": ramp("#5e5440", "#958866", "#c4b78e", "#ece2c0"),
+    "chitin": ramp("#2a1a10", "#5a3418", "#8a5426", "#c0843c"),
     "white": ramp("#7d8494", "#b4bac8", "#e2e6ee", "#ffffff"),
 }
 

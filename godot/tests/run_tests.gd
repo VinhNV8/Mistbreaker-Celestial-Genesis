@@ -124,7 +124,11 @@ func _init() -> void:
 	_run("M5-T1 Bạch Hổ: điều kiện, chỉ số, Hổ Vồ, Gầm Gió, Cưỡi Gió, rơi đồ, lịch riêng, save v8", _test_m5_bach_ho)
 	_run("M5-T2 Vuốt Bạch Hổ: chí mạng gây chảy máu", _test_m5_claw)
 	_run("M5-T3 cân bằng: 3 lớp cấp 20 hạ Bạch Hổ", _test_m5_bach_ho_balance)
+	_run("M5-T4 lính khiên quay chậm 120°/giây: chạy vòng đánh được vào hông", _test_m5_shield_turn)
+	_run("M5-T5 nhịp EXP: số quái tới cấp 10/20, tỉ lệ nguồn EXP theo kịch bản", _test_m5_exp_budget)
 	_run("PACE-T1 nhịp lên cấp 1 → 20 chỉ bằng đánh quái (bot cày, đo phút)", _test_pace_mobs)
+	for c in Classes.ORDER:
+		_run("PACE-T2 %s cấp 10 → 20 vùng 2" % c, _test_pace_r2.bind(c))
 
 	print("")
 	if _failed.is_empty():
@@ -374,8 +378,12 @@ func _bot(w: GameWorld) -> Dictionary:
 			"talent": true, "dodge": threat,
 		}
 	var close: bool = best < 60.0 + target.radius
+	# M5-02: quái có khiên — chạy vòng sang hông thay vì đứng trước khiên.
+	var circle := Vector2.ZERO
+	if close and Monsters.DEFS[target.kind].get("shield", false) and target.state != "stunned" and absf(angle_difference(target.face, (p.pos - target.pos).angle())) <= GameWorld.SHIELD_ARC:
+		circle = (p.pos - target.pos).normalized().rotated(PI / 2.0)
 	return {
-		"move": Vector2.ZERO if close else dir,
+		"move": circle if circle != Vector2.ZERO else (Vector2.ZERO if close else dir),
 		"aim": target.pos,
 		"attack": true,
 		"skill": best < 120.0,
@@ -2476,9 +2484,22 @@ func _test_pace_mobs() -> void:
 ## Bot cày quái từ cấp 1: chỉ EXP từ quái (không nhiệm vụ, không boss, không khai phá).
 ## Đổi map theo cấp như người chơi, mỗi 5 cấp thay bộ đồ chuẩn (giả lập đồ rơi), tự cộng điểm, uống bình máu.
 ## Trả về {at: {cấp: giây}, kills, deaths}.
-func _pace_sim(class_id: String, target_level: int, max_seconds: float) -> Dictionary:
+func _test_pace_r2(class_id: String) -> void:
+	var r := _pace_sim(class_id, 20, 3.0 * 3600.0, 10)
+	var parts := PackedStringArray()
+	for lv in [13, 15, 17, 20]:
+		if r.at.has(lv):
+			parts.append("cấp %d: %.1f ph" % [lv, r.at[lv] / 60.0])
+	print("       [%s] từ cấp 10: %s · %d quái · chết %s" % [class_id, " · ".join(parts), r.kills, r.death_maps])
+
+
+func _pace_sim(class_id: String, target_level: int, max_seconds: float, start_level := 1) -> Dictionary:
 	var p := _profile("tay-nhanh", 3)
 	p.class_id = class_id
+	p.level = start_level
+	p.points = _class_points(class_id)
+	for k in p.points:
+		p.points[k] = int(p.points[k]) * int(start_level / 4)
 	p.boss_defeated = true
 	p.bosses = {"boss": true}
 	p.unlocked_maps = ["1-1", "1-3", "2-1", "2-2", "2-3"]
@@ -2492,6 +2513,7 @@ func _pace_sim(class_id: String, target_level: int, max_seconds: float) -> Dicti
 	var map_now := ""
 	var dt := 1.0 / 30.0
 	var kills0: int = p.kills
+	var death_maps := {}
 	while seconds < max_seconds and p.level < target_level:
 		var want := "1-1" if p.level < 7 else ("1-3" if p.level < 10 else ("2-1" if p.level < 13 else ("2-2" if p.level < 17 else "2-3")))
 		if want != map_now:
@@ -2511,6 +2533,7 @@ func _pace_sim(class_id: String, target_level: int, max_seconds: float) -> Dicti
 		for ev in w.drain_events():
 			if ev.type == "death":
 				deaths += 1
+				death_maps[map_now] = int(death_maps.get(map_now, 0)) + 1
 			elif ev.type == "levelup":
 				at[int(ev.level)] = seconds
 		var inp := _bot(w)
@@ -2520,4 +2543,54 @@ func _pace_sim(class_id: String, target_level: int, max_seconds: float) -> Dicti
 	for ev in w.drain_events():
 		if ev.type == "levelup":
 			at[int(ev.level)] = seconds
-	return {"at": at, "kills": p.kills - kills0, "deaths": deaths}
+	return {"at": at, "kills": p.kills - kills0, "deaths": deaths, "death_maps": death_maps}
+
+
+func _test_m5_shield_turn() -> void:
+	var w := _region2_world("2-2", "kiem-khach", "tay-nhanh", 14)
+	w.field_spawn = false
+	var e := w.spawn_enemy("linh-danh-thue", 14, w.player.pos + Vector2(60, 0))
+	e.state = "chase"
+	e.face = PI
+	# người chơi vòng ra sau lưng trong 1 khung hình: lính chỉ quay được 2°
+	w.player.pos = e.pos + Vector2(60, 0)
+	w._update_enemy(e, 1.0 / 60.0)
+	_check(absf(angle_difference(e.face, PI)) <= deg_to_rad(2.1), "1 khung hình chỉ quay tối đa 2°")
+	var hp0 := e.hp
+	w._apply_damage(e, 100, false, true)
+	_check(is_equal_approx(hp0 - e.hp, 100.0), "đánh sau lưng không bị khiên chặn")
+	for i in 90:
+		w._update_enemy(e, 1.0 / 60.0)
+		if e.state == "windup":
+			e.state = "chase"
+	_check(absf(angle_difference(e.face, 0.0)) < 0.05, "sau 1,5 giây đã quay lại đối mặt")
+
+
+func _test_m5_exp_budget() -> void:
+	var need := func(a: int, b: int) -> float:
+		var s := 0.0
+		for l in range(a, b):
+			s += Formulas.exp_to_next(l)
+		return s
+	var kills := func(a: int, b: int) -> float:
+		var s := 0.0
+		for l in range(a, b):
+			s += float(Formulas.exp_to_next(l)) / Formulas.mob_exp(l, false)
+		return s
+	var k10: float = kills.call(1, 10)
+	var k20: float = k10 + kills.call(10, 20)
+	_check(k10 >= 500.0 and k10 <= 700.0 and k20 >= 2000.0 and k20 <= 2700.0, "chỉ đánh quái: cấp 10 ~600 quái, cấp 20 ~2.300 quái (%.0f / %.0f)" % [k10, k20])
+	var ch1: float = need.call(1, 10)
+	var ch2: float = need.call(10, 20)
+	var q1 := 0.0
+	for q in Story.QUESTS:
+		q1 += float(q.reward.get("exp", 0))
+	var q2 := 0.0
+	for q in Story.QUESTS2:
+		q2 += float(q.reward.get("exp", 0))
+	print("       nhiệm vụ: chương 1 %.0f%%, chương 2 %.0f%% EXP của chặng" % [q1 / ch1 * 100.0, q2 / ch2 * 100.0])
+	_check(q1 / ch1 >= 0.18 and q1 / ch1 <= 0.32 and q2 / ch2 >= 0.18 and q2 / ch2 <= 0.32, "nhiệm vụ ≈ 25% EXP mỗi chương (kịch bản mục 4)")
+	var b1: float = GameWorld.boss_exp(6) + 0.5 * Formulas.exp_to_next(9)
+	var b2: float = GameWorld.boss_exp(18) + 0.5 * Formulas.exp_to_next(20)
+	print("       boss + boss hiếm: chương 1 %.0f%%, chương 2 %.0f%%" % [b1 / ch1 * 100.0, b2 / ch2 * 100.0])
+	_check(b1 / ch1 >= 0.15 and b1 / ch1 <= 0.3 and b2 / ch2 >= 0.15 and b2 / ch2 <= 0.3, "boss + boss hiếm ≈ 20% EXP mỗi chương")

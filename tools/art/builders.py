@@ -417,3 +417,140 @@ def bird(spec):
 
 
 BUILDERS = {"humanoid": humanoid, "quadruped": quadruped, "mushroom": mushroom, "wisp": wisp, "treant": treant, "bird": bird}
+
+
+# ====================================================================== M6: vùng 3 Sa Mạc Xích Sa
+def insect(spec):
+    """Côn trùng 6 chân (Bọ Cát, Bọ Hung Giáp Vàng). spec: size (24|32), shell, leg (dải màu), horn (bool), eye (hex)."""
+    size = spec.get("size", 24)
+    s = size / 24.0
+    shell = _ramp(spec, "shell", "chitin")
+    leg = _ramp(spec, "leg", "chitin")
+    eye = hexc(spec.get("eye", "#ff5470"))
+    horn = spec.get("horn", False)
+
+    def frame(step=0, lunge=0.0, curl=0.0):
+        cv = Canvas(size, size)
+        S = lambda v: v * s
+        shadow(cv, S(12), S(20.5), S(8), S(1.8))
+        cy = 15 - curl
+        cx = 11 + lunge
+        for i, x in enumerate((7, 11, 15)):
+            ph = (step + i) % 2
+            cv.line(S(x), S(cy), S(x - 2 + ph * 1.5), S(20), _darker(leg)[1], S(1.1))
+        cv.shade_ellipse(S(cx), S(cy - 1), S(7), S(4.5 - curl * 0.4), shell)
+        cv.line(S(cx - 5), S(cy - 2.5), S(cx + 4), S(cy - 2.5), shell[3], S(0.8))
+        cv.line(S(cx - 1), S(cy - 5), S(cx - 1), S(cy + 2), shell[0], S(0.8))
+        cv.shade_ellipse(S(cx + 7), S(cy), S(2.8), S(2.4), _darker(shell))
+        cv.set(S(cx + 8.4), S(cy - 0.6), eye)
+        if horn:
+            cv.shade_poly([(S(cx + 8), S(cy - 1.5)), (S(cx + 12.5), S(cy - 7)), (S(cx + 10), S(cy - 0.5))], R["gold"])
+        else:
+            cv.line(S(cx + 9.5), S(cy + 1), S(cx + 11.5), S(cy + 0.5 + lunge * 0.3), leg[2], S(0.9))
+        for i, x in enumerate((8, 12, 16)):
+            ph = (step + i + 1) % 2
+            cv.line(S(x), S(cy + 1), S(x + 1 - ph * 1.5), S(21), leg[1], S(1.2))
+        return _finish(cv)
+
+    idle = [frame(0), frame(0, curl=0.4)]
+    run = [frame(i) for i in range(4)]
+    atk = [frame(0, -1.0), frame(1, 2.0), frame(0, 1.0)]
+    hurt = [_hurt(lambda: frame(0))]
+    death = [frame(0).rotated(180, (12 * s, 15 * s)).fade(a) for a in (1.0, 0.75, 0.5)]
+    return [("idle", idle), ("run", run), ("attack", atk), ("hurt", hurt), ("death", death)]
+
+
+def snake(spec):
+    """Rắn 24×24 (Rắn Đồi Cát). spec: body (dải màu), belly (dải màu), eye (hex)."""
+    body = _ramp(spec, "body", "sand_red")
+    belly = _ramp(spec, "belly", "sand")
+    eye = hexc(spec.get("eye", "#ffd23c"))
+
+    def frame(wave=0.0, rise=0.0, buried=0.0):
+        cv = Canvas(24, 24)
+        shadow(cv, 12, 20.5, 9, 1.6, 70)
+        pts = []
+        for i in range(9):
+            x = 3 + i * 2.0
+            y = 18 - math.sin(i * 0.9 + wave) * 1.6 - (rise * max(0, i - 5) * 0.9)
+            pts.append((x, y + buried))
+        for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+            cv.line(x0, y0, x1, y1, body[1], 3.0)
+        for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+            cv.line(x0, y0 + 0.8, x1, y1 + 0.8, belly[2], 0.9)
+        for i in range(1, 8, 2):
+            cv.set(pts[i][0], pts[i][1] - 0.8, body[3])
+        hx, hy = pts[-1]
+        cv.shade_ellipse(hx + 1.5, hy - 0.5, 2.6, 2.0, body)
+        cv.set(hx + 2.2, hy - 1.3, eye)
+        cv.line(hx + 4, hy, hx + 5.5, hy + 0.6, hexc("#ff5470"), 0.6)
+        if buried > 0:
+            cv.shade_ellipse(12, 20, 10, 2.5, R["sand"])
+        return _finish(cv)
+
+    idle = [frame(0.0), frame(0.6)]
+    run = [frame(i * 0.9) for i in range(4)]
+    atk = [frame(0.0, 1.0), frame(0.4, 2.5), frame(0.8, 1.5)]
+    hurt = [_hurt(lambda: frame(0.3))]
+    death = [frame(0.0, buried=v).fade(a) for v, a in ((0, 1.0), (1, 0.75), (2, 0.5))]
+    return [("idle", idle), ("run", run), ("attack", atk), ("hurt", hurt), ("death", death)]
+
+
+def scorpion(spec):
+    """Bọ cạp 48×48 (boss Bọ Cạp Sa Hoàng). spec: shell, sting (hex), eye (hex), aura (hex)."""
+    shell = _ramp(spec, "shell", "chitin")
+    sting = hexc(spec.get("sting", "#8cff5a"))
+    eye = hexc(spec.get("eye", "#ff3b4e"))
+    aura = spec.get("aura")
+
+    def frame(step=0, claw=0.0, tail=0.0, lunge=0.0):
+        cv = Canvas(48, 48)
+        shadow(cv, 24, 41, 18, 3)
+        if aura:
+            glow(cv, 24, 28, 20, hexc(aura), 50)
+        cx, cy = 22 + lunge, 30
+        # chân xa
+        for i, x in enumerate((14, 19, 24, 29)):
+            ph = (step + i) % 2
+            cv.line(x, cy, x - 3 + ph * 2, 40, _darker(shell)[1], 1.6)
+        # đuôi: 5 đốt cong lên trên lưng, ngòi độc hướng về trước
+        seg = []
+        for i in range(6):
+            # cung từ sau lưng (180°) vòng lên đỉnh (270°) rồi chúc về trước (≈ 330°)
+            a = math.radians(180 + i * 30 + tail * 12)
+            seg.append((cx - 1 + math.cos(a) * 10, cy - 6 + math.sin(a) * 11))
+        for i, (x, y) in enumerate(seg):
+            cv.shade_ellipse(x, y, 3.2 - i * 0.25, 2.8 - i * 0.2, shell)
+        tx, ty = seg[-1]
+        cv.shade_poly([(tx, ty - 1), (tx + 5 + tail * 2, ty + 2), (tx + 1, ty + 2.5)], [sting] * 4)
+        glow(cv, tx + 3, ty + 1.5, 3, sting, 120)
+        # thân
+        cv.shade_ellipse(cx, cy, 11, 6, shell)
+        for x in (cx - 6, cx - 2, cx + 2, cx + 6):
+            cv.line(x, cy - 5, x, cy + 4, shell[0], 0.8)
+        cv.line(cx - 9, cy - 3, cx + 8, cy - 3, shell[3], 0.9)
+        # càng
+        for dy, k in ((-3, 1.0), (4, 0.85)):
+            bx, by = cx + 9, cy + dy
+            ex, ey = bx + 7 + claw * 3, by + dy * 0.3
+            cv.line(bx, by, ex, ey, shell[2] if k == 1.0 else _darker(shell)[2], 2.4)
+            o = 2.5 + claw * 2
+            cv.shade_poly([(ex, ey - 1.5), (ex + 6, ey - o), (ex + 4, ey), (ex + 6, ey + o * 0.6), (ex, ey + 1.5)], shell)
+        cv.set(cx + 9.5, cy - 1.5, eye)
+        cv.set(cx + 8.5, cy - 2.2, eye)
+        # chân gần
+        for i, x in enumerate((16, 21, 26, 31)):
+            ph = (step + i + 1) % 2
+            cv.line(x, cy + 2, x + 2 - ph * 2, 42, shell[1], 1.8)
+        return _finish(cv)
+
+    idle = [frame(0), frame(0, tail=0.3)]
+    run = [frame(i) for i in range(4)]
+    atk = [frame(0, 1.0, 0.0), frame(1, 0.0, 1.0, 2.0), frame(0, 0.5, 0.5, 1.0)]
+    hurt = [_hurt(lambda: frame(0))]
+    death = _death(lambda: frame(0), (24, 40))
+    return [("idle", idle), ("run", run), ("attack", atk), ("hurt", hurt), ("death", death)]
+
+
+BUILDERS = {"humanoid": humanoid, "quadruped": quadruped, "mushroom": mushroom, "wisp": wisp, "treant": treant, "bird": bird,
+            "insect": insect, "snake": snake, "scorpion": scorpion}

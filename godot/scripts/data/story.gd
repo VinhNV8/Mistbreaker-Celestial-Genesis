@@ -71,11 +71,11 @@ const DIALOGS := {
 
 ## Nhiệm vụ chính chương 2 (03 mục 6.4). Bước lưu ở profile.quest.ch2 (0 = chưa tới vùng 2, 6 = xong).
 const QUESTS2 := [
-	{"title": "Gia nhập Liên minh", "hint": "Tới Thành Biên Đài, đứng cạnh Lạc Phong bấm E.", "type": "talk_lac", "need": 1, "reward": {"gold": 200}},
-	{"title": "Dẹp loạn Cửa Gió", "hint": "Hạ quái ở vùng 2. Lính khiên: đánh từ bên hông hoặc sau lưng.", "type": "kills2", "need": 30, "reward": {"exp": 3000}},
-	{"title": "Lãnh địa đầu tiên", "hint": "M mở Bản đồ khai phá vùng 2, chiếm 6 ô đất.", "type": "tiles2", "need": 6, "reward": {"stones": 5}},
-	{"title": "Tin đồn trong thành", "hint": "Hỏi Thương nhân Mạc Tam (E) về gián điệp.", "type": "talk_mac", "need": 1, "reward": {}},
-	{"title": "Phủ Huyền Ảnh", "hint": "N → Mắt Bão. Hạ Tướng Gián Điệp Huyền Ảnh — chỉ bản thật có bóng.", "type": "boss2", "need": 1, "reward": {}},
+	{"title": "Gia nhập Liên minh", "hint": "Tới Thành Biên Đài, đứng cạnh Lạc Phong bấm E.", "type": "talk_lac", "need": 1, "reward": {"exp": 5000, "gold": 200}},
+	{"title": "Dẹp loạn Cửa Gió", "hint": "Hạ quái ở vùng 2. Lính khiên: đánh từ bên hông hoặc sau lưng.", "type": "kills2", "need": 30, "reward": {"exp": 15000}},
+	{"title": "Lãnh địa đầu tiên", "hint": "M mở Bản đồ khai phá vùng 2, chiếm 6 ô đất.", "type": "tiles2", "need": 6, "reward": {"exp": 20000, "stones": 5}},
+	{"title": "Tin đồn trong thành", "hint": "Hỏi Thương nhân Mạc Tam (E) về gián điệp.", "type": "talk_mac", "need": 1, "reward": {"exp": 25000}},
+	{"title": "Phủ Huyền Ảnh", "hint": "N → Mắt Bão. Hạ Tướng Gián Điệp Huyền Ảnh — chỉ bản thật có bóng.", "type": "boss2", "need": 1, "reward": {"exp": 30000}},
 ]
 const DONE2 := 6
 
@@ -88,20 +88,20 @@ static func quest2(step: int) -> Dictionary:
 ## reward: {exp, gold, potions, torches, stones}
 const QUESTS := [
 	{"title": "Quái Sương tấn công làng!", "hint": "Ra cổng làng. Chuột trái / J để đánh.", "type": "kill_quest", "need": 3,
-		"reward": {"exp": 60, "gold": 20}},
-	{"title": "Học kỹ năng", "hint": "Phím 1–4 dùng kỹ năng (tốn MP).", "type": "skill", "need": 2, "reward": {"exp": 40}},
-	{"title": "Học né", "hint": "Space né lăn; né đúng lúc đòn tới = Hoàn hảo.", "type": "dodge", "need": 1, "reward": {"exp": 40}},
-	{"title": "Món quà của Trưởng làng", "hint": "I mở túi đồ, chọn vũ khí, bấm Mặc.", "type": "equip_weapon", "need": 1, "reward": {}},
-	{"title": "Vào Rừng Sương", "hint": "Đánh quái phía đông làng để lên cấp.", "type": "level", "need": 3, "reward": {"gold": 100}},
+		"reward": {"exp": 80, "gold": 20}},
+	{"title": "Học kỹ năng", "hint": "Phím 1–4 dùng kỹ năng (tốn MP).", "type": "skill", "need": 2, "reward": {"exp": 100}},
+	{"title": "Học né", "hint": "Space né lăn; né đúng lúc đòn tới = Hoàn hảo.", "type": "dodge", "need": 1, "reward": {"exp": 120}},
+	{"title": "Món quà của Trưởng làng", "hint": "I mở túi đồ, chọn vũ khí, bấm Mặc.", "type": "equip_weapon", "need": 1, "reward": {"exp": 150}},
+	{"title": "Vào Rừng Sương", "hint": "Đánh quái phía đông làng để lên cấp.", "type": "level", "need": 3, "reward": {"exp": 300, "gold": 100}},
 	{"title": "Cộng điểm tiềm năng", "hint": "C mở Chỉ số — cộng hết điểm (hoặc Tự cộng điểm).", "type": "spend_points", "need": 1,
-		"reward": {"potions": 2}},
+		"reward": {"exp": 300, "potions": 2}},
 	{"title": "Dọn sương", "hint": "M mở Bản đồ khai phá, dùng Đuốc lên ô kề lãnh địa.", "type": "reveal", "need": 3,
-		"reward": {"torches": 1, "exp": 80}},
+		"reward": {"torches": 1, "exp": 600}},
 	{"title": "Xây công trình đầu tiên", "hint": "Chiếm Rừng gỗ (30 vàng) — Xưởng Gỗ tự xây.", "type": "build", "need": 1,
-		"reward": {"gold": 150}},
-	{"title": "Chuẩn bị đánh boss", "hint": "Đạt cấp 5 và chiếm 6 ô đất.", "type": "boss_unlocked", "need": 1, "reward": {"stones": 3}},
-	{"title": "Sói Chúa Hư Vô", "hint": "Vào hang phía đông. Phá thanh Phá Thế để boss choáng.", "type": "boss", "need": 1, "reward": {}},
-	{"title": "Lõi Sương", "hint": "N mở bản đồ lục địa → Lõi Sương → Lên đường.", "type": "enter_map", "need": 1, "reward": {"exp": 200}},
+		"reward": {"exp": 800, "gold": 150}},
+	{"title": "Chuẩn bị đánh boss", "hint": "Đạt cấp 5 và chiếm 6 ô đất.", "type": "boss_unlocked", "need": 1, "reward": {"exp": 1200, "stones": 3}},
+	{"title": "Sói Chúa Hư Vô", "hint": "Vào hang phía đông. Phá thanh Phá Thế để boss choáng.", "type": "boss", "need": 1, "reward": {"exp": 2500}},
+	{"title": "Lõi Sương", "hint": "N mở bản đồ lục địa → Lõi Sương → Lên đường.", "type": "enter_map", "need": 1, "reward": {"exp": 3500}},
 ]
 const DONE_STEP := 12
 
