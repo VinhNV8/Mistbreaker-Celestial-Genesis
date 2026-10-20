@@ -1,12 +1,12 @@
 extends RefCounted
-## Hằng số cân bằng của bản prototype. Chỗ nào lệch so với tài liệu kịch bản đều có ghi chú.
+## Hằng số cân bằng của game. Chỗ nào lệch so với tài liệu kịch bản đều có ghi chú.
 
 const MAX_LEVEL := 100
 const POINTS_PER_LEVEL := 5
 const FREE_RESPEC_LEVEL := 30
 
 const TORCH_MAX := 10
-## Tài liệu: hồi 1 Đuốc / 20 phút. Prototype rút xuống 2 phút để test nhanh.
+## Tài liệu: hồi 1 Đuốc / 20 phút. Tạm rút xuống 2 phút để test nhanh (01-requirement-spec mục 5).
 const TORCH_REGEN_SEC := 120.0
 const START_TORCHES := 3
 

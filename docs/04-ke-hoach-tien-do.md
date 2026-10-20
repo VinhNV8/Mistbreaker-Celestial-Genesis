@@ -4,7 +4,7 @@
 | --- | --- |
 | Dự án | Thiên Phú Khai Giới |
 | Nguồn yêu cầu | [Kịch bản game](kich-ban-game-thien-phu-khai-gioi.md), mục 2–9 |
-| Spec chi tiết | [01 — Prototype](01-requirement-spec.md) · [03 — MVP](03-mvp-spec.md) · [02 — Kỹ thuật](02-technical-spec.md) |
+| Spec chi tiết | [01 — Chương 1](01-requirement-spec.md) · [03 — MVP](03-mvp-spec.md) · [02 — Kỹ thuật](02-technical-spec.md) |
 | Thiết kế nội dung | [05 — 20 Thiên phú](05-thien-phu-chi-tiet.md) (cấp, kỹ năng, tiến hoá, cộng hưởng) · [06 — Bản đồ, quái, boss](06-ban-do-quai-boss.md) (9 vùng, công thức chỉ số, 36 quái thường, 18 tinh anh, 9 boss chương, 9 boss hiếm). Cả hai **đã chốt** 20/10/2026 (Q17–Q27, mục 13) · [07 — Đồ hoạ](07-do-hoa-ke-hoach.md) (phong cách, hạng mục AR-xx) |
 | Cập nhật | 20/10/2026 (sau đợt M3) |
 

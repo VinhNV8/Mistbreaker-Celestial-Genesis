@@ -51,7 +51,7 @@ static func _buttons(col: VBoxContainer) -> HBoxContainer:
 static func title(has_save: bool, on_new: Callable, on_continue: Callable) -> Control:
 	var page := _page()
 	var col: VBoxContainer = page[1]
-	col.add_child(_centered("BẢN PROTOTYPE · CHƯƠNG 1", "Eyebrow"))
+	col.add_child(_centered("MISTBREAKER: CELESTIAL GENESIS", "Eyebrow"))
 	col.add_child(_centered("Thiên Phú Khai Giới", "Title"))
 	col.add_child(_centered("Nhận Thiên phú từ Bia Đá, đánh quái lên cấp, xua tan sương mù Hư Vô và hạ Sói Chúa.", "Muted", 560))
 	var row := _buttons(col)
@@ -264,7 +264,7 @@ static func victory(world, on_continue: Callable, on_title: Callable) -> Control
 	col.add_child(_centered("Thời gian chơi %d phút  ·  Cấp %d  ·  Quái đã hạ %d  ·  Khai phá %d/%d  ·  Thiên phú %s · %s" % [
 		roundi(p.play_seconds / 60.0), p.level, p.kills, Explore.owned_count(p.tiles), Explore.explore_total(p.tiles), t.rank, t.name
 	], "", 600))
-	col.add_child(_centered("Đây là hết nội dung của bản prototype. Hãy ghi lại cảm nhận: combat có vui không, Thiên phú có tạo khác biệt không, khai phá có hấp dẫn không.", "Small", 580))
+	col.add_child(_centered("Bạn đã đi hết nội dung hiện có. Chương 2 — Đồng Bằng Gió Hú — đang được phát triển.", "Small", 580))
 	var row := _buttons(col)
 	var b1 := UiTheme.button("Tiếp tục khám phá", true)
 	b1.pressed.connect(on_continue)

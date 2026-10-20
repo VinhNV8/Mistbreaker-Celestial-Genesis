@@ -1,11 +1,11 @@
-# Đặc tả kỹ thuật — Prototype Chương 1
+# Đặc tả kỹ thuật
 
 | | |
 | --- | --- |
 | Dự án | Thiên Phú Khai Giới |
 | Engine | Godot 4.7.2-stable, GDScript, renderer GL Compatibility |
 | Mã nguồn | [godot/](../godot/) — khoảng 7.400 dòng GDScript |
-| Yêu cầu | [01-requirement-spec.md](01-requirement-spec.md) (prototype), [03-mvp-spec.md](03-mvp-spec.md) (MVP) |
+| Yêu cầu | [01-requirement-spec.md](01-requirement-spec.md) (Chương 1, phần nền), [03-mvp-spec.md](03-mvp-spec.md) (MVP) |
 | Cập nhật | 20/10/2026 |
 
 ## 1. Môi trường và cài đặt
@@ -244,7 +244,7 @@ Chơi chỉ bằng bàn phím: nếu chuột đứng yên quá 1,5 giây mà ng�
 ```
 
 - In `ok` / `FAIL` cho từng test; thoát mã **1** nếu có test hỏng, dùng được trong CI.
-- 16 test prototype: công thức, Lễ Thức Tỉnh, khai phá, offline, lưu/nạp JSON, 4 test mô phỏng thế giới (có bot tự đánh boss để đo độ khó).
+- 16 test phần nền Chương 1: công thức, Lễ Thức Tỉnh, khai phá, offline, lưu/nạp JSON, 4 test mô phỏng thế giới (có bot tự đánh boss để đo độ khó).
 - 12 test M1 (`M1-1` … `M1-12`), khớp danh sách ở mục 3.11 của [03-mvp-spec.md](03-mvp-spec.md).
 - 10 test M2 (`TL-B` … `TL-H`; `TL-A` thay test tỉ lệ quay cũ), khớp mục 4.9. `TL-B` cho bot đánh boss với từng Thiên phú trong 20 để kiểm nguyên tắc cân bằng F/S.
 - 1 test đồ hoạ (`AR-35`): mọi quái có đủ 5 hoạt ảnh và nạp được ảnh; mọi Thiên phú, ô đồ, đồ Cam, kỹ năng có icon.

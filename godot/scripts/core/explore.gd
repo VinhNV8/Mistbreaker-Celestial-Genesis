@@ -21,7 +21,7 @@ const EVENT_INFO := {
 	"wonder": {"name": "Suối Linh Khí", "short": "Kỳ quan", "desc": "Kỳ quan: +10% EXP nhận được từ chiến đấu.", "color": "#9b6be0"},
 }
 
-## Lưới 10 ô của prototype: vòng 1 (6 ô) + 4 ô vòng 2, quanh Trại Khai Giới.
+## Lưới 10 ô của Chương 1: vòng 1 (6 ô) + 4 ô vòng 2, quanh Trại Khai Giới.
 const RING1 := [[1, 0], [1, -1], [0, -1], [-1, 0], [-1, 1], [0, 1]]
 const RING2 := [[2, 0], [-1, -1], [-2, 2], [1, 1]]
 const RING1_EVENTS := ["resource", "resource", "resource", "relic", "survivor", "nest"]

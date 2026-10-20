@@ -4,7 +4,7 @@
 | --- | --- |
 | Dự án | Thiên Phú Khai Giới |
 | Nguồn | [Kịch bản game](kich-ban-game-thien-phu-khai-gioi.md), mục 9, giai đoạn 2: *"MVP / Vertical slice: 2 lớp, 20 Thiên phú, chương 1–2, lãnh địa cấp 1–2, trang bị + cường hoá, lưu game. Thử nghiệm kín 50–100 người."* |
-| Kế thừa | Prototype Chương 1 — [01-requirement-spec.md](01-requirement-spec.md) |
+| Kế thừa | Chương 1, phần nền — [01-requirement-spec.md](01-requirement-spec.md) |
 | Cập nhật | 20/10/2026 |
 
 Quy trình cho mỗi đợt: **viết spec → duyệt → code → test → cập nhật spec (trạng thái) và technical spec**. Mục 2 chia MVP thành 5 đợt. Mục 3 là spec chi tiết của đợt đang làm. Các đợt sau sẽ được viết chi tiết khi tới lượt.

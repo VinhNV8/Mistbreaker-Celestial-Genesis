@@ -1,8 +1,8 @@
-# Thiên Phú Khai Giới
+# Thiên Phú Khai Giới (Mistbreaker: Celestial Genesis)
 
 Game nhập vai hành động: nhận Thiên phú khi vào game, đánh quái lên cấp, vượt map, khai phá vùng đất bị sương mù che phủ.
 
-Trạng thái: prototype Chương 1 chạy được trên Godot 4.7.2. Đang làm **MVP**: đã xong M1 (trang bị, cường hoá), M2 (đủ 20 Thiên phú), G1 (hình pixel art sinh bằng code) và M3 (lớp Thợ Săn, 4 kỹ năng mỗi lớp, MP, né tránh, công thức chỉ số quái mới); đợt tiếp theo là M4 (Chương 2).
+Trạng thái: Chương 1 chơi được trên Godot 4.7.2. Đang làm **MVP**: đã xong M1 (trang bị, cường hoá), M2 (đủ 20 Thiên phú), G1 (hình pixel art sinh bằng code) và M3 (lớp Thợ Săn, 4 kỹ năng mỗi lớp, MP, né tránh, công thức chỉ số quái mới); đợt tiếp theo là M4 (Chương 2).
 
 ## Thư mục
 

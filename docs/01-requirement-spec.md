@@ -1,9 +1,9 @@
-# Đặc tả yêu cầu — Prototype Chương 1
+# Đặc tả yêu cầu — Chương 1 "Thức Tỉnh" (phần nền)
 
 | | |
 | --- | --- |
 | Dự án | Thiên Phú Khai Giới |
-| Phạm vi | Bản prototype Chương 1 "Thức Tỉnh" |
+| Phạm vi | Chương 1 "Thức Tỉnh" — phần nền của game: combat, Thiên phú, khai phá, boss đầu |
 | Nguồn yêu cầu | [Kịch bản game](kich-ban-game-thien-phu-khai-gioi.md), mục 9 (giai đoạn Prototype) |
 | Bản triển khai | [godot/](../godot/), Godot 4.7.2 — kỹ thuật xem [02-technical-spec.md](02-technical-spec.md) |
 | Cập nhật | 20/10/2026 |
@@ -11,7 +11,7 @@
 
 ## 1. Mục tiêu
 
-Prototype chỉ trả lời 3 câu hỏi, trước khi đầu tư đồ hoạ và nội dung:
+Giai đoạn đầu (bản prototype, xong 19/10/2026) phải trả lời 3 câu hỏi trước khi đầu tư đồ hoạ và nội dung:
 
 1. Combat có vui không?
 2. Thiên phú có làm cách chơi khác đi không?
@@ -133,7 +133,7 @@ Cột **Trạng thái**: ✅ đã làm và có test tự động · 🟡 đã l�
 
 Cố ý thay đổi để test nhanh hơn. Khi chuyển sang MVP cần quyết định giữ hay trả về giá trị gốc.
 
-| Hạng mục | Kịch bản | Prototype | Lý do |
+| Hạng mục | Kịch bản | Trong game | Lý do |
 | --- | --- | --- | --- |
 | Hồi Đuốc | 1 cái / 20 phút | 1 cái / 2 phút | Phiên test chỉ 20–30 phút |
 | Nguồn Đuốc | Hồi theo thời gian, nhiệm vụ ngày | Thêm: lên cấp +1, hạ tinh anh +1 | Như trên |
