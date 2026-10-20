@@ -335,6 +335,7 @@ var _aim := Vector2.ZERO
 var _last_combat := -99.0
 var _super_slash := false
 var _element_switch_at := -99.0
+var _face_lock := 0.0
 
 
 func _init(p, rng: Callable) -> void:
@@ -593,7 +594,9 @@ func update(dt: float, input: Dictionary) -> void:
 
 	var aim: Vector2 = input.aim
 	_aim = aim
-	if aim.distance_to(p.pos) > 0.5:
+	_face_lock -= dt
+	# Sau khi tự xoay mặt (C1-01) giữ hướng đó hết đòn đánh rồi mới theo lại hướng ngắm.
+	if aim.distance_to(p.pos) > 0.5 and _face_lock <= 0.0:
 		p.facing = (aim - p.pos).angle()
 	_move_player(dt, input)
 	var busy := p.dodge_time > 0.0 or p.dash_time > 0.0
@@ -739,8 +742,38 @@ func _basic_mul() -> Array:
 
 
 ## Thợ Săn: bắn tên 45 m, trúng quái đầu tiên.
+## C1-01: hướng đang ngắm không có quái (trong cung/nón `half_arc`, tầm `reach`) mà vẫn có quái trong tầm
+## → quay mặt về quái gần nhất. Trả về true nếu đã xoay.
+func _auto_face(reach: float, half_arc: float) -> bool:
+	var p := player
+	var nearest: Enemy = null
+	var best := INF
+	for e in enemies:
+		if e.dead or world_hidden(e):
+			continue
+		var to_e: Vector2 = e.pos - p.pos
+		var d := to_e.length()
+		if d > reach + e.radius:
+			continue
+		if absf(angle_difference(p.facing, to_e.angle())) <= half_arc or d <= e.radius + PLAYER_RADIUS:
+			return false
+		if d < best:
+			best = d
+			nearest = e
+	if nearest == null:
+		return false
+	p.facing = (nearest.pos - p.pos).angle()
+	_face_lock = 0.35
+	return true
+
+
+func world_hidden(e: Enemy) -> bool:
+	return is_hidden(e)
+
+
 func _shoot() -> void:
 	var p := player
+	_auto_face(SHOT_RANGE, deg_to_rad(15.0))
 	p.attack_cd = SHOT_INTERVAL / atk_speed()
 	p.swing = 0.16
 	p.swing_kind = "shot"
@@ -784,6 +817,7 @@ func _update_shots(dt: float) -> void:
 
 func _slash() -> void:
 	var p := player
+	_auto_face(SLASH_RANGE, SLASH_ARC)
 	p.attack_cd = SLASH_INTERVAL / atk_speed()
 	p.swing = 0.16
 	p.swing_kind = "slash"
@@ -831,6 +865,7 @@ func use_skill(i: int) -> bool:
 			p.swing = DASH_TIME + 0.05
 			p.swing_kind = "dash"
 		"wave":
+			_auto_face(WAVE_RANGE, deg_to_rad(15.0))
 			_fire(WAVE_SPEED, WAVE_RANGE, mul, true, "wave", false, 22.0)
 			p.swing = 0.16
 			p.swing_kind = "slash"
@@ -840,6 +875,7 @@ func use_skill(i: int) -> bool:
 		"rain":
 			_rain(mul)
 		"pierce":
+			_auto_face(PIERCE_RANGE, deg_to_rad(15.0))
 			_fire(PIERCE_SPEED, PIERCE_RANGE, mul, true, "pierce", false, 12.0)
 			p.swing = 0.16
 			p.swing_kind = "shot"
@@ -902,6 +938,21 @@ func _rain(mul: float) -> void:
 	var burst := _consume_burst()
 	var z := RainZone.new()
 	z.pos = p.pos + (_aim - p.pos).limit_length(RAIN_RANGE)
+	# C1-01: điểm ngắm không có quái → rơi vào quái gần nhất trong tầm.
+	var any_near := false
+	var nearest_pos := z.pos
+	var best := INF
+	for e in enemies:
+		if e.dead:
+			continue
+		if e.pos.distance_to(z.pos) <= RAIN_RADIUS + e.radius:
+			any_near = true
+		var d: float = e.pos.distance_to(p.pos)
+		if d <= RAIN_RANGE and d < best:
+			best = d
+			nearest_pos = e.pos
+	if not any_near:
+		z.pos = nearest_pos
 	z.radius = BURST_RANGE if burst else RAIN_RADIUS
 	z.mul = mul * ((1.0 + tv(1.0, 1.5)) if burst else 1.0)
 	z.ticks = RAIN_TICKS

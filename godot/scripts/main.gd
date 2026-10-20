@@ -62,7 +62,9 @@ var _ui: Control
 var _screen: Control
 var _victory: Control
 var _save_timer := 0.0
-var _last_mouse_move := 0
+var _last_mouse_move := -100000
+## C1-01: hướng di chuyển cuối cùng — chơi bàn phím giữ hướng này cả khi đã dừng.
+var _kb_dir := Vector2.RIGHT
 
 
 func _ready() -> void:
@@ -201,9 +203,12 @@ func _process(delta: float) -> void:
 func _read_input() -> Dictionary:
 	var move := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	var aim := _view.get_global_mouse_position()
-	# Chơi chỉ bằng bàn phím: chuột đứng yên lâu thì chém theo hướng di chuyển.
-	if move != Vector2.ZERO and Time.get_ticks_msec() - _last_mouse_move > 1500:
-		aim = world.player.pos + move * 100.0
+	if move != Vector2.ZERO:
+		_kb_dir = move.normalized()
+	# C1-01: chuột không di chuyển trong 1,5 giây = chơi bàn phím → đánh theo hướng di chuyển cuối cùng,
+	# kể cả khi đã dừng (trước đây dừng lại thì hướng nhảy về chỗ con trỏ chuột).
+	if Time.get_ticks_msec() - _last_mouse_move > 1500:
+		aim = world.player.pos + _kb_dir * 100.0
 	return {
 		"move": move,
 		"aim": aim,
