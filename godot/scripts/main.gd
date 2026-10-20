@@ -20,6 +20,7 @@ const Screens = preload("res://scripts/ui/screens.gd")
 const UiTheme = preload("res://scripts/ui/ui_theme.gd")
 const IntroScreen = preload("res://scripts/ui/intro_screen.gd")
 const CreateScreen = preload("res://scripts/ui/create_screen.gd")
+const DialogBox = preload("res://scripts/ui/dialog_box.gd")
 
 ## Phím mặc định. Nếu đã khai báo action cùng tên trong Project Settings > Input Map thì dùng bản đó.
 const KEY_ACTIONS := {
@@ -63,6 +64,9 @@ var _freeze_tint: ColorRect
 var _ui: Control
 var _screen: Control
 var _victory: Control
+var dialog: DialogBox
+## Sau khi đóng thoại, bỏ qua phím 0,2 giây (Space vừa dùng để tắt thoại không thành né lăn).
+var _dialog_cool := 0.0
 var _save_timer := 0.0
 var _last_mouse_move := -100000
 ## C1-01: hướng di chuyển cuối cùng — chơi bàn phím giữ hướng này cả khi đã dừng.
@@ -187,7 +191,12 @@ func _process(delta: float) -> void:
 	if world == null:
 		return
 	var dt := minf(delta, 0.05)
-	var paused := _victory != null or _any_panel_open()
+	dialog.auto_advance = bot.is_valid()
+	if dialog.is_open():
+		_dialog_cool = 0.2
+	else:
+		_dialog_cool -= delta
+	var paused := _victory != null or _any_panel_open() or dialog.is_open() or _dialog_cool > 0.0
 	if not paused:
 		world.update(dt, bot.call(world) if bot.is_valid() else _read_input())
 	for ev in world.drain_events():
@@ -242,6 +251,10 @@ func _handle_event(ev: Dictionary) -> void:
 			_persist()
 		"item":
 			hud.log_message(ev.text, "good" if ev.rarity in ["blue", "purple", "orange"] else "info")
+		"dialog":
+			dialog.push(str(ev.id))
+		"quest_done":
+			_persist()
 		"victory":
 			_persist()
 			_victory = Screens.victory(world, _after_victory, _go_title)
@@ -343,7 +356,6 @@ func _on_talent_chosen(talent_id: String) -> void:
 		p.look = hero.look
 	SaveSystem.save_profile(p)
 	_start_world(p)
-	hud.log_message("Quái Sương đang tràn vào Rừng Sương. Hãy đánh chúng, lên cấp và khai phá vùng đất (phím M).")
 
 
 func _on_continue() -> void:
@@ -377,6 +389,10 @@ func _start_world(p: Profile) -> void:
 	_ui.add_child(talent_panel)
 	world_panel = WorldMapPanel.new()
 	_ui.add_child(world_panel)
+	dialog = DialogBox.new()
+	_ui.add_child(dialog)
+	dialog.setup(p.name, p.class_id, p.look)
+	# Thoại phát lúc tạo thế giới (bước nhiệm vụ đầu) nằm trong hàng sự kiện, _process sẽ xử lý.
 	_fit_camera()
 	map_panel.nest_started.connect(func(): hud.log_message("Thủ lĩnh ổ quái đã xuất hiện trước mặt bạn!", "bad"))
 	_camera.position = world.player.pos
@@ -385,7 +401,7 @@ func _start_world(p: Profile) -> void:
 
 func _end_session() -> void:
 	_close_victory()
-	for n in [hud, stats_panel, map_panel, inventory_panel, talent_panel, world_panel]:
+	for n in [hud, stats_panel, map_panel, inventory_panel, talent_panel, world_panel, dialog]:
 		if n != null:
 			n.queue_free()
 	hud = null
@@ -394,6 +410,7 @@ func _end_session() -> void:
 	inventory_panel = null
 	talent_panel = null
 	world_panel = null
+	dialog = null
 	world = null
 	_view.world = null
 	_view.visible = false
@@ -486,7 +503,9 @@ func _run_smoke(dir: String) -> void:
 	await _wait(1.5)
 	await _shot(dir, "02b-awakening")
 	_press("AcceptButton")
-	await _wait(0.5)
+	await _wait(0.15)
+	await _shot(dir, "02c-dialog")
+	await _wait(1.5)
 
 	bot = _smoke_bot
 	world.player.pos.x = 600.0

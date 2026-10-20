@@ -10,6 +10,7 @@ const UiTheme = preload("res://scripts/ui/ui_theme.gd")
 const Monsters = preload("res://scripts/data/monsters.gd")
 const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
 const Classes = preload("res://scripts/data/classes.gd")
+const Story = preload("res://scripts/data/story.gd")
 const Resources = preload("res://scripts/data/resources.gd")
 ## C1-03: tài nguyên hiện trên HUD (icon + số, rê chuột xem chú thích).
 const HUD_RESOURCES := ["gold", "wood", "torches", "stones", "essence"]
@@ -354,12 +355,7 @@ func update_from(w: GameWorld) -> void:
 		_res_labels[rid].text = str(Resources.value(p, rid)) + ("/%d" % torch_cap if rid == "torches" else "")
 	_resources.text = ("Đuốc hồi%s · rê chuột vào icon để xem chú thích" % torch_note) if torch_note != "" else "Rê chuột vào icon để xem chú thích"
 
-	var owned := Explore.owned_count(p.tiles)
-	var total := Explore.explore_total(p.tiles)
-	var need_tiles := ceili(total * Config.EXPLORE_REQ)
-	_objective(0, p.level >= Config.BOSS_LEVEL_REQ, "Đạt cấp %d (%d/%d)" % [Config.BOSS_LEVEL_REQ, mini(p.level, Config.BOSS_LEVEL_REQ), Config.BOSS_LEVEL_REQ])
-	_objective(1, owned >= need_tiles, "Khai phá %d/%d ô đất (cần %d)" % [owned, total, need_tiles])
-	_objective(2, p.boss_defeated, "Hạ Sói Chúa Hư Vô (hang phía đông)" if w.boss_unlocked() else "Hạ Sói Chúa Hư Vô — sương mù còn chặn lối")
+	_update_quest(w)
 
 	_combo.visible = w.combo >= 5
 	_combo.text = "%d combo · +%d%% EXP" % [w.combo, roundi((Formulas.combo_exp_multiplier(w.combo) - 1.0) * 100.0)]
@@ -436,6 +432,31 @@ func _update_class_slots(w: GameWorld) -> void:
 		slot[3].text = ("%d · %ds" % [i + 1, ceili(cd_left)]) if cd_left > 0.0 else ("%d · %d MP" % [i + 1, int(w.skill_mp(i))])
 		# Thiếu MP: tô xanh mờ.
 		slot[0].modulate = Color(0.55, 0.65, 1.0, 0.8) if pl.mp < w.skill_mp(i) else Color.WHITE
+
+
+## C1-12: bảng nhiệm vụ chương 1 (thay 3 mục tiêu cũ).
+func _update_quest(w: GameWorld) -> void:
+	var p = w.profile
+	var q := w.quest()
+	if q.is_empty():
+		_obj_title.text = "CHƯƠNG 1 · HOÀN THÀNH ✓"
+		_set_obj(0, "Luyện cấp ở Lõi Sương (bản đồ lục địa, phím N)", UiTheme.TEXT)
+		_set_obj(1, "Săn boss hiếm Lão Thụ Sương Mù — xuất hiện 2 lần mỗi ngày", UiTheme.MUTED)
+		_set_obj(2, "Chương 2: Đồng Bằng Gió Hú — sắp mở", UiTheme.MUTED)
+		return
+	_obj_title.text = "CHƯƠNG 1 · NHIỆM VỤ %d/%d" % [p.quest_step, Story.QUESTS.size()]
+	var st := w.quest_status()
+	var prog := "  (%d/%d)" % st if int(st[1]) > 1 else ""
+	_set_obj(0, "◆ " + str(q.title) + prog, UiTheme.GOLD)
+	_set_obj(1, str(q.hint), UiTheme.TEXT)
+	var rt := Story.reward_text(q.reward)
+	_set_obj(2, ("Thưởng: " + rt) if rt != "" else "", UiTheme.MUTED)
+
+
+func _set_obj(i: int, text: String, color: Color) -> void:
+	_objectives[i].text = text
+	_objectives[i].visible = text != ""
+	_objectives[i].add_theme_color_override("font_color", color)
 
 
 func _objective(i: int, done: bool, text: String) -> void:

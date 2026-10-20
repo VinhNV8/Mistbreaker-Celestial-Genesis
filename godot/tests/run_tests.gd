@@ -18,6 +18,7 @@ const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
 const Classes = preload("res://scripts/data/classes.gd")
 const Stats = preload("res://scripts/core/stats.gd")
 const Looks = preload("res://scripts/data/looks.gd")
+const Story = preload("res://scripts/data/story.gd")
 
 var _total := 0
 var _failed: Array[String] = []
@@ -85,6 +86,8 @@ func _init() -> void:
 	_run("C1-T1 hướng đánh: quái sau lưng, tự xoay, Thợ Săn tự ngắm", _test_c1_facing)
 	_run("C1-T2 save v6: tên, ngoại hình, nhiệm vụ, lưới 40 ô", _test_c1_save_v6)
 	_run("C1-T6 lưới 40 ô: 3 map con, Lõi Sương khoá, Khứu Giác", _test_c1_grid40)
+	_run("C1-T3 thoại theo mốc, không lặp, được lưu", _test_c1_dialogs)
+	_run("C1-T4 chuỗi 11 nhiệm vụ chương 1", _test_c1_quests)
 
 	print("")
 	if _failed.is_empty():
@@ -123,6 +126,8 @@ func _check(cond: bool, what: String) -> void:
 func _profile(talent: String, seed_value := 7) -> Profile:
 	var p := Profile.new()
 	p.setup(talent, RngUtil.make(seed_value), 0.0)
+	# Test cũ không chạy chuỗi nhiệm vụ chương 1 (C1-12 có test riêng).
+	p.quest_step = 12
 	return p
 
 
@@ -1303,3 +1308,76 @@ func _test_c1_grid40() -> void:
 	for i in range(1, 7):
 		w.profile.tiles[i].status = "owned"
 	_check(w.boss_unlocked(), "cấp 5 + 6 ô là mở hang")
+
+
+func _quest_world(class_id := "kiem-khach") -> GameWorld:
+	var p := Profile.new()
+	p.setup("tay-nhanh", RngUtil.make(3), 0.0, class_id)
+	return GameWorld.new(p, RngUtil.make(5))
+
+
+func _dialogs(w: GameWorld) -> Array:
+	return w.drain_events().filter(func(e): return e.type == "dialog").map(func(e): return e.id)
+
+
+func _test_c1_dialogs() -> void:
+	var w := _quest_world()
+	_check("q1" in _dialogs(w), "vào game: thoại q1")
+	_check(not w.say("q1"), "thoại không lặp lại")
+	var boss := w.spawn_enemy("boss", GameWorld.BOSS_LEVEL, GameWorld.ARENA_POS, {"role": "boss"})
+	w._boss_phase_two(boss)
+	_check("boss2" in _dialogs(w), "boss giai đoạn 2: thoại boss2")
+	var back := Profile.new()
+	back.load_dict(JSON.parse_string(JSON.stringify(w.profile.to_dict())))
+	_check("q1" in back.seen_dialogs and "boss2" in back.seen_dialogs, "thoại đã xem được lưu")
+
+
+func _test_c1_quests() -> void:
+	var w := _quest_world("tho-san")
+	var p = w.profile
+	var quest_mobs := w.enemies.filter(func(e): return e.role == "quest")
+	_check(quest_mobs.size() == 3, "bước 1: 3 Sói Sương ở cổng làng")
+	for e in quest_mobs:
+		w._kill_enemy(e)
+	_check(p.quest_step == 2, "hạ 3 sói → bước 2")
+	p.unspent = 0
+	w.player.mp = 999.0
+	w.use_skill(1)
+	w.player.skill_cds[2] = 0.0
+	w.use_skill(2)
+	_check(p.quest_step == 3, "dùng 2 kỹ năng → bước 3")
+	_tick(w, {"dodge": true}, 1)
+	_check(p.quest_step == 4, "né 1 lần → bước 4")
+	var gift: Array = p.inventory.filter(func(it): return it.slot == "weapon" and it.rarity == "green")
+	_check(gift.size() == 1 and Items.display_name(gift[0]).begins_with("Cung"), "quà Trưởng làng: Cung Xanh lá cho Thợ Săn")
+	w.equip(int(gift[0].id))
+	_tick(w, {}, 40)
+	_check(p.quest_step == 5, "mặc vũ khí → bước 5")
+	var gold0: float = p.gold
+	w.add_exp(5000.0, false)
+	_tick(w, {}, 40)
+	_check(p.quest_step == 6 and p.gold >= gold0 + 100.0, "cấp 3 → bước 6, +100 vàng")
+	while p.unspent > 0:
+		w.allocate("agi")
+	_tick(w, {}, 40)
+	_check(p.quest_step == 7 and p.potions == 4, "cộng hết điểm → bước 7, +2 bình máu")
+	p.torches = 5
+	var ring1: Array = p.tiles.filter(func(t): return Explore.hex_distance(t, {"q": 0, "r": 0}) == 1)
+	for i in 3:
+		w.reveal_tile(int(ring1[i].id))
+	_tick(w, {}, 40)
+	_check(p.quest_step == 8, "dọn 3 ô → bước 8")
+	p.buildings["temple"] = 0.0
+	_tick(w, {}, 40)
+	_check(p.quest_step == 9, "có công trình xây xong → bước 9")
+	p.level = 5
+	for t in p.tiles.slice(1, 7):
+		t.status = "owned"
+	_tick(w, {}, 40)
+	_check(p.quest_step == 10, "mở hang → bước 10")
+	p.boss_defeated = true
+	_tick(w, {}, 40)
+	_check(p.quest_step == 11 and "q11" in p.seen_dialogs, "hạ boss → bước 11, thoại q11")
+	w._load_map("1-3")
+	_tick(w, {}, 40)
+	_check(p.quest_step == Story.DONE_STEP and "done" in p.seen_dialogs, "vào Lõi Sương → hoàn thành chương 1")

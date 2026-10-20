@@ -39,6 +39,7 @@ func _render(content: VBoxContainer) -> void:
 		content.add_child(UiTheme.label("KỸ NĂNG (PHÍM L)", "Eyebrow"))
 		content.add_child(UiTheme.label("%s — %s Hồi chiêu %.1f giây." % [world.talent_skill_name(), t.skill.text, world.talent_skill_cd()], "", W))
 	_talent_state(content, p, t)
+	_evolution(content, t)
 
 	content.add_child(UiTheme.label("HIỆU ỨNG THEO CẤP", "Eyebrow"))
 	# TP-41: hiệu ứng chính mạnh dần tới Lv10.
@@ -84,6 +85,26 @@ func _render(content: VBoxContainer) -> void:
 
 
 ## Trạng thái riêng của từng Thiên phú (hệ, thú cưng, kỹ năng sao chép…).
+## C1-14 (TP-43): cây tiến hoá hiện trước để người quay hạng thấp thấy đường đi lên.
+func _evolution(content: VBoxContainer, t: Dictionary) -> void:
+	var stages: Array = Talents.EVOLUTION.get(t.id, [])
+	content.add_child(UiTheme.label("CÂY TIẾN HOÁ (mở ở bản Alpha)", "Eyebrow"))
+	if stages.is_empty():
+		content.add_child(UiTheme.label("Thiên phú này đã ở đỉnh — không tiến hoá.", "Small", W))
+		return
+	for i in stages.size():
+		var st: Array = stages[i]
+		var row := UiTheme.hbox(8)
+		var rank := UiTheme.label("%s" % st[1], "Heading")
+		rank.add_theme_color_override("font_color", Talents.rank_color(st[1]))
+		rank.custom_minimum_size.x = 34
+		row.add_child(rank)
+		var l := UiTheme.label("Bậc %d · %s — %s" % [i + 1, st[0], st[2]], "Small", W - 50)
+		row.add_child(l)
+		content.add_child(row)
+	content.add_child(UiTheme.label("Điều kiện mỗi bậc: " + (Talents.EVOLUTION_REQ_F if t.rank == "F" else Talents.EVOLUTION_REQ), "Small", W))
+
+
 func _talent_state(content: VBoxContainer, p, t: Dictionary) -> void:
 	var lines: Array[String] = []
 	match t.id:

@@ -13,6 +13,7 @@ const ItemData = preload("res://scripts/data/items.gd")
 const Classes = preload("res://scripts/data/classes.gd")
 const RngUtil = preload("res://scripts/core/rng_util.gd")
 const Maps = preload("res://scripts/data/maps.gd")
+const Story = preload("res://scripts/data/story.gd")
 
 ## Toạ độ map 1-1 (Rừng Sương). Code dùng các biến theo map (world_size, safe_pos, …); hằng số giữ cho test và tham chiếu.
 const WORLD_SIZE := Vector2(2600, 1600)
@@ -336,6 +337,7 @@ var _last_combat := -99.0
 var _super_slash := false
 var _element_switch_at := -99.0
 var _face_lock := 0.0
+var _quest_poll := 0.0
 
 
 func _init(p, rng: Callable) -> void:
@@ -345,6 +347,7 @@ func _init(p, rng: Callable) -> void:
 	player.hp = stats.max_hp
 	player.mp = stats.max_mp
 	_load_map(profile.map_id if Maps.MAPS.has(profile.map_id) else "1-1")
+	_begin_quest_step()
 
 
 ## Dựng map: vị trí, quái, thảo dược, rương, thú cưng (MP-01, MP-07).
@@ -519,6 +522,8 @@ func _arrive() -> void:
 	var first: bool = not (id in profile.unlocked_maps)
 	_load_map(id)
 	_events.append({"type": "map", "map_id": id, "first": first})
+	if id == "1-3":
+		say("core")
 	_message("Đã tới %s (cấp %d–%d).%s" % [map.name, map.levels[0], map.levels[1], " Mở điểm dịch chuyển." if first else ""], "good")
 	var warn := challenge_warning(id)
 	if warn != "":
@@ -590,6 +595,10 @@ func update(dt: float, input: Dictionary) -> void:
 	p.swing -= dt
 	p.hurt -= dt
 	_gate_msg_cd -= dt
+	_quest_poll -= dt
+	if _quest_poll <= 0.0:
+		_quest_poll = 0.5
+		_check_quest_state()
 	_passive_msg_cd -= dt
 	_combo_timer -= dt
 	if _combo_timer <= 0.0:
@@ -649,6 +658,7 @@ func _move_player(dt: float, input: Dictionary) -> void:
 	if input.dodge and p.dodge_cd <= 0.0 and p.dodge_time <= 0.0:
 		p.dodge_dir = move.normalized() if move.length() > 0.01 else Vector2.from_angle(p.facing)
 		p.dodge_time = DODGE_TIME
+		quest_event("dodge")
 		p.dodge_cd = DODGE_CD
 		p.perfect_used = false
 
@@ -671,6 +681,8 @@ func _move_player(dt: float, input: Dictionary) -> void:
 		var b := spawn_enemy(arena_boss(), int(map.arena.level), arena_pos + Vector2(120, 0), {"role": "boss"})
 		b.state = "chase"
 		_message("%s xuất hiện! Đánh vào thanh Phá Thế để làm nó choáng." % b.name, "bad")
+		if b.kind == "boss":
+			say("boss")
 
 
 ## Chân Không Biết Mỏi: +10% tốc chạy khi không giao chiến.
@@ -893,6 +905,7 @@ func use_skill(i: int) -> bool:
 		"eagle":
 			p.eagle_time = EAGLE_TIME
 			_text(p.pos + Vector2(0, -40), "Ưng Nhãn!", Color("#ffc940"), true)
+	quest_event("skill")
 	return true
 
 
@@ -1355,6 +1368,7 @@ func _damage_poise(e: Enemy, dmg: float) -> void:
 
 func _boss_phase_two(e: Enemy) -> void:
 	e.phase = 2
+	say("boss2")
 	for i in 3:
 		var offset := Vector2.from_angle(i / 3.0 * TAU) * 90.0
 		var wolf := spawn_enemy("wolf", 5, e.pos + offset, {"role": "bossMinion"})
@@ -1365,6 +1379,8 @@ func _boss_phase_two(e: Enemy) -> void:
 func _kill_enemy(e: Enemy) -> void:
 	e.dead = true
 	profile.kills += 1
+	if e.role == "quest":
+		quest_event("kill_quest")
 	var is_boss := e.role == "boss"
 	var base := float(boss_exp(e.level)) if is_boss else float(Formulas.mob_exp(e.level, e.elite))
 	add_exp(base * Formulas.combo_exp_multiplier(combo) * exp_level_mult(e.level), true)
@@ -2092,3 +2108,122 @@ func _update_chests() -> void:
 			var item := Items.new_item(profile, maxi(1, level_at(c.pos.x)), "green" if _r() < 0.5 else "blue", _rng)
 			text += ", " + str(Items.add_item(profile, item).message).trim_suffix(".")
 		_message(text + ".", "good")
+
+
+# ------------------------------------------------------------------ C1-11, C1-12: thoại và nhiệm vụ chương 1
+
+
+## Phát thoại (mỗi mốc 1 lần). Trả về true nếu là lần đầu.
+func say(id: String) -> bool:
+	if id in profile.seen_dialogs or not Story.DIALOGS.has(id):
+		return false
+	profile.seen_dialogs.append(id)
+	_events.append({"type": "dialog", "id": id})
+	return true
+
+
+func quest() -> Dictionary:
+	return Story.quest(profile.quest_step)
+
+
+## Tiến độ của bước hiện tại để hiển thị: [hiện có, cần].
+func quest_status() -> Array:
+	var q := quest()
+	if q.is_empty():
+		return [0, 0]
+	var need := int(q.need)
+	match str(q.type):
+		"level":
+			return [mini(profile.level, need), need]
+		"reveal":
+			return [mini(_revealed_count(), need), need]
+	return [mini(profile.quest_progress, need), need]
+
+
+func _revealed_count() -> int:
+	var n := 0
+	for t in profile.tiles:
+		if t.event != "camp" and t.status != "fog":
+			n += 1
+	return n
+
+
+## Bắt đầu bước hiện tại: thoại, sinh quái nhiệm vụ, quà.
+func _begin_quest_step() -> void:
+	var step: int = profile.quest_step
+	if step > Story.QUESTS.size():
+		return
+	var first := say("q%d" % step)
+	match step:
+		1:
+			# Quái Sương tấn công làng: 3 Sói Sương cấp 1 ngay cổng làng (đủ số còn thiếu).
+			if map_id == "1-1":
+				for i in maxi(0, 3 - profile.quest_progress):
+					var wolf := spawn_enemy("wolf", 1, safe_pos + Vector2(safe_r + 70.0, -70.0 + i * 70.0), {"role": "quest"})
+					wolf.state = "idle"
+		4:
+			if first:
+				# Quà của Trưởng làng: vũ khí Xanh lá theo lớp (phát hiện F8).
+				var gift := Items.new_item(profile, maxi(1, profile.level), "green", _rng, "weapon")
+				_events.append({"type": "item", "text": Items.add_item(profile, gift).message, "rarity": "green"})
+	_check_quest_state()
+
+
+## Sự kiện đếm (hạ quái nhiệm vụ, dùng kỹ năng, né).
+func quest_event(kind: String, n := 1) -> void:
+	var q := quest()
+	if q.is_empty() or str(q.type) != kind:
+		return
+	profile.quest_progress += n
+	_check_quest_state()
+
+
+func _check_quest_state() -> void:
+	var q := quest()
+	if q.is_empty():
+		return
+	var need := int(q.need)
+	var done := false
+	match str(q.type):
+		"kill_quest", "skill", "dodge":
+			done = profile.quest_progress >= need
+		"equip_weapon":
+			done = profile.equipment.has("weapon")
+		"level":
+			done = profile.level >= need
+		"spend_points":
+			done = profile.unspent == 0
+		"reveal":
+			done = _revealed_count() >= need
+		"build":
+			for key in profile.buildings:
+				if Explore.is_built(profile, key):
+					done = true
+					break
+		"boss_unlocked":
+			done = boss_unlocked()
+		"boss":
+			done = profile.boss_defeated
+		"enter_map":
+			done = map_id == "1-3"
+	if done:
+		_complete_quest(q)
+
+
+func _complete_quest(q: Dictionary) -> void:
+	var r: Dictionary = q.reward
+	profile.gold += float(r.get("gold", 0))
+	profile.potions = mini(POTION_MAX, int(profile.potions) + int(r.get("potions", 0)))
+	profile.torches = mini(Explore.torch_max(profile), int(profile.torches) + int(r.get("torches", 0)))
+	profile.stones += int(r.get("stones", 0))
+	var rt := Story.reward_text(r)
+	_message("Hoàn thành nhiệm vụ: %s%s" % [q.title, (". Thưởng: " + rt) if rt != "" else ""], "good")
+	_events.append({"type": "quest_done", "step": profile.quest_step})
+	profile.quest_step += 1
+	profile.quest_progress = 0
+	if r.has("exp"):
+		add_exp(float(r.exp), false)
+	if profile.quest_step >= Story.DONE_STEP:
+		say("done")
+		return
+	_begin_quest_step()

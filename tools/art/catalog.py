@@ -50,3 +50,10 @@ SPRITES = {
              "spec": {"size": 48, "fur": "fur_void", "mane": "void", "eye": "#ff3b4e", "aura": "#9b6ee0"}},
 }
 SPRITES.update(_custom_sprites())
+# C1-11: NPC làng Thanh Thạch (hộp thoại + đứng trong làng)
+SPRITES["npc-elder"] = {"builder": "humanoid", "name": "Trưởng làng Thạch Lão",
+                        "spec": {"skin": "skin", "hair": "white", "hair_style": "bui", "cloth": "wood", "pants": "leather",
+                                 "trim": "gold", "weapon": "none", "gender": "nam"}}
+SPRITES["npc-merchant"] = {"builder": "humanoid", "name": "Thương nhân lữ hành",
+                           "spec": {"skin": "skin_light", "cloth": "gold", "pants": "cloth_red", "trim": "cloth_red",
+                                    "weapon": "none", "hood": True, "gender": "nam"}}

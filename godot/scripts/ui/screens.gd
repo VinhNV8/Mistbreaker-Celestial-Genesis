@@ -20,6 +20,66 @@ const CONTROLS := [
 ]
 
 
+## C1-13: lục địa Huyền Thổ vỡ 9 mảnh quanh lõi Hư Vô; vùng 1 đã sáng, vùng 2 nhấp nháy.
+class Continent:
+	extends Control
+	const NAMES := ["Rừng Sương", "Gió Hú", "Xích Sa", "U Minh", "Viêm Long", "Bắc Cực", "Thiên Không", "Vực Hư Vô", "Thiên Đạo"]
+	const POS := [Vector2(-230, 40), Vector2(-120, 70), Vector2(0, 80), Vector2(120, 60), Vector2(230, 30),
+		Vector2(170, -60), Vector2(40, -80), Vector2(-90, -60), Vector2(0, -10)]
+	var t := 0.0
+
+	func _process(delta: float) -> void:
+		t = minf(t + delta, 99.0)
+		queue_redraw()
+
+	func _draw() -> void:
+		var c := size / 2.0
+		var font := UiTheme.font()
+		for i in 9:
+			var p: Vector2 = c + POS[i]
+			var reveal := clampf(t * 1.5 - i * 0.15, 0.0, 1.0)
+			var col := Color(0.18, 0.16, 0.26, 0.9 * reveal)
+			if i == 0:
+				col = Color(0.36, 0.82, 0.42, 0.9 * reveal)
+			elif i == 1:
+				col = Color(1.0, 0.8, 0.3, (0.5 + 0.4 * sin(t * 4.0)) * reveal)
+			elif i == 8:
+				col = Color(0.6, 0.4, 1.0, 0.5 * reveal)
+			var r := 34.0 if i < 8 else 26.0
+			var pts := PackedVector2Array()
+			for k in 7:
+				var a := TAU * k / 7.0 + i
+				pts.append(p + Vector2.from_angle(a) * r * (0.8 + 0.25 * sin(i * 3.1 + k * 1.7)))
+			draw_colored_polygon(pts, col)
+			pts.append(pts[0])
+			draw_polyline(pts, Color(0, 0, 0, 0.6 * reveal), 2.0, true)
+			draw_string(font, p + Vector2(-50, r + 16), "%d. %s" % [i + 1, NAMES[i]], HORIZONTAL_ALIGNMENT_CENTER, 100, 12, Color(1, 1, 1, 0.8 * reveal))
+
+
+## C1-15: Bia Đá Thiên Đạo phát sáng theo màu hạng (S trở lên có tia sáng).
+class SteleGlow:
+	extends Control
+	var rank := ""
+	var t := 0.0
+
+	func _process(delta: float) -> void:
+		t += delta
+		queue_redraw()
+
+	func _draw() -> void:
+		var base := Vector2(size.x / 2.0, size.y - 20.0)
+		var c := Talents.rank_color(rank) if rank != "" else Color(1.0, 0.86, 0.55)
+		var strength := 0.25 if rank == "" else 0.45 + 0.1 * Talents.rank_index(rank)
+		var pulse := 0.5 + 0.5 * sin(t * (2.0 + Talents.rank_index(rank) if rank != "" else 2.0))
+		for i in 4:
+			draw_circle(base + Vector2(0, -60), 30.0 + i * 16.0, Color(c, strength * (0.25 - i * 0.05) * (0.7 + 0.3 * pulse)))
+		if rank != "" and Talents.rank_index(rank) >= Talents.rank_index("S"):
+			for i in 10:
+				var a := TAU * i / 10.0 + t * 0.6
+				draw_line(base + Vector2(0, -60), base + Vector2(0, -60) + Vector2.from_angle(a) * (90.0 + 20.0 * pulse), Color(c, 0.35), 3.0, true)
+		SpriteLib.draw_env(self, "stele", base, Color(1, 1, 1).lerp(c, 0.35 * strength + 0.1 * pulse), 2.0)
+
+
 ## Nền + cột nội dung căn giữa. Trả về [màn hình, cột].
 static func _page(bg_alpha := 1.0, width := 640.0) -> Array:
 	var screen := ColorRect.new()
@@ -122,7 +182,14 @@ static func awakening(rng: Callable, on_accept: Callable, player_name := "") -> 
 				holder.remove_child(old)
 				old.queue_free()
 		var shown = state.rolling if state.rolling != null else (aw.rolls[state.selected] if state.selected >= 0 else null)
-		card_holder.add_child(_card(shown, state.rolling != null))
+		# C1-15 (TP-04): Bia Đá toả sáng theo màu hạng vừa quay.
+		var pair := UiTheme.hbox(24)
+		var stele := SteleGlow.new()
+		stele.custom_minimum_size = Vector2(140, 230)
+		stele.rank = "" if shown == null or state.rolling != null else str(shown.rank)
+		pair.add_child(stele)
+		pair.add_child(_card(shown, state.rolling != null))
+		card_holder.add_child(pair)
 		for i in aw.rolls.size():
 			var t: Dictionary = aw.rolls[i]
 			var chip := UiTheme.button("Lần %d: %s · %s" % [i + 1, t.rank, t.name])
@@ -260,7 +327,12 @@ static func victory(world, on_continue: Callable, on_title: Callable) -> Control
 	var h := _centered("Sói Chúa Hư Vô đã ngã xuống", "Title")
 	h.add_theme_font_size_override("font_size", 44)
 	col.add_child(h)
-	col.add_child(_centered("Ánh sáng từ Bia Đá lan tới tận hang sói. Phía đông, Đồng Bằng Gió Hú đang chờ… và Thiên phú trong bạn khẽ rung động.", "Muted", 580))
+	col.add_child(_centered("Ánh sáng từ Bia Đá lan tới tận hang sói. Phía đông, Đồng Bằng Gió Hú đang chờ… và Thiên phú trong %s khẽ rung động, như có một mảnh thứ hai đang thức giấc." % p.name, "Muted", 580))
+	# C1-13 (TN-09): bản đồ lục địa hiện ra, vùng 1 sáng, vùng 2 nhấp nháy.
+	var art := Continent.new()
+	art.custom_minimum_size = Vector2(620, 290)
+	art.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	col.add_child(art)
 	col.add_child(_centered("Thời gian chơi %d phút  ·  Cấp %d  ·  Quái đã hạ %d  ·  Khai phá %d/%d  ·  Thiên phú %s · %s" % [
 		roundi(p.play_seconds / 60.0), p.level, p.kills, Explore.owned_count(p.tiles), Explore.explore_total(p.tiles), t.rank, t.name
 	], "", 600))

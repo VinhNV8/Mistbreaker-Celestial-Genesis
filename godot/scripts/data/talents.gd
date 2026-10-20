@@ -97,6 +97,34 @@ const LIST := [
 ]
 
 
+## C1-14 (TP-43, Q20): cây tiến hoá 2 bậc — [tên, hạng, hiệu ứng] (tài liệu 05 mục 3). Tiến hoá làm ở Alpha; hiện chỉ hiển thị.
+const EVOLUTION := {
+	"than-the": [["Thân Thể Sắt Đá", "C", "+12% HP, +8% Phòng thủ"], ["Kim Cang Bất Hoại", "B", "+16% HP, +12% Phòng thủ; L Kim Cang Thân (40 giây): giảm 50% sát thương nhận 5 giây"]],
+	"tay-nhanh": [["Phong Ảnh Thủ", "C", "+10% tốc đánh; né lăn hồi nhanh 20%"], ["Vô Ảnh Kiếm", "B", "+15% tốc đánh; L Vô Ảnh (30 giây): tốc đánh ×2 trong 4 giây"]],
+	"may-man": [["Vận May Lớn", "C", "rơi đồ +8 điểm %; 10% đồ rơi được nâng 1 phẩm chất"], ["Thiên Tuyển Chi Nhân", "B", "rơi đồ +10 điểm %; 20% nâng phẩm chất; L Vận Đỏ (300 giây): rơi đồ ×2 trong 30 giây"]],
+	"chan-khong": [["Bước Chân Lữ Khách", "C", "+15% tốc chạy bản đồ lục địa; Đuốc hồi nhanh 15%"], ["Thần Hành", "B", "+20% tốc chạy; L Thần Hành Phù (120 giây): dịch chuyển tới cứ điểm bất kỳ đã chiếm"]],
+	"huyet-chien": [["Huyết Nộ", "B", "HP < 30%: +30% sát thương, +20% tốc đánh; L Phẫn Huyết (30 giây): mất 20% HP, +40% sát thương 8 giây"], ["Huyết Ma", "A", "HP dưới 50% thì sát thương tăng dần, tối đa +50% ở 10% HP; HP < 30% hút 5% sát thương thành máu"]],
+	"tho-ren": [["Bậc Thầy Rèn", "B", "+15% tỉ lệ cường hoá; thất bại 30% hoàn lại đá; L Rèn Nóng (600 giây): lần cường hoá kế tiếp +30%"], ["Thần Tượng", "A", "cường hoá tối đa +18; chế được đồ Cam ở Xưởng Rèn"]],
+	"khuu-giac": [["Mũi Chó Săn", "B", "rương ẩn 50 m, Di tích 25%; L Đánh Hơi (120 giây): hiện mọi rương ẩn và Di tích trên bản đồ 20 giây"], ["Thợ Săn Kho Báu", "A", "thêm loại Rương Vàng (30% đồ Tím); rương ẩn mỗi map 6 → 10"]],
+	"kiem-tam": [["Kiếm Ý", "A", "đòn thứ 4 ×2; Nhất Kiếm Đoạn ×4"], ["Kiếm Thánh Chi Tâm", "S", "mỗi đòn chém 20% chém kép; L Vạn Kiếm Quy Tông (45 giây): 12 nhát chém diện rộng 12 m trong 1,5 giây, mỗi nhát ×0,8"]],
+	"thao-duoc": [["Dược Sư", "A", "bình máu +50%; chế Thuốc Cuồng Nộ (+15% Tấn công 60 giây) từ 3 thảo dược"], ["Thần Y", "S", "hồi máu vượt tối đa thành khiên (tối đa 30% HP); L Hồi Xuân (60 giây): hồi 60% HP, xoá mọi hiệu ứng xấu"]],
+	"trai-tim": [["Lãnh Chúa", "A", "+1 hàng chờ xây; xây nhanh 40%"], ["Vương Giả", "S", "sản lượng lãnh địa +25%; L Chiếu Chỉ (600 giây): hoàn thành mọi công trình đang xây"]],
+	"thuan-thu": [["Ngự Thú Sư", "S", "3 thú cưng; thu phục được quái tinh anh dưới 10% HP"], ["Vạn Thú Chi Vương", "SS", "4 thú; thu phục được 1 boss hiếm; thú cưng lên cấp theo nhân vật"]],
+	"mat-ung": [["Thiên Nhãn", "S", "nhìn xuyên 4 ô; +15% chí mạng; thấy quái tàng hình"], ["Toàn Tri", "SS", "mọi ô trong lưới khai phá lộ sự kiện; chí mạng vào quái đang choáng +30%"]],
+	"hap-huyet": [["Huyết Tộc", "S", "hút 12%; máu hút vượt tối đa thành khiên (tối đa 20% HP)"], ["Huyết Đế", "SS", "hút 15%; L Huyết Hải (60 giây): 6 giây mọi sát thương gây ra hồi 50%"]],
+	"ban-tay-vang": [["Điểm Kim", "S", "Tinh Kim 30%; bán đồ +50% vàng"], ["Thần Tài", "SS", "phân rã 10% ra 1 Thiên Phú Tinh Hoa; lãnh địa +20% vàng"]],
+	"ngu-hanh": [["Ngũ Hành Hợp Nhất", "SS", "khắc hệ +50%; mỗi đòn mang 2 hệ"], ["Hỗn Độn Linh Căn", "SSS", "đòn đánh tự chọn hệ khắc quái; mỗi lần đổi hệ đều kích Bộc Phá"]],
+	"thoi-gian-ngung-dong": [["Thời Không Đoạn", "SS", "ngưng 5 giây, hồi 75 giây; quái bị ngưng nhận +20% sát thương"], ["Thời Gian Chi Chủ", "SSS", "thêm Tua Ngược — khi HP về 0, quay về trạng thái 5 giây trước (300 giây hồi)"]],
+	"bay-dan": [["Quân Đoàn Bóng Tối", "SS", "20% thành lính, tối đa 15, sống 90 giây"], ["Minh Vương", "SSS", "boss bị hạ có 50% thành lính bóng tối tinh anh giữ 1 kỹ năng của boss, sống tới khi bị hạ"]],
+	"thien-menh": [["Khai Thiên Tích Địa", "SSS", "mỗi Đuốc dọn thêm 4 ô; ô chiếm được +40% tài nguyên; lưới khai phá mỗi map thêm 1 vòng"]],
+	"long-mach": [["Tổ Long", "SSS", "Long Mạch Đàn +20%; mỗi trận boss gọi 1 lần Long Hồn đánh cùng 20 giây"]],
+	"dao-tac": [],
+}
+## Điều kiện mỗi bậc (05 mục 1.3).
+const EVOLUTION_REQ := "Thiên phú Lv10 + nhiệm vụ tiến hoá + 1 Tinh Hoa Tiến Hoá (rơi từ boss hiếm)"
+const EVOLUTION_REQ_F := "Thiên phú Lv10 + chuỗi nhiệm vụ “Phế Vật Nghịch Thiên” (Trưởng làng)"
+
+
 ## TP-41: giá trị hiệu ứng chính để hiển thị — [mẫu câu, giá trị Lv1, giá trị Lv10] (tài liệu 05 mục 2.1).
 ## Code dùng cùng các mốc này qua lv_value() tại chỗ áp dụng (D14).
 const MAIN_SCALE := {
@@ -128,7 +156,7 @@ static func main_effect_text(talent_id: String, lv: int) -> String:
 		return ""
 	var m: Array = MAIN_SCALE[talent_id]
 	var v := lv_value(m[1], m[2], lv)
-	var txt := str(snappedf(v, 0.01)).trim_suffix(".0").replace(".", ",")
+	var txt := str(snappedf(v, 0.1)).trim_suffix(".0").replace(".", ",")
 	return str(m[0]) % txt
 
 
