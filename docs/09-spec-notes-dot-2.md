@@ -79,6 +79,7 @@ Lớp `phap-su` không cần trường mới (`class_id` đã có từ v4).
 | SN-T4 | Mặc đồ +0 thay đồ +8 → đồ mới +8, đồ cũ +0; mặc lại đồ cũ → cấp về như cũ; đồ mới +10 thay đồ +3 → giữ nguyên |
 | SN-T5 | Map ×1,6; sương: ô quanh người chơi mở, ô xa còn phủ; % khám phá tăng; thưởng 50% / 90% đúng 1 lần |
 | SN-T6 | Save v7 giữ sương, thưởng, bộ lọc; save v6 nạp được |
+| SN-T7 | Hấp Huyết: phép diện rộng của Pháp Sư hút 50% |
 | TL-B, TL-B2 | Chạy thêm Pháp Sư (SN-07) |
 
 ## 5. Điểm cần duyệt
@@ -98,7 +99,7 @@ Lớp `phap-su` không cần trường mới (`class_id` đã có từ v4).
 | Mã | Trạng thái | Ghi chú |
 | --- | --- | --- |
 | SN-01…04 | ✅ | `classes.gd` khối `phap-su`; `game_world.gd`: `_cast_fireball`, `_splash`, `_chain`, `_nova`, `_meteor`, `_update_mage`, Pháp Thuẫn trong `_damage_player`; `stats.gd`; vũ khí `style = "staff"` |
-| SN-05 | 🟡 | Kiếm Tâm (Hỏa Cầu thứ 5), Ngũ Hành (Hỏa Cầu mang hệ, Bộc Phá theo Băng Ngục) chạy qua code chung. **Chưa làm**: Huyết Chiến/Hấp Huyết tính 50% từ phép diện rộng (05 mục 5) — hiện hút máu như lớp khác; 10 phép kết hợp để Alpha (Q46) |
+| SN-05 | ✅ | Kiếm Tâm (Hỏa Cầu thứ 5), Ngũ Hành (Hỏa Cầu mang hệ, Bộc Phá theo Băng Ngục) chạy qua code chung. Hấp Huyết: nổ lan Hỏa Cầu, Lôi Xích, Băng Ngục, Thiên Thạch chỉ hút 50% (`_hit_enemy(..., aoe)`, `AOE_LIFESTEAL`, test SN-T7). Huyết Chiến không hút máu nên không đổi. 10 phép kết hợp để Alpha (Q46) |
 | SN-06 | ✅ | AR-55 ([07](07-do-hoa-ke-hoach.md)); smoke `02-create`, `03c-mage` |
 | SN-07 | ✅ | Xem bảng cân bằng dưới |
 | SN-10…12 | ✅ | `ui/bulk_box.gd` dùng chung; túi đồ đánh dấu chấm đỏ món khớp lọc; smoke `05b-inventory`, `05f-shop` |

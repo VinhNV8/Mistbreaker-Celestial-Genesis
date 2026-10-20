@@ -67,6 +67,8 @@ const CHEST_SENSE_R := 300.0
 ## Chân Không Biết Mỏi: "không giao chiến" = 3 giây không đánh, không trúng đòn.
 const OUT_OF_COMBAT := 3.0
 const LIFESTEAL := 0.08
+## SN-05: phép diện rộng của Pháp Sư hút máu 50%.
+const AOE_LIFESTEAL := 0.5
 ## TL-S4: đồng minh.
 const TAME_HP := 0.1
 const PET_MAX := 2
@@ -1175,7 +1177,7 @@ func _splash(s: PlayerShot, center: Enemy) -> void:
 		if o.dead or o == center:
 			continue
 		if o.pos.distance_to(center.pos) <= s.splash + o.radius:
-			_hit_enemy(o, s.mul * s.splash_mul)
+			_hit_enemy(o, s.mul * s.splash_mul, false, true)
 
 
 ## Quái còn sống gần `from` nhất trong tầm, bỏ qua các id trong `skip`.
@@ -1222,7 +1224,7 @@ func _chain(mul: float) -> void:
 	for _i in CHAIN_JUMPS + 1:
 		hit[cur.id] = true
 		b.points.append(cur.pos)
-		_hit_enemy(cur, mul)
+		_hit_enemy(cur, mul, false, true)
 		var nxt := _nearest_enemy(cur.pos, CHAIN_HOP, hit)
 		if nxt == null:
 			break
@@ -1243,7 +1245,7 @@ func _nova(mul: float) -> void:
 	for e in enemies:
 		if not e.dead and e.pos.distance_to(p.pos) <= radius + e.radius:
 			e.root_timer = maxf(e.root_timer, NOVA_ROOT)
-			_hit_enemy(e, m)
+			_hit_enemy(e, m, false, true)
 
 
 ## SN-04 Thiên Thạch: vòng báo hiệu tại điểm ngắm (không có quái thì quái gần nhất trong tầm).
@@ -1278,7 +1280,7 @@ func _update_mage(dt: float) -> void:
 		_sfx("explode")
 		for e in enemies:
 			if not e.dead and e.pos.distance_to(m.pos) <= m.radius + e.radius:
-				_hit_enemy(e, m.mul)
+				_hit_enemy(e, m.mul, false, true)
 	meteors = meteors.filter(func(m): return m.timer > 0.0)
 	for b in bolts:
 		b.ttl -= dt
@@ -1861,7 +1863,8 @@ func _respawn() -> void:
 # ------------------------------------------------------------------ quái
 
 
-func _hit_enemy(e: Enemy, skill_mul: float, force_crit := false) -> void:
+## aoe: đòn phép diện rộng của Pháp Sư — Hấp Huyết chỉ hút 50% (SN-05, 05 mục 5).
+func _hit_enemy(e: Enemy, skill_mul: float, force_crit := false, aoe := false) -> void:
 	var talent_bonus := tv(0.2, 0.3) if profile.talent == "huyet-chien" and player.hp < float(stats.max_hp) * 0.3 else 0.0
 	var crit := force_crit or _r() < float(stats.crit) + (EAGLE_CRIT if player.eagle_time > 0.0 else 0.0)
 	var mul := skill_mul * ((1.0 + float(stats.crit_dmg)) if crit else 1.0) * (1.5 if e.broken else 1.0)
@@ -1872,7 +1875,7 @@ func _hit_enemy(e: Enemy, skill_mul: float, force_crit := false) -> void:
 	_combo_timer = COMBO_TIMEOUT
 	# Hấp Huyết: 8% sát thương thành máu.
 	if profile.talent == "hap-huyet":
-		player.hp = minf(float(stats.max_hp), player.hp + dmg * tv(LIFESTEAL, 0.12))
+		player.hp = minf(float(stats.max_hp), player.hp + dmg * tv(LIFESTEAL, 0.12) * (AOE_LIFESTEAL if aoe else 1.0))
 	# Thuần Thú Sư: đòn làm quái thường hoặc quái Ổ quái (TP-30) tụt dưới 10% (Lv10 15%) HP thì thu phục.
 	if profile.talent == "thuan-thu" and e.role in ["field", "nestMinion"] and not e.elite and e.kind != "nam-con" \
 			and e.hp - dmg > 0.0 and e.hp - dmg < e.max_hp * tv(TAME_HP, 0.15) and _ally_count("pet") < ally_cap("pet"):
@@ -2033,8 +2036,9 @@ func _kill_enemy(e: Enemy) -> void:
 
 
 ## CB-22: EXP boss = 0,3 × EXP lên cấp của boss.
+## M5-02: boss chương = 60% EXP cấp của boss (cũ 30%) — boss + boss hiếm ≈ 20% EXP mỗi chương.
 static func boss_exp(level := BOSS_LEVEL) -> int:
-	return roundi(0.3 * Formulas.exp_to_next(level))
+	return roundi(0.6 * Formulas.exp_to_next(level))
 
 
 ## MP-05: quái cao hơn từ 5 cấp → EXP ×2. NV-25: quái thấp hơn từ 10 cấp → 10% EXP.

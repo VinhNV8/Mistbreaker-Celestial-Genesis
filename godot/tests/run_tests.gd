@@ -119,10 +119,12 @@ func _init() -> void:
 	_run("SN-T4 chuyển cấp cường hoá khi mặc đồ", _test_sn_transfer)
 	_run("SN-T5 map ×1,6, sương che, % khám phá, thưởng", _test_sn_fog)
 	_run("SN-T6 save v7", _test_sn_save)
+	_run("SN-T7 Hấp Huyết: phép diện rộng của Pháp Sư hút 50%", _test_sn_aoe_lifesteal)
 	# M5 — boss hiếm Bạch Hổ, chuẩn bị thử nghiệm kín (03-mvp-spec mục 7)
 	_run("M5-T1 Bạch Hổ: điều kiện, chỉ số, Hổ Vồ, Gầm Gió, Cưỡi Gió, rơi đồ, lịch riêng, save v8", _test_m5_bach_ho)
 	_run("M5-T2 Vuốt Bạch Hổ: chí mạng gây chảy máu", _test_m5_claw)
 	_run("M5-T3 cân bằng: 3 lớp cấp 20 hạ Bạch Hổ", _test_m5_bach_ho_balance)
+	_run("PACE-T1 nhịp lên cấp 1 → 20 chỉ bằng đánh quái (bot cày, đo phút)", _test_pace_mobs)
 
 	print("")
 	if _failed.is_empty():
@@ -145,6 +147,9 @@ func _only() -> String:
 func _run(test_name: String, fn: Callable) -> void:
 	var only := _only()
 	if only != "" and not test_name.contains(only):
+		return
+	# Bài đo nhịp độ chạy lâu (vài phút): chỉ chạy khi gọi riêng --only=PACE.
+	if test_name.begins_with("PACE") and only == "":
 		return
 	_total += 1
 	_current = test_name
@@ -1172,7 +1177,7 @@ func _test_mob_formula() -> void:
 	var w := _m3_world("kiem-khach")
 	var boss := w.spawn_enemy("boss", GameWorld.BOSS_LEVEL, GameWorld.ARENA_POS, {"role": "boss"})
 	_check(int(boss.max_hp) == 4023 and is_equal_approx(boss.max_poise, boss.max_hp / 6.0), "boss sinh ra đúng HP, Phá Thế = HP/6")
-	_check(GameWorld.boss_exp() == 1545, "EXP boss 1.545")
+	_check(GameWorld.boss_exp() == roundi(0.6 * Formulas.exp_to_next(6)), "EXP boss = 60%% EXP cấp 6 (%d)" % GameWorld.boss_exp())
 
 
 func _test_perfect_dodge() -> void:
@@ -2436,3 +2441,83 @@ func _bach_ho_fight(class_id: String, talent_id: String, seed_value: int) -> Arr
 		w.update(1.0 / 60.0, inp)
 		seconds += 1.0 / 60.0
 	return [seconds, deaths, killed, 3 - int(p.potions)]
+
+
+## SN-05: Hấp Huyết của Pháp Sư — phép diện rộng hút 50%, Hỏa Cầu trúng trực tiếp hút đủ.
+func _test_sn_aoe_lifesteal() -> void:
+	var w := _m3_world("phap-su", "hap-huyet")
+	w.player.pos = Vector2(900, 900)
+	var e := _dummy(w, "wolf", 1, w.player.pos + Vector2(100, 0))
+	var heal := func(aoe: bool) -> float:
+		w.player.hp = 1.0
+		var hp0: float = e.hp
+		w._hit_enemy(e, 1.0, true, aoe)
+		return (w.player.hp - 1.0) / maxf(1.0, hp0 - e.hp)
+	var direct: float = heal.call(false)
+	var area: float = heal.call(true)
+	_check(direct > 0.0 and absf(area - direct * GameWorld.AOE_LIFESTEAL) < 0.01, "diện rộng hút %.3f = 50%% của %.3f" % [area, direct])
+
+
+# ------------------------------------------------------------------ M5-02: đo nhịp lên cấp (chạy riêng: --only=PACE)
+
+
+func _test_pace_mobs() -> void:
+	for class_id in Classes.ORDER:
+		# Kiếm Khách đo tới cấp 20; 2 lớp còn lại tới cấp 10 cho nhanh.
+		var r := _pace_sim(class_id, 20 if class_id == "kiem-khach" else 10, 3.0 * 3600.0)
+		var parts := PackedStringArray()
+		for lv in [3, 5, 7, 10, 13, 15, 17, 20]:
+			if r.at.has(lv):
+				parts.append("cấp %d: %.1f ph" % [lv, r.at[lv] / 60.0])
+		print("       [%s] %s · %d quái · chết %d" % [class_id, " · ".join(parts), r.kills, r.deaths])
+		_check(r.at.has(10), "%s lên được cấp 10" % class_id)
+
+
+## Bot cày quái từ cấp 1: chỉ EXP từ quái (không nhiệm vụ, không boss, không khai phá).
+## Đổi map theo cấp như người chơi, mỗi 5 cấp thay bộ đồ chuẩn (giả lập đồ rơi), tự cộng điểm, uống bình máu.
+## Trả về {at: {cấp: giây}, kills, deaths}.
+func _pace_sim(class_id: String, target_level: int, max_seconds: float) -> Dictionary:
+	var p := _profile("tay-nhanh", 3)
+	p.class_id = class_id
+	p.boss_defeated = true
+	p.bosses = {"boss": true}
+	p.unlocked_maps = ["1-1", "1-3", "2-1", "2-2", "2-3"]
+	p.rare_at = {"lao-thu": 1e12, "bach-ho": 1e12}
+	p.potions = 5
+	var w := GameWorld.new(p, RngUtil.make(9))
+	var at := {}
+	var deaths := 0
+	var seconds := 0.0
+	var kit_level := 0
+	var map_now := ""
+	var dt := 1.0 / 30.0
+	var kills0: int = p.kills
+	while seconds < max_seconds and p.level < target_level:
+		var want := "1-1" if p.level < 7 else ("1-3" if p.level < 10 else ("2-1" if p.level < 13 else ("2-2" if p.level < 17 else "2-3")))
+		if want != map_now:
+			w._load_map(want)
+			map_now = want
+			w.player.pos = w.safe_pos + Vector2(w.safe_r + 60.0, 0)
+		var kl := int(p.level / 5) * 5
+		if kl != kit_level:
+			kit_level = kl
+			var rng := RngUtil.make(77 + kl)
+			for pair in [["weapon", "blue"], ["armor", "green"], ["helm", "green"], ["boots", "green"], ["gloves", "green"]]:
+				var it := Items.new_item(p, maxi(1, p.level), pair[1], rng, pair[0])
+				Items.add_item(p, it)
+				w.equip(int(it.id))
+		if p.unspent > 0:
+			w.auto_allocate()
+		for ev in w.drain_events():
+			if ev.type == "death":
+				deaths += 1
+			elif ev.type == "levelup":
+				at[int(ev.level)] = seconds
+		var inp := _bot(w)
+		inp["potion"] = w.player.hp < w.stats.max_hp * 0.4
+		w.update(dt, inp)
+		seconds += dt
+	for ev in w.drain_events():
+		if ev.type == "levelup":
+			at[int(ev.level)] = seconds
+	return {"at": at, "kills": p.kills - kills0, "deaths": deaths}
