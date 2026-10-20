@@ -6,7 +6,7 @@
 | Nguồn yêu cầu | [Kịch bản game](kich-ban-game-thien-phu-khai-gioi.md), mục 2–9 |
 | Spec chi tiết | [01 — Chương 1](01-requirement-spec.md) · [03 — MVP](03-mvp-spec.md) · [02 — Kỹ thuật](02-technical-spec.md) |
 | Thiết kế nội dung | [05 — 20 Thiên phú](05-thien-phu-chi-tiet.md) (cấp, kỹ năng, tiến hoá, cộng hưởng) · [06 — Bản đồ, quái, boss](06-ban-do-quai-boss.md) (9 vùng, công thức chỉ số, 36 quái thường, 18 tinh anh, 9 boss chương, 9 boss hiếm). Cả hai **đã chốt** 20/10/2026 (Q17–Q27, mục 13) · [07 — Đồ hoạ](07-do-hoa-ke-hoach.md) (phong cách, hạng mục AR-xx) · [08 — Hoàn chỉnh Chương 1](08-chuong-1-hoan-chinh.md) (kết hợp Spec_Notes) |
-| Cập nhật | 20/10/2026 (sau đợt M3) |
+| Cập nhật | 20/10/2026 (sau đợt C1 — hoàn chỉnh Chương 1) |
 
 File này liệt kê **mọi hạng mục trong kịch bản**: trạng thái hiện tại, đợt sẽ làm, và mã yêu cầu/test để kiểm chứng. Mỗi lần xong một đợt, cập nhật cột Trạng thái và phần Tổng quan.
 
@@ -27,17 +27,17 @@ File này liệt kê **mọi hạng mục trong kịch bản**: trạng thái hi
 
 | Phần | Tổng | ✅ Xong | 🟡 Một phần | ⬜ Chưa làm | ⛔ Không làm |
 | --- | --- | --- | --- | --- | --- |
-| Thế giới quan, cốt truyện (mục 2) | 13 | 0 | 4 | 9 | 0 |
-| Thiên phú (mục 3) | 41 | 23 | 9 | 9 | 0 |
-| Nhân vật, chỉ số (mục 4) | 26 | 12 | 4 | 10 | 0 |
-| Chiến đấu, quái (mục 5) | 23 | 15 | 2 | 5 | 1 |
-| Bản đồ, vượt map (mục 6) | 11 | 0 | 2 | 9 | 0 |
-| Khai phá, lãnh địa (mục 7) | 22 | 7 | 4 | 11 | 0 |
-| Trang bị, kinh tế (mục 8) | 14 | 7 | 2 | 4 | 1 |
-| 30 phút đầu (mục 9) | 9 | 5 | 1 | 3 | 0 |
-| Đồ hoạ, âm thanh | 13 | 8 | 1 | 4 | 0 |
-| Kỹ thuật, phát hành | 10 | 4 | 1 | 5 | 0 |
-| **Tổng** | **182** | **81** (45%) | **30** (16%) | **69** (38%) | **2** |
+| Thế giới quan, cốt truyện (mục 2) | 13 | 3 | 1 | 9 | 0 |
+| Thiên phú (mục 3) | 41 | 26 | 7 | 8 | 0 |
+| Nhân vật, chỉ số (mục 4) | 26 | 14 | 3 | 9 | 0 |
+| Chiến đấu, quái (mục 5) | 23 | 17 | 2 | 3 | 1 |
+| Bản đồ, vượt map (mục 6) | 11 | 1 | 2 | 8 | 0 |
+| Khai phá, lãnh địa (mục 7) | 22 | 13 | 1 | 8 | 0 |
+| Trang bị, kinh tế (mục 8) | 14 | 8 | 2 | 3 | 1 |
+| 30 phút đầu (mục 9) | 9 | 9 | 0 | 0 | 0 |
+| Đồ hoạ, âm thanh | 13 | 11 | 0 | 2 | 0 |
+| Kỹ thuật, phát hành | 10 | 4 | 3 | 3 | 0 |
+| **Tổng** | **182** | **106** (58%) | **21** (12%) | **53** (29%) | **2** |
 
 ### Các giai đoạn
 
@@ -47,8 +47,8 @@ File này liệt kê **mọi hạng mục trong kịch bản**: trạng thái hi
 | MVP — M1 | Trang bị, cường hoá, phân rã, Lực chiến | ✅ Xong 20/10/2026 |
 | MVP — M2 | Đủ 20 Thiên phú, luyện cấp, Đền Thiên Phú, công trình có thời gian xây | ✅ Xong 20/10/2026 |
 | MVP — M3 | Lớp Thợ Săn, chọn lớp khi tạo nhân vật, đủ 4 kỹ năng mỗi lớp | ✅ Xong 20/10/2026 |
-| MVP — C1 | **Hoàn chỉnh Chương 1**: tạo nhân vật, sửa hướng đánh, cốt truyện + hướng dẫn, 3 map con + 40 ô, boss hiếm, Xưởng Rèn, cửa hàng, âm thanh, .exe — [08](08-chuong-1-hoan-chinh.md) | 🟡 Đang làm (làm trước M4) |
-| MVP — M4 | Chương 2: Đồng Bằng Gió Hú, boss Huyền Ảnh, Thành Biên Đài, bản đồ lục địa, di chuyển giữa vùng | ⬜ Sau C1 |
+| MVP — C1 | **Hoàn chỉnh Chương 1**: tạo nhân vật, sửa hướng đánh, cốt truyện + hướng dẫn, 3 map con + 40 ô, boss hiếm, Xưởng Rèn, cửa hàng, âm thanh — [08](08-chuong-1-hoan-chinh.md) | ✅ Xong 20/10/2026 (còn .exe chờ tải templates) |
+| MVP — M4 | Chương 2: Đồng Bằng Gió Hú, boss Huyền Ảnh, Thành Biên Đài, bản đồ lục địa, di chuyển giữa vùng | 🟡 M4.1 (nhiều bản đồ) đã có; tiếp theo |
 | MVP — M5 | Cốt truyện có thoại, hướng dẫn, nhiệm vụ, boss hiếm, Xưởng Rèn, cân bằng 1 → 20 | ⬜ |
 | MVP — G | Đồ hoạ nhân vật, quái, bản đồ, hiệu ứng, âm thanh cho chương 1–2 | 🟡 G1 (hình chương 1, sinh bằng code) xong 20/10/2026 — [07](07-do-hoa-ke-hoach.md); còn âm thanh, khung giao diện, vùng 2 |
 | Thử nghiệm kín | 50–100 người chơi (kịch bản mục 9) | ⬜ Cần M3–M5 + G |
@@ -59,15 +59,15 @@ File này liệt kê **mọi hạng mục trong kịch bản**: trạng thái hi
 
 | Mã | Hạng mục | Trạng thái | Đợt | Kiểm chứng | Ghi chú |
 | --- | --- | --- | --- | --- | --- |
-| CT-01 | Bối cảnh Huyền Thổ, đại nạn Thiên Liệt | 🟡 | Proto / M5 | — | Mới có trong 2 trang sách Di tích; chưa có cutscene mở đầu (xem TN-01) |
-| CT-02 | Nhân vật chính ở làng Thanh Thạch, Lễ Thức Tỉnh tuổi 16 | 🟡 | Proto / M5 | AWK-01…05 | Có Lễ Thức Tỉnh; chưa có thoại giới thiệu nhân vật |
-| CT-03 | Bí mật "mảnh Thiên phú thứ hai" | 🟡 | M5 / Beta | — | Mới gợi ý ở màn hình kết chương 1 ("Thiên phú khẽ rung động") |
+| CT-01 | Bối cảnh Huyền Thổ, đại nạn Thiên Liệt | ✅ | C1 | Smoke `01b-intro` | Cảnh mở đầu 5 trang (C1-10) |
+| CT-02 | Nhân vật chính ở làng Thanh Thạch, Lễ Thức Tỉnh tuổi 16 | ✅ | C1 | C1-T3 | Có tên nhân vật, thoại Trưởng làng Thạch Lão (C1-11) |
+| CT-03 | Bí mật "mảnh Thiên phú thứ hai" | 🟡 | C1 / Beta | — | Gợi ý trong thoại q11 và màn kết chương; lộ diện ở chương cuối (Beta) |
 | CT-04 | Phe Liên minh Khai Giới (giao nhiệm vụ, xếp hạng) | ⬜ | M4 | — | Gặp ở Thành Biên Đài, chương 2 |
 | CT-05 | Phe Thương hội Kim Luân (cửa hàng, đấu giá, hộ tống) | ⬜ | M5 / Alpha | — | |
 | CT-06 | Phe Thánh Đường Tinh Quang (thức tỉnh, tiến hoá Thiên phú) | ⬜ | Alpha | — | Gắn với tiến hoá hạng (TP-12) |
 | CT-07 | Phe Hư Vô Giáo (phản diện) | ⬜ | M4 | — | Gián điệp trong thành, chương 2 |
 | CT-08 | Phản diện Ma Tôn Vô Diện | ⬜ | Beta | — | Boss chương 9 |
-| CT-09 | Chương 1 — Thức Tỉnh | 🟡 | Proto / M5 | MOB-10 | Đủ gameplay và boss; thiếu thoại, cutscene, hướng dẫn |
+| CT-09 | Chương 1 — Thức Tỉnh | ✅ | C1 | C1-T4 | Đủ gameplay, boss, thoại, cảnh mở đầu, hướng dẫn, kết chương ([08](08-chuong-1-hoan-chinh.md)) |
 | CT-10 | Chương 2 — Thành Biên Đài | ⬜ | M4 | — | |
 | CT-11 | Chương 3–5 | ⬜ | Alpha | — | |
 | CT-12 | Chương 6–9 | ⬜ | Beta | — | |
@@ -82,7 +82,7 @@ Thiết kế chi tiết từng Thiên phú (hiệu ứng Lv1 → Lv10, 2 bậc t
 | TP-01 | 1 Thiên phú chính khi vào game qua Lễ Thức Tỉnh | ✅ | Proto | AWK-01 | |
 | TP-02 | 3 lần quay lại miễn phí, chọn bất kỳ lần nào | ✅ | Proto | AWK-01, 02 | |
 | TP-03 | Bảo hiểm: 4 lần dưới hạng B thì lần cuối lên B | ✅ | Proto | AWK-04 | |
-| TP-04 | Hiệu ứng ánh sáng theo màu hạng khi chạm Bia Đá | 🟡 | Proto / G | — | Có viền màu theo hạng; chưa có hiệu ứng ánh sáng thật |
+| TP-04 | Hiệu ứng ánh sáng theo màu hạng khi chạm Bia Đá | ✅ | C1 | Smoke `02b-awakening` | Bia Đá toả sáng theo màu hạng, hạng S trở lên có tia sáng (C1-15) |
 | TP-05 | Ô Thiên phú phụ ở cấp 30 và 60, tối đa 3 Thiên phú | ⬜ | Alpha | — | |
 | TP-06 | 7 hạng F → SSS, đúng tỉ lệ quay | ✅ | M2 | TL-A | 200.000 lần quay, lệch < 0,5 điểm % |
 | TP-07 | Nguyên tắc cân bằng: F và S chênh ≤ 25% | ✅ | M2 | TL-B | Chênh 7% (bot đánh boss chương 1) |
@@ -105,7 +105,7 @@ Thiết kế chi tiết từng Thiên phú (hiệu ứng Lv1 → Lv10, 2 bậc t
 | TP-23 | Chân Không Biết Mỏi | F | 🟡 | Chưa có bản đồ lớn; tạm thời +10% tốc chạy khi không giao chiến (**Q8**). Đổi lại đúng nghĩa ở M4 |
 | TP-24 | Huyết Chiến | C | ✅ | |
 | TP-25 | Thợ Rèn Bẩm Sinh | C | ✅ | |
-| TP-26 | Khứu Giác Kho Báu | C | 🟡 | Đã có: hiện rương ẩn 30 m (mục 3). Chưa có: "tăng tỉ lệ Di tích lên 20%" (mục 7) — làm ở M4 khi có lưới khai phá vùng 2 |
+| TP-26 | Khứu Giác Kho Báu | C | ✅ | Rương ẩn 30 → 45 m; Di tích 20% trên lưới 40 ô (C1-21, test C1-T6) |
 | TP-27 | Kiếm Tâm | B | ✅ | Có kỹ năng L Nhất Kiếm Đoạn (bổ sung). Có thể hơi mạnh (phát hiện F4) |
 | TP-28 | Nhà Thảo Dược | B | ✅ | Có kỹ năng L Linh Dược (bổ sung) |
 | TP-29 | Trái Tim Lãnh Chúa | B | ✅ | Có kỹ năng L Hiệu Triệu (bổ sung) |
@@ -127,7 +127,7 @@ Thiết kế chi tiết từng Thiên phú (hiệu ứng Lv1 → Lv10, 2 bậc t
 | --- | --- | --- | --- | --- | --- |
 | TP-41 | Hiệu ứng chính mạnh dần theo Lv, Lv10 = ×1,5 (05 mục 1.2) | ✅ | M3 | TP-T1 | **Q17**. 20 Thiên phú nội suy Lv1 → Lv10 theo bảng 05 mục 2.1; bảng Thiên phú hiện giá trị cấp này → cấp sau |
 | TP-42 | Tiến hoá đặt lại Lv1, không tụt sức mạnh, hoàn 50% Tinh Hoa | ⬜ | Alpha | — | **Q18**. Đi cùng TP-12 |
-| TP-43 | Bảng Thiên phú hiện trước cây tiến hoá (tên, hạng, điều kiện) | ⬜ | M5 | — | **Q20**. Làm cùng hướng dẫn (TN-04) để người quay F thấy đường lên B |
+| TP-43 | Bảng Thiên phú hiện trước cây tiến hoá (tên, hạng, điều kiện) | ✅ | C1 | Smoke `05d-talent` | **Q20** (C1-14) |
 | TP-44 | Cộng hưởng đặc biệt hiện "???" kèm gợi ý cho tới khi kích hoạt | ⬜ | Alpha | — | **Q21**. Đi cùng TP-13; Thợ Săn Di Tích hiện sẵn |
 | TP-45 | Thông báo toàn server khi có người tiến hoá lên SSS (không giới hạn độc nhất) | ⬜ | Beta | — | **Q19**. Cần backend (KT-09) |
 
@@ -154,13 +154,13 @@ Thiết kế chi tiết từng Thiên phú (hiệu ứng Lv1 → Lv10, 2 bậc t
 | NV-17 | Kháng 5 hệ | ⬜ | M4 | — | Cần khi quái vùng 2 đánh có hệ |
 | NV-18 | Lực chiến, dùng để mở map và xếp hạng | 🟡 | M1 | EQ-17 | Đã tính và hiện ở HUD; chưa hiện "trên đầu" nhân vật; chưa dùng mở map (vùng 3, Alpha) |
 | NV-19 | Công thức EXP | ✅ | Proto | CHR-01 | |
-| NV-20 | Nhịp độ 1 → 10 trong 30 phút | 🟡 | M5 | — | Bot lên cấp 5 sau 101 giây (phát hiện F2); cần đo người thật khi playtest |
+| NV-20 | Nhịp độ 1 → 10 trong 30 phút | 🟡 | C1 / M5 | — | Đo bằng bot (08 mục 5): cấp 6 sau 111 giây; chờ playtest người thật để chỉnh |
 | NV-21 | Nguồn EXP: quái, boss, khai phá | ✅ | Proto | — | |
-| NV-22 | Nguồn EXP: nhiệm vụ cốt truyện (25%) | ⬜ | M5 | — | |
+| NV-22 | Nguồn EXP: nhiệm vụ cốt truyện (25%) | ✅ | C1 | C1-T4 | Chuỗi 11 nhiệm vụ chương 1 (C1-12) |
 | NV-23 | Nguồn EXP: dungeon | ⬜ | Alpha | — | |
 | NV-24 | Nguồn EXP: offline từ lãnh địa (5%) | ⬜ | M4 | — | Chưa làm; hiện offline chỉ có gỗ, vàng, Đuốc |
 | NV-25 | Quái thấp hơn 10 cấp chỉ cho 10% EXP | ⬜ | M4 | — | Chưa làm; cần khi có vùng 2 (cấp 10–20) |
-| NV-26 | Cảnh báo khi quên cộng điểm tiềm năng | 🟡 | M5 | — | HUD có nhắc; phát hiện F1 đề xuất nút "tự cộng điểm" |
+| NV-26 | Cảnh báo khi quên cộng điểm tiềm năng | ✅ | C1 | C1-T11 | HUD nhắc + nút Tự cộng điểm theo lớp (C1-34) |
 
 ## 5. Chiến đấu và quái vật (kịch bản mục 5)
 
@@ -169,7 +169,7 @@ Chỉ số, kỹ năng từng quái/boss và công thức sức mạnh theo cấ
 | Mã | Hạng mục | Trạng thái | Đợt | Kiểm chứng | Ghi chú |
 | --- | --- | --- | --- | --- | --- |
 | CB-01 | Đánh thường + **4 kỹ năng** + 1 kỹ năng Thiên phú + né lăn | ✅ | M3 | CL-T3 | 4 kỹ năng mỗi lớp, phím 1–4 (K/chuột phải = kỹ năng 1) (Q28, Q29) |
-| CB-02 | Nút Tự đánh khi cày map cũ (boss vẫn phải đánh tay) | ⬜ | M5 | — | |
+| CB-02 | Nút Tự đánh khi cày map cũ (boss vẫn phải đánh tay) | ✅ | C1 | C1-T11 | Phím Z; tự tắt khi có boss (C1-33) |
 | CB-03 | Né lăn 0,3 giây bất tử, hồi 3 giây | ✅ | Proto | CMB-03 | |
 | CB-04 | Né "Hoàn hảo" làm chậm thời gian 1 giây | ✅ | M3 | CB-T3 | Chặn đòn trong 0,15 giây đầu của né lăn → quái và đạn chậm còn 30% trong 1 giây |
 | CB-05 | Ngũ hành tương khắc +30% | 🟡 | M2 | TL-C | Quái đã có hệ; người chơi chỉ đổi hệ được nhờ Ngũ Hành Linh Căn. Người khác cần Khảm ngọc (TB-08) |
@@ -182,7 +182,7 @@ Chỉ số, kỹ năng từng quái/boss và công thức sức mạnh theo cấ
 | CB-12 | Quái tinh anh có 1 kỹ năng đặc biệt riêng | ✅ | M3 | CB-T5 | Sói Đầu Đàn: Hú gọi · Nấm Mẹ: Sinh sôi (Nấm Con tự nổ) (Q33) |
 | CB-13 | Thủ lĩnh cứ điểm canh ô đất | ✅ | Proto | EXP-05 | Dạng Ổ quái |
 | CB-14 | Boss vùng 2–3 giai đoạn, rơi Tinh Hoa | ✅ | Proto / M2 | MOB-06…10, TL-G | |
-| CB-15 | Boss hiếm, xuất hiện 2 lần/ngày, rơi đồ Cam | ⬜ | M5 | — | Tạm thời Sói Chúa rơi đồ Cam 15% (**Q2**) |
+| CB-15 | Boss hiếm, xuất hiện 2 lần/ngày, rơi đồ Cam | ✅ | C1 | C1-T7 | Lão Thụ Sương Mù ở Lõi Sương, mỗi 12 giờ thực; rơi Vỏ Lão Thụ (C1-23) |
 | CB-16 | Boss thế giới (cả server) | ⛔ | Beta | — | Cần online; xem lại khi có backend |
 | CB-17 | Boss chương 1 Sói Chúa Hư Vô | ✅ | Proto | MOB-06…10 | |
 | CB-18 | Boss chương 2 Tướng Gián Điệp Huyền Ảnh (phân thân 3, bản thật có bóng) | ⬜ | M4 | — | |
@@ -198,12 +198,12 @@ Chi tiết 9 vùng × 3 map con, cơ chế môi trường có số liệu, bộ 
 
 | Mã | Hạng mục | Trạng thái | Đợt | Kiểm chứng | Ghi chú |
 | --- | --- | --- | --- | --- | --- |
-| BD-01 | Vùng 1 Rừng Sương (cấp 1–10, hệ Mộc) | 🟡 | Proto | — | Mới 1 map; kịch bản: 3 map con (Ngoài rìa → Trung tâm → Lõi) + dungeon boss |
+| BD-01 | Vùng 1 Rừng Sương (cấp 1–10, hệ Mộc) | ✅ | C1 | C1-T5 | Map 1-1 Rừng Sương + map 1-3 Lõi Sương (M4.1) |
 | BD-02 | Vùng 2 Đồng Bằng Gió Hú (cấp 10–20, hệ Kim, gió đẩy lùi) | ⬜ | M4 | — | |
 | BD-03 | Vùng 3–5 | ⬜ | Alpha | — | Vùng 3 mở bằng Lực chiến 5.000 |
 | BD-04 | Vùng 6–9 | ⬜ | Beta | — | |
 | BD-05 | Điều kiện mở map: đủ cấp + hạ boss vùng + khai phá ≥ 60% | 🟡 | Proto | MOB-05 | Có cho hang boss vùng 1; áp dụng cho chuyển vùng ở M4 |
-| BD-06 | 3 map con mỗi vùng + dungeon boss | ⬜ | M4 | — | **Q24, Q25**: 15 ô mỗi map con (vùng 1 = 10 + 15 + 15 = 40 ô); boss cấp 6 ở giữa vùng 1, Lõi Sương (7–10) mở sau boss |
+| BD-06 | 3 map con mỗi vùng + dungeon boss | 🟡 | C1 / M4 | C1-T6 | Vùng 1: lưới 3 map con 40 ô, 2 bản đồ (Q35 gộp Bìa Rừng + Rừng Sâu); vùng 2 ở M4 |
 | BD-07 | Bản đồ lục địa, di chuyển giữa các vùng | ⬜ | M4 | — | Cũng là cảnh kết chương 1 (TN-09) |
 | BD-08 | Cứ điểm chiếm được thành điểm dịch chuyển | ⬜ | M4 | — | |
 | BD-09 | Thử thách vượt ải: vào map cao hơn 5 cấp, thắng được EXP ×2 | ⬜ | M4 | — | |
@@ -214,7 +214,7 @@ Chi tiết 9 vùng × 3 map con, cơ chế môi trường có số liệu, bộ 
 
 | Mã | Hạng mục | Trạng thái | Đợt | Kiểm chứng | Ghi chú |
 | --- | --- | --- | --- | --- | --- |
-| KP-01 | Lưới ô lục giác bị sương mù che | 🟡 | Proto | EXP-01 | 10 ô; kịch bản: 40–60 ô mỗi vùng. Mở rộng ở M4 |
+| KP-01 | Lưới ô lục giác bị sương mù che | ✅ | C1 | C1-T6 | Vùng 1: 40 ô (C1-21) |
 | KP-02 | Đuốc Khai Giới, tối đa 10, hồi 1 cái/20 phút | 🟡 | Proto | EXP-03 | Đang hồi 2 phút/cái để test nhanh; quyết định giá trị thật sau playtest |
 | KP-03 | Do thám → khám phá sự kiện → chinh phục | ✅ | Proto | EXP-02, 05 | |
 | KP-04 | Chinh phục bằng giải câu đố | ⬜ | M5 | — | Hiện chỉ chinh phục bằng đánh quái |
@@ -222,20 +222,20 @@ Chi tiết 9 vùng × 3 map con, cơ chế môi trường có số liệu, bộ 
 | KP-06 | Núi → Mỏ, sông → Bến Cá | ⬜ | M4 | — | Cần thêm tài nguyên Đá, Sắt (TB-11). **Q26**: Bến Cá không tạo tài nguyên, cho buff lãnh địa +3% HP mỗi cấp (tối đa +15%) |
 | KP-07 | Phòng thủ: Triều Hư Vô mỗi 24 giờ chiếm lại công trình không được bảo vệ | ⬜ | Alpha | — | Cần Doanh Trại (KP-17) |
 | KP-08 | Sự kiện Tài nguyên, Ổ quái, Di tích, Người sống sót, Kỳ quan | ✅ | Proto | EXP-01 | |
-| KP-09 | Sự kiện Thương nhân lữ hành (bán đồ hiếm, 1 giờ) | ⬜ | M5 | — | |
+| KP-09 | Sự kiện Thương nhân lữ hành (bán đồ hiếm, 1 giờ) | ✅ | C1 | C1-T10 | 3 ô trên lưới vùng 1 (C1-32) |
 | KP-10 | Sự kiện Cổng dungeon | ⬜ | Alpha | — | Gắn với BD-11 |
-| KP-11 | Tỉ lệ sự kiện theo bảng kịch bản (35/25/12/10/8/7/3%) | 🟡 | M4 | — | Lưới 10 ô hiện chia cố định 4/2/2/1/1; dùng tỉ lệ thật khi lưới lớn hơn |
+| KP-11 | Tỉ lệ sự kiện theo bảng kịch bản (35/25/12/10/8/7/3%) | ✅ | C1 | C1-T6 | 40/28/12/10/8/2% — Cổng dungeon (7%) để Alpha, dồn sang Tài nguyên, Ổ quái |
 | KP-12 | Trung tâm lãnh địa: Trại → Thôn | ✅ | Proto / M2 | TL-F | |
 | KP-13 | Trung tâm lãnh địa: Trấn → Thành → Hoàng Thành | ⬜ | Alpha / Beta | — | |
 | KP-14 | Đền Thiên Phú | ✅ | M2 | TL-G | |
-| KP-15 | Xưởng Rèn (chế trang bị) | ⬜ | M5 | — | Có trong phạm vi MVP (03-mvp-spec mục 1) |
-| KP-16 | Vườn Thảo Dược (thuốc) | ⬜ | M5 | — | Hiện bình máu chế từ thảo dược hái ngoài đồng |
+| KP-15 | Xưởng Rèn (chế trang bị) | ✅ | C1 | C1-T9 | Chế theo ô, Xanh lá/Xanh dương/Tím 60/35/5% (C1-30) |
+| KP-16 | Vườn Thảo Dược (thuốc) | ✅ | C1 | C1-T9 | 1 thảo dược mỗi 3 phút, cả khi offline (C1-31) |
 | KP-17 | Doanh Trại, Tháp Canh | ⬜ | Alpha | — | |
 | KP-18 | Cảng Khí Cầu (đi vùng 7) | ⬜ | Beta | — | |
 | KP-19 | Dân cư có kỹ năng nghề, xếp vào công trình | ⬜ | Alpha | — | Hiện người sống sót chỉ +10% sản lượng |
 | KP-20 | Thu hoạch offline tối đa 12 giờ | ✅ | Proto | EXP-09 | |
 | KP-21 | Thiên phú ảnh hưởng khai phá: Mắt Ưng, Trái Tim Lãnh Chúa | ✅ | Proto / M2 | TL-C, TL-F | |
-| KP-22 | Thiên phú ảnh hưởng khai phá: Khứu Giác (Di tích 20%), Thuần Thú (quái Ổ quái) | 🟡 | M3 / M4 | TP-T2 | Thuần Thú xong ở M3; Khứu Giác Di tích làm ở M4 (TP-26) |
+| KP-22 | Thiên phú ảnh hưởng khai phá: Khứu Giác (Di tích 20%), Thuần Thú (quái Ổ quái) | ✅ | M3 / C1 | TP-T2, C1-T6 | |
 
 ## 8. Trang bị, kinh tế và vòng lặp (kịch bản mục 8)
 
@@ -249,10 +249,10 @@ Chi tiết 9 vùng × 3 map con, cơ chế môi trường có số liệu, bộ 
 | TB-06 | Cường hoá +1 → +15, thất bại không mất đồ | ✅ | M1 | EQ-12, 13 | Từ +10 cần Tinh Kim (M2, **Q10**) |
 | TB-07 | Phân rã | ✅ | M1 | EQ-14 | |
 | TB-08 | Khảm ngọc ngũ hành, đổi hệ vũ khí | ⬜ | Alpha | — | |
-| TB-09 | Đồ Cam có hiệu ứng riêng | 🟡 | M1 | EQ-16 | Mới có 1 món (Nanh Sói Chúa) |
+| TB-09 | Đồ Cam có hiệu ứng riêng | 🟡 | M1 / C1 | EQ-16, C1-T7 | 2 món: Nanh Sói Chúa, Vỏ Lão Thụ |
 | TB-10 | Vàng, Gỗ, Thiên Phú Tinh Hoa, Đuốc | ✅ | Proto / M2 | — | |
 | TB-11 | Đá, Sắt, Tinh Thạch | ⬜ | M4 | — | Cần cho nâng Trấn và Mỏ. **Q26**: không thêm tiền tệ nào khác (bỏ Tinh Thạch Hư Vô, thay bằng vật phẩm cốt truyện Lõi Hư Vô) |
-| TB-12 | Mua bình thuốc bằng vàng, bán đồ lấy vàng | ⬜ | M5 | — | Cần cửa hàng (Thương hội) |
+| TB-12 | Mua bình thuốc bằng vàng, bán đồ lấy vàng | ✅ | C1 | C1-T10 | Cửa hàng làng (phím E) (C1-32) |
 | TB-13 | Vòng lặp chiến đấu ↔ khai phá ↔ lãnh địa | ✅ | Proto | — | |
 | TB-14 | Ngọc Thiên Đạo (tiền nạp), Battle Pass, thẻ tháng, ngoại hình | ⛔ | Beta | — | Cần backend; nếu bán mua đứt trên Steam thì bỏ |
 
@@ -260,15 +260,15 @@ Chi tiết 9 vùng × 3 map con, cơ chế môi trường có số liệu, bộ 
 
 | Mã | Phút | Cảnh | Trạng thái | Đợt | Ghi chú |
 | --- | --- | --- | --- | --- | --- |
-| TN-01 | 0–2 | Cutscene Thiên Liệt, giọng kể | ⬜ | M5 + G | Hiện vào thẳng màn hình tiêu đề |
-| TN-02 | 2–4 | Tạo nhân vật: chọn ngoại hình, lớp | 🟡 | M3 + G | Chọn lớp xong ở M3; chọn ngoại hình cần đồ hoạ |
+| TN-01 | 0–2 | Cutscene Thiên Liệt, giọng kể | ✅ | C1 | Cảnh mở đầu 5 trang, chữ chạy (chưa có giọng đọc) |
+| TN-02 | 2–4 | Tạo nhân vật: chọn ngoại hình, lớp | ✅ | C1 | Tên, giới tính, da, tóc, màu tóc, lớp trên 1 màn hình (C1-02) |
 | TN-03 | 4–7 | Lễ Thức Tỉnh, lời Trưởng làng | ✅ | Proto | |
-| TN-04 | 7–10 | Hướng dẫn combat: quái tấn công làng, học đánh/né/kỹ năng | ⬜ | M5 | Hiện chỉ có 1 dòng thông báo |
+| TN-04 | 7–10 | Hướng dẫn combat: quái tấn công làng, học đánh/né/kỹ năng | ✅ | C1 | Nhiệm vụ 1–3: 3 Sói Sương ở cổng làng, học kỹ năng, học né (C1-12) |
 | TN-05 | 10–15 | Rừng Sương: lên cấp 5, nhặt đồ xanh đầu tiên | ✅ | Proto / M1 | EQ-05 |
 | TN-06 | 15–19 | Khai phá đầu tiên, gặp người sống sót | ✅ | Proto | |
 | TN-07 | 19–23 | Xây công trình đầu tiên, cộng điểm | ✅ | Proto / M2 | |
 | TN-08 | 23–28 | Boss Sói Chúa 2 giai đoạn, thanh Phá Thế | ✅ | Proto | |
-| TN-09 | 28–30 | Bản đồ lục địa hiện ra, vùng 2 sáng lên | ⬜ | M4 | Hiện là màn hình chữ "Chương 1 hoàn thành" |
+| TN-09 | 28–30 | Bản đồ lục địa hiện ra, vùng 2 sáng lên | ✅ | C1 / M4 | Màn kết chương vẽ lục địa 9 vùng, rồi mở bản đồ lục địa (C1-13, MP-06) |
 
 ## 10. Đồ hoạ và âm thanh (nhánh G)
 
@@ -285,10 +285,10 @@ Phong cách đã chốt: **pixel art góc trên xuống 3/4, sinh bằng code** 
 | DH-07 | Tileset Rừng Sương, Làng Thanh Thạch, Hang Sói Chúa (dùng TileMap của Godot) | ✅ | G1 | AR-16: lát ô bằng đa giác UV (không cần TileMap), 4 loại cây, bụi, nhà, Bia Đá |
 | DH-08 | Tileset Đồng Bằng Gió Hú, Thành Biên Đài | ⬜ | G | Sau M4 |
 | DH-09 | Icon 8 ô trang bị × 5 phẩm chất, icon tài nguyên, icon 20 Thiên phú | ✅ | G1 | AR-17…20: 41 icon; phẩm chất vẽ bằng khung màu |
-| DH-10 | Hiệu ứng (VFX): chém, kỹ năng, vòng báo hiệu, ánh sáng Bia Đá theo hạng | 🟡 | G1 / G2 | AR-21: đạn bào tử, tia trúng đòn, hoạt ảnh chết; chém/xoáy/vòng báo hiệu vẫn vẽ vector; Bia Đá theo hạng chưa làm |
+| DH-10 | Hiệu ứng (VFX): chém, kỹ năng, vòng báo hiệu, ánh sáng Bia Đá theo hạng | ✅ | G1 / C1 | Thêm: Bia Đá theo hạng, hiệu ứng cường hoá (N8), Rễ Trói, Lá Độc, vũng độc |
 | DH-11 | Giao diện có art (khung, nút, font chính thức) | ⬜ | G | Hiện dùng theme tối mặc định + font hệ thống |
-| DH-12 | Âm thanh: đánh, trúng đòn, nhặt đồ, lên cấp, giao diện | ⬜ | G | |
-| DH-13 | Nhạc nền: làng, rừng, boss | ⬜ | G | |
+| DH-12 | Âm thanh: đánh, trúng đòn, nhặt đồ, lên cấp, giao diện | ✅ | C1 | 16 hiệu ứng sinh bằng code (`tools/audio`) |
+| DH-13 | Nhạc nền: làng, rừng, boss | ✅ | C1 | Làng, Rừng Sương, Lõi Sương, Boss — vòng lặp sinh bằng code |
 
 Khi có art, chỉ cần thay `scripts/view/world_view.gd` (vẽ) và theme UI; logic game không đổi (technical spec, quyết định D2, D6).
 
@@ -299,10 +299,10 @@ Khi có art, chỉ cần thay `scripts/view/world_view.gd` (vẽ) và theme UI; 
 | KT-01 | Engine Godot 4.7.2 | ✅ | Proto | |
 | KT-02 | Dữ liệu tách khỏi logic (designer chỉnh không sửa code) | 🟡 | Proto | Dữ liệu nằm trong `scripts/data/*.gd`; kịch bản đề xuất JSON/Resource. Chuyển khi có designer |
 | KT-03 | Lưu game cục bộ, chuyển đổi save cũ | ✅ | M1 / M2 | Save v3 |
-| KT-04 | Test tự động headless | ✅ | Proto → M3 | 52 test; chạy một phần bằng `-- --only=<tên>` |
+| KT-04 | Test tự động headless | ✅ | Proto → C1 | 64 test; chạy một phần bằng `-- --only=<tên>` |
 | KT-05 | Quản lý mã nguồn bằng Git | ✅ | 20/10/2026 | Nhánh `main`, remote GitHub `VinhNV8/Mistbreaker-Celestial-Genesis`; `.gitignore` bỏ `.godot/`, `node_modules/`, log công cụ |
-| KT-06 | Build file chạy Windows (.exe) | ⬜ | M5 | Cần cài export templates 4.7.2 |
-| KT-07 | Cài đặt: âm lượng, đổi phím, cỡ chữ | ⬜ | M5 | |
+| KT-06 | Build file chạy Windows (.exe) | 🟡 | C1 | Preset `godot/export_presets.cfg` + `tools/build_windows.sh` xong; cần cài export templates 4.7.2 (1,28 GB) |
+| KT-07 | Cài đặt: âm lượng, đổi phím, cỡ chữ | 🟡 | C1 | Âm lượng tổng/nhạc/hiệu ứng, toàn màn hình (Esc → Cài đặt); đổi phím qua Input Map; chưa có cỡ chữ |
 | KT-08 | Điều khiển tay cầm / cảm ứng | ⬜ | Alpha | Phụ thuộc quyết định PC hay Mobile |
 | KT-09 | Backend: tài khoản, lưu đám mây, bảng xếp hạng | ⬜ | Alpha / Beta | Bảng xếp hạng có trong phạm vi Alpha |
 | KT-10 | Chống gian lận: quay Thiên phú, rơi đồ tính trên server | ⬜ | Beta | |

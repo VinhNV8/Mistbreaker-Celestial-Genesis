@@ -88,6 +88,10 @@ Main (Node, main.gd)
 | --- | --- |
 | `scripts/data/talents.gd` | 20 Thiên phú, kỹ năng L, tỉ lệ theo hạng, hiệu ứng phụ theo nhóm, chi phí luyện cấp (M2) |
 | `scripts/data/monsters.gd` | 6 loại quái vùng 1 + boss: loại (arch), tốc, tầm, đòn đánh, hệ ngũ hành, bảng Đạo Tặc cướp, tinh anh (M3). **Không** chứa HP/Tấn công/Phòng thủ — tính bằng `Formulas.mob_stats()` |
+| `scripts/data/looks.gd` | Ngoại hình: giới tính, 3 da, 4 kiểu tóc, 6 màu tóc; id sprite thân/tóc (C1) |
+| `scripts/data/story.gd` | 18 đoạn thoại và chuỗi 11 nhiệm vụ chương 1 (C1) |
+| `scripts/data/resources.gd` | Tên, icon, chú thích 8 tài nguyên (C1, Spec_Notes N6) |
+| `scripts/data/maps.gd` | Các vùng, map (1-1 Rừng Sương, 1-3 Lõi Sương) — M4.1 |
 | `scripts/data/classes.gd` | 2 lớp (Kiếm Khách, Thợ Săn) và 4 kỹ năng mỗi lớp: hồi chiêu, MP, hệ số, icon (M3) |
 | `scripts/data/items.gd` | Trang bị: 8 ô, 5 phẩm chất, affix, tỉ lệ cường hoá, bảng rơi đồ, bộ trang bị, đồ Cam (M1) |
 | `scripts/core/config.gd` | **Mọi hằng số cân bằng** (Đuốc, điều kiện mở hang, giá xây…) |
@@ -109,12 +113,29 @@ Main (Node, main.gd)
 | `scripts/ui/stats_panel.gd` | Bảng chỉ số |
 | `scripts/ui/map_panel.gd`, `hex_map.gd` | Bản đồ khai phá |
 | `scripts/ui/inventory_panel.gd` | Túi đồ: đang mặc, túi 30 ô, chi tiết, so sánh, cường hoá (M1) |
+| `scripts/ui/intro_screen.gd` | Cảnh mở đầu 5 trang (C1-10) |
+| `scripts/ui/create_screen.gd` | Tạo nhân vật + ô xem trước động (C1-02); lớp `Preview` dùng lại ở túi đồ |
+| `scripts/ui/dialog_box.gd` | Hộp thoại có chân dung; chờ khi đang mở bảng (C1-11) |
+| `scripts/ui/shop_panel.gd` | Cửa hàng làng, Thương nhân lữ hành, Xưởng Rèn, bán đồ — phím E (C1-30, 32) |
+| `scripts/ui/pause_menu.gd` | Menu tạm dừng + Cài đặt (C1-42) |
+| `scripts/ui/world_map_panel.gd` | Bản đồ lục địa, đi giữa map — phím N (M4.1) |
+| `scripts/core/settings.gd` | Cài đặt âm lượng, toàn màn hình → `user://settings.cfg`; tạo bus Music, SFX (C1-42) |
+| `scripts/audio/audio_manager.gd` | Phát hiệu ứng (10 kênh, chống lặp 0,05 giây) và nhạc nền vòng lặp có mờ dần (C1-40, 41) |
+| `assets/audio/sfx/*.wav`, `assets/audio/music/*.wav` | Âm thanh do `tools/audio/gen_audio.py` sinh — không sửa tay |
 | `scripts/ui/talent_panel.gd` | Bảng Thiên phú: hiệu ứng, kỹ năng L, hiệu ứng phụ, luyện cấp (M2) |
 | `scripts/ui/screens.gd` | Màn hình tiêu đề, Lễ Thức Tỉnh, chiến thắng |
 | `scripts/main.gd` | Điểm vào + chế độ smoke test |
-| `tests/run_tests.gd` | 52 test logic chạy headless; chạy một phần bằng `-- --only=<chuỗi trong tên test>` |
+| `tests/run_tests.gd` | 64 test logic chạy headless; chạy một phần bằng `-- --only=<chuỗi trong tên test>` |
+| `tools/audio/*.py` (ngoài `godot/`) | Sinh âm thanh bằng code (thư viện chuẩn Python): `python tools/audio/gen_audio.py [id …]`; danh sách id ở `tools/audio/README.md` |
+| `godot/export_presets.cfg`, `tools/build_windows.sh` | Preset xuất Windows và script build `build/ThienPhuKhaiGioi.exe` (C1-50) |
 | `tools/art/*.py` (ngoài `godot/`) | Bộ sinh hình pixel art (Python 3 + Pillow): `pixel.py` thư viện vẽ, `builders.py` dáng nhân vật/quái, `catalog.py` danh mục sprite, `icons.py`, `env.py`, `build_all.py`. Quy trình ở skill `.claude/skills/game-art/SKILL.md` |
 | `tools/gen_world_doc.py` (ngoài `godot/`) | Sinh `docs/06-ban-do-quai-boss.md` từ công thức chỉ số quái; chạy `python tools/gen_world_doc.py docs/06-ban-do-quai-boss.md` (cần Python 3) |
+
+### 2.3.2. Build file chạy Windows (C1-50)
+
+1. Cài export templates Godot 4.7.2 **một lần** (1,28 GB): Godot editor → *Editor → Manage Export Templates → Download and Install*, hoặc giải nén `Godot_v4.7.2-stable_export_templates.tpz` vào `%APPDATA%\Godot\export_templates\4.7.2.stable\`.
+2. `bash tools/build_windows.sh` → `build/ThienPhuKhaiGioi.exe` (pck nhúng trong exe; thư mục `build/` không commit).
+3. Preset ở `godot/export_presets.cfg` (đã bỏ khỏi `.gitignore`): x86_64, loại `tests/*`, kèm `assets/*.json` (manifest hình đọc bằng `FileAccess`).
 
 ### 2.3.1. Quy trình sinh hình (G1)
 
@@ -164,7 +185,7 @@ Giai đoạn `windup` là cửa sổ để người chơi né; `world_view.gd` v
 | Trên Windows | `%APPDATA%\Godot\app_userdata\Thiên Phú Khai Giới\save.json` |
 | Smoke test | `user://smoke_save.json` (tự xoá sau khi chạy, không đụng save thật) |
 | Định dạng | JSON một dòng |
-| Phiên bản hiện tại | **4** (M1 thêm trang bị, M2 thêm Thiên phú và công trình, M3 thêm lớp, INT/LUK, điểm Đạo Tặc cướp). Save v1–v3 được chuyển đổi tự động khi nạp |
+| Phiên bản hiện tại | **6** (M1 trang bị · M2 Thiên phú, công trình · M3 lớp, INT/LUK, điểm cướp · v5 M4.1 nhiều bản đồ · **v6 C1**: tên, ngoại hình, nhiệm vụ/thoại chương 1, lưới 40 ô, boss hiếm, Thương nhân, Vườn). Save v1–v5 được chuyển đổi tự động khi nạp |
 
 ```json
 {
@@ -185,7 +206,11 @@ Giai đoạn `windup` là cửa sổ để người chơi né; `world_view.gd` v
   "talent_level": 3, "essence": 2, "tinh_kim": 1, "potions": 2, "herbs": 1,
   "pets": [{"kind": "wolf", "level": 4}], "copied_skills": ["pounce"], "element": "kim",
   "buildings": {"lumber_3": 60.0, "temple": 300.0}, "build_clock": 845.2,
-  "class_id": "tho-san", "stolen": ["agi", "str", "agi"]
+  "class_id": "tho-san", "stolen": ["agi", "str", "agi"],
+  "name": "Lâm Phong", "look": {"gender": "nu", "skin": 1, "hair_style": "duoi", "hair_color": 2},
+  "quest_step": 7, "quest_progress": 1, "seen_dialogs": ["q1", "q2"],
+  "rare_boss_at": 1792470000.0, "evo_essence": 0, "herb_timer": 42.0,
+  "merchant": {"until": 1792429600.0, "items": [{"id": 31, "slot": "ring", "rarity": "blue", "price": 160, "…": "…"}]}
 }
 ```
 
@@ -195,6 +220,8 @@ Giai đoạn `windup` là cửa sổ để người chơi né; `world_view.gd` v
 - Đổi cấu trúc save thì **tăng `Profile.VERSION`** và cho `load_dict()` đọc được cả bản cũ: trường mới đọc bằng `d.get(khoá, mặc định)`. Cách làm mẫu: chuyển đổi v1 → v2 ở M1. Save có version lớn hơn bản game hiện tại sẽ bị từ chối.
 - `boss_respawn_at` tính theo `play_seconds` (giây đã chơi), không theo giờ thực, nên boss không hồi khi tắt game.
 - `buildings[khoá]` là thời điểm xong theo `build_clock`. Khác `play_seconds`, `build_clock` **chạy cả khi offline** (cộng trong `apply_offline`), nên công trình xây xong trong lúc tắt game. Công trình xong khi `build_clock >= buildings[khoá]`.
+- Khi chuyển từ v5 (C1): tên `Khai Giới Giả`, ngoại hình mặc định; `quest_step` = 12 nếu đã hạ Sói Chúa, ngược lại 5 (bỏ qua phần hướng dẫn); lưới vùng 1 có 10 ô được thêm 30 ô (`Explore.upgrade_region1`), ô cũ `zone` = 1. `tiles[].zone` = 1 Bìa Rừng · 2 Rừng Sâu · 3 Lõi Sương.
+- `rare_boss_at`, `merchant.until` là **giờ Unix** (boss hiếm 2 lần/ngày, thương nhân 1 giờ theo giờ thực) — khác `boss_respawn_at` tính theo giờ chơi.
 - Khi chuyển từ v3: `class_id` = `kiem-khach`, `points` thêm `int`, `luk` = 0, `stolen` rỗng. Món đồ có thêm trường `style` (`"bow"` = vũ khí tên Cung), save cũ không có thì là `""`.
 - `stolen`: thuộc tính Đạo Tặc cướp được, cũ → mới; tối đa = cấp nhân vật, đầy thì bỏ phần tử đầu. Không bị tẩy điểm.
 - Khi chuyển từ v2: Xưởng Gỗ đã chiếm và Thôn đã nâng được đánh dấu xong ngay (`0.0`), để người chơi cũ không bị mất sản lượng.
@@ -224,6 +251,9 @@ Dạng axial `(q, r)`, lục giác đỉnh nhọn. Khoảng cách: `(|dq| + |dr|
 | `attack` | J, chuột trái (giữ) |
 | `skill` | K, chuột phải (= kỹ năng 1) |
 | `skill_1` … `skill_4` | 1 2 3 4 (M3) |
+| `interact` | E — cửa hàng khi đứng trong làng (C1) |
+| `auto_fight` | Z — bật/tắt Tự đánh (C1) |
+| `toggle_world` | N — bản đồ lục địa (M4.1) |
 | `talent` | L |
 | `dodge` | Space |
 | `toggle_stats` | C |
@@ -231,7 +261,7 @@ Dạng axial `(q, r)`, lục giác đỉnh nhọn. Khoảng cách: `(|dq| + |dr|
 | `toggle_inventory` | I, B |
 | `toggle_talent` | T |
 | `potion` | Q |
-| `close_panel` | Esc |
+| `close_panel` | Esc — đóng bảng; không có bảng nào thì mở **menu tạm dừng** (C1) |
 
 Chơi chỉ bằng bàn phím: nếu chuột đứng yên quá 1,5 giây mà người chơi đang di chuyển, hướng chém đi theo hướng di chuyển.
 
@@ -250,7 +280,8 @@ Chơi chỉ bằng bàn phím: nếu chuột đứng yên quá 1,5 giây mà ng�
 - 1 test đồ hoạ (`AR-35`): mọi quái có đủ 5 hoạt ảnh và nạp được ảnh; mọi Thiên phú, ô đồ, đồ Cam, kỹ năng có icon.
 - 13 test M3 (`CL-T1…T5`, `CB-T1`, `CB-T3…T6`, `TP-T1…T3`), khớp mục 5.10 của 03-mvp-spec. `TL-B` chạy cho **2 lớp × 20 Thiên phú**, bot mặc bộ đồ chuẩn (`_standard_kit`) vì công thức quái giả định người chơi mặc đồ đúng vùng.
 - Chạy một phần: `... --script res://tests/run_tests.gd -- --only=TL-B` (TL-B riêng khoảng 13 giây).
-- Kết quả gần nhất: **52/52 qua**. Toàn bộ chạy khoảng 1 phút vì có 2 mô phỏng 15 phút chơi và 20 trận boss.
+- 12 test C1 (`C1-T1…T12`, 08 mục 3.4). Hồ sơ test mặc định đặt `quest_step = 12` (đã qua hướng dẫn) để không sinh quái nhiệm vụ/thoại trong test cũ; test chuỗi nhiệm vụ dùng hồ sơ mới. Test thời gian thực đặt `GameWorld.debug_now`.
+- Kết quả gần nhất: **64/64 qua**. Toàn bộ chạy khoảng 1 phút vì có 2 mô phỏng 15 phút chơi và 20 trận boss.
 - **Đọc log, không chỉ dòng tổng kết**: có `SCRIPT ERROR` trong log thì coi như hỏng, kể cả khi test báo `ok` (xem mục 7).
 
 ### 5.2. Smoke test (có cửa sổ, khoảng 1–2 phút)
@@ -297,6 +328,10 @@ Chạy bot trên nhiều seed, có né và không né, rồi chỉnh HP/ATK boss
 | D19 | Chỉ số quái **tính lúc sinh quái** từ công thức (`Formulas.mob_stats`) thay vì bảng số trong dữ liệu (M3, Q22) | Một công thức cho 9 vùng, thêm quái chỉ cần khai báo loại (arch); tài liệu 06 sinh từ cùng công thức | Đổi công thức phải sửa **2 chỗ**: `formulas.gd` và `tools/gen_world_doc.py`; test CB-T1 bắt lệch |
 | D20 | Kỹ năng lớp khai báo dữ liệu (`classes.gd`), hiệu ứng viết trong `GameWorld.use_skill()` theo `id` | Như D14: 8 kỹ năng mỗi cái một cơ chế riêng | Thêm lớp mới: thêm khối dữ liệu + nhánh `match` cho kỹ năng mới |
 | D21 | Khoá hang boss khi boss xuất hiện (CB-23) | Chặn đánh xa từ ngoài hang | Người chơi muốn bỏ chạy phải gục hoặc hạ boss — xem lại khi playtest |
+| D22 | Ngoại hình = sprite thân (lớp × giới tính × da) + sprite tóc vẽ xám, tô màu bằng `modulate` lúc vẽ | 288 tổ hợp chỉ cần 20 sheet | Tóc vẽ trên tay/vũ khí → sheet tóc đã khoét chỗ tay/vũ khí che (`layer="hair"`) |
+| D23 | Âm thanh: logic chỉ ghi id vào `GameWorld.sfx` (tối đa 32/khung), `main.gd` chuyển cho `AudioManager` | Logic vẫn chạy headless, test không cần âm thanh | Thêm âm mới: gọi `_sfx("id")` + sinh file cùng id |
+| D24 | Thoại và nhiệm vụ là dữ liệu (`story.gd`); trạng thái kiểm theo nhịp 0,5 giây (`_check_quest_state`) + sự kiện đếm (`quest_event`) | Thêm bước mới chỉ cần 1 dòng dữ liệu + 1 nhánh `match` | Bước kiểu trạng thái có độ trễ tối đa 0,5 giây |
+| D25 | Thời gian thực (boss hiếm, thương nhân) dùng `GameWorld.now_unix()`, test ghi đè bằng `debug_now` | Kịch bản "2 lần/ngày", "tồn tại 1 giờ" | Người chơi đổi giờ máy để gọi boss — chống gian lận ở server (KT-10) |
 | D16 | Đồng hồ xây riêng (`build_clock`) thay vì giờ thực | Không phụ thuộc đồng hồ máy (người chơi chỉnh giờ để gian lận); vẫn chạy offline qua `apply_offline` | Phải nhớ cộng `build_clock` ở cả `update()` và `apply_offline()` |
 
 ## 7. Lỗi đã gặp và cách xử lý
@@ -323,6 +358,10 @@ Ghi lại để không lặp lại khi viết thêm code.
 | Test báo `ok` nhưng log có `unsupported format character` (M3) | Câu báo lỗi trong `_check()` chứa `%` (ví dụ "+12% + 18%") rồi dùng toán tử `%` | Viết `%%`; lại một lần nữa: thấy `SCRIPT ERROR` là coi như hỏng |
 | Vá file bằng Python qua heredoc làm `\n` trong chuỗi GDScript thành xuống dòng thật (lặp lại ở M3) | Lớp shell/heredoc ăn mất dấu `\` | Viết script vá ra file riêng bằng công cụ Write, dùng `chr(92)` cho dấu `\` |
 | `Cannot infer the type of "before"` (M3) | `:=` với `Array.duplicate()` của biến kiểu Variant | `var before: Array = ...` |
+| 29 file bị đổi sang CRLF (C1) | Python trên Windows ghi file chế độ văn bản → `\r\n` | `.gitattributes` `* text=auto eol=lf`; script vá dùng thư viện ghi nhị phân LF |
+| `String formatting error: unsupported format character` (C1, 2 lần) | Chuỗi có `%` theo sau là khoảng trắng/ngoặc ("20% (%d)") | Viết `%%`; dò bằng `grep "ERROR"` trong log test |
+| Hộp thoại hiện đè lên bảng túi đồ/cửa hàng (C1) | Sự kiện thoại tới lúc bảng đang mở | `DialogBox.hold` khi có bảng mở |
+| Lưới khai phá 40 ô tràn ra ngoài bảng M (Spec_Notes N10) | Cỡ ô cố định 46 px | `hex_map._fit()` tính cỡ ô theo khung |
 | Lệnh bash treo tới hết thời gian chờ | Lỡ để `cat > file` không có đầu vào (chờ bàn phím) | Không dùng `cat >` không kèm heredoc |
 
 ## 8. Hạn chế và việc cần làm

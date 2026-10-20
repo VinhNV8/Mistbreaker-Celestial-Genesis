@@ -97,6 +97,16 @@ Ký hiệu như [04](04-ke-hoach-tien-do.md): ✅ xong · 🟡 một phần · �
 | AR-43 | Âm thanh, nhạc (DH-12, DH-13) | G2 |
 | AR-44 | Thay hình sinh bằng code bằng hình hoạ sĩ vẽ (giữ kích thước, manifest) | Khi có ngân sách |
 
+### 2.5. Bổ sung ở đợt C1 (08)
+
+| Mã | Hạng mục | Trạng thái | Ghi chú |
+| --- | --- | --- | --- |
+| AR-50 | Ngoại hình tuỳ chọn: 12 sheet thân (2 lớp × 2 giới tính × 3 da) + 8 sheet tóc xám (2 lớp × 4 kiểu) | ✅ | `humanoid(layer="base"/"hair")`, tô màu tóc lúc vẽ (D22) |
+| AR-51 | NPC: Trưởng làng Thạch Lão, Thương nhân | ✅ | Đứng trong làng, chân dung hộp thoại |
+| AR-52 | Boss hiếm Lão Thụ Sương Mù (×2,2), Gốc Rễ, icon Vỏ Lão Thụ | ✅ | Dáng treant + `size_mul` |
+| AR-53 | Hiệu ứng: cường hoá theo bậc (N8), Bia Đá theo hạng, Rễ Trói, Lá Độc, vũng độc, cảnh mở đầu, bản đồ lục địa | ✅ | Vẽ vector bằng `_draw` |
+| AR-54 | Âm thanh 16 hiệu ứng + 4 nhạc nền | ✅ | `tools/audio` (sinh bằng code, phiên game-bc) |
+
 ## 3. Kết quả (20/10/2026)
 
 | Hạng mục | Kết quả |
