@@ -10,6 +10,9 @@ const UiTheme = preload("res://scripts/ui/ui_theme.gd")
 const Monsters = preload("res://scripts/data/monsters.gd")
 const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
 const Classes = preload("res://scripts/data/classes.gd")
+const Resources = preload("res://scripts/data/resources.gd")
+## C1-03: tài nguyên hiện trên HUD (icon + số, rê chuột xem chú thích).
+const HUD_RESOURCES := ["gold", "wood", "torches", "stones", "essence"]
 const Maps = preload("res://scripts/data/maps.gd")
 
 var _tl: PanelContainer
@@ -26,6 +29,8 @@ var _power: Label
 
 var _tr: PanelContainer
 var _resources: Label
+var _res_labels := {}
+var _res_slots: Array = []
 
 var _obj: PanelContainer
 var _objectives: Array[Label] = []
@@ -96,7 +101,25 @@ func _ready() -> void:
 
 	_tr = PanelContainer.new()
 	var trv := UiTheme.vbox(2)
-	_resources = UiTheme.label("")
+	_resources = UiTheme.label("", "Small")
+	var res_row := UiTheme.hbox(12)
+	for rid in HUD_RESOURCES:
+		var info := Resources.info(rid)
+		var cell := UiTheme.hbox(4)
+		cell.tooltip_text = "%s — %s" % [info.name, info.desc]
+		var ic := TextureRect.new()
+		ic.texture = SpriteLib.icon("res-" + str(info.icon))
+		ic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		ic.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		ic.custom_minimum_size = Vector2(26, 26)
+		cell.add_child(ic)
+		var l := UiTheme.label("0")
+		l.add_theme_font_override("font", UiTheme.bold_font())
+		cell.add_child(l)
+		_res_labels[rid] = l
+		_res_slots.append(cell)
+		res_row.add_child(cell)
+	trv.add_child(res_row)
 	trv.add_child(_resources)
 	_map_name = UiTheme.label("", "Small")
 	trv.add_child(_map_name)
@@ -195,6 +218,9 @@ func _ready() -> void:
 	add_child(_travel)
 
 	_ignore_mouse(self)
+	# Ô tài nguyên nhận chuột để hiện chú thích (C1-03).
+	for cell in _res_slots:
+		cell.mouse_filter = MOUSE_FILTER_PASS
 
 
 func _ignore_mouse(node: Node) -> void:
@@ -305,7 +331,7 @@ func update_from(w: GameWorld) -> void:
 	var t := w.talent()
 	var rank_color := Talents.rank_color(t.rank)
 
-	_level.text = "Cấp %d" % p.level
+	_level.text = "%s · Cấp %d" % [p.name, p.level]
 	_talent.text = "%s · %s" % [t.rank, t.name]
 	_talent.add_theme_color_override("font_color", rank_color)
 	_hp_bar.value = maxf(0.0, pl.hp) / float(s.max_hp)
@@ -315,7 +341,7 @@ func update_from(w: GameWorld) -> void:
 	var need := Formulas.exp_to_next(p.level)
 	_exp_bar.value = minf(1.0, float(p.xp) / need)
 	_exp_text.text = "EXP %d / %d" % [p.xp, need]
-	_power.text = "Lực chiến %d   ·   Đá Cường Hoá %d" % [w.combat_power(), p.stones]
+	_power.text = "Lực chiến %d" % w.combat_power()
 	_points.visible = p.unspent > 0
 	_points.text = "+%d điểm tiềm năng — nhấn C" % p.unspent
 
@@ -324,7 +350,9 @@ func update_from(w: GameWorld) -> void:
 	if p.torches < torch_cap:
 		var left := maxi(0, ceili(Explore.torch_regen_sec(p) - p.torch_timer))
 		torch_note = "  (+1 sau %d:%02d)" % [left / 60, left % 60]
-	_resources.text = "Vàng %d    Gỗ %d    Đuốc %d/%d%s" % [int(p.gold), int(p.wood), p.torches, torch_cap, torch_note]
+	for rid in HUD_RESOURCES:
+		_res_labels[rid].text = str(Resources.value(p, rid)) + ("/%d" % torch_cap if rid == "torches" else "")
+	_resources.text = ("Đuốc hồi%s · rê chuột vào icon để xem chú thích" % torch_note) if torch_note != "" else "Rê chuột vào icon để xem chú thích"
 
 	var owned := Explore.owned_count(p.tiles)
 	var total := Explore.explore_total(p.tiles)

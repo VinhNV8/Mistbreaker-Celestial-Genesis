@@ -4,52 +4,130 @@ extends "res://scripts/ui/modal.gd"
 const Items = preload("res://scripts/core/items.gd")
 const ItemData = preload("res://scripts/data/items.gd")
 const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
+const Classes = preload("res://scripts/data/classes.gd")
+const Resources = preload("res://scripts/data/resources.gd")
+const CreateScreen = preload("res://scripts/ui/create_screen.gd")
 
 const DETAIL_W := 300.0
 
 var _selected_id := -1
+## "bag" | "res"
+var _tab := "bag"
 
 
 func _render(content: VBoxContainer) -> void:
 	var p = world.profile
 	_header(content, "Túi đồ · Lực chiến %d" % world.combat_power(), "Đóng (I)")
-	content.add_child(UiTheme.label(
-		"Vàng %d   ·   Đá Cường Hoá %d   ·   Tinh Kim %d   ·   Túi %d/%d" % [int(p.gold), p.stones, p.tinh_kim, p.inventory.size(), ItemData.BAG_SIZE], "Muted"
-	))
+	var tabs := UiTheme.hbox(8)
+	for pair in [["bag", "Túi đồ %d/%d" % [p.inventory.size(), ItemData.BAG_SIZE]], ["res", "Tài nguyên"]]:
+		var tb := UiTheme.button(pair[1], _tab == pair[0])
+		tb.name = "Tab_" + pair[0]
+		var key: String = pair[0]
+		tb.pressed.connect(func():
+			_tab = key
+			refresh())
+		tabs.add_child(tb)
+	content.add_child(tabs)
 	if Items.find_item(p, _selected_id).is_empty():
 		_selected_id = -1
 
 	var body := UiTheme.hbox(18)
-	body.add_child(_equipped_column(p))
-	body.add_child(_bag_grid(p))
-	body.add_child(_detail(p))
+	body.add_child(_character_column(p))
+	if _tab == "res":
+		body.add_child(_resource_list(p))
+	else:
+		body.add_child(_bag_grid(p))
+		body.add_child(_detail(p))
 	content.add_child(body)
 
 
-# ------------------------------------------------------------------ cột trái: đang mặc
+# ------------------------------------------------------------------ cột trái: nhân vật (C1-04, Spec_Notes N7)
+
+const PAPER_LEFT := ["helm", "armor", "gloves", "boots"]
+const PAPER_RIGHT := ["weapon", "necklace", "ring", "amulet"]
 
 
-func _equipped_column(p) -> VBoxContainer:
-	var col := UiTheme.vbox(4)
-	col.custom_minimum_size.x = 250
-	col.add_child(UiTheme.label("ĐANG MẶC", "Eyebrow"))
-	for slot in ItemData.SLOT_ORDER:
-		var item: Dictionary = p.equipment.get(slot, {})
-		var slot_name: String = ItemData.SLOTS[slot].name
-		var text := "%s: %s" % [slot_name, Items.display_name(item) if not item.is_empty() else "— trống —"]
-		var b := _item_button(item, text)
-		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		b.custom_minimum_size = Vector2(250, 38)
-		if item.is_empty():
-			# ô trống: hiện mờ icon loại đồ
-			b.icon = SpriteLib.icon("item-" + slot)
-			b.add_theme_color_override("icon_normal_color", Color(1, 1, 1, 0.25))
-			b.add_theme_color_override("icon_disabled_color", Color(1, 1, 1, 0.25))
-		col.add_child(b)
+func _character_column(p) -> VBoxContainer:
+	var col := UiTheme.vbox(6)
+	col.custom_minimum_size.x = 300
+	var t: Dictionary = world.talent()
+	var title := UiTheme.label("%s" % p.name, "Heading")
+	col.add_child(title)
+	col.add_child(UiTheme.label("%s · Cấp %d · %s %s" % [Classes.get_class_def(p.class_id).name, p.level, t.rank, t.name], "Small"))
+	# Búp bê giấy: 4 ô trái · chân dung · 4 ô phải
+	var doll := UiTheme.hbox(6)
+	doll.add_child(_slot_column(p, PAPER_LEFT))
+	var frame := PanelContainer.new()
+	frame.add_theme_stylebox_override("panel", UiTheme.box(Color(0, 0, 0, 0.25), 10, 1, UiTheme.LINE, 4))
+	var portrait = CreateScreen.Preview.new()
+	portrait.custom_minimum_size = Vector2(160, 250)
+	portrait.class_id = p.class_id
+	portrait.look = p.look
+	portrait.mouse_filter = MOUSE_FILTER_IGNORE
+	frame.add_child(portrait)
+	doll.add_child(frame)
+	doll.add_child(_slot_column(p, PAPER_RIGHT))
+	col.add_child(doll)
+	var s: Dictionary = world.stats
+	var grid := GridContainer.new()
+	grid.columns = 2
+	grid.add_theme_constant_override("h_separation", 16)
+	for pair in [
+		["Lực chiến", str(world.combat_power())], ["HP", str(s.max_hp)], ["MP", str(s.max_mp)],
+		["Tấn công", str(int(s.atk))], ["Phòng thủ", "%.1f" % s.def], ["Chí mạng", "%.1f%%" % (s.crit * 100.0)],
+		["Tốc đánh", "%d%%" % roundi(s.atk_speed * 100.0)], ["Né tránh", "%.1f%%" % (s.evasion * 100.0)],
+	]:
+		grid.add_child(UiTheme.label(pair[0], "Small"))
+		var v := UiTheme.label(pair[1])
+		v.add_theme_font_override("font", UiTheme.bold_font())
+		grid.add_child(v)
+	col.add_child(grid)
 	var bonus := Items.equipment_bonus(p.equipment)
 	for set_id in bonus.sets:
 		var set_def: Dictionary = ItemData.SETS[set_id]
 		col.add_child(UiTheme.label("%s (%d/6)" % [set_def.name, bonus.sets[set_id]], "Small"))
+	return col
+
+
+func _slot_column(p, slots: Array) -> VBoxContainer:
+	var v := UiTheme.vbox(6)
+	for slot in slots:
+		var item: Dictionary = p.equipment.get(slot, {})
+		var b := _item_button(item, "")
+		b.custom_minimum_size = Vector2(58, 58)
+		b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		b.expand_icon = true
+		var slot_name: String = ItemData.SLOTS[slot].name
+		b.tooltip_text = "%s: %s" % [slot_name, Items.display_name(item) if not item.is_empty() else "trống"]
+		if item.is_empty():
+			b.icon = SpriteLib.icon("item-" + slot)
+			b.add_theme_color_override("icon_normal_color", Color(1, 1, 1, 0.25))
+			b.add_theme_color_override("icon_disabled_color", Color(1, 1, 1, 0.25))
+			b.disabled = true
+		v.add_child(b)
+	return v
+
+
+## C1-03: giải thích 8 loại tài nguyên.
+func _resource_list(p) -> VBoxContainer:
+	var col := UiTheme.vbox(6)
+	col.custom_minimum_size.x = 400
+	col.add_child(UiTheme.label("TÀI NGUYÊN", "Eyebrow"))
+	for r in Resources.LIST:
+		var row := UiTheme.hbox(10)
+		var ic := TextureRect.new()
+		ic.texture = SpriteLib.icon("res-" + str(r.icon))
+		ic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		ic.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		ic.custom_minimum_size = Vector2(36, 36)
+		row.add_child(ic)
+		var v := UiTheme.vbox(0)
+		var head := UiTheme.label("%s: %d" % [r.name, Resources.value(p, r.id)])
+		head.add_theme_font_override("font", UiTheme.bold_font())
+		v.add_child(head)
+		v.add_child(UiTheme.label(r.desc, "Small", 340))
+		row.add_child(v)
+		col.add_child(row)
 	return col
 
 

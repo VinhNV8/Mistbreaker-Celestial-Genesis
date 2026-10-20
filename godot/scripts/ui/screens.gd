@@ -79,7 +79,7 @@ static func title(has_save: bool, on_new: Callable, on_continue: Callable) -> Co
 
 
 ## Lễ Thức Tỉnh. on_accept nhận id Thiên phú đã chọn.
-static func awakening(rng: Callable, on_accept: Callable) -> Control:
+static func awakening(rng: Callable, on_accept: Callable, player_name := "") -> Control:
 	var page := _page()
 	var screen: Control = page[0]
 	var col: VBoxContainer = page[1]
@@ -89,7 +89,7 @@ static func awakening(rng: Callable, on_accept: Callable) -> Control:
 	var heading := _centered("Bia Đá Thiên Đạo", "Heading")
 	heading.add_theme_font_size_override("font_size", 34)
 	col.add_child(heading)
-	var speech := _centered("Trưởng làng: “Đặt tay lên Bia Đá, để Thiên Đạo phán xét con.”")
+	var speech := _centered("Trưởng làng Thạch Lão: “%sĐặt tay lên Bia Đá, để Thiên Đạo phán xét con.”" % (player_name + ", " if player_name != "" else ""))
 	speech.add_theme_color_override("font_color", Color("#e4d4ae"))
 	col.add_child(speech)
 
@@ -111,7 +111,7 @@ static func awakening(rng: Callable, on_accept: Callable) -> Control:
 	for r in Talents.RANK_ORDER:
 		rates.append("%s %s%%" % [r, str(Talents.RANK_WEIGHT[r])])
 	col.add_child(_centered(
-		"Có thể chọn lại bất kỳ lần quay nào. Bảo hiểm: nếu cả 4 lần đều dưới hạng B, lần cuối được nâng lên hạng B.\nTỉ lệ theo hạng: %s. Bể quay gồm 20 Thiên phú. Chọn lớp nhân vật ở bước tiếp theo." % " · ".join(rates),
+		"Có thể chọn lại bất kỳ lần quay nào. Bảo hiểm: nếu cả 4 lần đều dưới hạng B, lần cuối được nâng lên hạng B.\nTỉ lệ theo hạng: %s. Bể quay gồm 20 Thiên phú. Mọi Thiên phú đều dùng được với cả hai lớp." % " · ".join(rates),
 		"Small", 600
 	))
 

@@ -18,6 +18,8 @@ const Talents = preload("res://scripts/data/talents.gd")
 const Items = preload("res://scripts/core/items.gd")
 const Screens = preload("res://scripts/ui/screens.gd")
 const UiTheme = preload("res://scripts/ui/ui_theme.gd")
+const IntroScreen = preload("res://scripts/ui/intro_screen.gd")
+const CreateScreen = preload("res://scripts/ui/create_screen.gd")
 
 ## Phím mặc định. Nếu đã khai báo action cùng tên trong Project Settings > Input Map thì dùng bản đó.
 const KEY_ACTIONS := {
@@ -314,18 +316,31 @@ func _on_new_game() -> void:
 	dlg.popup_centered()
 
 
+## Kịch bản mục 9: Mở đầu (C1-10) → Tạo nhân vật (C1-02) → Lễ Thức Tỉnh.
+var _pending_hero := {}
+
+
 func _start_awakening() -> void:
 	SaveSystem.clear_save()
-	_set_screen(Screens.awakening(RngUtil.make(randi()), _on_talent_chosen))
+	_set_screen(IntroScreen.new(_on_intro_done))
+
+
+func _on_intro_done() -> void:
+	_set_screen(CreateScreen.new(_on_hero_created))
+
+
+func _on_hero_created(hero: Dictionary) -> void:
+	_pending_hero = hero
+	_set_screen(Screens.awakening(RngUtil.make(randi()), _on_talent_chosen, str(hero.name)))
 
 
 func _on_talent_chosen(talent_id: String) -> void:
-	_set_screen(Screens.class_select(Talents.get_talent(talent_id).name, func(class_id): _on_class_chosen(talent_id, class_id)))
-
-
-func _on_class_chosen(talent_id: String, class_id: String) -> void:
+	var hero := _pending_hero
 	var p := Profile.new()
-	p.setup(talent_id, RngUtil.make(randi()), _now(), class_id)
+	p.setup(talent_id, RngUtil.make(randi()), _now(), str(hero.get("class_id", "kiem-khach")))
+	p.name = str(hero.get("name", p.name))
+	if hero.has("look"):
+		p.look = hero.look
 	SaveSystem.save_profile(p)
 	_start_world(p)
 	hud.log_message("Quái Sương đang tràn vào Rừng Sương. Hãy đánh chúng, lên cấp và khai phá vùng đất (phím M).")
@@ -451,16 +466,26 @@ func _run_smoke(dir: String) -> void:
 	await _shot(dir, "01-title")
 
 	_on_new_game()
+	await _wait(0.6)
+	(_screen as IntroScreen).jump(1)
+	await _wait(0.4)
+	await _shot(dir, "01b-intro")
+	_press("SkipButton")
+	await _wait(0.3)
+	var cs := _screen as CreateScreen
+	cs.set_name_for_test("Lâm Phong")
+	cs._look = {"gender": "nu", "skin": 1, "hair_style": "duoi", "hair_color": 2}
+	cs._refresh()
+	await _wait(1.0)
+	await _shot(dir, "02-create")
+	_press("CreateButton")
 	await _wait(0.3)
 	_press("RollButton")
 	await _wait(1.5)
 	_press("RollButton")
 	await _wait(1.5)
-	await _shot(dir, "02-awakening")
+	await _shot(dir, "02b-awakening")
 	_press("AcceptButton")
-	await _wait(0.5)
-	await _shot(dir, "02b-class")
-	_press("Class_kiem-khach")
 	await _wait(0.5)
 
 	bot = _smoke_bot

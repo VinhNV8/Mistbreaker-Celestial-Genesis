@@ -40,89 +40,135 @@ def _death(frame_fn, pivot, direction=1):
 
 
 # ====================================================================== người
+HAIR_STYLES = ("ngan", "dai", "bui", "duoi")
+## Tóc vẽ bằng dải xám để game tô màu (modulate) theo màu tóc người chơi chọn (C1-02).
+HAIR_GREY = [(70, 70, 76, 255), (120, 120, 126, 255), (178, 178, 184, 255), (236, 236, 240, 255)]
+
+
 def humanoid(spec):
     """Nhân vật hình người 32×32. spec: skin, hair, cloth, pants, boots, weapon ('sword'|'bow'),
-    hood (bool), cape (dải màu hoặc None)."""
+    hood (bool), cape, collar, gender ('nam'|'nu'), hair_style (HAIR_STYLES | 'none'),
+    layer: 'full' (mặc định) | 'base' (không tóc) | 'hair' (chỉ tóc, dải xám, đã khoét chỗ tay/vũ khí che)."""
     skin = _ramp(spec, "skin", "skin")
-    hair = _ramp(spec, "hair", "hair_dark")
+    layer = spec.get("layer", "full")
+    hair = HAIR_GREY if layer == "hair" else _ramp(spec, "hair", "hair_dark")
     cloth = _ramp(spec, "cloth", "cloth_blue")
     pants = _ramp(spec, "pants", "leather")
     boots = _ramp(spec, "boots", "leather")
     cape = spec.get("cape")
     cape = R[cape] if isinstance(cape, str) else cape
     weapon = spec.get("weapon", "sword")
-    hood = spec.get("hood", False)
+    hood = spec.get("hood", False) and layer == "full"
     trim = _ramp(spec, "trim", "gold")
+    female = spec.get("gender", "nam") == "nu"
+    style = spec.get("hair_style", "ngan")
+    collar = spec.get("collar")
+    collar = R[collar] if isinstance(collar, str) else collar
+
+    def draw_hair(cv, hy):
+        if style == "none":
+            return
+        if style == "dai":
+            cv.shade_poly([(10.3, hy - 2), (15, hy - 2), (14.6, hy + 9), (12.5, hy + 10), (9.8, hy + 7.5)], hair)
+        if style == "duoi":
+            cv.shade_poly([(11.6, hy - 3), (13.8, hy - 1.2), (11.2, hy + 6), (8.2, hy + 8.5), (9.4, hy + 3)], hair)
+        cv.shade_ellipse(15.6, hy - 2.4, 5.5, 3.0, hair)
+        cv.shade_poly([(10.8, hy - 2), (14.6, hy - 2), (13.6, hy + 4), (11, hy + 3)], hair)
+        cv.set(18, hy - 1, hair[1])
+        cv.set(20.5, hy - 2.5, hair[2])
+        if style == "bui":
+            cv.shade_ellipse(13.6, hy - 6.0, 2.7, 2.3, hair)
+            cv.set(13.4, hy - 4.0, hair[0])
 
     def frame(bob=0, legs=((0, 0), (0, 0)), arm=60, wpn=-60, draw_pull=0.0, smear=False):
         cv = Canvas(32, 32)
-        shadow(cv, 16, 29.5, 7, 2)
         b = bob
-        # áo choàng / ống tên phía sau
+        hy = 9.5 + b
+        sx, sy = 17.5, 15.5 + b
+        a = math.radians(arm)
+        hx, hy2 = sx + math.cos(a) * 4.5, sy + math.sin(a) * 4.5
+
+        def draw_front(c):
+            """Tay gần + vũ khí (vẽ trên đầu)."""
+            if weapon == "sword":
+                w = math.radians(wpn)
+                tip = (hx + math.cos(w) * 12, hy2 + math.sin(w) * 12)
+                if smear:
+                    c.arc(sx, sy, 12, math.radians(-110), math.radians(30), (230, 240, 255, 120), 2.2)
+                c.line(hx, hy2, tip[0], tip[1], R["steel"][2], 1.8)
+                c.line(hx + math.cos(w) * 2, hy2 + math.sin(w) * 2 - 0.5, tip[0], tip[1] - 0.5, R["steel"][3])
+                pw = w + math.pi / 2
+                c.line(hx + math.cos(pw) * 2.2, hy2 + math.sin(pw) * 2.2,
+                       hx - math.cos(pw) * 2.2, hy2 - math.sin(pw) * 2.2, trim[2], 1.4)
+                c.set(hx - math.cos(w) * 2, hy2 - math.sin(w) * 2, trim[1])
+            c.line(sx, sy, hx, hy2, cloth[2], 2.4)
+            c.ellipse(hx, hy2, 1.3, 1.3, skin[2])
+            if weapon == "bow":
+                bx = hx + 1
+                c.arc(bx - 2, hy2, 7, math.radians(-75), math.radians(75), R["wood"][2], 1.6)
+                top = (bx - 2 + math.cos(math.radians(-75)) * 7, hy2 + math.sin(math.radians(-75)) * 7)
+                bot = (bx - 2 + math.cos(math.radians(75)) * 7, hy2 + math.sin(math.radians(75)) * 7)
+                mid = (bx - 2 - draw_pull, hy2)
+                c.line(top[0], top[1], mid[0], mid[1], (230, 230, 220, 255))
+                c.line(bot[0], bot[1], mid[0], mid[1], (230, 230, 220, 255))
+                if draw_pull > 0:
+                    c.line(mid[0], hy2, bx + 6, hy2, R["wood"][3])
+                    c.set(bx + 6, hy2, R["steel"][3])
+
+        if layer == "hair":
+            draw_hair(cv, hy)
+            # khoét chỗ tay/vũ khí nằm trước tóc (tính cả viền)
+            mask = Canvas(32, 32)
+            draw_front(mask)
+            mask.outline((0, 0, 0, 255))
+            for y in range(32):
+                for x in range(32):
+                    if mask.px[y][x] is not None and mask.px[y][x][3] >= 200:
+                        cv.px[y][x] = None
+            return _finish(cv)
+
+        shadow(cv, 16, 29.5, 7, 2)
         if cape:
             cv.shade_poly([(12, 14 + b), (16, 14 + b), (14, 26 + b), (9, 25 + b)], cape)
         if weapon == "bow":
             cv.rect(10, 12 + b, 13, 20 + b, R["leather"][1])
             for i, x in enumerate((10.5, 12)):
                 cv.set(x, 11 + b - i, R["steel"][3])
-        # chân xa
         (fx, fl), (nx, nl) = legs
+
         def leg(x0, dx, lift, rp, bp):
             top = 21 + b
             foot = 28 - lift
             cv.line(x0, top, x0 + dx, foot - 1, rp[1], 2.6)
             cv.rect(x0 + dx - 1.2, foot - 1.5, x0 + dx + 2.2, foot + 0.5, bp[1])
         leg(14.5, fx, fl, _darker(pants), _darker(boots))
-        # tay xa
         cv.line(14, 15 + b, 13 + math.cos(math.radians(arm + 40)) * 3, 19 + b, _darker(cloth)[1], 2.2)
-        # thân
-        cv.shade_poly([(11.5, 14 + b), (20.5, 14 + b), (19.5, 22.5 + b), (12.5, 22.5 + b)], cloth)
-        cv.rect(12.5, 21 + b, 19.5, 22 + b, trim[1])
-        cv.set(16, 21 + b, trim[3])
-        # chân gần
+        # thân: nữ vai hẹp hơn, vạt áo xoè
+        if female:
+            cv.shade_poly([(12.2, 14 + b), (19.8, 14 + b), (19.4, 19 + b), (20.8, 24 + b), (11.4, 24 + b), (12.8, 19 + b)], cloth)
+            cv.rect(12.8, 19 + b, 19.4, 20 + b, trim[1])
+            cv.set(16, 19 + b, trim[3])
+        else:
+            cv.shade_poly([(11.5, 14 + b), (20.5, 14 + b), (19.5, 22.5 + b), (12.5, 22.5 + b)], cloth)
+            cv.rect(12.5, 21 + b, 19.5, 22 + b, trim[1])
+            cv.set(16, 21 + b, trim[3])
+        if collar:
+            cv.shade_poly([(11.5, 13.5 + b), (20.5, 13.5 + b), (19, 16.5 + b), (13, 16.5 + b)], collar)
         leg(17, nx, nl, pants, boots)
-        # đầu
-        hy = 9.5 + b
-        cv.shade_ellipse(16.5, hy, 5.2, 4.8, skin, light=(0.35, -0.5), bands=(0.5, 0.95, 1.4))
+        cv.shade_ellipse(16.5, hy, 5.0 if female else 5.2, 4.6 if female else 4.8, skin,
+                         light=(0.35, -0.5), bands=(0.5, 0.95, 1.4))
         if hood:
             cv.shade_ellipse(15.6, hy - 2.0, 5.8, 3.6, cloth)
             cv.shade_poly([(10.5, hy - 1), (14, hy - 1), (14.5, hy + 4.5), (11, hy + 3)], cloth)
-        else:
-            cv.shade_ellipse(15.6, hy - 2.4, 5.5, 3.0, hair)
-            cv.shade_poly([(10.8, hy - 2), (14.6, hy - 2), (13.6, hy + 4), (11, hy + 3)], hair)
-            cv.set(18, hy - 1, hair[1])
-            cv.set(20.5, hy - 2.5, hair[2])
+        elif layer == "full":
+            draw_hair(cv, hy)
         cv.rect(18.6, hy, 19.6, hy + 1.6, (30, 24, 36, 255))   # mắt
         cv.set(18.6, hy, (255, 255, 255, 255))
+        if female:
+            cv.set(19.6, hy - 1, (30, 24, 36, 255))             # mi mắt
+            cv.set(20.2, hy + 3, (200, 110, 110, 255))          # môi
         cv.set(20.8, hy + 2.2, skin[1])                        # mũi
-        # tay gần + vũ khí
-        sx, sy = 17.5, 15.5 + b
-        a = math.radians(arm)
-        hx, hy2 = sx + math.cos(a) * 4.5, sy + math.sin(a) * 4.5
-        if weapon == "sword":
-            w = math.radians(wpn)
-            tip = (hx + math.cos(w) * 12, hy2 + math.sin(w) * 12)
-            if smear:
-                cv.arc(sx, sy, 12, math.radians(-110), math.radians(30), (230, 240, 255, 120), 2.2)
-            cv.line(hx, hy2, tip[0], tip[1], R["steel"][2], 1.8)
-            cv.line(hx + math.cos(w) * 2, hy2 + math.sin(w) * 2 - 0.5, tip[0], tip[1] - 0.5, R["steel"][3])
-            pw = w + math.pi / 2
-            cv.line(hx + math.cos(pw) * 2.2, hy2 + math.sin(pw) * 2.2,
-                    hx - math.cos(pw) * 2.2, hy2 - math.sin(pw) * 2.2, trim[2], 1.4)
-            cv.set(hx - math.cos(w) * 2, hy2 - math.sin(w) * 2, trim[1])
-        cv.line(sx, sy, hx, hy2, cloth[2], 2.4)
-        cv.ellipse(hx, hy2, 1.3, 1.3, skin[2])
-        if weapon == "bow":
-            bx = hx + 1
-            cv.arc(bx - 2, hy2, 7, math.radians(-75), math.radians(75), R["wood"][2], 1.6)
-            top = (bx - 2 + math.cos(math.radians(-75)) * 7, hy2 + math.sin(math.radians(-75)) * 7)
-            bot = (bx - 2 + math.cos(math.radians(75)) * 7, hy2 + math.sin(math.radians(75)) * 7)
-            mid = (bx - 2 - draw_pull, hy2)
-            cv.line(top[0], top[1], mid[0], mid[1], (230, 230, 220, 255))
-            cv.line(bot[0], bot[1], mid[0], mid[1], (230, 230, 220, 255))
-            if draw_pull > 0:
-                cv.line(mid[0], hy2, bx + 6, hy2, R["wood"][3])
-                cv.set(bx + 6, hy2, R["steel"][3])
+        draw_front(cv)
         return _finish(cv)
 
     idle = [frame(0), frame(1)]
@@ -133,7 +179,10 @@ def humanoid(spec):
                frame(1, ((1, 0), (2, 0)), arm=45, wpn=55)]
     else:
         atk = [frame(0, arm=0, draw_pull=2), frame(0, arm=0, draw_pull=4), frame(0, arm=0, draw_pull=0)]
-    hurt = [_hurt(lambda: frame(0, arm=80, wpn=-20))]
+    if layer == "hair":
+        hurt = [Canvas(32, 32).paste(frame(0, arm=80, wpn=-20), -1, 0)]
+    else:
+        hurt = [_hurt(lambda: frame(0, arm=80, wpn=-20))]
     death = _death(lambda: frame(0), (16, 29))
     return [("idle", idle), ("run", run), ("attack", atk), ("hurt", hurt), ("death", death)]
 

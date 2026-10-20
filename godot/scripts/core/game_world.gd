@@ -427,7 +427,7 @@ func boss_unlocked() -> bool:
 	if not map.gate:
 		return true
 	if map_id == "1-1":
-		return profile.boss_defeated or (profile.level >= Config.BOSS_LEVEL_REQ and explored() >= Config.EXPLORE_REQ)
+		return profile.boss_defeated or (profile.level >= Config.BOSS_LEVEL_REQ and Explore.owned_count(profile.tiles) >= Config.BOSS_TILES_REQ)
 	return gate_open(map_id)
 
 
@@ -558,6 +558,9 @@ func update(dt: float, input: Dictionary) -> void:
 	Explore.tick_production(profile, dt)
 	if Explore.regen_torches(profile, dt) > 0:
 		_message("+1 Đuốc Khai Giới đã hồi.", "info")
+	if Explore.tick_garden(profile, dt) > 0:
+		_text(player.pos + Vector2(0, -30), "Vườn Thảo Dược +1", Color("#5bd16a"), false)
+		_brew_potions()
 	for key in Explore.tick_build_clock(profile, dt):
 		_on_built(key)
 
@@ -684,8 +687,8 @@ func _enforce_gate() -> void:
 		p.pos.x = gate_x
 		if _gate_msg_cd <= 0.0:
 			_message(
-				"Sương mù Hư Vô chặn đường: cần cấp %d và khai phá %d%% vùng đất (phím M)."
-				% [Config.BOSS_LEVEL_REQ, int(Config.EXPLORE_REQ * 100)],
+				"Sương mù Hư Vô chặn đường: cần cấp %d và chiếm %d ô đất (phím M)."
+				% [Config.BOSS_LEVEL_REQ, Config.BOSS_TILES_REQ],
 				"bad"
 			)
 			_gate_msg_cd = 4.0
@@ -2062,10 +2065,14 @@ func _update_herbs(dt: float) -> void:
 			profile.herbs += gain
 			h.respawn = HERB_RESPAWN
 			_text(player.pos + Vector2(0, -30), "+%d Thảo dược" % gain, Color("#5bd16a"), false)
-			while profile.herbs >= HERBS_PER_POTION and profile.potions < POTION_MAX:
-				profile.herbs -= HERBS_PER_POTION
-				profile.potions += 1
-				_message("Chế được 1 bình máu (%d/%d)." % [profile.potions, POTION_MAX], "good")
+			_brew_potions()
+
+
+func _brew_potions() -> void:
+	while profile.herbs >= HERBS_PER_POTION and profile.potions < POTION_MAX:
+		profile.herbs -= HERBS_PER_POTION
+		profile.potions += 1
+		_message("Chế được 1 bình máu (%d/%d)." % [profile.potions, POTION_MAX], "good")
 
 
 func chest_visible(c: Chest) -> bool:

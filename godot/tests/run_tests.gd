@@ -17,6 +17,7 @@ const Monsters = preload("res://scripts/data/monsters.gd")
 const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
 const Classes = preload("res://scripts/data/classes.gd")
 const Stats = preload("res://scripts/core/stats.gd")
+const Looks = preload("res://scripts/data/looks.gd")
 
 var _total := 0
 var _failed: Array[String] = []
@@ -80,6 +81,10 @@ func _init() -> void:
 	_run("TP-T1 hiệu ứng Thiên phú mạnh dần theo cấp", _test_talent_levels)
 	_run("TP-T2 Thuần Thú thu phục quái Ổ quái", _test_tame_nest)
 	_run("TP-T3 Đạo Tặc cướp thuộc tính", _test_thief_steal)
+	# Đợt C1 — hoàn chỉnh Chương 1 (docs/08-chuong-1-hoan-chinh.md, mục 3.4)
+	_run("C1-T1 hướng đánh: quái sau lưng, tự xoay, Thợ Săn tự ngắm", _test_c1_facing)
+	_run("C1-T2 save v6: tên, ngoại hình, nhiệm vụ, lưới 40 ô", _test_c1_save_v6)
+	_run("C1-T6 lưới 40 ô: 3 map con, Lõi Sương khoá, Khứu Giác", _test_c1_grid40)
 
 	print("")
 	if _failed.is_empty():
@@ -189,11 +194,13 @@ func _test_awakening_rates() -> void:
 
 func _test_tiles() -> void:
 	var p := _profile("kiem-tam")
-	_check(p.tiles.size() == 11, "11 ô (10 + trại)")
+	# C1-21: vùng 1 = 40 ô (+ trại); Bìa Rừng (zone 1) giữ cơ cấu 10 ô như prototype.
+	_check(p.tiles.size() == 41, "41 ô (40 + trại)")
 	_check(Explore.owned_count(p.tiles) == 0, "chưa chiếm ô nào")
 	var counts := {}
 	for t in p.tiles:
-		counts[t.event] = counts.get(t.event, 0) + 1
+		if Explore.zone_of(t) == 1 and t.event != "camp":
+			counts[t.event] = counts.get(t.event, 0) + 1
 	_check(counts.resource == 4 and counts.nest == 2 and counts.relic == 2, "4 gỗ, 2 ổ quái, 2 di tích")
 	_check(counts.survivor == 1 and counts.wonder == 1, "1 người sống sót, 1 kỳ quan")
 
@@ -219,7 +226,7 @@ func _test_lumber() -> void:
 	_check(Explore.production_per_minute(p).wood == 0.0, "đang xây thì chưa sản xuất (TL-S3)")
 	Explore.tick_build_clock(p, 60.0)
 	_check(Explore.production_per_minute(p).wood > 0.0, "xây xong thì có sản lượng gỗ")
-	_check(is_equal_approx(Explore.explored_ratio(p.tiles), 0.1), "khai phá 10%")
+	_check(is_equal_approx(Explore.explored_ratio(p.tiles), 1.0 / 40.0), "khai phá 1/40 ô")
 
 
 func _test_nest() -> void:
@@ -1213,3 +1220,86 @@ func _test_thief_steal() -> void:
 	for k in total:
 		sum += int(total[k])
 	_check(sum == p.stolen.size() and first != "", "điểm cướp cộng vào chỉ số")
+
+
+# ------------------------------------------------------------------ Đợt C1 (docs/08-chuong-1-hoan-chinh.md, mục 3.4)
+
+
+## Spec_Notes N5: quái đứng sau lưng — đứng yên bấm đánh vẫn trúng (tự xoay mặt).
+func _test_c1_facing() -> void:
+	var w := _m3_world("kiem-khach")
+	w.player.pos = Vector2(900, 800)
+	w.player.facing = 0.0
+	var behind := _dummy(w, "wolf", 1, w.player.pos + Vector2(-55, 0))
+	# input aim vẫn chỉ sang phải (chơi bàn phím, hướng cũ) — đòn đánh phải tự quay lại
+	_tick(w, {"aim": w.player.pos + Vector2(100, 0), "attack": true}, 2)
+	_check(behind.hp < behind.max_hp, "Kiếm Khách chém trúng quái sau lưng khi đứng yên")
+	_check(cos(w.player.facing) < 0.0, "nhân vật quay mặt về quái")
+	var far := _m3_world("kiem-khach")
+	far.player.pos = Vector2(900, 800)
+	var out := _dummy(far, "wolf", 1, far.player.pos + Vector2(-300, 0))
+	_tick(far, {"aim": far.player.pos + Vector2(100, 0), "attack": true}, 2)
+	_check(is_equal_approx(out.hp, out.max_hp), "quái ngoài tầm chém thì không tự xoay")
+	var h := _m3_world("tho-san")
+	h.player.pos = Vector2(900, 800)
+	var target := _dummy(h, "wolf", 1, h.player.pos + Vector2(-250, 40))
+	_tick(h, {"aim": h.player.pos + Vector2(100, 0), "attack": true}, 60)
+	_check(target.hp < target.max_hp, "Thợ Săn tự ngắm quái phía sau")
+
+
+func _test_c1_save_v6() -> void:
+	var p := _profile("kiem-tam")
+	var d := p.to_dict()
+	d.version = 5
+	for k in ["name", "look", "quest_step", "quest_progress", "seen_dialogs", "rare_boss_at", "evo_essence", "herb_timer", "merchant"]:
+		d.erase(k)
+	# save cũ chỉ có lưới 10 ô
+	d.tiles = d.tiles.slice(0, 11)
+	for t in d.tiles:
+		t.erase("zone")
+	var old := Profile.new()
+	_check(old.load_dict(JSON.parse_string(JSON.stringify(d))), "nạp được save v5")
+	_check(old.name == "Khai Giới Giả" and old.look.gender == "nam", "v5 → tên, ngoại hình mặc định")
+	_check(old.quest_step == 5, "v5 chưa hạ boss → nhiệm vụ bước 5")
+	_check(old.tiles.size() == 41 and Explore.zone_of(old.tiles[40]) == 3, "lưới 10 ô được bù thành 40 ô")
+	p.name = "Lâm Phong"
+	p.look = {"gender": "nu", "skin": 2, "hair_style": "bui", "hair_color": 4}
+	p.quest_step = 7
+	p.seen_dialogs = ["intro"]
+	var back := Profile.new()
+	_check(back.load_dict(JSON.parse_string(JSON.stringify(p.to_dict()))), "nạp được save v6")
+	_check(back.name == "Lâm Phong" and back.look.hair_style == "bui" and int(back.look.hair_color) == 4, "giữ tên, ngoại hình")
+	_check(back.quest_step == 7 and back.seen_dialogs == ["intro"], "giữ nhiệm vụ, thoại đã xem")
+	_check(Looks.clean_name("  Lâm   Phong ") == "Lâm Phong" and Looks.clean_name("A") == "", "chuẩn hoá tên")
+
+
+func _test_c1_grid40() -> void:
+	var p := _profile("kiem-tam")
+	var by_zone := {1: 0, 2: 0, 3: 0}
+	var ev := {}
+	var keys := {}
+	for t in p.tiles:
+		keys["%d,%d" % [t.q, t.r]] = true
+		if t.event == "camp":
+			continue
+		by_zone[Explore.zone_of(t)] += 1
+		ev[t.event] = ev.get(t.event, 0) + 1
+	_check(by_zone[1] == 10 and by_zone[2] == 15 and by_zone[3] == 15, "10 + 15 + 15 ô")
+	_check(keys.size() == 41, "không trùng toạ độ")
+	_check(ev.resource == 16 and ev.nest == 11 and ev.relic == 5 and ev.survivor == 4 and ev.merchant == 3 and ev.wonder == 1, "cơ cấu sự kiện bảng 3.2: %s" % str(ev))
+	var z3: Dictionary = p.tiles.filter(func(t): return Explore.zone_of(t) == 3)[0]
+	for t in p.tiles:
+		t.status = "owned" if Explore.zone_of(t) != 3 else "fog"
+	p.torches = 5
+	_check(Explore.reveal_blocker(p, z3).contains("Lõi Sương"), "Lõi Sương khoá khi chưa hạ boss")
+	p.boss_defeated = true
+	var adj: Array = p.tiles.filter(func(t): return Explore.zone_of(t) == 3 and Explore.distance_to_owned(p.tiles, t) == 1)
+	_check(not adj.is_empty() and Explore.reveal_blocker(p, adj[0]) == "", "hạ boss rồi thì dọn được ô Lõi Sương kề lãnh địa")
+	var scent := _profile("khuu-giac")
+	var relics := scent.tiles.filter(func(t): return t.event == "relic").size()
+	_check(relics == 8, "Khứu Giác Kho Báu: Di tích 8/40 = 20%% (%d)" % relics)
+	var w := _world("kiem-tam")
+	w.profile.level = 5
+	for i in range(1, 7):
+		w.profile.tiles[i].status = "owned"
+	_check(w.boss_unlocked(), "cấp 5 + 6 ô là mở hang")

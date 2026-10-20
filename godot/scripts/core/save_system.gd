@@ -44,5 +44,6 @@ static func apply_offline(p: Profile, now: float) -> Dictionary:
 	Explore.tick_build_clock(p, seconds)
 	var made := Explore.tick_production(p, seconds)
 	var torches := Explore.regen_torches(p, seconds)
+	var herbs := Explore.tick_garden(p, seconds)
 	p.last_seen = now
-	return {"seconds": seconds, "gold": made.gold, "wood": made.wood, "torches": torches}
+	return {"seconds": seconds, "gold": made.gold, "wood": made.wood, "torches": torches, "herbs": herbs}

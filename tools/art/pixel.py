@@ -28,6 +28,8 @@ def ramp(*hexes):
 # Dải màu vật liệu dùng chung (tối → sáng)
 R = {
     "skin": ramp("#8a5a44", "#c48a68", "#e8b38f", "#f7d3b5"),
+    "skin_light": ramp("#a06a58", "#d8a088", "#f2c8ac", "#fde4d2"),
+    "skin_dark": ramp("#5a3424", "#8a5638", "#b07a52", "#d09a70"),
     "hair_dark": ramp("#1e1a2a", "#352c45", "#4f4263", "#6b5b85"),
     "hair_brown": ramp("#3b2416", "#5e3a22", "#83542f", "#a8723f"),
     "cloth_blue": ramp("#1d2b52", "#2f4a84", "#4a6fb5", "#77a0dc"),

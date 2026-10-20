@@ -93,6 +93,20 @@ static func draw_frame(ci: CanvasItem, id: String, anim: String, frame: int, pos
 	ci.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
+## C1-02: vẽ nhân vật theo ngoại hình (thân + tóc tô màu). Thiếu hình ghép thì dùng hero-<lớp>.
+static func draw_hero(ci: CanvasItem, class_id: String, look: Dictionary, anim: String, frame: int, pos: Vector2,
+		flip := false, modulate := Color.WHITE, size_mul := 1.0) -> void:
+	var Looks = load("res://scripts/data/looks.gd")
+	var base: String = Looks.base_sprite(class_id, look)
+	if not has_sprite(base):
+		draw_frame(ci, "hero-" + class_id, anim, frame, pos, flip, modulate, size_mul)
+		return
+	draw_frame(ci, base, anim, frame, pos, flip, modulate, size_mul)
+	var hair: String = Looks.hair_sprite(class_id, look)
+	if has_sprite(hair):
+		draw_frame(ci, hair, anim, frame, pos, flip, modulate * Looks.hair_color(look), size_mul)
+
+
 static func has_env(id: String) -> bool:
 	return data().get("env", {}).has(id)
 

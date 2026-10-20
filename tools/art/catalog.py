@@ -9,6 +9,29 @@ Khoá (id) phải khớp id trong dữ liệu game:
 FPS = {"idle": 3, "run": 9, "attack": 10, "hurt": 8, "death": 6}
 LOOP = {"idle": True, "run": True, "attack": False, "hurt": False, "death": False}
 
+# C1-02: ngoại hình tuỳ chọn. Thân (không tóc) theo lớp × giới tính × màu da; tóc là lớp riêng
+# theo lớp × kiểu tóc, vẽ xám để game tô màu. Id: hero-<lớp>-<nam|nu>-<da 0..2>, hair-<lớp>-<kiểu>.
+SKINS = ["skin_light", "skin", "skin_dark"]
+CLASS_LOOK = {
+    "kiem-khach": {"cloth": "cloth_blue", "pants": "leather", "cape": "cloth_red", "weapon": "sword"},
+    "tho-san": {"cloth": "cloth_green", "pants": "leather", "weapon": "bow", "trim": "leather", "collar": "leaf"},
+}
+HAIR_STYLES = ["ngan", "dai", "bui", "duoi"]
+
+
+def _custom_sprites():
+    out = {}
+    for cid, look in CLASS_LOOK.items():
+        for g in ("nam", "nu"):
+            for i, sk in enumerate(SKINS):
+                spec = dict(look, gender=g, skin=sk, layer="base")
+                out["hero-%s-%s-%d" % (cid, g, i)] = {"builder": "humanoid", "name": "%s %s da %d" % (cid, g, i), "spec": spec}
+        for st in HAIR_STYLES:
+            spec = dict(look, hair_style=st, layer="hair")
+            out["hair-%s-%s" % (cid, st)] = {"builder": "humanoid", "name": "tóc %s %s" % (cid, st), "spec": spec}
+    return out
+
+
 SPRITES = {
     # ------------------------------------------------ nhân vật
     "hero-kiem-khach": {"builder": "humanoid", "name": "Kiếm Khách",
@@ -26,3 +49,4 @@ SPRITES = {
     "boss": {"builder": "quadruped", "name": "Sói Chúa Hư Vô",
              "spec": {"size": 48, "fur": "fur_void", "mane": "void", "eye": "#ff3b4e", "aura": "#9b6ee0"}},
 }
+SPRITES.update(_custom_sprites())

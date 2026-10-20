@@ -19,7 +19,23 @@ const EVENT_INFO := {
 	"relic": {"name": "Di tích", "short": "Di tích", "desc": "Rương báu và một trang sách cốt truyện.", "color": "#c08a3e"},
 	"survivor": {"name": "Người sống sót", "short": "Dân", "desc": "Gia nhập lãnh địa: +10% sản lượng.", "color": "#5a8fd0"},
 	"wonder": {"name": "Suối Linh Khí", "short": "Kỳ quan", "desc": "Kỳ quan: +10% EXP nhận được từ chiến đấu.", "color": "#9b6be0"},
+	"merchant": {
+		"name": "Thương nhân lữ hành",
+		"short": "Thương nhân",
+		"desc": "Mời thương nhân về trại: bán đồ Xanh dương/Tím trong 1 giờ (phím E ở làng).",
+		"color": "#e0b040",
+	},
 }
+
+## C1-21: 3 map con của vùng 1 trên cùng một lưới (zone 1–3). Zone 3 = Lõi Sương, khoá tới khi hạ Sói Chúa.
+const ZONE_NAMES := {1: "Bìa Rừng Sương", 2: "Rừng Sương Sâu", 3: "Lõi Sương"}
+const ZONE2_EVENTS := ["resource", "resource", "resource", "resource", "resource", "resource", "nest", "nest", "nest", "nest",
+	"relic", "relic", "survivor", "survivor", "merchant"]
+const ZONE3_EVENTS := ["resource", "resource", "resource", "resource", "resource", "resource", "nest", "nest", "nest", "nest", "nest",
+	"relic", "survivor", "merchant", "merchant"]
+## Khứu Giác Kho Báu: số ô Tài nguyên ở zone 2, 3 đổi thành Di tích (8/40 = 20%, kịch bản mục 7).
+const SCENT_RELICS := [2, 1]
+const HEX_DIRS := [[1, 0], [1, -1], [0, -1], [-1, 0], [-1, 1], [0, 1]]
 
 ## Lưới 10 ô của Chương 1: vòng 1 (6 ô) + 4 ô vòng 2, quanh Trại Khai Giới.
 const RING1 := [[1, 0], [1, -1], [0, -1], [-1, 0], [-1, 1], [0, 1]]
@@ -38,18 +54,84 @@ const BUILDINGS := {
 	"camp2": {"name": "Nâng Trại thành Thôn", "time": 180.0, "gold": 100, "wood": 100},
 	"temple": {"name": "Đền Thiên Phú", "time": 120.0, "gold": 80, "wood": 60},
 	"dragon": {"name": "Long Mạch Đàn", "time": 120.0, "gold": 150, "wood": 100},
+	"forge": {"name": "Xưởng Rèn", "time": 120.0, "gold": 150, "wood": 80},
+	"garden": {"name": "Vườn Thảo Dược", "time": 90.0, "gold": 60, "wood": 60},
 }
+## C1-31: Vườn Thảo Dược sinh 1 thảo dược mỗi 3 phút.
+const GARDEN_PERIOD := 180.0
+const HERB_CAP := 99
 
 
-static func create_tiles(rng: Callable) -> Array:
-	var tiles: Array = [{"id": 0, "q": 0, "r": 0, "event": "camp", "status": "owned"}]
+## talent: Khứu Giác Kho Báu đổi thêm Di tích ở zone 2, 3.
+static func create_tiles(rng: Callable, talent := "") -> Array:
+	var tiles: Array = [{"id": 0, "q": 0, "r": 0, "event": "camp", "status": "owned", "zone": 1}]
 	var ring1 := RngUtil.shuffle(RING1_EVENTS, rng)
 	var ring2 := RngUtil.shuffle(RING2_EVENTS, rng)
 	for i in RING1.size():
-		tiles.append({"id": tiles.size(), "q": RING1[i][0], "r": RING1[i][1], "event": ring1[i], "status": "fog"})
+		tiles.append({"id": tiles.size(), "q": RING1[i][0], "r": RING1[i][1], "event": ring1[i], "status": "fog", "zone": 1})
 	for i in RING2.size():
-		tiles.append({"id": tiles.size(), "q": RING2[i][0], "r": RING2[i][1], "event": ring2[i], "status": "fog"})
+		tiles.append({"id": tiles.size(), "q": RING2[i][0], "r": RING2[i][1], "event": ring2[i], "status": "fog", "zone": 1})
+	upgrade_region1(tiles, talent, rng)
 	return tiles
+
+
+static func ring(radius: int) -> Array:
+	var out: Array = []
+	var q := -radius
+	var r := radius
+	for d in 6:
+		for _i in radius:
+			out.append([q, r])
+			q += HEX_DIRS[d][0]
+			r += HEX_DIRS[d][1]
+	return out
+
+
+## Lưới vùng 1 của save cũ chỉ có 10 ô (zone 1).
+static func needs_region1_upgrade(tiles: Array) -> bool:
+	return not tiles.is_empty() and tiles.size() <= 11
+
+
+## C1-21: thêm 15 ô Rừng Sâu (zone 2) và 15 ô Lõi Sương (zone 3). Lõi Sương ở phía đông (q lớn).
+static func upgrade_region1(tiles: Array, talent: String, rng: Callable) -> void:
+	var used := {}
+	for t in tiles:
+		used["%d,%d" % [int(t.q), int(t.r)]] = true
+		if not t.has("zone"):
+			t["zone"] = 1
+	var by_east := func(a, b): return int(a[0]) * 2 + int(a[1]) > int(b[0]) * 2 + int(b[1])
+	var r2: Array = ring(2).filter(func(c): return not used.has("%d,%d" % [c[0], c[1]]))
+	var r3: Array = ring(3)
+	r3.sort_custom(by_east)
+	var r4: Array = ring(4)
+	r4.sort_custom(by_east)
+	var zone3: Array = r3.slice(0, 11) + r4.slice(0, 4)
+	var zone2: Array = r2 + r3.slice(11)
+	var e2: Array = ZONE2_EVENTS.duplicate()
+	var e3: Array = ZONE3_EVENTS.duplicate()
+	if talent == "khuu-giac":
+		for pair in [[e2, SCENT_RELICS[0]], [e3, SCENT_RELICS[1]]]:
+			var arr: Array = pair[0]
+			for _i in int(pair[1]):
+				arr[arr.find("resource")] = "relic"
+	e2 = RngUtil.shuffle(e2, rng)
+	e3 = RngUtil.shuffle(e3, rng)
+	for i in zone2.size():
+		tiles.append({"id": tiles.size(), "q": zone2[i][0], "r": zone2[i][1], "event": e2[i], "status": "fog", "zone": 2})
+	for i in zone3.size():
+		tiles.append({"id": tiles.size(), "q": zone3[i][0], "r": zone3[i][1], "event": e3[i], "status": "fog", "zone": 3})
+
+
+static func zone_of(tile: Dictionary) -> int:
+	return int(tile.get("zone", 1))
+
+
+static func zone_owned(tiles: Array, zone: int) -> int:
+	var n := 0
+	for t in tiles:
+		if t.event != "camp" and t.status == "owned" and zone_of(t) == zone:
+			n += 1
+	return n
 
 
 static func hex_distance(a: Dictionary, b: Dictionary) -> int:
@@ -123,6 +205,8 @@ static func torch_regen_sec(p) -> float:
 static func reveal_blocker(p, tile: Dictionary) -> String:
 	if tile.status != "fog":
 		return "Ô đất đã được dọn sương."
+	if zone_of(tile) == 3 and not p.boss_defeated:
+		return "Lõi Sương bị sương Hư Vô dày đặc phong toả — hạ Sói Chúa Hư Vô trước."
 	if distance_to_owned(p.tiles, tile) > 1:
 		return "Chỉ dọn được ô kề lãnh địa."
 	if p.torches <= 0:
@@ -157,7 +241,7 @@ static func reveal_tile(p, id: int) -> Dictionary:
 		for t in p.tiles:
 			if extra >= 2:
 				break
-			if t.status == "fog" and hex_distance(t, tile) == 1:
+			if t.status == "fog" and hex_distance(t, tile) == 1 and (zone_of(t) != 3 or p.boss_defeated):
 				t.status = "revealed"
 				names.append(EVENT_INFO[t.event].name)
 				extra += 1
@@ -188,6 +272,9 @@ static func claim_tile(p, id: int) -> Dictionary:
 		"wonder":
 			tile.status = "owned"
 			return _result(true, "Chiếm Suối Linh Khí: +10% EXP từ chiến đấu.")
+		"merchant":
+			tile.status = "owned"
+			return _result(true, "Thương nhân lữ hành dựng lều ở Làng Thanh Thạch trong 1 giờ (phím E khi ở làng).", 60)
 		"nest":
 			return _result(true, "Quái tinh anh xuất hiện phía trước! Hạ nó để chiếm Ổ quái.", 0, true)
 	return _result(false, "Đây đã là trại của bạn.")
@@ -309,6 +396,18 @@ static func tick_production(p, seconds: float) -> Dictionary:
 	p.gold += gold
 	p.wood += wood
 	return {"gold": gold, "wood": wood}
+
+
+## C1-31: Vườn Thảo Dược; trả về số thảo dược vừa sinh.
+static func tick_garden(p, seconds: float) -> int:
+	if not is_built(p, "garden"):
+		p.herb_timer = 0.0
+		return 0
+	p.herb_timer += seconds
+	var n := int(floor(p.herb_timer / GARDEN_PERIOD))
+	p.herb_timer -= n * GARDEN_PERIOD
+	p.herbs = mini(HERB_CAP, int(p.herbs) + n)
+	return n
 
 
 ## Lãnh địa cấp 10: thu hoạch offline tối đa 16 giờ.

@@ -16,6 +16,8 @@ const OFFLINE_CAP_SEC := 12.0 * 3600.0
 ## Điều kiện mở hang boss: đủ cấp + khai phá ít nhất 60% ô đất (tài liệu mục 6).
 const BOSS_LEVEL_REQ := 5
 const EXPLORE_REQ := 0.6
+## C1-21: lưới vùng 1 thành 40 ô; điều kiện vào hang giữ nguyên số ô như trước (6 ô = 60% của 10 ô Bìa Rừng).
+const BOSS_TILES_REQ := 6
 
 const MAX_FIELD_MOBS := 16
 const LUMBER_COST_GOLD := 30

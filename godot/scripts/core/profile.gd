@@ -7,7 +7,8 @@ const Explore = preload("res://scripts/core/explore.gd")
 ## v1: prototype Chương 1. v2: MVP M1 thêm trang bị (EQ-20). v3: MVP M2 thêm Thiên phú, công trình (mục 4.8).
 ## v4: MVP M3 thêm lớp nhân vật, INT/LUK, điểm Đạo Tặc cướp (mục 5.9).
 ## v5: MVP M4 thêm nhiều bản đồ, lưới từng vùng, boss theo id, Đá/Sắt, nhiệm vụ chương 2 (mục 6.5).
-const VERSION := 5
+## v6: đợt C1 thêm tên, ngoại hình, nhiệm vụ/thoại chương 1, lưới vùng 1 40 ô, boss hiếm, công trình mới (08 mục 3.3).
+const VERSION := 6
 
 var talent := ""
 var level := 1
@@ -74,11 +75,28 @@ var quest := {"ch2": 0, "kills2": 0}
 ## Kỹ năng sao chép đang dùng (Đạo Tặc, TP-39).
 var active_copy := ""
 
+# --- v6: đợt C1 (docs/08-chuong-1-hoan-chinh.md mục 3.3)
+var name := "Khai Giới Giả"
+## {gender, skin, hair_style, hair_color} — xem scripts/data/looks.gd
+var look := {"gender": "nam", "skin": 1, "hair_style": "ngan", "hair_color": 0}
+## Chuỗi nhiệm vụ chương 1: bước hiện tại (1–11; 12 = xong), tiến độ của bước.
+var quest_step := 1
+var quest_progress := 0
+## Mốc thoại đã xem (không lặp lại).
+var seen_dialogs: Array = []
+## Boss hiếm Lão Thụ: giờ Unix xuất hiện lần tới (0 = khi vào Lõi Sương lần đầu).
+var rare_boss_at := 0.0
+var evo_essence := 0
+## Vườn Thảo Dược: giây tích luỹ tới thảo dược kế tiếp.
+var herb_timer := 0.0
+## Thương nhân lữ hành: {"until": giờ Unix, "items": [món đồ có "price"]}.
+var merchant := {}
+
 
 func setup(talent_id: String, rng: Callable, now: float, class_name_id := "kiem-khach") -> void:
 	talent = talent_id
 	class_id = class_name_id
-	tiles = Explore.create_tiles(rng)
+	tiles = Explore.create_tiles(rng, talent_id)
 	last_seen = now
 
 
@@ -127,6 +145,15 @@ func to_dict() -> Dictionary:
 		"iron": iron,
 		"quest": quest,
 		"active_copy": active_copy,
+		"name": name,
+		"look": look,
+		"quest_step": quest_step,
+		"quest_progress": quest_progress,
+		"seen_dialogs": seen_dialogs,
+		"rare_boss_at": rare_boss_at,
+		"evo_essence": evo_essence,
+		"herb_timer": herb_timer,
+		"merchant": merchant,
 	}
 
 
@@ -149,7 +176,7 @@ func load_dict(d: Dictionary) -> bool:
 	torch_timer = float(d.torch_timer)
 	tiles = []
 	for t in d.tiles:
-		tiles.append({"id": int(t.id), "q": int(t.q), "r": int(t.r), "event": str(t.event), "status": str(t.status)})
+		tiles.append(_load_tile(t))
 	camp_level = int(d.camp_level)
 	boss_defeated = bool(d.boss_defeated)
 	kills = int(d.kills)
@@ -212,7 +239,7 @@ func load_dict(d: Dictionary) -> bool:
 	for rid in g:
 		var arr: Array = []
 		for t in g[rid]:
-			arr.append({"id": int(t.id), "q": int(t.q), "r": int(t.r), "event": str(t.event), "status": str(t.status)})
+			arr.append(_load_tile(t))
 		grids[str(rid)] = arr
 	tiles_region = int(d.get("tiles_region", 1))
 	bosses = {}
@@ -228,6 +255,36 @@ func load_dict(d: Dictionary) -> bool:
 	var q: Dictionary = d.get("quest", {})
 	quest = {"ch2": int(q.get("ch2", 0)), "kills2": int(q.get("kills2", 0))}
 	active_copy = str(d.get("active_copy", ""))
+
+	# v6 — save v5 trở xuống (08 mục 3.3).
+	var Looks = load("res://scripts/data/looks.gd")
+	name = str(d.get("name", Looks.DEFAULT_NAME))
+	look = Looks.sanitize(d.get("look", null))
+	if d.has("quest_step"):
+		quest_step = int(d.quest_step)
+	else:
+		# Người chơi cũ đã qua phần hướng dẫn: hạ boss rồi → đã xong chương; chưa → vào thẳng bước 5.
+		quest_step = 12 if boss_defeated else 5
+	quest_progress = int(d.get("quest_progress", 0))
+	seen_dialogs = []
+	for k in d.get("seen_dialogs", []):
+		seen_dialogs.append(str(k))
+	rare_boss_at = float(d.get("rare_boss_at", 0.0))
+	evo_essence = int(d.get("evo_essence", 0))
+	herb_timer = float(d.get("herb_timer", 0.0))
+	merchant = {}
+	var mc = d.get("merchant", {})
+	if mc is Dictionary and mc.has("until"):
+		var items: Array = []
+		for it in mc.get("items", []):
+			var item := _load_item(it)
+			item["price"] = int(it.get("price", 0))
+			items.append(item)
+		merchant = {"until": float(mc.until), "items": items}
+	# C1-21: lưới vùng 1 cũ 10 ô → thêm 30 ô của Rừng Sâu và Lõi Sương.
+	var g1 := grid_of(1)
+	if Explore.needs_region1_upgrade(g1):
+		Explore.upgrade_region1(g1, talent, load("res://scripts/core/rng_util.gd").make(int(play_seconds) + 17))
 	return true
 
 
@@ -258,6 +315,10 @@ func switch_grid(region_id: int, make_grid: Callable) -> void:
 	else:
 		tiles = make_grid.call(region_id)
 	tiles_region = region_id
+
+
+static func _load_tile(t: Dictionary) -> Dictionary:
+	return {"id": int(t.id), "q": int(t.q), "r": int(t.r), "event": str(t.event), "status": str(t.status), "zone": int(t.get("zone", 1))}
 
 
 static func _load_item(d: Dictionary) -> Dictionary:

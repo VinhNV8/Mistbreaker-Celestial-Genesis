@@ -11,6 +11,7 @@ const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
 
 const HERO_SPRITE := "hero-kiem-khach"
 const Classes = preload("res://scripts/data/classes.gd")
+const Looks = preload("res://scripts/data/looks.gd")
 const CORPSE_TIME := 0.6
 const HIT_FX_TIME := 0.25
 
@@ -390,7 +391,11 @@ func _draw_ally_sprite(a) -> void:
 	SpriteLib.draw_frame(self, a.monster, anim, frame, _feet(a.pos, a.radius), _facing_left(key, a.pos, false), mod, clampf(a.radius / 16.0, 0.75, 1.25))
 
 
+## Sprite để tính số frame (thân theo ngoại hình; thiếu thì hình mặc định của lớp).
 func _hero() -> String:
+	var base: String = Looks.base_sprite(world.profile.class_id, world.profile.look)
+	if SpriteLib.has_sprite(base):
+		return base
 	var id: String = Classes.get_class_def(world.profile.class_id).sprite
 	return id if SpriteLib.has_sprite(id) else HERO_SPRITE
 
@@ -424,7 +429,10 @@ func _draw_player_sprite() -> void:
 		anim = "attack"
 	if p.eagle_time > 0.0:
 		mod = mod * Color(1.2, 1.15, 0.85)
-	SpriteLib.draw_frame(self, hs, anim, frame, _feet(p.pos, GameWorld.PLAYER_RADIUS), left, mod)
+	SpriteLib.draw_hero(self, world.profile.class_id, world.profile.look, anim, frame, _feet(p.pos, GameWorld.PLAYER_RADIUS), left, mod)
+	# C1-02: tên trên đầu
+	if p.dead_timer <= 0.0:
+		_label(str(world.profile.name), p.pos + Vector2(0, -GameWorld.PLAYER_RADIUS - 46.0), Color(1, 1, 1, 0.85), 12)
 	# Thiết Bích: vòng khiên
 	if p.guard_time > 0.0:
 		var a := 0.35 + 0.15 * sin(world.time * 8.0)

@@ -345,6 +345,866 @@
    },
    "name": "Sói Chúa Hư Vô",
    "size_mul": 1.0
+  },
+  "hero-kiem-khach-nam-0": {
+   "path": "res://assets/sprites/hero-kiem-khach-nam-0.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "kiem-khach nam da 0",
+   "size_mul": 1.0
+  },
+  "hero-kiem-khach-nam-1": {
+   "path": "res://assets/sprites/hero-kiem-khach-nam-1.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "kiem-khach nam da 1",
+   "size_mul": 1.0
+  },
+  "hero-kiem-khach-nam-2": {
+   "path": "res://assets/sprites/hero-kiem-khach-nam-2.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "kiem-khach nam da 2",
+   "size_mul": 1.0
+  },
+  "hero-kiem-khach-nu-0": {
+   "path": "res://assets/sprites/hero-kiem-khach-nu-0.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "kiem-khach nu da 0",
+   "size_mul": 1.0
+  },
+  "hero-kiem-khach-nu-1": {
+   "path": "res://assets/sprites/hero-kiem-khach-nu-1.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "kiem-khach nu da 1",
+   "size_mul": 1.0
+  },
+  "hero-kiem-khach-nu-2": {
+   "path": "res://assets/sprites/hero-kiem-khach-nu-2.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "kiem-khach nu da 2",
+   "size_mul": 1.0
+  },
+  "hair-kiem-khach-ngan": {
+   "path": "res://assets/sprites/hair-kiem-khach-ngan.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "tóc kiem-khach ngan",
+   "size_mul": 1.0
+  },
+  "hair-kiem-khach-dai": {
+   "path": "res://assets/sprites/hair-kiem-khach-dai.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "tóc kiem-khach dai",
+   "size_mul": 1.0
+  },
+  "hair-kiem-khach-bui": {
+   "path": "res://assets/sprites/hair-kiem-khach-bui.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "tóc kiem-khach bui",
+   "size_mul": 1.0
+  },
+  "hair-kiem-khach-duoi": {
+   "path": "res://assets/sprites/hair-kiem-khach-duoi.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "tóc kiem-khach duoi",
+   "size_mul": 1.0
+  },
+  "hero-tho-san-nam-0": {
+   "path": "res://assets/sprites/hero-tho-san-nam-0.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "tho-san nam da 0",
+   "size_mul": 1.0
+  },
+  "hero-tho-san-nam-1": {
+   "path": "res://assets/sprites/hero-tho-san-nam-1.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "tho-san nam da 1",
+   "size_mul": 1.0
+  },
+  "hero-tho-san-nam-2": {
+   "path": "res://assets/sprites/hero-tho-san-nam-2.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "tho-san nam da 2",
+   "size_mul": 1.0
+  },
+  "hero-tho-san-nu-0": {
+   "path": "res://assets/sprites/hero-tho-san-nu-0.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "tho-san nu da 0",
+   "size_mul": 1.0
+  },
+  "hero-tho-san-nu-1": {
+   "path": "res://assets/sprites/hero-tho-san-nu-1.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "tho-san nu da 1",
+   "size_mul": 1.0
+  },
+  "hero-tho-san-nu-2": {
+   "path": "res://assets/sprites/hero-tho-san-nu-2.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "tho-san nu da 2",
+   "size_mul": 1.0
+  },
+  "hair-tho-san-ngan": {
+   "path": "res://assets/sprites/hair-tho-san-ngan.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "tóc tho-san ngan",
+   "size_mul": 1.0
+  },
+  "hair-tho-san-dai": {
+   "path": "res://assets/sprites/hair-tho-san-dai.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "tóc tho-san dai",
+   "size_mul": 1.0
+  },
+  "hair-tho-san-bui": {
+   "path": "res://assets/sprites/hair-tho-san-bui.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "tóc tho-san bui",
+   "size_mul": 1.0
+  },
+  "hair-tho-san-duoi": {
+   "path": "res://assets/sprites/hair-tho-san-duoi.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "tóc tho-san duoi",
+   "size_mul": 1.0
   }
  },
  "icons": {
