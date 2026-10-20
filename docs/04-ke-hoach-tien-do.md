@@ -380,7 +380,6 @@ Mỗi đợt theo quy trình: **viết spec → duyệt → code → test → c�
 | 5 | Tốc độ hồi Đuốc khi phát hành (KP-02) | Nhịp độ khai phá | 2 phút/cái (kịch bản: 20 phút) |
 | 6 | ~~Khởi tạo Git cho dự án (KT-05)~~ | An toàn mã nguồn | **Đã xong** 20/10/2026, có remote GitHub |
 | 7 | Q13–Q16: số liệu Đạo Tặc cướp thuộc tính, độc nhất server — [CR-01](03-mvp-spec.md) | Thiên phú SSS | Như CR-01 (đã code ở M3) |
-| 11 | Q36–Q38: gift code — lượt thêm hay thay, tỉ lệ, số mã mỗi nhân vật — [CR-02](03-mvp-spec.md) | Thiên phú hạng cao | Lượt thêm · A 65/S 25/SS 9/SSS 1 · 1 mã |
 | 10 | Q28–Q34: 8 kỹ năng, phím 1–4, INT/LUK, né tránh, MP, tinh anh vùng 1, không đổi lớp — [03 mục 5.11](03-mvp-spec.md) | Combat 2 lớp | Như spec M3 (đã code) |
 
 ### 13.1. Đã chốt
@@ -400,3 +399,4 @@ Chủ dự án uỷ quyền (20/10/2026) chọn phương án tốt nhất, hợp
 | Q25 | Boss vùng 1 cấp 6 giữa vùng; Lõi Sương mở sau boss | BD-06 |
 | Q26 | Chỉ thêm Đá, Sắt, Tinh Thạch; Bến Cá là buff lãnh địa; bỏ Tinh Thạch Hư Vô | KP-06, TB-11 |
 | Q27 | Dùng tên, kỹ năng, đồ Cam như tài liệu 06 | BD-02…04, CB-18…20 |
+| Q36–Q38 | Gift code: lượt **thêm**; tỉ lệ A 65 · S 25 · SS 9 · SSS 1; **1 mã** mỗi nhân vật (chủ dự án chốt) | TP-46 |

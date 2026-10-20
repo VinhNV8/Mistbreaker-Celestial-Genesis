@@ -859,10 +859,10 @@ Xác suất: 0,2% mỗi lần quay, 4 lần quay mỗi nhân vật → khoảng 
 - "Mỗi mã 1 lần" chỉ đúng **trên 1 máy**; muốn mỗi mã dùng 1 lần trên toàn bộ người chơi phải kiểm ở **server** (Beta, KT-10): server giữ danh sách mã và đánh dấu đã dùng.
 - Đạo Tặc (SSS) quay từ gift code vẫn theo luật DT-15 (chưa có server thì không giới hạn).
 
-#### CR-02.3. Điểm cần duyệt
+#### CR-02.3. Quyết định (chủ dự án chốt 20/10/2026)
 
-| # | Câu hỏi | Mặc định | Lựa chọn khác |
+| # | Câu hỏi | Quyết định | Ghi chú |
 | --- | --- | --- | --- |
-| Q36 | Lượt gift code là lượt **thêm** hay **thay** lượt quay thường? | Thêm (vẫn chọn được lượt thường) | Thay: dùng mã thì nhận luôn, không quay thường |
-| Q37 | Tỉ lệ trong lượt gift code | Tỉ lệ tương đối của kịch bản (A 65 · S 25 · SS 9 · SSS 1) | Chia đều 4 hạng (25% mỗi hạng) — SSS quá dễ |
-| Q38 | Mỗi nhân vật dùng tối đa mấy mã | 1 | Không giới hạn |
+| Q36 | Lượt gift code là lượt thêm hay thay lượt quay thường? | **Lượt thêm** | Vẫn chọn được bất kỳ lượt quay thường nào |
+| Q37 | Tỉ lệ trong lượt gift code | **A 65 · S 25 · SS 9 · SSS 1** (đề xuất của Claude, chủ dự án đồng ý) | Giữ tỉ lệ tương đối của kịch bản: hạng cao vẫn hiếm, SSS không bị phá giá; chia đều 25% sẽ làm SSS phổ biến gấp 125 lần quay thường |
+| Q38 | Mỗi nhân vật dùng tối đa mấy mã | **1 mã** | |
