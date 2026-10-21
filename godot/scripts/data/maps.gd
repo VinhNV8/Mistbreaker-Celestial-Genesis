@@ -372,7 +372,25 @@ const MAPS := {
 const ORDER := ["1-1", "1-3", "2-1", "2-2", "2-3", "3-1", "3-2", "3-3", "4-1", "4-2", "4-3", "5-1", "5-2", "5-3", "6-1", "6-2", "6-3"]
 
 
+## Vị trí nhà trong vùng an toàn theo loại: [[lệch so với tâm, id hình], ...] (world_view vẽ, portals tránh).
+static func safe_buildings(m: Dictionary) -> Array:
+	var kind: String = m.safe.kind
+	if kind == "cave":
+		return []
+	if bool(m.get("desert", false)) and kind == "camp":
+		return [[Vector2(-60, -50), "tent"], [Vector2(-110, 40), "tent"], [Vector2(20, -110), "tent"]]
+	if kind == "camp":
+		return [[Vector2(-50, -40), "hut"]]
+	if kind == "town":
+		return [[Vector2(-150, -120), "house-stone"], [Vector2(-170, 30), "house-stone"], [Vector2(-60, 150), "house-stone"],
+			[Vector2(70, -170), "house-stone"], [Vector2(130, 120), "tower"], [Vector2(-40, -200), "tower"]]
+	return [[Vector2(-90, -70), "hut"], [Vector2(-110, 40), "hut"], [Vector2(-30, 100), "hut"], [Vector2(60, -105), "hut"]]
+
+
 static func get_map(map_id: String) -> Dictionary:
+	# HP (docs/15): bản đồ hang "cave-<map cha>" sinh từ map cha (nạp muộn để tránh preload vòng).
+	if map_id.begins_with("cave-"):
+		return load("res://scripts/core/caves.gd").build_map(map_id)
 	return MAPS.get(map_id, MAPS["1-1"])
 
 

@@ -1,6 +1,8 @@
-extends "res://scripts/ui/modal.gd"
-## Bảng chỉ số: cộng điểm tiềm năng, tẩy điểm, xem Thiên phú.
+extends RefCounted
+## UI-11 (Spec_Notes đợt 6): trang Chỉ số — cộng điểm tiềm năng, tẩy điểm, tự cộng, xem Thiên phú.
+## Trước là bảng riêng (phím C); nay là tab "Chỉ số" trong Túi đồ (phím C mở thẳng tab này).
 
+const UiTheme = preload("res://scripts/ui/ui_theme.gd")
 const Config = preload("res://scripts/core/config.gd")
 const Talents = preload("res://scripts/data/talents.gd")
 const Classes = preload("res://scripts/data/classes.gd")
@@ -17,12 +19,11 @@ const ROWS := [
 ]
 
 
-func _render(content: VBoxContainer) -> void:
+static func build(content: VBoxContainer, world, refresh: Callable) -> void:
 	var p = world.profile
 	var s: Dictionary = world.stats
 	var t: Dictionary = world.talent()
-	content.custom_minimum_size.x = 560
-	_header(content, "%s · Cấp %d" % [Classes.title(str(p.class_id), str(p.job), str(p.job2)), p.level], "Đóng (C)")
+	content.custom_minimum_size.x = 520
 
 	var card := PanelContainer.new()
 	card.add_theme_stylebox_override("panel", UiTheme.rank_box(Talents.rank_color(t.rank)))
@@ -33,7 +34,7 @@ func _render(content: VBoxContainer) -> void:
 	ch.add_child(rank)
 	var cv := UiTheme.vbox(2)
 	cv.add_child(UiTheme.label("%s · %s" % [t.name, Talents.group_name(t)]))
-	cv.add_child(UiTheme.label(t.description, "Muted", 330))
+	cv.add_child(UiTheme.label(t.description, "Muted", 300))
 	ch.add_child(cv)
 	card.add_child(ch)
 	content.add_child(card)
@@ -44,7 +45,7 @@ func _render(content: VBoxContainer) -> void:
 	for r in ROWS:
 		var row := UiTheme.hbox(10)
 		var left := UiTheme.vbox(0)
-		left.size_flags_horizontal = SIZE_EXPAND_FILL
+		left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		left.add_child(UiTheme.label(r[1]))
 		left.add_child(UiTheme.label(r[col] if r[col] != "" else r[2], "Small"))
 		row.add_child(left)
@@ -60,7 +61,9 @@ func _render(content: VBoxContainer) -> void:
 		plus.custom_minimum_size.x = 44
 		plus.disabled = p.unspent <= 0
 		var key: String = r[0]
-		plus.pressed.connect(func(): _allocate(key))
+		plus.pressed.connect(func():
+			world.allocate(key)
+			refresh.call())
 		row.add_child(plus)
 		content.add_child(row)
 
@@ -80,7 +83,7 @@ func _render(content: VBoxContainer) -> void:
 	respec.disabled = p.level >= Config.FREE_RESPEC_LEVEL or used == 0
 	respec.pressed.connect(func():
 		world.respec()
-		refresh())
+		refresh.call())
 	content.add_child(respec)
 	# C1-34: tự cộng điểm theo lớp
 	var auto := UiTheme.button("Tự cộng điểm (%s)" % {"tho-san": "3 AGI : 1 VIT : 1 LUK", "phap-su": "3 INT : 2 VIT"}.get(p.class_id, "3 STR : 2 VIT"), true)
@@ -88,10 +91,5 @@ func _render(content: VBoxContainer) -> void:
 	auto.disabled = p.unspent <= 0
 	auto.pressed.connect(func():
 		world.auto_allocate()
-		refresh())
+		refresh.call())
 	content.add_child(auto)
-
-
-func _allocate(stat: String) -> void:
-	world.allocate(stat)
-	refresh()

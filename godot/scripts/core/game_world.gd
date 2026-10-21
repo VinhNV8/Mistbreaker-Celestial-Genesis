@@ -16,6 +16,8 @@ const RngUtil = preload("res://scripts/core/rng_util.gd")
 const Maps = preload("res://scripts/data/maps.gd")
 const Story = preload("res://scripts/data/story.gd")
 const Fog = preload("res://scripts/core/fog.gd")
+const Portals = preload("res://scripts/core/portals.gd")
+const Caves = preload("res://scripts/core/caves.gd")
 ## M6: chương 3 Sa Mạc Lãng Quên (docs/10) — logic trong core/chapter3.gd.
 const Ch3 = preload("res://scripts/core/chapter3.gd")
 ## D38 (M7): mọi chương từ 3 trở đi gắn vào qua bộ điều phối — các dòng móc "Chapters.".
@@ -324,6 +326,10 @@ class Enemy:
 	# M3
 	var root_timer := 0.0
 	var haste_timer := 0.0
+	## CB-30: "Truy kích" — vừa bị đánh từ xa thì lao tới nhanh hơn trong vài giây.
+	var rush_timer := 0.0
+	## HP-06: Chúa Hang (docs/15).
+	var cave_boss := false
 	var skill_cd := 4.0
 	var fuse := -1.0
 	## M4.2: hướng nhìn (khiên chặn); đứng yên khi đang vung đòn.
@@ -551,6 +557,12 @@ var arena_r := ARENA_R
 var gate_x := GATE_X
 ## MP-03: đang đi đường tới travel_target (giây còn lại).
 var travel_timer := 0.0
+## MP-09: cổng dịch chuyển của map đang đứng ([{kind, to, pos}], xem core/portals.gd).
+var portals: Array = []
+## Chỉ số cổng nhân vật đang đứng trong (-1 = không) — phải bước ra rồi vào lại mới kích hoạt lần nữa.
+var portal_inside := -1
+## Map vừa rời bằng cổng (để tới nơi đứng cạnh cổng dẫn ngược về); "" = đi bằng bảng lục địa.
+var _arrive_via := ""
 var travel_target := ""
 
 var _events: Array = []
@@ -579,17 +591,20 @@ func _init(p, rng: Callable) -> void:
 	stats = _derive()
 	player.hp = stats.max_hp
 	player.mp = stats.max_mp
-	_load_map(profile.map_id if Maps.MAPS.has(profile.map_id) else "1-1")
+	# HP-09: save ghi map cha khi đang ở trong hang → vào lại ở map cha.
+	var start := Caves.parent(str(profile.map_id))
+	_load_map(start if Maps.MAPS.has(start) else "1-1")
 	_begin_quest_step()
 
 
-## Dựng map: vị trí, quái, thảo dược, rương, thú cưng (MP-01, MP-07).
+## Dựng map: vị trí, quái, thảo dược, rương, thú cưng (MP-01, MP-09).
 func _load_map(id: String) -> void:
 	sk2 = Skills2.State.new()
 	move_target = Vector2.INF
 	map_id = id
 	map = Maps.get_map(id)
-	profile.map_id = id
+	var cave := Caves.is_cave(id)
+	profile.map_id = Caves.parent(id)
 	# M4.3 (KP-01): mỗi vùng một lưới khai phá; `tiles` luôn là lưới của vùng đang đứng.
 	var region := int(map.get("region", 1))
 	if region != int(profile.tiles_region) or profile.tiles.is_empty():
@@ -597,7 +612,7 @@ func _load_map(id: String) -> void:
 	if region == 2 and int(profile.quest.ch2) == 0:
 		profile.quest.ch2 = 1
 		say("r2_arrive")
-	if not (id in profile.unlocked_maps):
+	if not cave and not (id in profile.unlocked_maps):
 		profile.unlocked_maps.append(id)
 	world_size = map.size
 	safe_pos = map.safe.pos
@@ -628,14 +643,18 @@ func _load_map(id: String) -> void:
 	freeze_timer = 0.0
 	slowmo_timer = 0.0
 	player.pos = safe_pos + Vector2(60, 0)
+	portals = Portals.list(id)
+	portal_inside = -1
 	# SN-31: nạp sương của map; vùng an toàn luôn mở sẵn.
-	fog.setup(world_size, str(profile.fog.get(id, "")))
+	# HP-03: hang không lưu sương / không tính khai phá, không sinh quái ngoài đồng (Caves.populate sinh 3 khu).
+	fog.setup(world_size, "" if cave else str(profile.fog.get(id, "")))
 	fog.reveal(safe_pos, safe_r + 260.0)
 	fog.reveal(player.pos, Fog.REVEAL_R)
-	profile.fog[id] = fog.encode()
-	for _i in field_mob_cap():
-		_spawn_field_mob()
-	for _i in roundi(HERB_NODES * area_factor()):
+	if not cave:
+		profile.fog[id] = fog.encode()
+		for _i in field_mob_cap():
+			_spawn_field_mob()
+	for _i in (0 if cave else roundi(HERB_NODES * area_factor())):
 		var h := Herb.new()
 		h.pos = _random_field_pos()
 		herbs.append(h)
@@ -646,6 +665,8 @@ func _load_map(id: String) -> void:
 	for pet in profile.pets:
 		_add_ally("pet", str(pet.kind), int(pet.level), player.pos)
 	Chapters.on_load(self)
+	if cave:
+		Caves.populate(self)
 
 
 ## Cấp quái theo vị trí trên map hiện tại.
@@ -668,6 +689,8 @@ func _update_fog(dt: float) -> void:
 	if fog.version == _fog_saved:
 		return
 	_fog_saved = fog.version
+	if in_cave():
+		return
 	profile.fog[map_id] = fog.encode()
 	_check_fog_rewards()
 
@@ -768,6 +791,8 @@ func is_boss_defeated(boss_id: String) -> bool:
 
 ## Lý do không vào được map; "" nếu được. Map đã mở điểm dịch chuyển thì luôn vào được.
 func travel_blocker(id: String) -> String:
+	if Caves.is_cave(id):
+		return Caves.blocker(self, id)
 	if not Maps.MAPS.has(id):
 		return "Vùng đất này chưa mở trong bản thử nghiệm."
 	if id == map_id:
@@ -821,7 +846,7 @@ func travel_seconds() -> float:
 	return TRAVEL_TIME * ((1.0 - tv(0.1, 0.15)) if profile.talent == "chan-khong" else 1.0)
 
 
-func travel(id: String) -> Dictionary:
+func travel(id: String, via_portal := false) -> Dictionary:
 	var res := {"ok": false, "message": ""}
 	var block := travel_blocker(id)
 	if block == "" and boss() != null:
@@ -835,9 +860,10 @@ func travel(id: String) -> Dictionary:
 		_message(block, "bad")
 		return res
 	travel_target = id
-	travel_timer = travel_seconds()
+	_arrive_via = map_id if via_portal else ""
+	travel_timer = Caves.TRAVEL_TIME if (Caves.is_cave(id) or in_cave()) else travel_seconds()
 	res.ok = true
-	res.message = "Lên đường tới %s…" % Maps.MAPS[id].name
+	res.message = "Lên đường tới %s…" % Maps.get_map(id).name
 	_message(res.message, "info")
 	return res
 
@@ -846,8 +872,18 @@ func _arrive() -> void:
 	var id := travel_target
 	travel_target = ""
 	travel_timer = 0.0
-	var first: bool = not (id in profile.unlocked_maps)
+	var first: bool = not Caves.is_cave(id) and not (id in profile.unlocked_maps)
 	_load_map(id)
+	# MP-09: tới bằng cổng thì đứng cạnh cổng dẫn ngược về map cũ.
+	var back := Portals.find_to(portals, _arrive_via) if _arrive_via != "" else {}
+	_arrive_via = ""
+	if not back.is_empty():
+		player.pos = Portals.arrive_pos(back, world_size)
+		portal_inside = portals.find(back)
+		for a in allies:
+			a.pos = player.pos + Vector2((float(_rng.call()) - 0.5) * 80.0, (float(_rng.call()) - 0.5) * 80.0)
+		fog.reveal(player.pos, Fog.REVEAL_R)
+		profile.fog[id] = fog.encode()
 	_events.append({"type": "map", "map_id": id, "first": first})
 	if id == "1-3":
 		say("core")
@@ -855,6 +891,51 @@ func _arrive() -> void:
 	var warn := challenge_warning(id)
 	if warn != "":
 		_message(warn, "bad")
+
+
+## MP-09: bước vào cổng. Cổng next/back → travel(); Cổng Dịch Chuyển → sự kiện "waypoint" (main mở bảng lục địa).
+func _check_portals() -> void:
+	var inside := -1
+	for i in portals.size():
+		if player.pos.distance_to(portals[i].pos) <= Portals.RADIUS:
+			inside = i
+			break
+	if inside == portal_inside:
+		return
+	portal_inside = inside
+	if inside < 0:
+		return
+	var pt: Dictionary = portals[inside]
+	if pt.kind == "waypoint":
+		_events.append({"type": "waypoint"})
+		return
+	move_target = Vector2.INF
+	travel(str(pt.to), true)
+
+
+## HP (docs/15): đang ở trong hang phụ.
+func in_cave() -> bool:
+	return Caves.is_cave(map_id)
+
+
+## Sinh quái kèm hook chương (dùng cho hang phụ).
+func spawn_with_hooks(kind: String, level: int, pos: Vector2, opts: Dictionary = {}) -> Enemy:
+	var e := spawn_enemy(kind, level, pos, opts)
+	Chapters.after_spawn(self, e)
+	return e
+
+
+func add_pickup(pos: Vector2, kind: String, value: float) -> void:
+	var pk := Pickup.new()
+	pk.pos = pos
+	pk.kind = kind
+	pk.value = value
+	pickups.append(pk)
+
+
+## MP-09: đang đứng ở Cổng Dịch Chuyển (bảng lục địa chỉ cho chọn nơi đến khi đứng đây).
+func at_waypoint() -> bool:
+	return portal_inside >= 0 and portal_inside < portals.size() and portals[portal_inside].kind == "waypoint"
 
 
 func boss() -> Enemy:
@@ -915,6 +996,9 @@ func update(dt: float, input: Dictionary) -> void:
 		p.dead_timer -= dt
 		if p.dead_timer <= 0.0:
 			_respawn()
+		return
+	_check_portals()
+	if travel_timer > 0.0:
 		return
 
 	p.attack_cd -= dt
@@ -2015,6 +2099,9 @@ func add_exp(amount: float, from_combat: bool) -> void:
 	if from_combat and Explore.has_wonder(profile.tiles):
 		gain *= 1.1
 	profile.xp += int(round(gain))
+	# Spec_Notes đợt 6 (UI-09): hạ quái hiện "+N EXP" cùng cột chữ nhặt đồ (gộp trong 1 giây).
+	if from_combat and gain >= 0.5:
+		_pickup_note("exp", "+%d EXP", gain, Color("#c79bff"))
 	while profile.level < Config.MAX_LEVEL and profile.xp >= Formulas.exp_to_next(profile.level):
 		profile.xp -= Formulas.exp_to_next(profile.level)
 		profile.level += 1
@@ -2133,6 +2220,11 @@ func _hit_enemy(e: Enemy, skill_mul: float, force_crit := false, aoe := false) -
 	var raw := Formulas.compute_damage(stats.atk, e.def * Skills2.def_mult(self, sid), mul, element_bonus(e), talent_bonus) * (0.9 + _r() * 0.2)
 	var dmg := maxi(1, int(round(raw)))
 	_last_combat = time
+	# CB-30: bị đánh từ xa → Truy kích (và bắt đầu đuổi ngay nếu đang đi lang thang).
+	if e.role != "boss" and e.role != "rare" and e.pos.distance_to(player.pos) > RUSH_MIN_DIST:
+		e.rush_timer = RUSH_TIME
+		if e.state == "idle":
+			e.state = "chase"
 	combo += 1
 	_combo_timer = COMBO_TIMEOUT
 	# Hấp Huyết: 8% sát thương thành máu.
@@ -2242,6 +2334,7 @@ func _kill_enemy(e: Enemy) -> void:
 	if int(map.get("region", 1)) == 2 and int(profile.quest.ch2) == 2:
 		profile.quest.kills2 = int(profile.quest.kills2) + 1
 	Chapters.on_kill(self, e)
+	Caves.on_kill(self, e)
 	var is_boss := e.role == "boss"
 	var base := float(boss_exp(e.level)) if is_boss else float(Formulas.mob_exp(e.level, e.elite))
 	if e.role == "rare":
@@ -2415,6 +2508,7 @@ func _update_enemy(e: Enemy, dt: float) -> void:
 	var d := e.pos.distance_to(p.pos)
 	e.root_timer -= dt
 	e.haste_timer -= dt
+	e.rush_timer -= dt
 	if e.bleed_timer > 0.0:
 		e.bleed_timer -= dt
 		e.bleed_tick += dt
@@ -2475,11 +2569,11 @@ func _update_enemy(e: Enemy, dt: float) -> void:
 				e.timer = 2.0 + _r() * 3.0
 			else:
 				_move_toward(e, e.wander, e.speed * 0.35, dt)
-			var aggro := 2000.0 if e.role == "boss" else (700.0 if e.role == "rare" else 260.0)
+			var aggro := 2000.0 if e.role == "boss" else (700.0 if e.role == "rare" else AGGRO_FIELD)
 			if alive and not player_safe and d < aggro:
 				e.state = "chase"
 		"chase":
-			var leash := e.role != "boss" and (d > (900.0 if e.role == "rare" else 560.0) or player_safe)
+			var leash := e.role != "boss" and (d > (900.0 if e.role == "rare" else LEASH_FIELD) or player_safe)
 			if not alive or leash:
 				e.state = "idle"
 				e.home = e.pos
@@ -2535,7 +2629,7 @@ func _update_enemy(e: Enemy, dt: float) -> void:
 			if d <= e.radius + e.attack_range + PLAYER_RADIUS:
 				_begin_attack(e, def.attack, def.windup)
 				return
-			_move_toward(e, p.pos, e.speed, dt)
+			_move_toward(e, p.pos, chase_speed(e), dt)
 		"windup":
 			e.timer -= dt
 			if e.timer <= 0.0:
@@ -2797,7 +2891,7 @@ func _update_spawning(dt: float) -> void:
 	for e in enemies:
 		if not e.dead and e.role == "field":
 			field += 1
-	if field < field_mob_cap() and field_spawn:
+	if field < field_mob_cap() and field_spawn and not in_cave():
 		_spawn_field_mob()
 
 
@@ -3102,6 +3196,32 @@ func _text(pos: Vector2, text: String, color: Color, big: bool) -> void:
 	t.ttl = 1.1 if big else 0.8
 	t.big = big
 	texts.append(t)
+
+
+## CB-30 (Spec_Notes đợt 6: "quái tiếp cận chậm, cung/pháp sư thả diều được"): quái thường + tinh anh khi
+## đuổi chạy nhanh hơn, quái cận chiến có tốc độ đuổi tối thiểu, bị bắn từ xa thì Truy kích; tầm phát hiện /
+## bỏ đuổi xa hơn. Boss và boss hiếm giữ nguyên (đã cân bằng riêng — TL-B…).
+const CHASE_MULT := 1.25
+const CHASE_FLOOR := 165.0
+const RUSH_MULT := 1.5
+const RUSH_TIME := 1.5
+const RUSH_MIN_DIST := 150.0
+const AGGRO_FIELD := 330.0
+const LEASH_FIELD := 700.0
+const RANGED_ARCHES := ["xa", "phep"]
+
+
+## Tốc độ đuổi của quái (CB-30).
+func chase_speed(e: Enemy) -> float:
+	if e.role == "boss" or e.role == "rare" or e.speed <= 0.0:
+		return e.speed
+	var def: Dictionary = Monsters.DEFS[e.kind]
+	var v := e.speed * CHASE_MULT
+	if not (str(def.get("arch", "")) in RANGED_ARCHES):
+		v = maxf(v, CHASE_FLOOR)
+	if e.rush_timer > 0.0:
+		v *= RUSH_MULT
+	return v
 
 
 const PICKUP_NOTE_TTL := 1.8

@@ -170,6 +170,12 @@ func _init() -> void:
 	# Spec_Notes đợt 5
 	_run("SN5-T1 bấm bản đồ nhỏ: tự chạy tới, tới nơi / tự đi / kẹt / đổi map thì dừng", _test_sn5_travel)
 	_run("SN5-T2 chữ nhặt đồ: xếp dòng, gộp vàng, mỗi món một dòng, tối đa 6", _test_sn5_pickup_notes)
+	# Spec_Notes đợt 6
+	_run("SN6-T1 hạ quái hiện +EXP cùng cột chữ nhặt đồ (gộp), EXP nhiệm vụ không hiện", _test_sn6_exp_note)
+	_run("SN6-T3 quái áp sát nhanh hơn: đuổi ×1,25, tối thiểu 165 (cận chiến), Truy kích khi bị đánh từ xa, boss giữ nguyên", _test_sn6_chase)
+	_run("SN6-T2 cổng dịch chuyển: cổng tiến/lùi theo thứ tự map, khoá theo điều kiện, tới nơi đứng cạnh cổng về, Cổng Dịch Chuyển", _test_sn6_portals)
+	_run("SN6-T4 hang phụ: cửa hang mỗi map, vào hang 1,5 giây, không tính map đã mở, cổng ra về cạnh cửa hang", _test_sn6_cave_enter)
+	_run("SN6-T5 hang phụ: 3 khu quái + Chúa Hang, không sinh thêm, thưởng ≥ Xanh dương, đóng 20 phút, save v15", _test_sn6_cave_clear)
 	# SK1 — hệ kỹ năng (docs/13)
 	_run("SK1-T1 kỹ năng mở theo cấp 1/1/4/8, kỹ năng khoá không dùng được", _test_sk1_unlock)
 	_run("SK1-T2 Điểm Kỹ Năng, cấp kỹ năng +8% / −4% hồi chiêu, tẩy điểm ở vùng an toàn", _test_sk1_levels)
@@ -4277,6 +4283,156 @@ func _test_sn5_pickup_notes() -> void:
 	_check(w.pickup_notes.size() == GameWorld.PICKUP_NOTES_MAX, "tối đa 6 dòng")
 	_tick(w, {}, 200)
 	_check(w.pickup_notes.is_empty(), "các dòng tự mất sau vài giây")
+
+
+func _test_sn6_exp_note() -> void:
+	var w := _world("tay-nhanh")
+	w.pickup_notes = []
+	w.add_exp(20.0, true)
+	w.add_exp(15.0, true)
+	var notes := w.pickup_notes.filter(func(n): return n.key == "exp")
+	_check(notes.size() == 1 and notes[0].text == "+35 EXP", "2 lần hạ quái liền nhau gộp 1 dòng (%s)" % (notes[0].text if notes.size() > 0 else "—"))
+	w.pickup_notes = []
+	w.add_exp(80.0, false)
+	_check(w.pickup_notes.is_empty(), "EXP thưởng nhiệm vụ không hiện ở cột nhặt đồ")
+
+
+func _test_sn6_chase() -> void:
+	var w := _world("tay-nhanh")
+	w.field_spawn = false
+	w.enemies = []
+	var p := w.player.pos
+	var slow = w.spawn_enemy("linh-danh-thue", 5, p + Vector2(400, 0))
+	var ranged = w.spawn_enemy("cung-thu", 5, p + Vector2(0, 400))
+	_check(w.chase_speed(slow) >= GameWorld.CHASE_FLOOR, "quái giáp chậm (%.0f) đuổi ≥ %.0f (%.0f)" % [slow.speed, GameWorld.CHASE_FLOOR, w.chase_speed(slow)])
+	_check(is_equal_approx(w.chase_speed(ranged), ranged.speed * GameWorld.CHASE_MULT), "quái đánh xa chỉ ×1,25, không áp tối thiểu")
+	var before: float = w.chase_speed(slow)
+	slow.state = "idle"
+	w._hit_enemy(slow, 0.01)
+	_check(slow.rush_timer > 0.0 and slow.state == "chase" and w.chase_speed(slow) > before * 1.4, "bị đánh từ xa → Truy kích và đuổi ngay")
+	var boss = w.spawn_enemy("boss", 6, p + Vector2(600, 0), {"role": "boss"})
+	_check(is_equal_approx(w.chase_speed(boss), boss.speed), "boss giữ nguyên tốc độ")
+
+
+func _cave_world() -> GameWorld:
+	var w := _world("tay-nhanh")
+	w.field_spawn = false
+	w.enemies = []
+	w.profile.level = 8
+	return w
+
+
+func _enter_cave(w: GameWorld) -> void:
+	const Portals = preload("res://scripts/core/portals.gd")
+	var cp: Dictionary = w.portals.filter(func(pt): return pt.kind == "cave")[0]
+	w.player.pos = cp.pos
+	_tick(w, {}, 1)
+	_tick(w, {}, 100)
+
+
+func _test_sn6_cave_enter() -> void:
+	const Portals = preload("res://scripts/core/portals.gd")
+	const Caves = preload("res://scripts/core/caves.gd")
+	for id in Portals.chain():
+		var cps := Portals.list(id).filter(func(pt): return pt.kind == "cave")
+		var ok: bool = cps.size() == 1 and str(cps[0].to) == "cave-" + id
+		for pt in Portals.list(id):
+			if pt.kind != "cave" and cps.size() == 1 and pt.pos.distance_to(cps[0].pos) < 200.0:
+				ok = false
+		_check(ok, "%s: 1 cửa hang (%s), cách xa cổng khác" % [id, Caves.name_of(id)])
+	var w := _cave_world()
+	w.player.pos = w.portals.filter(func(pt): return pt.kind == "cave")[0].pos
+	_tick(w, {}, 1)
+	_check(w.travel_timer > 0.0 and absf(w.travel_timer - Caves.TRAVEL_TIME) < 0.05, "bước vào cửa hang → đi đường 1,5 giây")
+	_tick(w, {}, 100)
+	_check(w.map_id == "cave-1-1" and w.in_cave() and not ("cave-1-1" in w.profile.unlocked_maps), "đang ở trong hang, không thêm vào map đã mở")
+	_check(w.profile.map_id == "1-1", "save ghi map cha khi đang trong hang")
+	var kinds := w.portals.map(func(pt): return pt.kind)
+	_check(kinds == ["exit"], "trong hang chỉ có cổng ra (%s)" % str(kinds))
+	_check(int(w.map.levels[0]) == int(MapsData.MAPS["1-1"].levels[1]), "cấp hang = cấp cao nhất map cha")
+	w.enemies = []
+	w.player.pos = w.portals[0].pos + Vector2(0, 200)
+	_tick(w, {}, 1)
+	w.player.pos = w.portals[0].pos
+	_tick(w, {}, 1)
+	_tick(w, {}, 100)
+	var cave_pt: Dictionary = Portals.find_to(w.portals, "cave-1-1")
+	_check(w.map_id == "1-1" and w.player.pos.distance_to(cave_pt.pos) < 160.0, "ra hang về Rừng Sương, đứng cạnh cửa hang")
+
+
+func _test_sn6_cave_clear() -> void:
+	const Caves = preload("res://scripts/core/caves.gd")
+	var w := _cave_world()
+	_enter_cave(w)
+	var alive := w.enemies.filter(func(e): return not e.dead)
+	var bosses := alive.filter(func(e): return e.cave_boss)
+	var elites := alive.filter(func(e): return e.elite and not e.cave_boss)
+	_check(alive.size() == 16 and bosses.size() == 1 and elites.size() == 2, "16 quái: 1 Chúa Hang, 2 tinh anh (%d / %d / %d)" % [alive.size(), bosses.size(), elites.size()])
+	var boss = bosses[0]
+	var ref = w.spawn_enemy(boss.kind, boss.level, Vector2(100, 100), {"elite": true})
+	_check(is_equal_approx(boss.max_hp, ref.max_hp * Caves.BOSS_HP), "Chúa Hang HP ×5")
+	ref.dead = true
+	w.enemies = [boss]
+	_tick(w, {}, 300)
+	_check(w.enemies.filter(func(e): return not e.dead and e.role == "field").size() <= 1, "trong hang không sinh thêm quái")
+	w.pickups = []
+	w._kill_enemy(boss)
+	var items := w.pickups.filter(func(pk): return pk.kind == "item")
+	_check(items.size() >= 1 and items.any(func(pk): return pk.item.rarity in ["blue", "purple", "orange"]), "rơi món Xanh dương trở lên")
+	_check(w.portals.filter(func(pt): return pt.kind == "exit").size() == 2, "hiện cổng ra tại chỗ Chúa Hang")
+	_check(Caves.reopen_in(w, "1-1") > 1100.0, "hang đóng ~20 phút")
+	var d: Dictionary = w.profile.to_dict()
+	var p2 := Profile.new()
+	_check(p2.load_dict(JSON.parse_string(JSON.stringify(d))) and int(d.version) == 15 and float(p2.caves.get("1-1", 0.0)) > 0.0, "save v15 giữ thời điểm hang mở lại")
+	var w2 := GameWorld.new(p2, RngUtil.make(3))
+	_check(w2.map_id == "1-1", "vào lại game khi đang trong hang → map cha")
+	_check(w2.travel_blocker("cave-1-1").begins_with("Hang đã dọn"), "ra map cha: vào lại hang bị chặn (%s)" % w2.travel_blocker("cave-1-1"))
+	w2.profile.play_seconds += Caves.COOLDOWN + 1.0
+	_check(w2.travel_blocker("cave-1-1") == "", "sau 20 phút hang mở lại")
+
+
+func _test_sn6_portals() -> void:
+	const Portals = preload("res://scripts/core/portals.gd")
+	var chain := Portals.chain()
+	_check(chain[0] == "1-1" and chain[1] == "1-3" and chain[2] == "2-1", "thứ tự map theo vùng (%s…)" % str(chain.slice(0, 3)))
+	var l11 := Portals.list("1-1")
+	var kinds := l11.map(func(pt): return pt.kind)
+	_check(not ("back" in kinds) and "next" in kinds and "waypoint" in kinds, "map đầu: không có cổng lùi (%s)" % str(kinds))
+	var l13 := Portals.list("1-3")
+	_check(Portals.find_to(l13, "1-1").kind == "back" and Portals.find_to(l13, "2-1").kind == "next", "Lõi Sương: lùi về Rừng Sương, tiến sang Cửa Gió")
+	for id in chain:
+		var m: Dictionary = MapsData.get_map(id)
+		for pt in Portals.list(id):
+			var inside: bool = Rect2(Vector2.ZERO, m.size).grow(-40.0).has_point(pt.pos)
+			var before_wall: bool = not m.get("gate", false) or m.arena == null or pt.pos.x < float(m.arena.pos.x) - float(m.arena.r) - 60.0
+			_check(inside and before_wall, "%s: cổng %s nằm trong map, trước tường sương" % [id, pt.kind])
+
+	var w := _world("tay-nhanh")
+	w.field_spawn = false
+	w.enemies = []
+	var nxt := Portals.find_to(w.portals, "1-3")
+	w.player.pos = nxt.pos
+	_tick(w, {}, 1)
+	_check(w.travel_timer <= 0.0 and w.map_id == "1-1", "chưa hạ Sói Chúa: bước vào cổng không đi")
+	w.profile.boss_defeated = true
+	w.profile.level = 10
+	_tick(w, {}, 1)
+	_check(w.travel_timer <= 0.0, "đứng yên trong cổng không kích hoạt lại")
+	w.player.pos = nxt.pos + Vector2(0, 200)
+	_tick(w, {}, 1)
+	w.player.pos = nxt.pos
+	_tick(w, {}, 1)
+	_check(w.travel_timer > 0.0 and w.travel_target == "1-3", "bước ra rồi vào lại → lên đường tới Lõi Sương")
+	_tick(w, {}, roundi(w.travel_seconds() * 60.0) + 5)
+	var back := Portals.find_to(w.portals, "1-1")
+	_check(w.map_id == "1-3" and w.player.pos.distance_to(back.pos) < 160.0, "tới nơi đứng cạnh cổng về Rừng Sương (cách %.0f)" % w.player.pos.distance_to(back.pos))
+	_tick(w, {}, 30)
+	_check(w.travel_timer <= 0.0 and w.map_id == "1-3", "vừa tới không bị cổng về kéo ngược lại")
+	var wp: Dictionary = w.portals.filter(func(pt): return pt.kind == "waypoint")[0]
+	w.drain_events()
+	w.player.pos = wp.pos
+	_tick(w, {}, 1)
+	_check(w.at_waypoint() and w.drain_events().any(func(ev): return ev.type == "waypoint"), "bước vào Cổng Dịch Chuyển → mở bảng lục địa")
 
 
 # ------------------------------------------------------------------ M9 — Chương 6 Băng Nguyên Vĩnh Dạ (docs/14)

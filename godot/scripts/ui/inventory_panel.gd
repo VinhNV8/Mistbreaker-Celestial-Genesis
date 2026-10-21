@@ -1,5 +1,5 @@
 extends "res://scripts/ui/modal.gd"
-## Túi đồ (phím I) — EQ-18: ô đang mặc, túi 30 ô, chi tiết + so sánh, Mặc/Tháo/Cường hoá/Phân rã.
+## Túi đồ (phím I; phím C mở thẳng tab Chỉ số — UI-11) — EQ-18: ô đang mặc, túi 30 ô, chi tiết + so sánh, Mặc/Tháo/Cường hoá/Phân rã.
 
 const Items = preload("res://scripts/core/items.gd")
 const ItemData = preload("res://scripts/data/items.gd")
@@ -8,11 +8,12 @@ const Classes = preload("res://scripts/data/classes.gd")
 const Resources = preload("res://scripts/data/resources.gd")
 const CreateScreen = preload("res://scripts/ui/create_screen.gd")
 const BulkBox = preload("res://scripts/ui/bulk_box.gd")
+const StatsPage = preload("res://scripts/ui/stats_page.gd")
 
 const DETAIL_W := 300.0
 
 var _selected_id := -1
-## "bag" | "res"
+## "bag" | "res" | "stats" (UI-11: bảng Chỉ số gộp vào Túi đồ)
 var _tab := "bag"
 ## Hiệu ứng vừa cường hoá: {item_id, success, plus, t}
 var _fx := {}
@@ -81,9 +82,11 @@ class EnhanceBurst:
 
 func _render(content: VBoxContainer) -> void:
 	var p = world.profile
-	_header(content, "Túi đồ · Lực chiến %d" % world.combat_power(), "Đóng (I)")
+	_header(content, "Nhân vật · Lực chiến %d" % world.combat_power(), "Đóng (I)")
 	var tabs := UiTheme.hbox(8)
-	for pair in [["bag", "Túi đồ %d/%d" % [p.inventory.size(), ItemData.BAG_SIZE]], ["res", "Tài nguyên"]]:
+	var stats_label := "Chỉ số (C)" + (" · +%d điểm" % p.unspent if p.unspent > 0 else "")
+	# Spec_Notes đợt 6: thứ tự tab Chỉ số (C) | Túi đồ (I) | Tài nguyên.
+	for pair in [["stats", stats_label], ["bag", "Túi đồ (I) %d/%d" % [p.inventory.size(), ItemData.BAG_SIZE]], ["res", "Tài nguyên"]]:
 		var tb := UiTheme.button(pair[1], _tab == pair[0])
 		tb.name = "Tab_" + pair[0]
 		var key: String = pair[0]
@@ -99,6 +102,10 @@ func _render(content: VBoxContainer) -> void:
 	body.add_child(_character_column(p))
 	if _tab == "res":
 		body.add_child(_resource_list(p))
+	elif _tab == "stats":
+		var page := UiTheme.vbox(10)
+		StatsPage.build(page, world, refresh)
+		body.add_child(page)
 	else:
 		body.add_child(_bag_grid(p))
 		body.add_child(_detail(p))
@@ -389,3 +396,12 @@ func _play_burst(success: bool, plus: int) -> void:
 	fx.size = Vector2(240, 200)
 	add_child(fx)
 	fx.position = get_viewport_rect().size / 2.0 + Vector2(220, -120)
+
+
+## UI-11: mở Túi đồ ở một tab (phím I → "bag", phím C → "stats"). Đang mở đúng tab đó thì đóng.
+func toggle_tab(w, tab: String) -> void:
+	if visible and _tab == tab:
+		close()
+		return
+	_tab = tab
+	open(w)

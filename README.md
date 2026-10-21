@@ -23,6 +23,7 @@ Trạng thái: Chương 1 chơi được trên Godot 4.7.2. Đang làm **MVP**: 
 | [docs/06-ban-do-quai-boss.md](docs/06-ban-do-quai-boss.md) | Thiết kế nội dung | Công thức chỉ số; 9 vùng, môi trường, quái, tinh anh, boss chương, boss hiếm, đồ Cam. Sinh bằng script — xem đầu file. Đã chốt Q22–Q27 |
 | [docs/07-do-hoa-ke-hoach.md](docs/07-do-hoa-ke-hoach.md) | Đồ hoạ | Nghiên cứu, phong cách pixel art đã chốt, hạng mục AR-xx, kết quả G1. Sinh hình: `python tools/art/build_all.py` (skill `game-art`) |
 | [docs/08-chuong-1-hoan-chinh.md](docs/08-chuong-1-hoan-chinh.md) | Kế hoạch | Đợt C1: hoàn chỉnh Chương 1, kết hợp ghi chú Spec_Notes (N1–N7), hạng mục C1-xx |
+| [docs/15-hang-phu.md](docs/15-hang-phu.md) | Thiết kế nội dung | Hang phụ trong từng map (Spec_Notes đợt 6): cửa hang, 3 khu quái, Chúa Hang, thưởng, đóng 20 phút, save v15 |
 | [docs/04-ke-hoach-tien-do.md](docs/04-ke-hoach-tien-do.md) | **Theo dõi tiến độ** | 173 hạng mục của kịch bản: đã làm / một phần / chưa làm, đợt sẽ làm, việc cần làm từng đợt, quyết định đang chờ |
 
 ## Chạy nhanh

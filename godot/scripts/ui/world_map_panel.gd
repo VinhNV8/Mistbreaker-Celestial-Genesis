@@ -1,5 +1,7 @@
 extends "res://scripts/ui/modal.gd"
 ## MP-02: bản đồ lục địa (phím N) — 9 vùng của Huyền Thổ, map con, điểm dịch chuyển, nút Lên đường.
+## MP-09: chỉ chọn được nơi đến khi đứng ở Cổng Dịch Chuyển (vùng an toàn) và chỉ tới map đã mở; map mới
+## phải đi bộ qua cổng ở rìa map. Mở bằng phím N ở chỗ khác thì chỉ để xem.
 
 const Maps = preload("res://scripts/data/maps.gd")
 const Monsters = preload("res://scripts/data/monsters.gd")
@@ -18,8 +20,8 @@ func _render(content: VBoxContainer) -> void:
 		l.add_theme_color_override("font_color", UiTheme.GOLD)
 		content.add_child(l)
 	var here: Dictionary = Maps.get_map(world.map_id)
-	content.add_child(UiTheme.label("Đang ở: %s · cấp %d–%d. Lên đường khi không giao chiến; mất %.1f giây đi đường." % [
-		here.name, here.levels[0], here.levels[1], world.travel_seconds()], "Muted", W))
+	var how := "Đang đứng ở Cổng Dịch Chuyển — chọn một map đã mở để đi (mất %.1f giây)." % world.travel_seconds() if world.at_waypoint() 		else "Muốn đi: bước vào cổng ở rìa map (sang map kề bên), hoặc tới Cổng Dịch Chuyển trong vùng an toàn để về nhanh map đã mở."
+	content.add_child(UiTheme.label("Đang ở: %s · cấp %d–%d. %s" % [here.name, here.levels[0], here.levels[1], how], "Muted", W))
 	var grid := GridContainer.new()
 	grid.columns = 3
 	grid.add_theme_constant_override("h_separation", 8)
@@ -69,8 +71,16 @@ func _region_card(r: Dictionary) -> Control:
 			var b := UiTheme.button("Lên đường")
 			b.name = "Travel_" + m_id
 			b.add_theme_font_size_override("font_size", 12)
-			b.disabled = block != ""
-			b.tooltip_text = block if block != "" else world.challenge_warning(m_id)
+			var at_wp: bool = world.at_waypoint()
+			b.disabled = block != "" or not unlocked or not at_wp
+			if block != "":
+				b.tooltip_text = block
+			elif not unlocked:
+				b.tooltip_text = "Lần đầu phải đi bộ qua cổng ở rìa map."
+			elif not at_wp:
+				b.tooltip_text = "Tới Cổng Dịch Chuyển trong vùng an toàn để đi nhanh."
+			else:
+				b.tooltip_text = world.challenge_warning(m_id)
 			var id: String = m_id
 			b.pressed.connect(func():
 				var res: Dictionary = world.travel(id)

@@ -2,6 +2,8 @@ extends Node2D
 ## Vẽ thế giới. Có hình pixel art (assets/, sinh bằng tools/art) thì vẽ sprite; thiếu hình thì vẽ hình khối tạm.
 ## Chỉ đọc trạng thái GameWorld, không đổi logic (technical spec D2, D6).
 
+const Maps = preload("res://scripts/data/maps.gd")
+const ElementIcon = preload("res://scripts/ui/element_icon.gd")
 const GameWorld = preload("res://scripts/core/game_world.gd")
 const Talents = preload("res://scripts/data/talents.gd")
 const UiTheme = preload("res://scripts/ui/ui_theme.gd")
@@ -114,13 +116,15 @@ func _build_decor() -> void:
 			continue
 		if absf(pos.y - safe.y) < 90.0 and pos.x > safe.x and pos.x < path_end:
 			continue
+		if _near_portal(pos):
+			continue
 		_trees.append({"pos": pos, "r": 16.0 + rng.randf() * 22.0, "shade": rng.randf(), "variant": rng.randi() % 4})
 	_desert = []
 	if bool(world.map.get("desert", false)):
 		var n_cactus := roundi(55 * world.area_factor())
 		for i in n_cactus:
 			var cp := Vector2(rng.randf() * size.x, rng.randf() * size.y)
-			if cp.distance_to(safe) < world.safe_r + 60.0 or Ch3.oasis_at(world, cp) >= 0:
+			if cp.distance_to(safe) < world.safe_r + 60.0 or Ch3.oasis_at(world, cp) >= 0 or _near_portal(cp):
 				continue
 			_desert.append({"pos": cp, "id": "cactus-%d" % (rng.randi() % 2), "scale": 1.0 + rng.randf() * 0.4, "flip": rng.randf() < 0.5})
 		for o in Ch3.oases(world):
@@ -130,11 +134,29 @@ func _build_decor() -> void:
 		if str(world.map.get("decor", "")) == "ruins":
 			for i in roundi(30 * world.area_factor()):
 				var pp := Vector2(rng.randf() * size.x, rng.randf() * size.y)
-				if pp.distance_to(safe) < world.safe_r + 80.0 or (world.map.arena != null and pp.distance_to(world.arena_pos) < world.arena_r + 60.0):
+				if pp.distance_to(safe) < world.safe_r + 80.0 or (world.map.arena != null and pp.distance_to(world.arena_pos) < world.arena_r + 60.0) or _near_portal(pp):
 					continue
 				_desert.append({"pos": pp, "id": "pillar-%d" % (rng.randi() % 2), "scale": 1.0 + rng.randf() * 0.5, "flip": false})
+	# HP-04: hang phụ — đá rải dày dọc 2 vách trên/dưới, lác đác giữa hang (chừa cửa hang, cổng, khu Chúa Hang).
+	if bool(world.map.get("cave", false)):
+		var rid: String = {3: "rock-desert", 5: "rock-lava", 6: "rock-ice"}.get(int(world.map.get("region", 1)), "rock")
+		for i in 90:
+			var edge := i < 70
+			var y := (rng.randf() * 150.0 if rng.randf() < 0.5 else size.y - rng.randf() * 150.0) if edge else 260.0 + rng.randf() * (size.y - 520.0)
+			var rp := Vector2(rng.randf() * size.x, y)
+			if rp.distance_to(safe) < world.safe_r + 80.0 or _near_portal(rp) or rp.distance_to(Vector2(2300, size.y / 2.0)) < 220.0:
+				continue
+			_desert.append({"pos": rp, "id": "%s-%d" % [rid, rng.randi() % 2], "scale": (1.3 + rng.randf() * 0.8) if edge else (0.9 + rng.randf() * 0.4), "flip": rng.randf() < 0.5})
 	for i in roundi(160 * world.area_factor()):
 		_patches.append({"pos": Vector2(rng.randf() * size.x, rng.randf() * size.y), "r": 40.0 + rng.randf() * 110.0, "shade": rng.randf()})
+
+
+## MP-09: chừa chỗ quanh cổng dịch chuyển (không mọc cây / đá đè lên cổng).
+func _near_portal(pos: Vector2) -> bool:
+	for pt in world.portals:
+		if pos.distance_to(pt.pos) < 120.0:
+			return true
+	return false
 
 
 func _process(delta: float) -> void:
@@ -171,11 +193,13 @@ func _draw() -> void:
 	if world.map.arena != null:
 		_draw_arena()
 		R5View.draw_arena(self, world, _art)
+	_draw_portals()
 	if _art:
 		_draw_sorted(view)
 	else:
 		_draw_village()
 		_draw_trees(view)
+	_draw_portal_labels()
 	_draw_pickups()
 	if not _art:
 		_draw_herbs_chests()
@@ -346,6 +370,14 @@ func _draw_ground(view: Rect2) -> void:
 	var clear := Color(tint, 0.0)
 	var dense := Color(tint, float(world.map.get("fog", 0.45)))
 	draw_polygon(whole, PackedColorArray([clear, dense, dense, clear]))
+	# HP-04: hang tối đều + 2 vách đá trên/dưới
+	if bool(world.map.get("cave", false)):
+		var sz: Vector2 = world.world_size
+		draw_rect(Rect2(Vector2.ZERO, sz), Color(0.02, 0.01, 0.04, 0.5))
+		for band in [Rect2(0, 0, sz.x, 110), Rect2(0, sz.y - 110, sz.x, 110)]:
+			draw_rect(band, Color("#1b1620"))
+		draw_line(Vector2(0, 110), Vector2(sz.x, 110), Color("#3b3242"), 4.0)
+		draw_line(Vector2(0, sz.y - 110), Vector2(sz.x, sz.y - 110), Color("#3b3242"), 4.0)
 
 
 func _circle_points(c: Vector2, r: float, n := 48) -> PackedVector2Array:
@@ -369,16 +401,9 @@ func _draw_village_ground() -> void:
 
 
 ## Vị trí nhà trong vùng an toàn theo loại.
+## MP-09: bố cục chuyển sang Maps.safe_buildings() để cổng dịch chuyển tránh được nhà.
 func _safe_buildings() -> Array:
-	var kind: String = world.map.safe.kind
-	if bool(world.map.get("desert", false)) and kind == "camp":
-		return [[Vector2(-60, -50), "tent"], [Vector2(-110, 40), "tent"], [Vector2(20, -110), "tent"]]
-	if kind == "camp":
-		return [[Vector2(-50, -40), "hut"]]
-	if kind == "town":
-		return [[Vector2(-150, -120), "house-stone"], [Vector2(-170, 30), "house-stone"], [Vector2(-60, 150), "house-stone"],
-			[Vector2(70, -170), "house-stone"], [Vector2(130, 120), "tower"], [Vector2(-40, -200), "tower"]]
-	return [[Vector2(-90, -70), "hut"], [Vector2(-110, 40), "hut"], [Vector2(-30, 100), "hut"], [Vector2(60, -105), "hut"]]
+	return Maps.safe_buildings(world.map)
 
 
 func _draw_village() -> void:
@@ -497,7 +522,7 @@ func _draw_puzzle_pillar(pl: Dictionary) -> void:
 	draw_arc(pl.pos, Ch3.PILLAR_R, 0.0, TAU, 40, Color(col, 0.9), 3.0, true)
 	if SpriteLib.has_env("pillar-0"):
 		SpriteLib.draw_env(self, "pillar-0", pl.pos, col.lerp(Color.WHITE, 0.5), 1.4)
-	_label(Monsters.ELEMENT_NAMES[pl.element], pl.pos + Vector2(0, -80), col, 15)
+	ElementIcon.draw(self, pl.pos + Vector2(0, -84), str(pl.element), 13.0)
 
 
 func _feet(pos: Vector2, r: float) -> Vector2:
@@ -891,10 +916,57 @@ func _draw_enemy_overlay(e) -> void:
 		if e.max_poise > 0.0:
 			draw_rect(Rect2(top + Vector2(0, 5), Vector2(w, 3)), Color(0, 0, 0, 0.6))
 			draw_rect(Rect2(top + Vector2(0, 5), Vector2(w * maxf(0.0, e.poise) / e.max_poise, 3)), Color("#ffc940"))
-	if e.elite:
-		_label("%s · Lv%d" % [e.name, e.level], Vector2(e.pos.x, top_y - 6.0), Color("#ffd877"), 12)
+	_enemy_nameplate(e, Vector2(e.pos.x, top_y - 8.0))
+
+
+## UI-15 (Spec_Notes đợt 6): bảng tên quái "<biểu tượng hệ> Loại · Tên · Lv N" (tâm dưới tại `at`).
+## Loại: Thường (xám) · Tinh anh (vàng) · Thủ lĩnh (cam, chủ Ổ quái) · Hiếm (tím). Cấp tô màu theo chênh lệch
+## với người chơi: đỏ ≥ +5, cam > 0, trắng ngang, xám thấp hơn ≥ 5. Quái thường chỉ hiện khi ở gần (≤ 420)
+## hoặc đã bị đánh, cho đỡ rối màn hình.
+const NAMEPLATE_NEAR := 420.0
+
+
+func _enemy_nameplate(e, at: Vector2) -> void:
+	var plain: bool = not e.elite and e.role != "rare" and e.role != "nestGuard" and not e.cave_boss
+	if plain and e.hp >= e.max_hp and e.pos.distance_to(world.player.pos) > NAMEPLATE_NEAR:
+		return
+	var tier := "Thường"
+	var tcol := Color(0.75, 0.77, 0.8)
+	if e.cave_boss:
+		tier = "Chúa Hang"
+		tcol = Color("#ff7a45")
+	elif e.role == "rare":
+		tier = "Hiếm"
+		tcol = Color("#c79bff")
+	elif e.role == "nestGuard":
+		tier = "Thủ lĩnh"
+		tcol = Color("#ff9a3c")
+	elif e.elite:
+		tier = "Tinh anh"
+		tcol = Color("#ffd877")
+	var gap: int = int(e.level) - int(world.profile.level)
+	var lcol := Color.WHITE
+	if gap >= 5:
+		lcol = Color("#ff5470")
+	elif gap > 0:
+		lcol = Color("#ff9a3c")
+	elif gap <= -5:
+		lcol = Color(0.6, 0.6, 0.62)
+	var f := UiTheme.bold_font()
+	var fs := 12 if plain else 13
+	var parts := [[tier + " · ", tcol], [str(e.name) + " · ", Color(0.95, 0.93, 0.88)], ["Lv%d" % int(e.level), lcol]]
+	var total := 0.0
+	for pt in parts:
+		total += f.get_string_size(pt[0], HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
+	var icon_w := 16.0
+	var x := at.x - (total + icon_w) / 2.0
 	var el: String = Monsters.DEFS[e.kind].element
-	_label(Monsters.ELEMENT_NAMES[el], Vector2(e.pos.x + e.radius + 14.0, top_y + 10.0), Color(Monsters.ELEMENT_HEX[el], 0.8), 10)
+	ElementIcon.draw(self, Vector2(x + 6.0, at.y - fs * 0.35), el, 6.5, 0.95)
+	x += icon_w
+	for pt in parts:
+		draw_string_outline(f, Vector2(x, at.y), pt[0], HORIZONTAL_ALIGNMENT_LEFT, -1, fs, 4, Color(0, 0, 0, 0.8))
+		draw_string(f, Vector2(x, at.y), pt[0], HORIZONTAL_ALIGNMENT_LEFT, -1, fs, pt[1])
+		x += f.get_string_size(pt[0], HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
 
 
 ## Chỉ sinh tia trúng đòn ở frame đầu của mỗi lần nháy.
@@ -949,6 +1021,123 @@ func _draw_pickups() -> void:
 					SpriteLib.draw_env(self, "pickup-orb", at)
 				else:
 					draw_circle(at, 7.0, Color("#5bd16a"))
+
+
+## MP-09 / UI-14: cổng dịch chuyển — vòng phù văn nằm phẳng trên mặt đất (elip), 2 trụ đá có pha lê, cột sáng
+## mờ và hạt bay lên. Vẽ TRƯỚC nhân vật/quái (lớp mặt đất) nên nhân vật đứng trong cổng luôn hiện rõ.
+## Màu: vàng = cổng tiến đi được, xanh = cổng lùi, tím = Cổng Dịch Chuyển, xám = chưa đủ điều kiện.
+const PORTAL_SQUASH := 0.42
+
+
+func _portal_style(pt: Dictionary) -> Dictionary:
+	if pt.kind == "waypoint":
+		return {"col": Color("#b46bff"), "title": "Cổng Dịch Chuyển", "sub": "Về nhanh map đã mở", "open": true}
+	if pt.kind == "exit":
+		return {"col": Color("#7fe0c0"), "title": "Ra khỏi hang", "sub": "Về " + str(Maps.get_map(str(pt.to)).name), "open": true}
+	if pt.kind == "cave":
+		var cm: Dictionary = Maps.get_map(str(pt.to))
+		var cb: String = world.travel_blocker(str(pt.to))
+		return {"col": Color("#e08a3c") if cb == "" else Color(0.58, 0.52, 0.5), "title": str(cm.name),
+			"sub": ("Cấp %d–%d · Chúa Hang" % [int(cm.levels[0]), int(cm.levels[1])]) if cb == "" else cb, "open": cb == ""}
+	var m: Dictionary = Maps.get_map(str(pt.to))
+	var block: String = world.travel_blocker(str(pt.to))
+	var st := {"title": ("Tới " if pt.kind == "next" else "Về ") + str(m.name), "sub": "Cấp %d–%d" % [int(m.levels[0]), int(m.levels[1])], "open": block == ""}
+	if block != "":
+		st.col = Color(0.62, 0.58, 0.66)
+		st.sub = block
+	else:
+		st.col = Color("#ffc940") if pt.kind == "next" else Color("#6fb6ff")
+	return st
+
+
+func _draw_portals() -> void:
+	var t := world.time
+	for pt in world.portals:
+		var st := _portal_style(pt)
+		var col: Color = st.col
+		var on: bool = st.open
+		var c: Vector2 = pt.pos
+		var r := 46.0
+		var k := PORTAL_SQUASH
+		var glow := 0.75 + 0.25 * sin(t * 2.5)
+		# bóng + nền đá elip
+		draw_set_transform(c + Vector2(0, 4), 0.0, Vector2(1.0, k))
+		draw_circle(Vector2.ZERO, r + 16.0, Color(0, 0, 0, 0.35))
+		draw_set_transform(c, 0.0, Vector2(1.0, k))
+		draw_circle(Vector2.ZERO, r + 12.0, Color("#3a3444"))
+		draw_arc(Vector2.ZERO, r + 12.0, 0, TAU, 48, Color("#1d1924"), 4.0, true)
+		draw_arc(Vector2.ZERO, r + 8.0, 0, TAU, 48, Color("#c9a45c"), 3.0, true)
+		# phù văn quanh vành: 12 vạch sáng chạy vòng
+		for i in 12:
+			var a := TAU * i / 12.0 + t * 0.4
+			var lit := 0.35 + 0.65 * maxf(0.0, sin(t * 3.0 - i * 0.8))
+			var d := Vector2.from_angle(a)
+			draw_line(d * (r + 2.0), d * (r + 7.0), Color(col.lightened(0.3), lit if on else 0.25), 2.5, true)
+		# lòng cổng: nền tối + xoáy ánh sáng
+		draw_circle(Vector2.ZERO, r, Color(col.darkened(0.82), 0.95))
+		for j in 4:
+			var rr := r * (0.92 - j * 0.2)
+			draw_circle(Vector2.ZERO, rr, Color(col, (0.08 + j * 0.05) * (glow if on else 0.4)))
+		if on:
+			for j in 3:
+				var a0 := t * (1.6 + j * 0.5) + j * TAU / 3.0
+				draw_arc(Vector2.ZERO, r * (0.3 + j * 0.22), a0, a0 + PI * 1.1, 24, Color(col.lightened(0.45), 0.7 - j * 0.15), 3.0, true)
+			draw_circle(Vector2.ZERO, r * 0.16, Color(col.lightened(0.7), glow))
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+		# cột sáng mờ dâng lên (chỉ khi đi được)
+		if on:
+			for j in 6:
+				var hh := 26.0 + j * 14.0
+				var ww := r * (0.85 - j * 0.12)
+				draw_rect(Rect2(c + Vector2(-ww, -hh), Vector2(ww * 2.0, 14.0)), Color(col, 0.05 * glow))
+			for j in 7:
+				var ph := fmod(t * 0.6 + j * 0.37, 1.0)
+				var px := sin(j * 2.3 + t) * r * 0.6
+				draw_circle(c + Vector2(px, -ph * 90.0), 2.2 * (1.0 - ph) + 0.6, Color(col.lightened(0.6), 0.9 * (1.0 - ph)))
+		# 2 trụ đá hai bên + pha lê trên đỉnh
+		for side in [-1.0, 1.0]:
+			var base := c + Vector2(side * (r + 10.0), 0)
+			var pillar := Rect2(base + Vector2(-7, -54), Vector2(14, 56))
+			draw_rect(Rect2(base + Vector2(-9, -4), Vector2(18, 8)), Color("#2a2530"))
+			draw_rect(pillar, Color("#4a4356"))
+			draw_rect(Rect2(pillar.position, Vector2(4, pillar.size.y)), Color("#5e566c"))
+			draw_rect(pillar, Color("#c9a45c"), false, 1.5)
+			draw_rect(Rect2(base + Vector2(-10, -60), Vector2(20, 7)), Color("#c9a45c"))
+			var gem := base + Vector2(0, -72)
+			var gs := 7.0 + (1.0 if on else 0.0) * sin(t * 3.0 + side)
+			draw_circle(gem, gs + 6.0, Color(col, 0.18 * (glow if on else 0.4)))
+			draw_colored_polygon(PackedVector2Array([gem + Vector2(0, -gs - 3), gem + Vector2(gs * 0.7, 0), gem + Vector2(0, gs), gem + Vector2(-gs * 0.7, 0)]),
+				col if on else col.darkened(0.3))
+			draw_colored_polygon(PackedVector2Array([gem + Vector2(0, -gs - 3), gem + Vector2(gs * 0.7, 0), gem]), Color(1, 1, 1, 0.45))
+
+
+## Bảng tên cổng (vẽ sau cùng lớp thế giới để không bị cây che).
+func _draw_portal_labels() -> void:
+	var f := UiTheme.bold_font()
+	for pt in world.portals:
+		var st := _portal_style(pt)
+		var col: Color = st.col
+		var c: Vector2 = pt.pos + Vector2(0, -104)
+		var title: String = st.title
+		var sub: String = st.sub
+		var tw := f.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, 14).x
+		var sw := _font.get_string_size(sub, HORIZONTAL_ALIGNMENT_LEFT, -1, 11).x
+		var w := maxf(tw, sw) + 28.0
+		var rect := Rect2(c - Vector2(w / 2.0, 14), Vector2(w, 34))
+		var sb := StyleBoxFlat.new()
+		sb.bg_color = Color(0.07, 0.05, 0.1, 0.82)
+		sb.set_corner_radius_all(8)
+		sb.set_border_width_all(1)
+		sb.border_color = Color(col, 0.9)
+		draw_style_box(sb, rect)
+		_diamond_at(Vector2(rect.position.x, c.y + 3), 4.0, col)
+		_diamond_at(Vector2(rect.end.x, c.y + 3), 4.0, col)
+		_label(title, c + Vector2(0, 2), col.lightened(0.25), 14, true)
+		_label(sub, c + Vector2(0, 16), Color(0.88, 0.88, 0.9), 11)
+
+
+func _diamond_at(p: Vector2, s: float, col: Color) -> void:
+	draw_colored_polygon(PackedVector2Array([p + Vector2(0, -s), p + Vector2(s, 0), p + Vector2(0, s), p + Vector2(-s, 0)]), col)
 
 
 func _draw_herbs_chests() -> void:
@@ -1069,11 +1258,7 @@ func _draw_enemy(e: GameWorld.Enemy) -> void:
 			var top: Vector2 = e.pos + Vector2(-w / 2.0, -e.radius - 10.0)
 			draw_rect(Rect2(top, Vector2(w, 4)), Color(0, 0, 0, 0.6))
 			draw_rect(Rect2(top, Vector2(w * maxf(0.0, e.hp) / e.max_hp, 4)), Color("#ff5470"))
-		if e.elite:
-			_label("%s · Lv%d" % [e.name, e.level], e.pos + Vector2(0, -e.radius - 16.0), Color("#ffd877"), 12)
-		# TL-S6: hệ ngũ hành của quái.
-		var el: String = Monsters.DEFS[e.kind].element
-		_label(Monsters.ELEMENT_NAMES[el], e.pos + Vector2(e.radius + 14.0, -e.radius), Color(Monsters.ELEMENT_HEX[el], 0.8), 10)
+		_enemy_nameplate(e, e.pos + Vector2(0, -e.radius - 18.0))
 
 
 func _draw_player() -> void:

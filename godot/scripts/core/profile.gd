@@ -15,7 +15,8 @@ const Explore = preload("res://scripts/core/explore.gd")
 ## v12: M9 chương 6 — nhiệm vụ chương 6, Than Hồng (docs/14 mục 6).
 ## v13: SK1 hệ kỹ năng — Điểm Kỹ Năng, cấp kỹ năng, 4 ô lắp (docs/13).
 ## v14: SK2 — biến thể kỹ năng {id: [tầng I, II, III]} (docs/13).
-const VERSION := 14
+## v15: hang phụ — caves {map cha: giây chơi khi hang mở lại} (docs/15).
+const VERSION := 15
 
 var talent := ""
 var level := 1
@@ -113,6 +114,8 @@ var skill_points := 0
 var skill_levels := {}
 var loadout: Array = []
 var variants := {}
+## HP-07: hang đã dọn → mở lại khi play_seconds ≥ giá trị (docs/15).
+var caves := {}
 var crystal := 0.0
 var holy_water := 0
 var raid_play := 0.0
@@ -204,6 +207,7 @@ func to_dict() -> Dictionary:
 		"skill_levels": skill_levels,
 		"loadout": loadout,
 		"variants": variants,
+		"caves": caves,
 		"crystal": crystal,
 		"holy_water": holy_water,
 		"raid_play": raid_play,
@@ -343,6 +347,10 @@ func load_dict(d: Dictionary) -> bool:
 	loadout = []
 	for k in d.get("loadout", []):
 		loadout.append(str(k))
+	caves = {}
+	var cv: Dictionary = d.get("caves", {})
+	for k in cv:
+		caves[str(k)] = float(cv[k])
 	variants = {}
 	var vr: Dictionary = d.get("variants", {})
 	for k in vr:

@@ -9,7 +9,6 @@ const SaveSystem = preload("res://scripts/core/save_system.gd")
 const Explore = preload("res://scripts/core/explore.gd")
 const WorldView = preload("res://scripts/view/world_view.gd")
 const Hud = preload("res://scripts/ui/hud.gd")
-const StatsPanel = preload("res://scripts/ui/stats_panel.gd")
 const MapPanel = preload("res://scripts/ui/map_panel.gd")
 const InventoryPanel = preload("res://scripts/ui/inventory_panel.gd")
 const TalentPanel = preload("res://scripts/ui/talent_panel.gd")
@@ -59,7 +58,6 @@ const MOUSE_ACTIONS := {"attack": MOUSE_BUTTON_LEFT, "skill": MOUSE_BUTTON_RIGHT
 
 var world: GameWorld
 var hud: Hud
-var stats_panel: StatsPanel
 var map_panel: MapPanel
 var inventory_panel: InventoryPanel
 var talent_panel: TalentPanel
@@ -218,7 +216,16 @@ func _input(event: InputEvent) -> void:
 				hud.log_message("Cửa hàng ở Làng Thanh Thạch — đứng trong làng rồi bấm E.", "info")
 		get_viewport().set_input_as_handled()
 		return
-	for pair in [["toggle_stats", stats_panel], ["toggle_map", map_panel], ["toggle_inventory", inventory_panel], ["toggle_talent", talent_panel], ["toggle_world", world_panel], ["toggle_skills", skill_panel]]:
+	# UI-11: C và I cùng mở Túi đồ (C vào thẳng tab Chỉ số, I vào tab Túi đồ).
+	for pair in [["toggle_stats", "stats"], ["toggle_inventory", "bag"]]:
+		if event.is_action_pressed(pair[0]):
+			for panel in _panels():
+				if panel != inventory_panel:
+					panel.close()
+			inventory_panel.toggle_tab(world, pair[1])
+			get_viewport().set_input_as_handled()
+			return
+	for pair in [["toggle_map", map_panel], ["toggle_talent", talent_panel], ["toggle_world", world_panel], ["toggle_skills", skill_panel]]:
 		if event.is_action_pressed(pair[0]):
 			var target = pair[1]
 			for panel in _panels():
@@ -239,7 +246,7 @@ func _input(event: InputEvent) -> void:
 
 
 func _panels() -> Array:
-	return [stats_panel, map_panel, inventory_panel, talent_panel, world_panel, shop_panel, job2_panel, skill_panel]
+	return [map_panel, inventory_panel, talent_panel, world_panel, shop_panel, job2_panel, skill_panel]
 
 
 func _any_panel_open() -> bool:
@@ -328,6 +335,11 @@ func _handle_event(ev: Dictionary) -> void:
 			dialog.push(str(ev.id))
 		"quest_done":
 			_persist()
+		"waypoint":
+			# MP-09: bước vào Cổng Dịch Chuyển → bảng lục địa để chọn map đã mở.
+			for panel in _panels():
+				panel.close()
+			world_panel.open(world)
 		"victory":
 			_persist()
 			_victory = Screens.victory(world, _after_victory, _go_title, str(ev.get("boss", "boss")))
@@ -457,8 +469,7 @@ func _start_world(p: Profile) -> void:
 	_fx.visible = true
 	hud = Hud.new()
 	_ui.add_child(hud)
-	stats_panel = StatsPanel.new()
-	_ui.add_child(stats_panel)
+	hud.auto_toggled.connect(func(): world.toggle_auto())
 	map_panel = MapPanel.new()
 	_ui.add_child(map_panel)
 	inventory_panel = InventoryPanel.new()
@@ -485,11 +496,10 @@ func _start_world(p: Profile) -> void:
 
 func _end_session() -> void:
 	_close_victory()
-	for n in [hud, stats_panel, map_panel, inventory_panel, talent_panel, world_panel, dialog, shop_panel, job2_panel, skill_panel]:
+	for n in [hud, map_panel, inventory_panel, talent_panel, world_panel, dialog, shop_panel, job2_panel, skill_panel]:
 		if n != null:
 			n.queue_free()
 	hud = null
-	stats_panel = null
 	map_panel = null
 	inventory_panel = null
 	talent_panel = null
@@ -628,10 +638,10 @@ func _run_smoke(dir: String) -> void:
 	await _wait(0.3)
 	await _shot(dir, "04-map")
 	map_panel.close()
-	stats_panel.open(world)
+	inventory_panel.toggle_tab(world, "stats")
 	await _wait(0.3)
 	await _shot(dir, "05-stats")
-	stats_panel.close()
+	inventory_panel.close()
 
 	# Túi đồ: thêm vài món mẫu (gồm đồ bộ và Nanh Sói Chúa) để chụp giao diện.
 	var rng := RngUtil.make(99)
@@ -644,7 +654,7 @@ func _run_smoke(dir: String) -> void:
 	var fang := Items.new_item(pp, 6, "orange", rng, "", "", "wolf_fang")
 	Items.add_item(pp, fang)
 	world.equip(int(fang.id))
-	inventory_panel.open(world)
+	inventory_panel.toggle_tab(world, "bag")
 	inventory_panel._selected_id = int(pp.inventory[pp.inventory.size() - 1].id)
 	inventory_panel.refresh()
 	await _wait(0.3)
@@ -724,6 +734,19 @@ func _run_smoke(dir: String) -> void:
 		world.spawn_enemy(k, 12, world.player.pos + Vector2(220 + randf() * 200, randf() * 300 - 150))
 	await _wait(3.0)
 	await _shot(dir, "09-region2")
+	# MP-09: nhân vật đứng cạnh cổng lùi (về Lõi Sương) — cổng không che nhân vật.
+	world.enemies = []
+	var back_pt: Dictionary = world.portals.filter(func(pt): return pt.kind == "back")[0]
+	world.player.pos = back_pt.pos + Vector2(0, 20)
+	world.portal_inside = world.portals.find(back_pt)
+	await _wait(0.5)
+	await _shot(dir, "09a-portal")
+	# HP (docs/15): trong hang phụ — đi tới khu 1, quái + tinh anh; rồi về lại Cửa Gió.
+	world._load_map("cave-2-1")
+	world.player.pos = Vector2(700, 550)
+	await _wait(1.2)
+	await _shot(dir, "09a2-cave")
+	world._load_map("2-1")
 	# M4.3: Thành Biên Đài — NPC, nhiệm vụ chương 2, cửa hàng có thợ rèn
 	world.enemies = []
 	world.player.pos = world.safe_pos + Vector2(10, -10)

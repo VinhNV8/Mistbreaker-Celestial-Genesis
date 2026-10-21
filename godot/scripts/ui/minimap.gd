@@ -121,6 +121,12 @@ func _draw() -> void:
 	# sương che
 	if _fog_tex != null:
 		draw_texture_rect(_fog_tex, rect, false)
+	# MP-09: cổng dịch chuyển (vàng = sang map sau, xanh = về map trước, tím = Cổng Dịch Chuyển)
+	for pt in w.portals:
+		var pc := _to_map(pt.pos, rect)
+		var pcol: Color = {"next": Color("#ffc940"), "back": Color("#6fb6ff"), "cave": Color("#e08a3c"), "exit": Color("#7fe0c0")}.get(pt.kind, Color("#b46bff"))
+		draw_circle(pc, 3.5, Color(0, 0, 0, 0.7))
+		draw_circle(pc, 2.5, pcol)
 	# NPC
 	for npc in w.npcs():
 		draw_circle(_to_map(npc.pos, rect), 2.5, UiTheme.GOLD)

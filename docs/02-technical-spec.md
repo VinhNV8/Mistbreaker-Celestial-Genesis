@@ -117,6 +117,7 @@ Main (Node, main.gd)
 | `scripts/ui/frame_box.gd` | StyleBox tự vẽ khung trang trí (nền gỗ, viền vàng 2 lớp, hoa văn góc) — `SolidPanel` khung lớn, `PanelContainer` khung nhỏ (DH-11) |
 | `assets/fonts/` | Be Vietnam Pro Medium + ExtraBold, giấy phép SIL OFL 1.1 (`OFL.txt`) |
 | `scripts/ui/hud.gd` | HUD khi chơi |
+| `scripts/ui/char_frame.gd` | UI-08: khung nhân vật góc trái trên, vẽ hoàn toàn bằng `_draw()` (không dùng ảnh): bảng tên, chân dung tròn + vòng EXP tím, khiên cấp, hoa sen Thiên phú, huy hiệu Lực chiến / Điểm tiềm năng, thanh HP/MP. `hud.gd` gọi `set_data(dict)` mỗi khung hình. Không nền; thu nhỏ bằng `scale = SCALE` (0,75), nhân vật vẽ `size_mul = 1/SCALE` để giữ điểm ảnh nguyên |
 | `scripts/core/chapter5.gd` | M8 chương 5 Núi Lửa Phẫn Nộ ([12](12-chuong-5.md)): dung nham, núi lửa phun, nhiệt, quái vùng 5, Viêm Long, Phượng Hoàng Tro, Công Trại / đột kích, nhiệm vụ chương 5, chuyển chức 2 (`can_job2`, `do_job2`). Gắn qua `chapters.gd` |
 | `scripts/view/region5_view.gd` | Vẽ vùng 5: hồ dung nham, Long Huyệt ngập + Đá Nổi (`draw_arena`), vòng báo thiên thạch, cột lửa, phun lửa, Cổng Trại (`draw_over`), cây cối núi lửa (`decor_id`) |
 | `scripts/core/chapter6.gd` | M9 chương 6 Băng Nguyên Vĩnh Dạ ([14](14-chuong-6.md)): băng giá (tầng, đông cứng), đêm dài, mặt băng trơn (`input_move`), Than Hồng, quái vùng 6, Bản Ngã Bóng Tối (ghi kỹ năng người chơi theo hồi chiêu → dùng lại sau 3 giây, Gương vỡ, Thiên phú phản chiếu), Long Băng, Đèn Cực Quang, Ám Khí / mất kiểm soát (`input_filter`), nhiệm vụ chương 6. Gắn qua `chapters.gd` |
@@ -129,7 +130,10 @@ Main (Node, main.gd)
 | `scripts/ui/minimap.gd` | Bản đồ nhỏ góc phải HUD (M5-03; SN5-01: chuột trái → `GameWorld.set_move_target`, chuột phải huỷ): ảnh sương 1 pixel/ô dựng lại khi `fog.version` đổi, vẽ làng, hang boss, tường sương, NPC, quái ở vùng đã thấy, boss/boss hiếm nhấp nháy, mũi tên nhân vật; phím V đổi cỡ 230 ↔ 460 px |
 | `scripts/ui/skill_bar.gd` | Thanh kỹ năng 8 ô có khung trang trí, tự vẽ bằng `_draw`: icon cắt tròn, hồi chiêu quét tròn, nhãn phím, tên + dòng phụ; HUD gọi `set_slot(i, {...})` mỗi khung hình (DH-11) |
 | `scripts/ui/modal.gd` | Lớp cha của bảng phủ |
-| `scripts/ui/stats_panel.gd` | Bảng chỉ số |
+| `scripts/ui/stats_page.gd` | UI-11: trang Chỉ số (cộng điểm, tẩy điểm, tự cộng) — `StatsPage.build(vbox, world, refresh)`, dùng làm tab "Chỉ số" của Túi đồ (thay `stats_panel.gd` đã xoá). Phím C → `inventory_panel.toggle_tab(world, "stats")` |
+| `scripts/core/caves.gd` | Hang phụ ([15](15-hang-phu.md)): bản đồ `cave-<map cha>` sinh từ map cha (`build_map`, `Maps.get_map` nạp muộn để tránh preload vòng), cửa hang (`entrance`), `blocker` (đang đóng), `populate` (3 khu: 5+1, 6+1 tinh anh, Chúa Hang HP ×5 + 2 quái), `on_kill` (Chúa Hang → món ≥ Xanh dương, vàng, Đá, cổng ra, đóng `COOLDOWN` 1200 giây chơi). `GameWorld.in_cave()`; trong hang không sinh quái ngoài đồng, không lưu sương / thưởng khai phá, không thêm `unlocked_maps`; logic chương không áp (hang không thuộc `MAPS` của module chương) |
+| `scripts/ui/element_icon.gd` | UI-13: `ElementIcon.draw(ci, tâm, hệ, bán kính, alpha)` — biểu tượng ngũ hành vẽ bằng code (thay chữ "Mộc"…) cho quái, cột đá, khung nhân vật |
+| `scripts/ui/auto_button.gd` | UI-12: nút tròn bật/tắt Tự đánh cạnh thanh kỹ năng; HUD phát `auto_toggled` → main gọi `world.toggle_auto()` |
 | `scripts/ui/map_panel.gd`, `hex_map.gd` | Bản đồ khai phá |
 | `scripts/ui/inventory_panel.gd` | Túi đồ: đang mặc, túi 30 ô, chi tiết, so sánh, cường hoá (M1); khung Phân rã nhanh, chấm đỏ ở món khớp lọc (SN-11) |
 | `scripts/ui/bulk_box.gd` | Khung bộ lọc dùng chung: Phân rã nhanh (túi đồ) / Bán nhanh (cửa hàng), hỏi xác nhận (SN-10…12) |
@@ -138,14 +142,15 @@ Main (Node, main.gd)
 | `scripts/ui/dialog_box.gd` | Hộp thoại có chân dung; chờ khi đang mở bảng (C1-11) |
 | `scripts/ui/shop_panel.gd` | Cửa hàng làng, Thương nhân lữ hành, Xưởng Rèn, bán đồ — phím E (C1-30, 32) |
 | `scripts/ui/pause_menu.gd` | Menu tạm dừng + Cài đặt (C1-42) |
-| `scripts/ui/world_map_panel.gd` | Bản đồ lục địa, đi giữa map — phím N (M4.1) |
+| `scripts/ui/world_map_panel.gd` | Bản đồ lục địa — phím N (M4.1). MP-09: nút Lên đường chỉ bật khi `world.at_waypoint()` và map đã mở |
+| `scripts/core/portals.gd` | MP-09: cổng dịch chuyển sinh từ dữ liệu map (`list(id)` → `[{kind: next/back/waypoint, to, pos}]`, `chain()` thứ tự map theo REGIONS, `arrive_pos`, `waypoint_offset` chọn chỗ trống tránh `Maps.safe_buildings()` + NPC). `GameWorld._check_portals()` mỗi khung hình (trước di chuyển): vào cổng next/back → `travel(to, true)`; waypoint → sự kiện `"waypoint"` (main mở bảng lục địa). `portal_inside` chống kích hoạt lặp; `_arrive_via` đặt nhân vật cạnh cổng về khi tới nơi. Vẽ ở `world_view._draw_portals`, chấm trên `minimap` |
 | `scripts/core/settings.gd` | Cài đặt âm lượng, toàn màn hình → `user://settings.cfg`; tạo bus Music, SFX (C1-42) |
 | `scripts/audio/audio_manager.gd` | Phát hiệu ứng (10 kênh, chống lặp 0,05 giây) và nhạc nền vòng lặp có mờ dần (C1-40, 41) |
 | `assets/audio/sfx/*.wav`, `assets/audio/music/*.wav` | Âm thanh do `tools/audio/gen_audio.py` sinh — không sửa tay |
 | `scripts/ui/talent_panel.gd` | Bảng Thiên phú: hiệu ứng, kỹ năng L, hiệu ứng phụ, luyện cấp (M2) |
 | `scripts/ui/screens.gd` | Màn hình tiêu đề, Lễ Thức Tỉnh, chiến thắng |
 | `scripts/main.gd` | Điểm vào + chế độ smoke test |
-| `tests/run_tests.gd` | 105 test logic chạy headless; chạy một phần bằng `-- --only=<chuỗi trong tên test>` |
+| `tests/run_tests.gd` | ~127 test logic chạy headless; chạy một phần bằng `-- --only=<chuỗi trong tên test>` |
 | `tools/audio/*.py` (ngoài `godot/`) | Sinh âm thanh bằng code (thư viện chuẩn Python): `python tools/audio/gen_audio.py [id …]`; danh sách id ở `tools/audio/README.md` |
 | `godot/export_presets.cfg`, `tools/build_windows.sh` | Preset xuất Windows và script build `build/ThienPhuKhaiGioi.exe` (C1-50) |
 | `tools/art/*.py` (ngoài `godot/`) | Bộ sinh hình pixel art (Python 3 + Pillow): `pixel.py` thư viện vẽ, `builders.py` dáng nhân vật/quái, `catalog.py` danh mục sprite, `icons.py`, `env.py`, `build_all.py`. Quy trình ở skill `.claude/skills/game-art/SKILL.md` |
@@ -206,7 +211,7 @@ Giai đoạn `windup` là cửa sổ để người chơi né; `world_view.gd` v
 | Trên Windows | `%APPDATA%\Godot\app_userdata\Thiên Phú Khai Giới\save.json` |
 | Smoke test | `user://smoke_save.json` (tự xoá sau khi chạy, không đụng save thật) |
 | Định dạng | JSON một dòng |
-| Phiên bản hiện tại | **14** (M1 trang bị · M2 Thiên phú, công trình · M3 lớp, INT/LUK, điểm cướp · v5 M4.1 nhiều bản đồ · v6 C1: tên, ngoại hình, nhiệm vụ/thoại chương 1, lưới 40 ô, boss hiếm, Thương nhân, Vườn · v7 SN2: sương che từng map, thưởng khám phá, bộ lọc phân rã/bán nhanh · **v8 M5**: `rare_at` = lịch riêng từng boss hiếm, thay `rare_boss_at`; **v9 M6**: `job` (chuyển chức), `quest.ch3/kills3/oases`, `heat_free_until` · **v10 M7**: `evo` (số lần tiến hoá), `quest.ch4/kills4/orbs4`, `antidotes`, `fire_torches` · **v11 M8**: `job2` (chức 2), Tinh Thạch, Bình Nước Thánh, đột kích, `quest.ch5/kills5/raid_won` · **v12 M9**: `quest.ch6/kills6/beacons6/dark6`, `embers` (Than Hồng) · v13 SK1: `skill_points`, `skill_levels`, `loadout` · **v14 SK2**: `variants`). Save v1–v13 được chuyển đổi tự động khi nạp |
+| Phiên bản hiện tại | **15** (M1 trang bị · M2 Thiên phú, công trình · M3 lớp, INT/LUK, điểm cướp · v5 M4.1 nhiều bản đồ · v6 C1: tên, ngoại hình, nhiệm vụ/thoại chương 1, lưới 40 ô, boss hiếm, Thương nhân, Vườn · v7 SN2: sương che từng map, thưởng khám phá, bộ lọc phân rã/bán nhanh · **v8 M5**: `rare_at` = lịch riêng từng boss hiếm, thay `rare_boss_at`; **v9 M6**: `job` (chuyển chức), `quest.ch3/kills3/oases`, `heat_free_until` · **v10 M7**: `evo` (số lần tiến hoá), `quest.ch4/kills4/orbs4`, `antidotes`, `fire_torches` · **v11 M8**: `job2` (chức 2), Tinh Thạch, Bình Nước Thánh, đột kích, `quest.ch5/kills5/raid_won` · **v12 M9**: `quest.ch6/kills6/beacons6/dark6`, `embers` (Than Hồng) · v13 SK1: `skill_points`, `skill_levels`, `loadout` · **v14 SK2**: `variants` · **v15 hang phụ**: `caves` {map cha: giây chơi khi hang mở lại}; đang ở trong hang thì `map_id` ghi map cha). Save v1–v14 được chuyển đổi tự động khi nạp |
 
 ```json
 {
@@ -377,6 +382,8 @@ Chạy bot trên nhiều seed, có né và không né, rồi chỉnh HP/ATK boss
 | D40 | Chức 2 lưu ở trường riêng `profile.job2` (không ghi đè `job`) | Hiệu ứng chức 1 trong `chapter3.gd` kiểm `job` theo id — giữ nguyên được, chức 2 cộng thêm | `Classes.title(lớp, job, job2)` có thêm tham số |
 | D41 | Boss "bất tử theo lượt" (Viêm Long) mở cửa sổ đánh theo **lượng sát thương** (15% HP hoặc tối đa 10 giây), không theo đồng hồ cố định | Thời gian trận tỉ lệ với sát thương — không khuếch đại chênh lệch giữa các lớp (TL-B5 36% → 19%) | Trận có thể dài hơn với người sát thương thấp (giới hạn 10 giây mỗi lần đáp) |
 | D42 | Hook `input_filter(w, input)` (M9) thay **cả** phím của khung hình, gọi ngay sau `_travel_input` trong `GameWorld.update`; Bản Ngã biết người chơi vừa dùng kỹ năng nào bằng cách dò hồi chiêu `skill_cds[i]` nhảy lên (không móc vào `use_skill`) | Mất kiểm soát (chương 6) cần bỏ qua mọi phím, không chỉ hướng đi (`input_move`); dò hồi chiêu không đụng `use_skill` đang được viết lại ở SK1 | Kỹ năng không có hồi chiêu sẽ không bị sao chép; id kỹ năng mới (SK1) chưa có trong `Ch6.MIRROR_OF` thì Bản Ngã dùng Tia bóng |
+| D46 | Hang phụ là **map sinh động** `cave-<id>` dùng chung `_load_map`/cổng/`travel()`, không phải lớp phủ trong map cha | Tái dùng toàn bộ hệ map (sương, sinh quái, vẽ, bản đồ nhỏ, chết hồi sinh ở cửa hang) — không phải viết vòng lặp riêng | Mọi chỗ dùng `map_id` làm khoá (sương, khai phá, `unlocked_maps`, save) phải loại trừ hang — gom ở `Caves.is_cave` |
+| D45 | Cổng dịch chuyển (MP-09) **sinh từ dữ liệu map** (`core/portals.gd`), không khai báo tay từng map; đi qua cổng vẫn gọi `travel()` | Map mới (chương sau) tự có cổng; điều kiện, đi đường, test MP-T1… giữ nguyên | Vị trí cổng theo công thức (rìa trái/phải); map có địa hình đặc biệt (dung nham…) có thể cần chỉnh tay sau |
 | D43 | Kỹ năng theo **ô lắp** (`profile.loadout` = id), mọi chỗ đọc kỹ năng đi qua `GameWorld.slot_skill(i)` | Đổi ô / thêm kỹ năng (SK2–SK3) không phải sửa code theo vị trí | Hồi chiêu `skill_cds[i]` vẫn theo ô — khi đổi ô phải đổi kèm |
 | D44 | Mọi đòn của người chơi mang id kỹ năng nguồn (`GameWorld.skill_ctx`; `PlayerShot/RainZone/Trap/Meteor.skill`) | Biến thể kỹ năng (SK2) áp đúng cả đòn trễ (đạn bay, mưa tên, bẫy, thiên thạch) | Chỗ gây sát thương mới phải đặt `skill_ctx` (xem `skills2.gd`) |
 | D16 | Đồng hồ xây riêng (`build_clock`) thay vì giờ thực | Không phụ thuộc đồng hồ máy (người chơi chỉnh giờ để gian lận); vẫn chạy offline qua `apply_offline` | Phải nhớ cộng `build_clock` ở cả `update()` và `apply_offline()` |

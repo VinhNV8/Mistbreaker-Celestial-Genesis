@@ -20,24 +20,20 @@ const HUD_OPTIONAL := ["ore", "iron", "crystal"]
 const Maps = preload("res://scripts/data/maps.gd")
 const SkillBar = preload("res://scripts/ui/skill_bar.gd")
 const Chapters = preload("res://scripts/core/chapters.gd")
+const CharFrame = preload("res://scripts/ui/char_frame.gd")
+const AutoButton = preload("res://scripts/ui/auto_button.gd")
 ## DH-11: thứ tự ô trên thanh kỹ năng.
-const SKILL_BAR_SCALE := 0.8
+## UI-10: thanh đã vẽ gọn (ô R 22, không tên) nên giữ tỉ lệ 1.
+const SKILL_BAR_SCALE := 1.0
 const SLOT_BASIC := 0
 const SLOT_DODGE := 5
 const SLOT_TALENT := 6
 const SLOT_POTION := 7
 
-var _tl: PanelContainer
-var _level: Label
-var _talent: Label
-var _hp_bar: ProgressBar
-var _hp_text: Label
-var _mp_bar: ProgressBar
-var _mp_text: Label
-var _exp_bar: ProgressBar
-var _exp_text: Label
-var _points: Label
-var _power: Label
+var _tl: CharFrame
+## UI-12: nút bật/tắt Tự đánh (main nối tín hiệu auto_toggled → world.toggle_auto()).
+var _auto: AutoButton
+signal auto_toggled
 
 var _tr: PanelContainer
 var _resources: Label
@@ -56,7 +52,6 @@ var _combo: Label
 var _wind: Label
 ## DH-11: ô 0 = đánh thường, 1–4 = kỹ năng lớp, 5 né, 6 Thiên phú (L), 7 bình máu.
 var _skills: Control
-var _extra: Label
 
 var _log: VBoxContainer
 var _banner: Label
@@ -73,37 +68,8 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	mouse_filter = MOUSE_FILTER_IGNORE
 
-	# Spec_Notes đợt 4 (UI-07): khung nhân vật gọn hơn — hẹp hơn, thanh và chữ nhỏ hơn.
-	_tl = PanelContainer.new()
-	_tl.custom_minimum_size.x = 240
-	var v := UiTheme.vbox(4)
-	_tl.add_child(v)
-	var row := UiTheme.hbox()
-	_level = UiTheme.label("", "Heading")
-	_level.add_theme_font_size_override("font_size", UiTheme.fs(16))
-	_talent = UiTheme.label("")
-	_talent.add_theme_font_size_override("font_size", UiTheme.fs(12))
-	row.add_child(_level)
-	row.add_child(UiTheme.spacer())
-	row.add_child(_talent)
-	v.add_child(row)
-	_hp_bar = _bar("HpBar", 15)
-	_hp_text = _bar_label(_hp_bar, 11)
-	v.add_child(_hp_bar)
-	_mp_bar = _bar("MpBar", 10)
-	_mp_text = _bar_label(_mp_bar, 9)
-	v.add_child(_mp_bar)
-	_exp_bar = _bar("ExpBar", 10)
-	_exp_text = _bar_label(_exp_bar, 9)
-	v.add_child(_exp_bar)
-	_power = UiTheme.label("", "Small")
-	v.add_child(_power)
-	_extra = UiTheme.label("", "Small")
-	v.add_child(_extra)
-	_points = UiTheme.label("")
-	_points.add_theme_color_override("font_color", UiTheme.GOLD)
-	_points.add_theme_font_size_override("font_size", UiTheme.fs(12))
-	v.add_child(_points)
+	# UI-08 (Spec_Notes đợt 6): khung nhân vật kiểu khung vàng – ngọc tím (ui/char_frame.gd).
+	_tl = CharFrame.new()
 	add_child(_tl)
 
 	_tr = PanelContainer.new()
@@ -176,7 +142,7 @@ func _ready() -> void:
 
 	_skills = SkillBar.new()
 	_skills.set_count(8)
-	# UI-07: thanh kỹ năng nhỏ hơn (Spec_Notes đợt 4: "kỹ năng đang to quá").
+	# UI-07 / UI-10: thanh kỹ năng gọn (Spec_Notes đợt 4, 6).
 	_skills.scale = Vector2.ONE * SKILL_BAR_SCALE
 	add_child(_skills)
 
@@ -216,10 +182,15 @@ func _ready() -> void:
 	_travel.add_child(_travel_label)
 	add_child(_travel)
 
+	_auto = AutoButton.new()
+	add_child(_auto)
+
 	_ignore_mouse(self)
 	# Ô tài nguyên nhận chuột để hiện chú thích (C1-03).
 	for cell in _res_slots:
 		cell.mouse_filter = MOUSE_FILTER_PASS
+	_auto.mouse_filter = MOUSE_FILTER_STOP
+	_auto.pressed.connect(func(): auto_toggled.emit())
 
 
 func _ignore_mouse(node: Node) -> void:
@@ -290,20 +261,16 @@ func update_from(w: GameWorld) -> void:
 	var t := w.talent()
 	var rank_color := Talents.rank_color(t.rank)
 
-	_level.text = "%s · Cấp %d" % [p.name, p.level]
 	var form: Array = GameWorld.Ch4.evo_form(t.id, int(p.evo))
-	_talent.text = "%s · %s" % [form[1], form[0]]
-	_talent.add_theme_color_override("font_color", rank_color)
-	_hp_bar.value = maxf(0.0, pl.hp) / float(s.max_hp)
-	_hp_text.text = "%d / %d" % [ceili(maxf(0.0, pl.hp)), s.max_hp]
-	_mp_bar.value = maxf(0.0, pl.mp) / maxf(1.0, float(s.max_mp))
-	_mp_text.text = "MP %d / %d" % [floori(maxf(0.0, pl.mp)), s.max_mp]
 	var need := Formulas.exp_to_next(p.level)
-	_exp_bar.value = minf(1.0, float(p.xp) / need)
-	_exp_text.text = "EXP %d / %d" % [p.xp, need]
-	_power.text = "Lực chiến %d%s" % [w.combat_power(), "   ·   TỰ ĐÁNH (Z)" if w.auto_fight else ""]
-	_points.visible = p.unspent > 0
-	_points.text = "+%d điểm tiềm năng — nhấn C" % p.unspent
+	var frame := {
+		"name": p.name, "level": p.level, "class_id": p.class_id, "look": p.look, "time": w.time,
+		"talent_name": "%s · %s" % [form[1], form[0]], "talent_icon": SpriteLib.talent_icon(t.id), "rank_color": rank_color,
+		"hp": maxf(0.0, pl.hp) / float(s.max_hp), "hp_text": "%d / %d" % [ceili(maxf(0.0, pl.hp)), s.max_hp],
+		"mp": maxf(0.0, pl.mp) / maxf(1.0, float(s.max_mp)), "mp_text": "%d / %d" % [floori(maxf(0.0, pl.mp)), s.max_mp],
+		"exp": minf(1.0, float(p.xp) / need), "exp_text": "EXP %.1f%%" % (minf(1.0, float(p.xp) / need) * 100.0),
+		"power": w.combat_power(), "points": p.unspent,
+	}
 
 	var torch_note := ""
 	var torch_cap := Explore.torch_max(p)
@@ -347,10 +314,11 @@ func update_from(w: GameWorld) -> void:
 		extra.append("Thiên phú cấp %d%s" % [GameWorld.Ch4.stage_level(p), (" · tiến hoá %d" % int(p.evo)) if int(p.evo) > 0 else ""])
 	if not w.allies.is_empty():
 		extra.append("Đồng minh %d" % w.allies.size())
-	if p.talent == "ngu-hanh":
-		extra.append("Hệ %s" % Monsters.ELEMENT_NAMES[p.element])
-	_extra.text = "   ·   ".join(extra)
-	_extra.visible = not extra.is_empty()
+	# UI-13: hệ ngũ hành hiện bằng biểu tượng trên hoa sen Thiên phú (không ghi chữ).
+	frame.element = str(p.element) if p.talent == "ngu-hanh" else ""
+	_auto.on = w.auto_fight
+	frame.extra = " · ".join(extra)
+	_tl.set_data(frame)
 
 	var boss := w.big_enemy()
 	_boss_box.visible = boss != null
@@ -366,6 +334,11 @@ func update_from(w: GameWorld) -> void:
 		_travel_label.text = "Đang lên đường tới %s…\n%.1f giây" % [dest.name, w.travel_timer]
 	var m: Dictionary = w.map
 	_map_name.text = "%s · cấp %d–%d · Khám phá %d%%" % [m.name, m.levels[0], m.levels[1], floori(w.explore_ratio(w.map_id) * 100.0)]
+	if w.in_cave():
+		# HP (docs/15): hang không tính khai phá — hiện số quái còn lại / Chúa Hang.
+		var left := w.enemies.filter(func(e): return not e.dead).size()
+		var boss_alive := w.enemies.any(func(e): return e.cave_boss and not e.dead)
+		_map_name.text = "%s · cấp %d–%d · còn %d quái · %s" % [m.name, m.levels[0], m.levels[1], left, "Chúa Hang đang chờ" if boss_alive else "đã dọn ✓"]
 	if w.challenge_warning(w.map_id) != "":
 		_map_name.text += " · Vượt ải: EXP ×2"
 		_map_name.add_theme_color_override("font_color", UiTheme.BAD)
@@ -378,8 +351,7 @@ func _update_skill_bar(w: GameWorld, t: Dictionary, rank_color: Color) -> void:
 	var pl := w.player
 	var p = w.profile
 	var c: Dictionary = Classes.get_class_def(p.class_id)
-	_skills.set_slot(SLOT_BASIC, {"key": "J", "name": c.basic.name, "icon": SpriteLib.icon("skill-" + str(c.basic.icon)),
-		"sub": "Đánh thường"})
+	_skills.set_slot(SLOT_BASIC, {"key": "J", "name": c.basic.name, "icon": SpriteLib.icon("skill-" + str(c.basic.icon))})
 	for i in 4:
 		# SK1: ô kỹ năng theo bộ lắp; chưa mở thì mờ + ghi cấp mở.
 		var sk: Dictionary = w.slot_skill(i)
@@ -390,9 +362,11 @@ func _update_skill_bar(w: GameWorld, t: Dictionary, rank_color: Color) -> void:
 		var locked: bool = not w.skill_unlocked(sk)
 		var low := pl.mp < mp
 		var lv: int = w.skill_level(str(sk.id))
-		_skills.set_slot(i + 1, {"key": str(i + 1), "name": sk.name + ((" %d" % lv) if lv > 1 else ""), "icon": SpriteLib.icon("skill-" + str(sk.icon)),
+		# UI-10: cấp kỹ năng ở huy hiệu, ô khoá ghi cấp mở; thiếu MP thì ô ngả xanh (dim).
+		_skills.set_slot(i + 1, {"key": str(i + 1), "name": sk.name, "icon": SpriteLib.icon("skill-" + str(sk.icon)),
 			"cd": 0.0 if locked else cd_left / maxf(0.1, w.skill_cd_of(i)), "cd_text": "" if locked else (str(ceili(cd_left)) if cd_left > 0.0 else ""),
-			"sub": ("Cấp %d" % int(sk.unlock)) if locked else ("%d MP" % mp), "dim": low or locked})
+			"badge": str(lv) if lv > 1 and not locked else "", "lock": ("Cấp %d" % int(sk.unlock)) if locked else "",
+			"dim": low or locked})
 	_skills.set_slot(SLOT_DODGE, {"key": "Space", "name": "Né lăn", "icon": SpriteLib.icon("skill-dodge"),
 		"cd": pl.dodge_cd / GameWorld.DODGE_CD, "cd_text": ("%.1f" % pl.dodge_cd) if pl.dodge_cd > 0.0 else ""})
 	var tal := {"key": "L", "icon": SpriteLib.talent_icon(t.id), "ring": rank_color}
@@ -400,17 +374,15 @@ func _update_skill_bar(w: GameWorld, t: Dictionary, rank_color: Color) -> void:
 		tal.name = w.talent_skill_name()
 		tal.cd = pl.talent_cd / maxf(0.1, w.talent_skill_cd())
 		tal.cd_text = str(ceili(pl.talent_cd)) if pl.talent_cd > 0.0 else ""
-		tal.sub = t.name
 	else:
 		tal.name = t.name
-		tal.sub = "Bị động"
 	_skills.set_slot(SLOT_TALENT, tal)
 	var pot := {"key": "Q", "name": "Bình máu", "icon": SpriteLib.icon("skill-potion")}
 	if p.talent == "hap-huyet":
-		pot.sub = "Bị khoá"
+		pot.lock = "Khoá"
 		pot.locked = true
 	else:
-		pot.sub = "×%d · Thảo %d/2" % [p.potions, p.herbs]
+		pot.badge = str(p.potions)
 		pot.cd = pl.potion_cd / GameWorld.POTION_CD
 		pot.cd_text = str(ceili(pl.potion_cd)) if pl.potion_cd > 0.0 else ""
 		pot.dim = p.potions <= 0
@@ -501,6 +473,7 @@ func _layout() -> void:
 	_combo.position = Vector2(sz.x - _combo.size.x - 24, maxf(sz.y / 2.0, _obj.position.y + _obj.size.y + 8.0))
 	var sk_size: Vector2 = _skills.custom_minimum_size * _skills.scale
 	_skills.position = Vector2((sz.x - sk_size.x) / 2.0, sz.y - sk_size.y - 8)
+	_auto.position = Vector2(_skills.position.x + sk_size.x + 10.0, sz.y - _auto.size.y - 10.0)
 	# UI-02: nhật ký nằm trên thanh kỹ năng.
 	_log.reset_size()
 	_log.position = Vector2(12, sz.y - sk_size.y - 8 - _log.size.y - 10)

@@ -1,16 +1,18 @@
 extends Control
-## DH-11: thanh kỹ năng kiểu khung trang trí — ô tròn viền vàng, phím ở góc, tên dưới icon,
+## DH-11: thanh kỹ năng kiểu khung trang trí — ô tròn viền vàng, phím ở góc,
 ## hồi chiêu quét tròn kèm số giây, lóe sáng khi hồi xong. Tự vẽ bằng _draw (không cần ảnh khung).
+## UI-10 (Spec_Notes đợt 6): thanh thấp — bỏ bảng tiêu đề, tên và dòng phụ dưới ô; chỉ còn icon, phím,
+## hồi chiêu, huy hiệu số nhỏ (cấp kỹ năng / số bình) và chữ khoá ("Cấp 8") ngay trên ô bị khoá.
 ## HUD gọi set_slot(i, {...}) mỗi khung hình; khoá dữ liệu:
-##   key: String, name: String, icon: Texture2D, cd: 0..1 (phần còn lại), cd_text: String,
-##   sub: String (dòng nhỏ dưới tên), ring: Color (màu viền, mặc định vàng), dim: bool (thiếu MP), locked: bool
+##   key: String, name: String (giữ cho test/chú thích, không vẽ), icon: Texture2D, cd: 0..1 (phần còn lại),
+##   cd_text: String, badge: String (góc trên phải), lock: String (chữ trên ô khoá), ring: Color (màu viền,
+##   mặc định vàng), dim: bool (thiếu MP), locked: bool
 
 const UiTheme = preload("res://scripts/ui/ui_theme.gd")
 
-const R := 26.0                 # bán kính ô tròn
-const PITCH := 82.0             # khoảng cách tâm 2 ô
-const PAD := Vector2(18, 26)    # lề trong khung (trên chừa chỗ bảng tên)
-const TITLE := "Kỹ năng"
+const R := 22.0                 # bán kính ô tròn
+const PITCH := 60.0             # khoảng cách tâm 2 ô
+const PAD := Vector2(14, 10)    # lề trong khung
 const GOLD_DARK := Color("#7a5a2a")
 const GOLD := Color("#c9a45c")
 const GOLD_LIGHT := Color("#f3d27a")
@@ -34,7 +36,7 @@ func set_count(n: int) -> void:
 		if _slots[i] == null:
 			_slots[i] = {}
 			_flash[i] = 0.0
-	custom_minimum_size = Vector2(PAD.x * 2.0 + PITCH * n, PAD.y + R * 2.0 + 56.0 + 14.0)
+	custom_minimum_size = Vector2(PAD.x * 2.0 + PITCH * n, PAD.y * 2.0 + R * 2.0 + 6.0)
 	size = custom_minimum_size
 
 
@@ -53,15 +55,11 @@ func _process(delta: float) -> void:
 
 ## Tâm ô thứ i (toạ độ cục bộ) — dùng cho test và chú thích.
 func slot_center(i: int) -> Vector2:
-	return Vector2(PAD.x + PITCH * (i + 0.5), 14.0 + PAD.y + R)
+	return Vector2(PAD.x + PITCH * (i + 0.5), PAD.y + R + 2.0)
 
 
 func _draw() -> void:
-	var w := size.x
-	var top := 14.0
-	var body := Rect2(0, top, w, size.y - top)
-	_draw_frame(body)
-	_draw_title(Vector2(w / 2.0, top))
+	_draw_frame(Rect2(Vector2.ZERO, size))
 	for i in _slots.size():
 		_draw_slot(i, slot_center(i), _slots[i])
 
@@ -94,24 +92,6 @@ func _draw_frame(r: Rect2) -> void:
 	# hạt trang trí giữa 2 cạnh bên
 	_diamond(Vector2(r.position.x + 4, r.get_center().y), 4.0, GOLD)
 	_diamond(Vector2(r.end.x - 4, r.get_center().y), 4.0, GOLD)
-
-
-func _draw_title(c: Vector2) -> void:
-	var f := UiTheme.bold_font()
-	var fs := 14
-	var tw := f.get_string_size(TITLE, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
-	var hw := tw / 2.0 + 22.0
-	var pts := PackedVector2Array([c + Vector2(-hw - 10, 6), c + Vector2(-hw, -12), c + Vector2(hw, -12),
-		c + Vector2(hw + 10, 6), c + Vector2(hw, 12), c + Vector2(-hw, 12)])
-	draw_colored_polygon(pts, Color("#3a2618"))
-	var loop := pts.duplicate()
-	loop.append(pts[0])
-	draw_polyline(loop, GOLD, 2.0, true)
-	_diamond(c + Vector2(-hw - 10, 6), 3.0, GOLD_LIGHT)
-	_diamond(c + Vector2(hw + 10, 6), 3.0, GOLD_LIGHT)
-	var pos := c + Vector2(-tw / 2.0, 5)
-	draw_string_outline(f, pos, TITLE, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, 3, Color(0, 0, 0, 0.8))
-	draw_string(f, pos, TITLE, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, GOLD_LIGHT)
 
 
 func _draw_slot(i: int, c: Vector2, d: Dictionary) -> void:
@@ -154,14 +134,14 @@ func _draw_slot(i: int, c: Vector2, d: Dictionary) -> void:
 	var cd_text: String = d.get("cd_text", "")
 	# số giây làm tròn về 0 ("0.0", "0") thì không hiện
 	if cd_text != "" and cd_text.to_float() > 0.0:
-		_text_center(f, c + Vector2(0, 7), cd_text, 20, Color.WHITE)
+		_text_center(f, c + Vector2(0, 6), cd_text, 18, Color.WHITE)
 	# nhãn phím: viên thuốc ở góc dưới phải
 	var key: String = d.get("key", "")
 	if key != "":
-		var ks := 13
-		var kw := maxf(18.0, f.get_string_size(key, HORIZONTAL_ALIGNMENT_LEFT, -1, ks).x + 10.0)
-		var kc := c + Vector2(R * 0.72, R * 0.72)
-		var kr := Rect2(kc - Vector2(kw / 2.0, 9), Vector2(kw, 18))
+		var ks := 11
+		var kw := maxf(16.0, f.get_string_size(key, HORIZONTAL_ALIGNMENT_LEFT, -1, ks).x + 8.0)
+		var kc := c + Vector2(R * 0.72, R * 0.78)
+		var kr := Rect2(kc - Vector2(kw / 2.0, 8), Vector2(kw, 16))
 		var sb := StyleBoxFlat.new()
 		sb.bg_color = Color("#20160f")
 		sb.set_corner_radius_all(9)
@@ -169,14 +149,23 @@ func _draw_slot(i: int, c: Vector2, d: Dictionary) -> void:
 		sb.border_color = GOLD
 		draw_style_box(sb, kr)
 		_text_center(f, kc + Vector2(0, 4), key, ks, GOLD_LIGHT)
-	# tên + dòng phụ
-	var nm: String = d.get("name", "")
-	# UI-07: HUD thu nhỏ thanh (scale 0,8) nên chữ vẽ to hơn để vẫn đọc được.
-	_text_center(f, c + Vector2(0, R + 20), _fit(f, nm, 14, PITCH + 2.0), 14, UiTheme.TEXT)
-	var sub: String = d.get("sub", "")
-	if sub != "":
-		_text_center(UiTheme.font(), c + Vector2(0, R + 36), _fit(UiTheme.font(), sub, 13, PITCH + 2.0), 13,
-			DIM.lightened(0.3) if dim else UiTheme.MUTED)
+	# UI-10: huy hiệu số góc trên phải (cấp kỹ năng, số bình máu)
+	var badge: String = d.get("badge", "")
+	if badge != "":
+		var bs := 11
+		var bw := maxf(16.0, f.get_string_size(badge, HORIZONTAL_ALIGNMENT_LEFT, -1, bs).x + 8.0)
+		var bc := c + Vector2(R * 0.72, -R * 0.78)
+		var bsb := StyleBoxFlat.new()
+		bsb.bg_color = Color("#2a1638")
+		bsb.set_corner_radius_all(8)
+		bsb.set_border_width_all(1)
+		bsb.border_color = Color("#b46bff")
+		draw_style_box(bsb, Rect2(bc - Vector2(bw / 2.0, 8), Vector2(bw, 16)))
+		_text_center(f, bc + Vector2(0, 4), badge, bs, Color.WHITE)
+	# UI-10: ô khoá ghi cấp mở ngay trên icon
+	var lock: String = d.get("lock", "")
+	if lock != "":
+		_text_center(f, c + Vector2(0, 5), lock, 12, Color("#ffd6a0"))
 
 
 func _circle_texture(c: Vector2, r: float, tex: Texture2D, mod: Color) -> void:
@@ -201,12 +190,3 @@ func _text_center(f: Font, base: Vector2, t: String, fs: int, col: Color) -> voi
 	draw_string_outline(f, pos, t, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, 3, Color(0, 0, 0, 0.85))
 	draw_string(f, pos, t, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, col)
 
-
-## Cắt chữ cho vừa bề rộng ô (thêm "…").
-static func _fit(f: Font, t: String, fs: int, max_w: float) -> String:
-	if f.get_string_size(t, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x <= max_w:
-		return t
-	var s := t
-	while s.length() > 1 and f.get_string_size(s + "…", HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x > max_w:
-		s = s.substr(0, s.length() - 1)
-	return s.strip_edges() + "…"

@@ -383,6 +383,20 @@ Mỗi đợt theo quy trình: **viết spec → duyệt → code → test → c�
 - [x] SK2: +2 kỹ năng cấp 15/22, +2 kỹ năng chuyển chức 1 (12 kỹ năng mới), biến thể 3 tầng, ngũ hành ở tầng II, save v14 — [13 mục 8](13-he-ky-nang.md)
 - [ ] SK3: Bí Kíp rơi + Mảnh Bí Kíp, kỹ năng tối thượng cấp 45, kỹ năng nhánh chuyển chức 2
 
+### Spec_Notes đợt 6 ([03 mục 8b](03-mvp-spec.md))
+
+- [x] UI-08: khung nhân vật theo hình mẫu (khung vàng – ngọc tím), EXP + HP + MP thành vòng quanh chân dung, Thiên phú dời xuống, không nền, thu nhỏ ×0,75 — `ui/char_frame.gd`
+- [x] UI-09: "+N EXP" khi hạ quái (SN6-T1)
+- [x] UI-10: thanh kỹ năng thấp, bỏ tên/dòng phụ, huy hiệu cấp / số bình, chữ khoá
+- [x] UI-11: gộp Chỉ số (C) vào Túi đồ (I) — tab "Chỉ số"
+- [x] UI-12: nút bật/tắt Tự đánh; bỏ chữ "C: cộng điểm"
+- [x] MP-09: cổng dịch chuyển (cổng tiến/lùi + Cổng Dịch Chuyển ở vùng an toàn) thay chọn nơi đến trên bảng lục địa (SN6-T2)
+- [x] UI-13: biểu tượng ngũ hành thay chữ (quái, cột đá, khung nhân vật); UI-08g: tên Thiên phú một dòng
+- [x] UI-14: cổng vẽ lại (vòng phù văn mặt đất, trụ pha lê, bảng tên), không che nhân vật, tự tránh nhà / cây
+- [x] CB-30: quái áp sát nhanh hơn (đuổi ×1,25, tối thiểu 165, Truy kích khi bị đánh từ xa, tầm phát hiện 330)
+- [x] UI-15: bảng tên quái (loại · tên · cấp, màu theo chênh cấp); UI-11b: tab Chỉ số | Túi đồ | Tài nguyên
+- [x] HP-01…10: hang phụ trong từng map (cửa hang, 3 khu, Chúa Hang, thưởng, đóng 20 phút, save v15) — [15](15-hang-phu.md)
+
 ### G — Đồ hoạ và âm thanh
 
 - [x] DH-01: chốt phong cách đồ hoạ (pixel art sinh bằng code)
