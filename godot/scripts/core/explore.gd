@@ -468,10 +468,10 @@ static func upgrade_camp(p) -> Dictionary:
 static func production_per_minute(p) -> Dictionary:
 	var lumber := count_built(p, "lumber")
 	var mines := count_built(p, "mine")
-	# M8 (C5-03): Mỏ vùng 5 là Mỏ Tinh Thạch (+1/phút), không cho Đá/Sắt; đột kích thua thì ngừng 30 phút.
+	# M8 (C5-03), M9 (C6-03): Mỏ vùng 5–6 là Mỏ Tinh Thạch (+1/phút), không cho Đá/Sắt; đột kích thua thì ngừng 30 phút.
 	var crystal_mines := 0
 	for key in p.buildings:
-		if str(key).begins_with("mine_r5_") and is_built(p, str(key)):
+		if (str(key).begins_with("mine_r5_") or str(key).begins_with("mine_r6_")) and is_built(p, str(key)):
 			crystal_mines += 1
 	mines -= crystal_mines
 	if float(p.get("build_clock")) < float(p.get("raid_penalty_until")):

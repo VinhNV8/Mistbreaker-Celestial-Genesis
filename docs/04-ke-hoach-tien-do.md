@@ -27,17 +27,17 @@ File này liệt kê **mọi hạng mục trong kịch bản**: trạng thái hi
 
 | Phần | Tổng | ✅ Xong | 🟡 Một phần | ⬜ Chưa làm | ⛔ Không làm |
 | --- | --- | --- | --- | --- | --- |
-| Thế giới quan, cốt truyện (mục 2) | 13 | 7 | 3 | 3 | 0 |
+| Thế giới quan, cốt truyện (mục 2) | 13 | 7 | 4 | 2 | 0 |
 | Thiên phú (mục 3) | 42 | 29 | 7 | 6 | 0 |
 | Nhân vật, chỉ số (mục 4) | 26 | 20 | 2 | 4 | 0 |
 | Chiến đấu, quái (mục 5) | 23 | 20 | 1 | 1 | 1 |
-| Bản đồ, vượt map (mục 6) | 13 | 10 | 0 | 3 | 0 |
+| Bản đồ, vượt map (mục 6) | 13 | 10 | 1 | 2 | 0 |
 | Khai phá, lãnh địa (mục 7) | 22 | 15 | 2 | 5 | 0 |
 | Trang bị, kinh tế (mục 8) | 17 | 14 | 1 | 1 | 1 |
 | 30 phút đầu (mục 9) | 9 | 9 | 0 | 0 | 0 |
 | Đồ hoạ, âm thanh | 13 | 13 | 0 | 0 | 0 |
 | Kỹ thuật, phát hành | 10 | 5 | 2 | 3 | 0 |
-| **Tổng** | **188** | **142** (76%) | **18** (10%) | **26** (14%) | **2** |
+| **Tổng** | **188** | **142** (76%) | **20** (11%) | **24** (13%) | **2** |
 
 ### Các giai đoạn
 
@@ -54,6 +54,7 @@ File này liệt kê **mọi hạng mục trong kịch bản**: trạng thái hi
 | Alpha — M6 | **Chương 3 Sa Mạc Lãng Quên**: vùng 3 (3 map, ngày/đêm, nắng gắt, ốc đảo, bão cát), 6 quái + 2 tinh anh, Bọ Cạp Sa Hoàng, Nhân Sư Đá, bộ Sa Hành Giả, 2 đồ Cam, Độn Thổ, nhiệm vụ 6 bước, chuyển chức 1 — [10](10-chuong-3.md) | ✅ Xong 21/10/2026 (phiên game-bc) |
 | Alpha — M7 | **Chương 4 Đầm Lầy Mộng**: vùng 4 (nước đầm, độc tích luỹ, ảo ảnh), 4 quái + 2 tinh anh, Nữ Vương Phệ Mộng (giấc mơ đảo điều khiển), Thuỷ Quái Thất Đầu, Bộ U Minh, 2 đồ Cam, Mộng Cảnh, Lam Nhi, **tiến hoá Thiên phú lần 1**; bộ điều phối chương `core/chapters.gd` — [11](11-chuong-4.md) | ✅ Xong 21/10/2026 (phiên game-bc) |
 | Alpha — M8 | **Chương 5 Núi Lửa Phẫn Nộ**: vùng 5 Núi Viêm Long (dung nham, núi lửa phun, nhiệt), 4 quái + 2 tinh anh, Viêm Long (dung nham dâng theo lượt, đá nổi), Phượng Hoàng Tro (Niết bàn), Bộ Hoả Ngục, Long Tâm, Lông Phượng, Long Tức, Thương hội Kim Luân phản bội + Công Trại (chiến tranh lãnh địa), Tinh Thạch, chuyển chức 2 (6 nhánh) — [12](12-chuong-5.md) | ✅ Xong 21/10/2026 (phiên game-c6) |
+| Beta — M9 | **Chương 6 Băng Nguyên Vĩnh Dạ**: vùng 6 Băng Nguyên Bắc Cực (băng giá tích tầng → đông cứng, đêm dài, mặt băng trơn, lửa trại, Than Hồng), 4 quái + 2 tinh anh, Bản Ngã Bóng Tối (sao chép kỹ năng người chơi, Gương vỡ, Thiên phú phản chiếu), Long Băng Bắc Cực, Bộ Cực Quang, Gương Bản Ngã, Vảy Long Băng, Kính Ảnh, Đèn Cực Quang, **Ám Khí — mất kiểm soát**, sự thật về thân phận — [14](14-chuong-6.md) | ✅ Xong 21/10/2026 (phiên game-bc) |
 | MVP — G | Đồ hoạ nhân vật, quái, bản đồ, hiệu ứng, âm thanh cho chương 1–2 | 🟡 G1 (hình chương 1, sinh bằng code) xong 20/10/2026 — [07](07-do-hoa-ke-hoach.md); còn âm thanh, khung giao diện, vùng 2 |
 | Thử nghiệm kín | 50–100 người chơi (kịch bản mục 9) | ⬜ Cần M3–M5 + G |
 | Alpha | 4 lớp, chương 1–5, chuyển chức 1–2, dungeon cổng ngẫu nhiên, bảng xếp hạng | ⬜ |
@@ -65,7 +66,7 @@ File này liệt kê **mọi hạng mục trong kịch bản**: trạng thái hi
 | --- | --- | --- | --- | --- | --- |
 | CT-01 | Bối cảnh Huyền Thổ, đại nạn Thiên Liệt | ✅ | C1 | Smoke `01b-intro` | Cảnh mở đầu 5 trang (C1-10) |
 | CT-02 | Nhân vật chính ở làng Thanh Thạch, Lễ Thức Tỉnh tuổi 16 | ✅ | C1 | C1-T3 | Có tên nhân vật, thoại Trưởng làng Thạch Lão (C1-11) |
-| CT-03 | Bí mật "mảnh Thiên phú thứ hai" | 🟡 | C1 / Beta | — | Gợi ý trong thoại q11 và màn kết chương; lộ diện ở chương cuối (Beta) |
+| CT-03 | Bí mật "mảnh Thiên phú thứ hai" | 🟡 | C1 / M9 / Beta | C6-T6 | Gợi ý trong thoại q11 và màn kết chương 1–5; chương 6 (M9): thức giấc (Ám Khí), nhân vật biết mình mang mảnh linh hồn của Ma Tôn. Còn kết thúc Hợp nhất / Hiến tế (chương 9) |
 | CT-04 | Phe Liên minh Khai Giới (giao nhiệm vụ, xếp hạng) | ✅ | M4.3 | KP-T2 | Lạc Phong ở Thành Biên Đài; hạng Đồng → Bạc → Vàng theo ô chiếm vùng 2 (0/10/25) |
 | CT-05 | Phe Thương hội Kim Luân (cửa hàng, đấu giá, hộ tống) | 🟡 | M8 / Alpha | C5-T5 | Chương 5: chi nhánh Kim Luân ở Trại Tro Hồng (cửa hàng, đổi Tinh Thạch), Kim Phú phản bội. Còn đấu giá, hộ tống (Q64) |
 | CT-06 | Phe Thánh Đường Tinh Quang (thức tỉnh, tiến hoá Thiên phú) | 🟡 | Alpha | C4-T6 | M7: Tinh Quang Sứ ở Làng Chài Lau làm tiến hoá lần 1 ([11](11-chuong-4.md)). Còn Thánh Đường, thức tỉnh |
@@ -74,7 +75,7 @@ File này liệt kê **mọi hạng mục trong kịch bản**: trạng thái hi
 | CT-09 | Chương 1 — Thức Tỉnh | ✅ | C1 | C1-T4 | Đủ gameplay, boss, thoại, cảnh mở đầu, hướng dẫn, kết chương ([08](08-chuong-1-hoan-chinh.md)) |
 | CT-10 | Chương 2 — Thành Biên Đài | ✅ | M4.3 | KP-T2 | 5 bước nhiệm vụ chính, 3 NPC (E), thoại, màn kết chương 2 |
 | CT-11 | Chương 3–5 | ✅ | Alpha | C3-T5, C4-T5, C5-T5 | Chương 3 (M6), chương 4 (M7), chương 5 (M8: Thương hội phản bội, Công Trại, Viêm Long, chuyển chức 2) |
-| CT-12 | Chương 6–9 | ⬜ | Beta | — | |
+| CT-12 | Chương 6–9 | 🟡 | M9 / Beta | C6-T5, C6-T6 | Chương 6 (M9): mảnh thứ hai thức giấc (Ám Khí, mất kiểm soát), Bản Ngã Bóng Tối, sự thật về thân phận. Còn chương 7–9 |
 | CT-13 | Hai kết thúc (Hợp nhất / Hiến tế) | ⬜ | Beta | — | |
 
 ## 3. Hệ thống Thiên phú (kịch bản mục 3)
@@ -206,7 +207,7 @@ Chi tiết 9 vùng × 3 map con, cơ chế môi trường có số liệu, bộ 
 | BD-01 | Vùng 1 Rừng Sương (cấp 1–10, hệ Mộc) | ✅ | C1 | C1-T5 | Map 1-1 Rừng Sương + map 1-3 Lõi Sương (M4.1) |
 | BD-02 | Vùng 2 Đồng Bằng Gió Hú (cấp 10–20, hệ Kim, gió đẩy lùi) | ✅ | M4.2 | GI-T1 | 3 map Cửa Gió, Thảo Nguyên Hú, Mắt Bão; gió đổi 12/8 giây |
 | BD-03 | Vùng 3–5 | ✅ | Alpha | C3-T1, C4-T1, C5-T1 | Vùng 3 (M6), vùng 4 (M7), vùng 5 Núi Viêm Long (M8: mở bằng hạ Nữ Vương + tiến hoá 1 lần + cấp 44; dung nham, núi lửa phun, nhiệt) |
-| BD-04 | Vùng 6–9 | ⬜ | Beta | — | |
+| BD-04 | Vùng 6–9 | 🟡 | M9 / Beta | C6-T1, C6-T2 | Vùng 6 Băng Nguyên Bắc Cực (M9: mở bằng chuyển chức 2 + hạ Viêm Long + cấp 59; băng giá, đêm dài, mặt băng trơn). Còn vùng 7–9 (vùng 7 cần lãnh địa cấp 5, Q75) |
 | BD-05 | Điều kiện mở map: đủ cấp + hạ boss vùng + khai phá ≥ 60% | ✅ | M4.2 | MP-T2 | Vùng 2: hạ Sói Chúa + 60% vùng 1 + thử thách vượt ải (cấp ≥ 5) |
 | BD-06 | 3 map con mỗi vùng + dungeon boss | ✅ | C1 / M4.2 | C1-T6 | Vùng 1: 2 map (Q35) + lưới 3 map con; vùng 2: 3 map + Phủ Huyền Ảnh |
 | BD-07 | Bản đồ lục địa, di chuyển giữa các vùng | ✅ | M4.1 | MP-T1 | Phím N |
@@ -256,9 +257,9 @@ Chi tiết 9 vùng × 3 map con, cơ chế môi trường có số liệu, bộ 
 | TB-06 | Cường hoá +1 → +15, thất bại không mất đồ | ✅ | M1 | EQ-12, 13 | Từ +10 cần Tinh Kim (M2, **Q10**) |
 | TB-07 | Phân rã | ✅ | M1 | EQ-14 | |
 | TB-08 | Khảm ngọc ngũ hành, đổi hệ vũ khí | ⬜ | Alpha | — | |
-| TB-09 | Đồ Cam có hiệu ứng riêng | 🟡 | M1 / C1 / M4.2 / M8 | EQ-16, C1-T7, TB-T1, C5-T4 | Nanh Sói Chúa, Vỏ Lão Thụ, Mặt Nạ Huyền Ảnh, Vuốt Bạch Hổ, đồ Cam chương 3–4, Long Tâm, Lông Phượng |
+| TB-09 | Đồ Cam có hiệu ứng riêng | 🟡 | M1 / C1 / M4.2 / M8 | EQ-16, C1-T7, TB-T1, C5-T4 | Nanh Sói Chúa, Vỏ Lão Thụ, Mặt Nạ Huyền Ảnh, Vuốt Bạch Hổ, đồ Cam chương 3–4, Long Tâm, Lông Phượng, Gương Bản Ngã, Vảy Long Băng |
 | TB-10 | Vàng, Gỗ, Thiên Phú Tinh Hoa, Đuốc | ✅ | Proto / M2 | — | |
-| TB-11 | Đá, Sắt, Tinh Thạch | ✅ | M4.3 / M8 | KP-T1b, C5-T5 | Đá, Sắt từ Mỏ vùng 2–4; **Tinh Thạch từ Mỏ vùng 5** (+1/phút): 30 để chuyển chức 2, 5 → 1 Tinh Kim ở Trại Tro Hồng |
+| TB-11 | Đá, Sắt, Tinh Thạch | ✅ | M4.3 / M8 | KP-T1b, C5-T5 | Đá, Sắt từ Mỏ vùng 2–4; **Tinh Thạch từ Mỏ vùng 5–6** (+1/phút): 30 để chuyển chức 2, 5 → 1 Tinh Kim ở Trại Tro Hồng |
 | TB-12 | Mua bình thuốc bằng vàng, bán đồ lấy vàng | ✅ | C1 | C1-T10 | Cửa hàng làng (phím E) (C1-32) |
 | TB-13 | Vòng lặp chiến đấu ↔ khai phá ↔ lãnh địa | ✅ | Proto | — | |
 | TB-15 | Mặc đồ mới nhận cấp cường hoá của đồ cũ (Spec_Notes S4) | ✅ | SN2 | SN-T4 | Đồ cũ cao hơn thì 2 món **đổi cấp** (Q47); chi tiết đồ báo trước, Lực chiến so sánh tính cả cấp chuyển |

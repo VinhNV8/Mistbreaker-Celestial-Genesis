@@ -21,6 +21,10 @@ const KIMPHU := "Chưởng quỹ Kim Phú"
 const LIET := "Kiếm khách Liệt Diễm"
 const TIEUHOA := "Tiểu Hoả"
 const DRAGON := "Viêm Long"
+## M9 (docs/14): Trạm Tuyết Bạc
+const NGA := "Nữ tư tế Tuyết Nga"
+const HAN := "Thợ săn Lão Hàn"
+const SHADOW := "Bản Ngã Bóng Tối"
 
 ## id → [[người nói, lời], ...]
 const DIALOGS := {
@@ -187,6 +191,56 @@ const DIALOGS := {
 	"raid_warn": [[XICH, "Lính Kim Luân lại kéo tới! Về trại giữ cổng!"]],
 	"rare_phuong_hoang": [["Phượng Hoàng Tro", "Lửa không bao giờ chết. Ta đã tái sinh chín lần trên miệng núi này!"]],
 	"rare_phuong_hoang_down": [["{name}", "(Tro tàn rơi lả tả. Lần này ngọn lửa không bùng lên nữa — chỉ còn lại một chiếc lông đỏ rực.)"]],
+	# ---------------------------------------------------------------- chương 6 (docs/14 C6-40…44)
+	"r6_arrive": [
+		["{name}", "Gió buốt tới tận xương. Ở đây đêm dài hơn ngày…"],
+		["{name}", "(Đứng yên lâu sẽ bị đóng băng — cứ di chuyển, hoặc sưởi bên lửa trại. Mặt băng trơn: thả phím vẫn trượt thêm một chút.)"],
+	],
+	"nga_meet": [
+		[NGA, "Khai Giới Giả… Thánh Đường đã báo trước ngươi sẽ tới. Ta là Tuyết Nga, người giữ Bia Băng của Băng Nguyên."],
+		[NGA, "Cái bóng của ngươi — ngươi đã thấy nó trong ánh Long Tâm, phải không? Ở phương bắc này, bóng tối biết nói tiếng người."],
+		[LAM, "{name}! Ta theo dấu ngươi suốt từ Đầm Lầy. Lần này để ta đi cùng."],
+	],
+	"han_task": [[HAN, "Đàn Sói Băng đói rét kéo xuống tận trạm. Hạ 30 con quái quanh đây — rồi ta mới yên tâm cho ngươi lên rừng."]],
+	"nga_beacons": [[NGA, "Rừng Băng có 3 Đèn Cực Quang cổ. Thắp lại chúng — ánh sáng ấy giữ được tâm trí người đi đêm."]],
+	"beacon_lit": [["{name}", "(Ngọn đèn bừng sáng sắc xanh lục. Hơi ấm lan ra, và tiếng thì thầm trong đầu im bặt một lúc.)"]],
+	"awaken": [
+		["???", "…Cuối cùng. Cuối cùng ngươi cũng tới đủ gần."],
+		["{name}", "Ai…? Giọng nói này… phát ra từ chính trong ngực ta?"],
+		["???", "Ta là phần của ngươi mà ngươi không biết. Để ta ra ngoài — chỉ một lát thôi…"],
+		[LAM, "Mắt ngươi… chuyển sang màu đen! {name}, tỉnh lại! Đứng gần lửa!"],
+		["{name}", "(Thanh Ám Khí: đầy thì mất kiểm soát vài giây. Lửa và Đèn Cực Quang làm nó dịu đi.)"],
+	],
+	"dark_lost": [["???", "Đúng rồi… cứ để ta. Ta biết cách giết nhanh hơn ngươi."]],
+	"dark_done": [
+		["{name}", "(Ba lần. Mỗi lần tỉnh lại, quanh mình chỉ còn xác quái… và một cảm giác thèm khát không phải của mình.)"],
+		[LAM, "Có một hang gương băng trên đỉnh núi. Tuyết Nga nói thứ đó đang gọi ngươi — tìm ra nó."],
+	],
+	"mirror_gate": [[NGA, "Gương Băng Vĩnh Dạ. Ở trong đó, bóng của ngươi sẽ tách ra thành một kẻ thù. Nó biết mọi chiêu thức của ngươi — vì nó LÀ ngươi."]],
+	"boss6": [[SHADOW, "Ngươi dùng chiêu gì, ta dùng lại chiêu ấy. Ngươi có Thiên phú gì — ta có nó, ở dạng mà ngươi chưa bao giờ chạm tới."]],
+	"boss6_mirror": [[SHADOW, "Tìm ta đi. Trong bốn tấm gương, chỉ ta có bóng… còn ngươi thì sao?"]],
+	"boss6_talent": [[SHADOW, "Đây là Thiên phú của ngươi — khi nó trọn vẹn!"]],
+	"shadow_down": [
+		[SHADOW, "Ngươi thắng… nhưng ta không biến mất. Ta chỉ trở về… nơi ta thuộc về."],
+		["{name}", "(Cái bóng tan thành khói đen và chui vào ngực. Lạnh buốt. Rồi im lặng.)"],
+		[LAM, "Về Trạm Tuyết Bạc. Tuyết Nga biết điều gì đó — ta thấy bà ấy run khi nhìn ngươi."],
+	],
+	"truth": [
+		[NGA, "Một nghìn năm trước, Ma Tôn Vô Diện cố đoạt Thiên phú của chính Thiên Đạo. Lục địa vỡ thành chín mảnh — đó là Thiên Liệt."],
+		[NGA, "Nhưng hắn cũng mất một thứ: một mảnh linh hồn văng ra. Thánh Đường đã phong ấn nó trong Bia Đá ở làng Thanh Thạch."],
+		[NGA, "Mười sáu năm trước, Bia Đá nứt. Mảnh linh hồn ấy tìm một thân xác mới — một đứa bé vừa chào đời trong làng."],
+		["{name}", "…Là ta."],
+		[NGA, "Phải. Ma Tôn săn ngươi không phải vì Thiên phú của ngươi — mà vì ngươi là phần còn thiếu của hắn."],
+		[LAM, "Vậy thì sao? Ngươi vẫn là {name}. Ta biết điều đó."],
+		[NGA, "Muốn phong ấn lại, phải tìm Bia Đá gốc — nơi Thiên Đạo lần đầu giáng xuống. Nó ở Quần Đảo Thiên Không, trên những hòn đảo bay giữa trời."],
+	],
+	"ch6_done": [[NGA, "Ám Khí giờ là của ngươi để điều khiển, không còn điều khiển ngươi. Hãy dùng nó — nhưng đừng để nó lớn quá."]],
+	"nga_idle": [[NGA, "Bia Băng vẫn lạnh. Đi đi, Khai Giới Giả — và đừng đứng yên quá lâu ngoài kia."]],
+	"nga_wait": [[NGA, "Bản Ngã còn chờ ngươi trong Gương Băng Vĩnh Dạ, phía đông Đỉnh Cực Quang."]],
+	"han_shop": [[HAN, "Than Hồng ủ trong túi da — bấm Q khi tay chân bắt đầu cứng lại. Băng giá tan ngay."]],
+	"lam6_idle": [[LAM, "Ta ở đây. Nếu bóng tối trong ngươi trỗi dậy, ta sẽ gọi tên ngươi."]],
+	"rare_long_bang": [["Long Băng Bắc Cực", "Hơi thở của ta đã đóng băng biển phương bắc. Ngươi chỉ là một đốm lửa nhỏ."]],
+	"rare_long_bang_down": [["{name}", "(Con rồng băng vỡ tan như một khối pha lê khổng lồ. Giữa đống băng vụn, một mảnh vảy vẫn còn lạnh buốt.)"]],
 }
 
 
@@ -233,6 +287,24 @@ const DONE5 := 8
 
 static func quest5(step: int) -> Dictionary:
 	return QUESTS5[step - 1] if step >= 1 and step <= QUESTS5.size() else {}
+
+
+## M9 (docs/14 C6-41): nhiệm vụ chính chương 6. Bước lưu ở profile.quest.ch6 (0 = chưa tới vùng 6, 8 = xong).
+## Thưởng EXP ≈ 25% EXP từ cấp 60 lên 72 (13,3 triệu × 25% ≈ 3,34 triệu).
+const QUESTS6 := [
+	{"title": "Trạm Tuyết Bạc", "hint": "Tới Trạm Tuyết Bạc (Đồng Tuyết), đứng cạnh Tuyết Nga bấm E.", "type": "talk_nga", "need": 1, "reward": {"exp": 120000, "gold": 1000, "embers": 2}},
+	{"title": "Đàn sói đói", "hint": "Hạ 30 quái vùng 6 giúp Lão Hàn. Đừng đứng yên quá lâu.", "type": "kills6", "need": 30, "reward": {"exp": 300000}},
+	{"title": "Thắp Đèn Cực Quang", "hint": "N → Rừng Băng. Đứng cạnh 3 Đèn Cực Quang 2 giây để thắp.", "type": "beacons6", "need": 3, "reward": {"exp": 400000, "stones": 8}},
+	{"title": "Mảnh thứ hai thức giấc", "hint": "N → Đỉnh Cực Quang. Trải qua 3 lần mất kiểm soát (thanh Ám Khí đầy). Lửa làm Ám Khí dịu đi.", "type": "dark6", "need": 3, "reward": {"exp": 450000}},
+	{"title": "Gương Băng Vĩnh Dạ", "hint": "Khám phá ≥ 40% Đỉnh Cực Quang để tìm cửa hang gương.", "type": "explore6", "need": 1, "reward": {"exp": 550000}},
+	{"title": "Bản Ngã Bóng Tối", "hint": "Hạ Bản Ngã ở phía đông Đỉnh Cực Quang. Nó dùng lại kỹ năng của ngươi 3 giây sau; trong 4 gương chỉ tấm thật có bóng.", "type": "boss6", "need": 1, "reward": {"exp": 700000, "crystal": 10}},
+	{"title": "Sự thật", "hint": "Về Trạm Tuyết Bạc, nói với Tuyết Nga (E).", "type": "truth6", "need": 1, "reward": {"exp": 820000, "gold": 4000}},
+]
+const DONE6 := 8
+
+
+static func quest6(step: int) -> Dictionary:
+	return QUESTS6[step - 1] if step >= 1 and step <= QUESTS6.size() else {}
 
 
 ## M6 (docs/10 C3-41): nhiệm vụ chính chương 3. Bước lưu ở profile.quest.ch3 (0 = chưa tới vùng 3, 7 = xong).
@@ -285,7 +357,7 @@ static func quest(step: int) -> Dictionary:
 static func reward_text(r: Dictionary) -> String:
 	var parts := PackedStringArray()
 	for pair in [["exp", "%d EXP"], ["gold", "%d vàng"], ["potions", "%d bình máu"], ["torches", "%d Đuốc"], ["stones", "%d Đá Cường Hoá"],
-			["crystal", "%d Tinh Thạch"], ["holy_water", "%d Bình Nước Thánh"]]:
+			["crystal", "%d Tinh Thạch"], ["holy_water", "%d Bình Nước Thánh"], ["embers", "%d Than Hồng"]]:
 		if r.has(pair[0]):
 			parts.append(pair[1] % int(r[pair[0]]))
 	return ", ".join(parts)

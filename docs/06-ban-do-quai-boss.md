@@ -83,7 +83,7 @@ Trước M3, code dùng công thức cũ của prototype (`HP × (1 + 0,35·(L�
 | 3 | Sa Mạc Xích Sa | 20–32 | Thổ | Lực chiến 5.000 (kịch bản) | Bọ Cạp Sa Hoàng (cấp 30) | Nhân Sư Đá (cấp 32) | ✅ M6 |
 | 4 | Đầm Lầy U Minh | 32–45 | Thủy | Chuyển chức 1 (kịch bản) | Nữ Vương Phệ Mộng (cấp 43) | Thuỷ Quái Thất Đầu (cấp 45) | ✅ M7 |
 | 5 | Núi Viêm Long | 45–60 | Hỏa | Thiên phú tiến hoá 1 lần (kịch bản) | Viêm Long (cấp 58) | Phượng Hoàng Tro (cấp 60) | ✅ M8 |
-| 6 | Băng Nguyên Bắc Cực | 60–72 | Thủy + Kim | Chuyển chức 2 (kịch bản) | Bản Ngã Bóng Tối (cấp 70) | Long Băng Bắc Cực (cấp 72) | ⬜ Beta |
+| 6 | Băng Nguyên Bắc Cực | 60–72 | Thủy + Kim | Chuyển chức 2 (kịch bản) | Bản Ngã Bóng Tối (cấp 70) | Long Băng Bắc Cực (cấp 72) | ✅ M9 |
 | 7 | Quần Đảo Thiên Không | 72–84 | Kim + Mộc | Lãnh địa cấp 5, xây Cảng Khí Cầu (kịch bản) | Thiên Không Cự Thần (cấp 82) | Kỳ Lân Mây (cấp 84) | ⬜ Beta |
 | 8 | Vực Hư Vô | 84–95 | Hư Vô (không hệ) | Thiên phú tiến hoá 2 lần (kịch bản) | Giáo Chủ Hư Vô (cấp 93) | Hư Vô Thú (cấp 95) | ⬜ Beta |
 | 9 | Cổng Thiên Đạo | 95–100 | Tất cả (theo tầng) | Chuyển chức 3 (kịch bản) | Ma Tôn Vô Diện (cấp 100) | Thiên Đạo Hư Ảnh (cấp 100) | ⬜ Beta |
@@ -367,7 +367,7 @@ Mỗi vùng gồm 3 map con (Ngoài rìa → Trung tâm → Lõi) và 1 dungeon 
 | Dungeon: Long Huyệt | 58 | Boss chương 5 |
 
 **Khai phá:** lưới 45 ô. Tài nguyên: Mỏ sắt, **Mỏ Tinh Thạch**.  
-**Bộ trang bị vùng:** Bộ Hoả Ngục — 2: +30% kháng Hỏa · 4: +10% Tấn công · 6: Xoáy Kiếm để lại vòng lửa 5 giây, ×0,3 mỗi giây. ⬜
+**Bộ trang bị vùng:** Bộ Hoả Ngục — 2: +30% kháng Hỏa · 4: +10% Tấn công · 6: Xoáy Kiếm để lại vòng lửa 5 giây, ×0,3 mỗi giây. ✅ M8
 
 **Quái thường**
 
@@ -398,7 +398,7 @@ Mỗi vùng gồm 3 map con (Ngoài rìa → Trung tâm → Lõi) và 1 dungeon 
 | 3 (dưới 20%) | Rơi xuống, **Cuồng nộ**: +30% tốc đánh, Long tức mỗi 8 giây |
 
 - **Rơi:** 1 đồ Tím · 15% **Long Tâm** (nhẫn Cam: +20% sát thương hệ Hỏa; miễn dung nham 2 giây sau khi né) · 3 Thiên Phú Tinh Hoa · 1 Tinh Kim.
-- **Đạo Tặc sao chép:** **Long Tức**: phun lửa nón 12 m, ×0,5 mỗi 0,25 s trong 2 giây (⬜).
+- **Đạo Tặc sao chép:** **Long Tức**: phun lửa nón 12 m, ×0,5 mỗi 0,25 s trong 2 giây (✅ M8).
 
 **Boss hiếm: Phượng Hoàng Tro** — xuất hiện ngẫu nhiên 2 lần/ngày ở Miệng Núi Lửa (kịch bản mục 5)
 
@@ -431,7 +431,7 @@ Mỗi vùng gồm 3 map con (Ngoài rìa → Trung tâm → Lõi) và 1 dungeon 
 | Dungeon: Gương Băng Vĩnh Dạ | 70 | Boss chương 6 |
 
 **Khai phá:** lưới 45 ô. Tài nguyên: Mỏ Tinh Thạch, rừng thông → Xưởng Gỗ.  
-**Bộ trang bị vùng:** Bộ Cực Quang — 2: miễn băng giá dưới 3 tầng · 4: +10% chí mạng · 6: đòn chí mạng làm chậm quái 30%. ⬜
+**Bộ trang bị vùng:** Bộ Cực Quang — 2: băng giá dưới 3 tầng không làm chậm · 4: +10% chí mạng · 6: đòn chí mạng làm chậm quái 40% trong 2 giây. ✅ M9
 
 **Quái thường**
 
@@ -462,7 +462,7 @@ Mỗi vùng gồm 3 map con (Ngoài rìa → Trung tâm → Lõi) và 1 dungeon 
 | 3 (dưới 20%) | Dùng Thiên phú của người chơi ở **dạng tiến hoá cao nhất** của Thiên phú đó |
 
 - **Rơi:** 1 đồ Tím · 15% **Gương Bản Ngã** (bùa Cam: 10% phản 50% sát thương nhận) · 3 Thiên Phú Tinh Hoa · 1 Tinh Kim.
-- **Đạo Tặc sao chép:** **Kính Ảnh**: tạo 1 bản sao của bản thân 8 giây, gây 50% sát thương (⬜).
+- **Đạo Tặc sao chép:** **Kính Ảnh**: tạo 1 bản sao của bản thân 8 giây, gây 50% sát thương (✅ M9).
 
 **Boss hiếm: Long Băng Bắc Cực** — xuất hiện ngẫu nhiên 2 lần/ngày ở Đỉnh Cực Quang (kịch bản mục 5)
 
@@ -687,8 +687,8 @@ Dùng bằng phím L (Thiên phú Đạo Tặc, [05-thien-phu-chi-tiet](05-thien
 | Tướng Gián Điệp Huyền Ảnh (chương 2) | **Phân Thân**: tạo 2 ảo ảnh hút đòn của quái trong 6 giây | ⬜ |
 | Bọ Cạp Sa Hoàng (chương 3) | **Độn Thổ**: chui đất 1,5 giây (bất tử), trồi lên vòng 7 m ×2,0 | ✅ M6 |
 | Nữ Vương Phệ Mộng (chương 4) | **Mộng Cảnh**: quái trong 10 m đánh nhau trong 4 giây | ✅ M7 |
-| Viêm Long (chương 5) | **Long Tức**: phun lửa nón 12 m, ×0,5 mỗi 0,25 s trong 2 giây | ⬜ |
-| Bản Ngã Bóng Tối (chương 6) | **Kính Ảnh**: tạo 1 bản sao của bản thân 8 giây, gây 50% sát thương | ⬜ |
+| Viêm Long (chương 5) | **Long Tức**: phun lửa nón 12 m, ×0,5 mỗi 0,25 s trong 2 giây | ✅ M8 |
+| Bản Ngã Bóng Tối (chương 6) | **Kính Ảnh**: tạo 1 bản sao của bản thân 8 giây, gây 50% sát thương | ✅ M9 |
 | Thiên Không Cự Thần (chương 7) | **Thiên Chuỳ**: nện đất vòng 10 m ×3,0, choáng 1 giây | ⬜ |
 | Giáo Chủ Hư Vô (chương 8) | **Hút Thiên Phú**: quái trong 12 m mất mọi tăng cường 6 giây, hút 10% HP của chúng | ⬜ |
 | Ma Tôn Vô Diện (chương 9) | **Vô Diện**: dùng ngẫu nhiên 1 kỹ năng boss đã sao chép với ×1,5 sát thương | ⬜ |
@@ -703,7 +703,8 @@ Dùng bằng phím L (Thiên phú Đạo Tặc, [05-thien-phu-chi-tiet](05-thien
 | M6 | ✅ Xong 21/10/2026 — **Vùng 3 Sa Mạc Xích Sa** ([10](10-chuong-3.md)): 3 map, môi trường, 6 quái + 2 tinh anh, Bọ Cạp Sa Hoàng, Nhân Sư Đá, bộ Sa Hành Giả, Đuôi Sa Hoàng, Mắt Nhân Sư, Độn Thổ |
 | M7 | ✅ Xong 21/10/2026 — **Vùng 4 Đầm Lầy U Minh** ([11](11-chuong-4.md)): 3 map, nước đầm + độc tích luỹ, ảo ảnh, 4 quái + 2 tinh anh, Nữ Vương Phệ Mộng, Thuỷ Quái Thất Đầu, Bộ U Minh, Gối Mộng, Vảy Thất Đầu, Mộng Cảnh |
 | Alpha | Vùng 5 (M8, [12](12-chuong-5.md)) |
-| Beta | Vùng 6–9 |
+| M9 | ✅ Xong 21/10/2026 — **Vùng 6 Băng Nguyên Bắc Cực** ([14](14-chuong-6.md)): 3 map, băng giá + đêm dài + mặt băng trơn, 4 quái + 2 tinh anh, Bản Ngã Bóng Tối, Long Băng Bắc Cực, Bộ Cực Quang, Gương Bản Ngã, Vảy Long Băng, Kính Ảnh |
+| Beta | Vùng 7–9 |
 
 ## 7. Quyết định đã chốt (20/10/2026)
 

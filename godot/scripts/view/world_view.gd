@@ -16,6 +16,7 @@ const CORPSE_TIME := 0.6
 const Ch3 = preload("res://scripts/core/chapter3.gd")
 const Ch4 = preload("res://scripts/core/chapter4.gd")
 const R5View = preload("res://scripts/view/region5_view.gd")
+const R6View = preload("res://scripts/view/region6_view.gd")
 const HIT_FX_TIME := 0.25
 
 var world: GameWorld
@@ -165,6 +166,7 @@ func _draw() -> void:
 	var view := _view_rect().grow(120.0)
 	_draw_ground(view)
 	_draw_village_ground()
+	R6View.draw_props(self, world, view, _art)
 	if world.map.arena != null:
 		_draw_arena()
 		R5View.draw_arena(self, world, _art)
@@ -211,6 +213,7 @@ func _draw() -> void:
 		_draw_gate()
 	_draw_desert_overlay(view)
 	R5View.draw_over(self, world, view, _art)
+	R6View.draw_over(self, world, view, _art)
 	_draw_texts()
 	_update_tracking()
 
@@ -319,6 +322,8 @@ func _draw_ground(view: Rect2) -> void:
 				draw_arc(rp, 6.0 + fposmod(world.time * 4.0 + i, 8.0), PI * 1.1, PI * 1.9, 8, Color(0.7, 0.9, 1.0, 0.25), 1.0)
 	# M8: dung nham, Đá Nổi, vệt lửa (region5_view.gd)
 	R5View.draw_ground(self, world, view, _art)
+	# M9: lửa trại, Đèn Cực Quang, mặt băng, bão tuyết (region6_view.gd)
+	R6View.draw_ground(self, world, view, _art)
 	# M6: ốc đảo (C3-13) và bóng râm dưới tảng đá (C3-11)
 	for o in Ch3.oases(world):
 		var oc: Vector2 = o[0]
@@ -395,7 +400,7 @@ func _draw_stele_fallback() -> void:
 func _draw_arena() -> void:
 	var c: Vector2 = world.arena_pos
 	var r: float = world.arena_r
-	var arena_tile := "tile-sand-red" if bool(world.map.get("desert", false)) else ("tile-basalt" if str(world.map.get("decor", "")) == "volcano" else "tile-void")
+	var arena_tile := "tile-sand-red" if bool(world.map.get("desert", false)) else ("tile-basalt" if str(world.map.get("decor", "")) == "volcano" else ("tile-ice" if str(world.map.get("decor", "")) == "tundra" else "tile-void"))
 	if not (_art and SpriteLib.fill_polygon(self, _circle_points(c, r, 64), arena_tile, Color(1, 1, 1, 0.85))):
 		draw_circle(c, r, Color("#251d33"))
 	var locked: bool = world.boss() != null
@@ -511,6 +516,10 @@ func _draw_tree_sprite(t: Dictionary) -> void:
 	if str(world.map.get("decor", "forest")) == "volcano":
 		SpriteLib.draw_env(self, R5View.decor_id(t.variant), base, Color.WHITE, 1.0 if t.r < 28.0 else 1.4, t.shade > 0.5)
 		return
+	# M9: băng nguyên — thông phủ tuyết, đá băng, gò tuyết.
+	if str(world.map.get("decor", "forest")) == "tundra":
+		SpriteLib.draw_env(self, R6View.decor_id(t.variant), base, Color.WHITE, 1.0 if t.r < 28.0 else 1.4, t.shade > 0.5)
+		return
 	# M4.2: thảo nguyên — đá, cỏ cao, bụi thay cho cây rừng.
 	if str(world.map.get("decor", "forest")) == "plains":
 		var pid: String = ["rock-0", "tall-grass", "rock-1", "bush"][t.variant]
@@ -596,6 +605,9 @@ func _enemy_size(e) -> float:
 
 
 func _draw_enemy_sprite(e) -> void:
+	# M9: Bản Ngã Bóng Tối (bóng của người chơi) và Gương Băng
+	if R6View.draw_enemy(self, world, e):
+		return
 	if e.burrow_t > 0.0 and e.state != "windup":
 		var wob := sin(world.time * 14.0) * 3.0
 		draw_set_transform(e.pos + Vector2(0, e.radius * 0.6), 0.0, Vector2(1.0, 0.45))

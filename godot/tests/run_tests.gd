@@ -20,6 +20,7 @@ const Stats = preload("res://scripts/core/stats.gd")
 const MapsData = preload("res://scripts/data/maps.gd")
 const Ch3 = preload("res://scripts/core/chapter3.gd")
 const Ch5 = preload("res://scripts/core/chapter5.gd")
+const Ch6 = preload("res://scripts/core/chapter6.gd")
 const Ch4 = preload("res://scripts/core/chapter4.gd")
 const Chapters = preload("res://scripts/core/chapters.gd")
 const Looks = preload("res://scripts/data/looks.gd")
@@ -158,6 +159,14 @@ func _init() -> void:
 	_run("C5-T6 Công Trại 3 đợt, đột kích định kỳ", _test_c5_siege)
 	_run("C5-T7 chuyển chức 2: điều kiện, 6 nhánh, save v11", _test_c5_job2)
 	_run("TL-B5 cân bằng vùng 5: 3 lớp × 20 Thiên phú hạ Viêm Long", _test_c5_balance)
+	# M9 — Chương 6 Băng Nguyên Vĩnh Dạ (docs/14)
+	_run("C6-T1 mở vùng 6, 3 map băng nguyên", _test_c6_unlock)
+	_run("C6-T2 băng giá, đêm dài, mặt băng trơn, Than Hồng", _test_c6_env)
+	_run("C6-T3 quái vùng 6: Sói Băng, cầu tuyết, Băng trụ, Cung Thủ, Đập băng, Bão tuyết", _test_c6_mobs)
+	_run("C6-T4 Bản Ngã Bóng Tối, Kính Ảnh, Gương Bản Ngã, Long Băng, Vảy Long Băng, Bộ Cực Quang", _test_c6_bosses)
+	_run("C6-T5 nhiệm vụ chương 6 (7 bước), Đèn Cực Quang, Mỏ Tinh Thạch vùng 6", _test_c6_quest)
+	_run("C6-T6 Ám Khí, mất kiểm soát, Ám Hoá, save v12", _test_c6_dark)
+	_run("TL-B6 cân bằng vùng 6: 3 lớp × 20 Thiên phú hạ Bản Ngã", _test_c6_balance)
 	# Spec_Notes đợt 5
 	_run("SN5-T1 bấm bản đồ nhỏ: tự chạy tới, tới nơi / tự đi / kẹt / đổi map thì dừng", _test_sn5_travel)
 	_run("SN5-T2 chữ nhặt đồ: xếp dòng, gộp vàng, mỗi món một dòng, tối đa 6", _test_sn5_pickup_notes)
@@ -383,6 +392,27 @@ func _bot(w: GameWorld) -> Dictionary:
 	var b = w.boss()
 	if b != null and b.kind == "nu-vuong" and b.phase >= 3 and p.pos.distance_to(w.ch4.light_pos) > Ch4.LIGHT_R * 0.6:
 		out.move = (w.ch4.light_pos - p.pos).normalized()
+	# M9: vùng 6 — Gương vỡ thì nhắm tấm thật (có bóng); né vòng báo; bước khi băng giá ≥ 2 tầng.
+	if Ch6.in_region(w):
+		var bn = Ch6._boss(w)
+		if bn != null and bn.phase == 2:
+			out.aim = bn.pos
+			if w.is_mage() or w.is_hunter():
+				# đứng lệch theo tiếp tuyến vòng gương: đường bắn không đi qua tấm gương khác
+				var radial: Vector2 = (bn.pos - w.arena_pos).normalized()
+				var spot: Vector2 = bn.pos + radial.rotated(PI / 2.0) * 150.0
+				out.move = (spot - p.pos).normalized() if spot.distance_to(p.pos) > 20.0 else Vector2.ZERO
+			else:
+				out.move = (bn.pos - p.pos).normalized() if bn.pos.distance_to(p.pos) > 50.0 + bn.radius else Vector2.ZERO
+		for m in w.ch6.marks:
+			if m.t < 1.1 and p.pos.distance_to(m.pos) <= float(m.r) + GameWorld.PLAYER_RADIUS + 6.0:
+				out.move = (p.pos - m.pos).normalized() if p.pos.distance_to(m.pos) > 1.0 else Vector2.UP
+				if m.t < 0.2 and p.dodge_cd <= 0.0:
+					out.dodge = true
+		if w.ch6.frost >= 2 and Vector2(out.get("move", Vector2.ZERO)).length() < 0.1:
+			var tgt: Vector2 = out.get("aim", p.pos + Vector2.RIGHT)
+			var side: float = 1.0 if int(w.time / 2.0) % 2 == 0 else -1.0
+			out.move = (tgt - p.pos).normalized().rotated(PI / 2.0 * side) if tgt.distance_to(p.pos) > 1.0 else Vector2.RIGHT
 	return out
 
 
@@ -4222,6 +4252,548 @@ func _test_sn5_pickup_notes() -> void:
 	_check(w.pickup_notes.size() == GameWorld.PICKUP_NOTES_MAX, "tối đa 6 dòng")
 	_tick(w, {}, 200)
 	_check(w.pickup_notes.is_empty(), "các dòng tự mất sau vài giây")
+
+
+# ------------------------------------------------------------------ M9 — Chương 6 Băng Nguyên Vĩnh Dạ (docs/14)
+
+
+func _region6_world(map_id := "6-1", class_id := "kiem-khach", talent := "tay-nhanh", level := 62, seed_value := 5, job2_index := 0) -> GameWorld:
+	var p := _profile(talent, 3)
+	p.class_id = class_id
+	p.level = level
+	p.boss_defeated = true
+	p.bosses = {"huyen-anh": true, "sa-hoang": true, "nu-vuong": true, "vien-long": true}
+	p.job = str(Classes.job_def(class_id).id)
+	p.job2 = str(Classes.job2_defs(class_id)[job2_index].id)
+	p.evo = 1
+	p.talent_level = 10
+	p.unlocked_maps = ["1-1", "1-3", "2-1", "2-2", "2-3", "3-1", "3-2", "3-3", "4-1", "4-2", "4-3", "5-1", "5-2", "5-3", "6-1", "6-2", "6-3"]
+	p.quest = {"ch2": Story.DONE2, "kills2": 0, "ch3": Story.DONE3, "kills3": 0, "oases": [], "ch4": Story.DONE4, "kills4": 0, "orbs4": [],
+		"ch5": Story.DONE5, "kills5": 0, "raid_won": true, "ch6": 1, "kills6": 0, "beacons6": [], "dark6": 0}
+	p.map_id = map_id
+	p.play_seconds = 0.0
+	var w := GameWorld.new(p, RngUtil.make(seed_value))
+	w.enemies = []
+	w.field_spawn = false
+	return w
+
+
+## Chỗ trống xa lửa trại và trại (đo băng giá).
+func _cold6(w: GameWorld) -> Vector2:
+	for y in range(300, int(w.world_size.y) - 300, 97):
+		for x in range(900, int(w.world_size.x) - 900, 113):
+			var pos := Vector2(x, y)
+			if not Ch6.near_fire(w, pos) and pos.distance_to(w.safe_pos) > w.safe_r + 200.0 and Ch6.near_fire(w, pos + Vector2(0, 0)) == false:
+				var clear := true
+				for f in Ch6.fires(w):
+					if pos.distance_to(f) < Ch6.FIRE_R + 200.0:
+						clear = false
+				if clear:
+					return pos
+	return Vector2(1000, 1700)
+
+
+## C6-T1: điều kiện mở vùng 6; 3 map.
+func _test_c6_unlock() -> void:
+	var w := _region5_world("5-3", "kiem-khach", "tay-nhanh", 60)
+	_check(w.travel_blocker("6-1").contains("Viêm Long"), "chưa hạ Viêm Long: chặn")
+	w.profile.bosses["vien-long"] = true
+	_check(w.travel_blocker("6-1").contains("chuyển chức"), "chưa chuyển chức 2: chặn (%s)" % w.travel_blocker("6-1"))
+	w.profile.job2 = "kiem-thanh"
+	w.profile.level = 58
+	_check(w.travel_blocker("6-1").contains("59"), "dưới cấp 59: chặn")
+	w.profile.level = 60
+	_check(w.travel_blocker("6-1") == "", "đủ điều kiện: vào Đồng Tuyết")
+	_check(w.travel_blocker("6-2") != "" and w.travel_blocker("6-3") != "", "phải đi 6-1 → 6-2 → 6-3")
+	for pair in [["6-1", [60, 64]], ["6-2", [64, 68]], ["6-3", [68, 72]]]:
+		var m: Dictionary = MapsData.get_map(pair[0])
+		_check(m.levels == pair[1] and m.size == Vector2(4480, 2560) and m.region == 6 and m.frost and m.night and not m.fires.is_empty(),
+			"%s cấp %s, băng giá + đêm + lửa trại" % [pair[0], str(pair[1])])
+	_check(MapsData.get_map("6-3").arena.boss == "ban-nga" and int(MapsData.get_map("6-3").arena.level) == 70 and MapsData.get_map("6-2").beacons.size() == 3,
+		"Gương Băng Vĩnh Dạ: Bản Ngã cấp 70; Rừng Băng có 3 Đèn Cực Quang")
+	_check(Ch6 in Chapters.MODULES and "input_filter" in Ch6.HOOKS, "bộ điều phối có chương 6 + hook input_filter")
+	var w2 := _region6_world("6-1")
+	w2.profile.quest.ch6 = 0
+	w2._load_map("6-1")
+	_check(int(w2.profile.quest.ch6) == 1, "tới vùng 6: nhận nhiệm vụ chương 6")
+
+
+## C6-T2: băng giá, đêm dài, mặt băng trơn, Than Hồng.
+func _test_c6_env() -> void:
+	var w := _region6_world("6-1")
+	var st = w.ch6
+	w.player.pos = _cold6(w)
+	st.last_pos = w.player.pos
+	_tick(w, {}, 125)
+	_check(st.frost == 1, "đứng yên 2 giây: +1 tầng băng giá (%d)" % st.frost)
+	_tick(w, {}, 360)
+	_check(st.frost == 4 and is_equal_approx(Ch6.move_mult(w), 0.6), "4 tầng: −40%% tốc chạy (%d tầng, ×%.2f)" % [st.frost, Ch6.move_mult(w)])
+	_tick(w, {}, 125)
+	_check(st.frost == 0 and w.player.stun_timer > 1.0 and Ch6.frost_immune(w), "5 tầng: đông cứng 1,5 giây, về 0, miễn 3 giây")
+	_tick(w, {}, 300)
+	st.frost = 3
+	st.still_t = 0.0
+	_tick(w, {"move": Vector2.RIGHT}, 100)
+	_check(st.frost == 2, "di chuyển 1,5 giây: −1 tầng (%d)" % st.frost)
+	var fire: Vector2 = w.map.fires[1]
+	w.player.pos = fire + Vector2(20, 0)
+	st.last_pos = w.player.pos
+	st.frost = 3
+	_tick(w, {}, 100)
+	_check(st.frost == 0, "đứng cạnh lửa trại: tan băng giá")
+	_tick(w, {}, 200)
+	_check(st.frost == 0, "cạnh lửa không tăng tầng")
+	# đêm dài
+	w.profile.play_seconds = 60.0
+	_check(not Ch6.is_night(w) and is_equal_approx(Ch6.vision(w), 1.0), "2 phút đầu chu kỳ: ngày")
+	w.profile.play_seconds = 300.0
+	_check(Ch6.is_night(w) and is_equal_approx(Ch6.vision(w), 0.6) and Ch6.env_text(w).contains("Đêm"), "6 phút sau: đêm, tầm nhìn 60%")
+	# mặt băng trơn
+	w.player.pos = _cold6(w)
+	_tick(w, {"move": Vector2.RIGHT}, 10)
+	var x0: float = w.player.pos.x
+	_tick(w, {}, 6)
+	var x1: float = w.player.pos.x
+	_tick(w, {}, 30)
+	var x2: float = w.player.pos.x
+	_tick(w, {}, 10)
+	_check(x1 > x0 + 2.0 and x2 >= x1 and is_equal_approx(w.player.pos.x, x2), "thả phím: trượt thêm 0,3 giây rồi dừng (%.1f → %.1f → %.1f)" % [x0, x1, x2])
+	# Than Hồng
+	w.profile.embers = 1
+	st.frost = 3
+	st.frost_immune = 0.0
+	w.drink_potion()
+	_check(int(w.profile.embers) == 0 and st.frost == 0 and Ch6.frost_immune(w), "Than Hồng: phím Q xoá băng giá, miễn 30 giây")
+	w.profile.gold = 500.0
+	w.shop_buy("ember")
+	_check(int(w.profile.embers) == 1 and is_equal_approx(w.profile.gold, 500.0 - Ch6.SHOP_EMBER), "mua Than Hồng ở cửa hàng (%d vàng)" % Ch6.SHOP_EMBER)
+
+
+## C6-T3: quái vùng 6.
+func _test_c6_mobs() -> void:
+	var w := _region6_world("6-1", "kiem-khach", "tay-nhanh", 64)
+	w.player.pos = _cold6(w)
+	var st = w.ch6
+	var wolf := w.spawn_enemy("soi-bang", 62, w.player.pos + Vector2(200, 0))
+	Ch6.after_spawn(w, wolf)
+	_check(w.enemies.filter(func(e): return e.kind == "soi-bang").size() == Ch6.PACK, "Sói Băng đi bầy 4 con")
+	w.enemies = []
+	var e := w.spawn_enemy("soi-bang", 62, w.player.pos + Vector2(30, 0))
+	e.attack_kind = "frostbite"
+	for i in 20:
+		w.player.hp = w.stats.max_hp
+		Ch6.perform(w, e)
+		if st.frost >= 1:
+			break
+	_check(st.frost >= 1, "Sói Băng cắn: +1 tầng băng giá")
+	st.frost = 0
+	var sn := w.spawn_enemy("nguoi-tuyet", 62, w.player.pos + Vector2(120, 0))
+	sn.attack_kind = "snowball"
+	sn.target = w.player.pos + Vector2(200, 0)
+	w.player.hp = w.stats.max_hp
+	Ch6.perform(w, sn)
+	_check(is_equal_approx(w.player.hp, w.stats.max_hp), "cầu tuyết rơi xa: không trúng")
+	var hit := false
+	for i in 20:
+		w.player.hp = w.stats.max_hp
+		sn.target = w.player.pos
+		Ch6.perform(w, sn)
+		if w.player.hp < w.stats.max_hp:
+			hit = true
+			break
+	_check(hit, "cầu tuyết rơi trúng chỗ người chơi: mất máu")
+	var sp := w.spawn_enemy("tinh-linh-bang", 63, w.player.pos + Vector2(150, 0))
+	sp.attack_kind = "icepillar"
+	var frozen := false
+	for i in 20:
+		w.player.hp = w.stats.max_hp
+		w.player.stun_timer = 0.0
+		sp.target = w.player.pos
+		Ch6.perform(w, sp)
+		if w.player.stun_timer >= Ch6.PILLAR_FREEZE - 0.01:
+			frozen = true
+			break
+	_check(frozen, "Băng trụ: đóng băng 1 giây")
+	w.player.stun_timer = 0.0
+	var ar := w.spawn_enemy("cung-thu-bang", 66, w.player.pos + Vector2(220, 0))
+	ar.attack_kind = "icearrow"
+	ar.target = w.player.pos
+	var n0: int = w.projectiles.size()
+	Ch6.perform(w, ar)
+	_check(w.projectiles.size() == n0 + 1 and Monsters.DEFS["cung-thu-bang"].range >= 240.0, "Cung Thủ Băng bắn xa 24 m")
+	var bear := w.spawn_enemy("nguoi-tuyet", 64, w.player.pos + Vector2(100, 0), {"elite": true})
+	_check(bear.elite and Monsters.DEFS["nguoi-tuyet"].elite_name == "Gấu Băng Khổng Lồ", "tinh anh Gấu Băng Khổng Lồ")
+	_check(Ch6.elite_skill(w, bear, "icecrack") and bear.state == "windup" and bear.attack_kind == "icecrack" and Ch6.crack_lines(bear).size() == 3,
+		"Đập băng: vung 1 giây, 3 đường nứt")
+	var hit2 := false
+	for i in 20:
+		w.player.hp = w.stats.max_hp
+		bear.target = w.player.pos
+		Ch6.perform(w, bear)
+		if w.player.hp < w.stats.max_hp:
+			hit2 = true
+			break
+	_check(hit2, "đứng trên đường nứt: trúng Đập băng")
+	var mage := w.spawn_enemy("tinh-linh-bang", 67, w.player.pos + Vector2(150, 0), {"elite": true})
+	st.frost = 0
+	st.frost_immune = 0.0
+	_check(Ch6.elite_skill(w, mage, "blizzard") and st.blizzards.size() == 1, "Pháp Sư Bão Tuyết: Bão tuyết")
+	Ch6._tick_zones(w, 1.05)
+	_check(st.frost == 1, "trong Bão tuyết: +1 tầng mỗi giây (cả khi đi)")
+
+
+## C6-T4: Bản Ngã Bóng Tối, Long Băng, đồ, bộ.
+func _test_c6_bosses() -> void:
+	var w := _region6_world("6-3", "kiem-khach", "tay-nhanh", 69)
+	w._load_map("6-3")
+	w.enemies = []
+	var st = w.ch6
+	var b := w.spawn_enemy("ban-nga", 70, w.arena_pos, {"role": "boss"})
+	w.player.pos = w.arena_pos - Vector2(100, 0)
+	_check(int(b.max_hp) > 80000 and int(b.max_hp) < 110000, "Bản Ngã cấp 70 theo công thức 06 (%d HP)" % b.max_hp)
+	_check(Ch6.braziers(w).size() == 4 and Ch6.near_fire(w, Ch6.braziers(w)[0]), "4 chậu lửa trong hang")
+	# sao chép kỹ năng: dùng Xoáy Kiếm → 3 giây sau Xoáy bóng
+	st.last_cds = [0.0, 0.0, 0.0, 0.0]
+	w.player.skill_cds[0] = 6.0
+	Ch6._tick_shadow(w, 0.016)
+	_check(st.copies.size() == 1 and str(st.copies[0].id) == "spin" and absf(float(st.copies[0].t) - Ch6.COPY_DELAY) < 0.05, "ghi lại kỹ năng vừa dùng")
+	Ch6._tick_shadow(w, 2.9)
+	_check(b.state != "windup", "chưa đủ 3 giây: chưa dùng lại")
+	Ch6._tick_shadow(w, 0.2)
+	_check(b.state == "windup" and b.attack_kind == "m_spin", "3 giây sau: Bản Ngã dùng Xoáy bóng")
+	var all_ids: Array = []
+	for c in Classes.ORDER:
+		for i in 4:
+			all_ids.append(str(Classes.skill(c, i).id))
+	_check(all_ids.all(func(id): return Ch6.MIRROR_OF.has(id)), "mọi kỹ năng 3 lớp có bản bóng tối (C6-30a)")
+	b.state = "chase"
+	st.marks = []
+	Ch6._mirror(w, b, "meteor")
+	Ch6._mirror(w, b, "rain")
+	Ch6._mirror(w, b, "trap")
+	_check(st.marks.size() == 5 and st.marks.any(func(m): return float(m.get("root", 0.0)) > 0.0), "Thiên thạch / Mưa / Bẫy bóng: vòng báo dưới chân")
+	Ch6._mirror(w, b, "guard")
+	_check(Ch6.adjust_damage(w, b, 1000, true) == 700, "Thuẫn bóng: −30% sát thương 3 giây")
+	st.shield_t = 0.0
+	w.player.eagle_time = 4.0
+	Ch6._mirror(w, b, "eagle")
+	_check(st.haste_t > 0.0 and w.player.eagle_time <= 0.0, "Mắt bóng: Bản Ngã +30% tốc đánh, cướp Ưng Nhãn của người chơi")
+	st.haste_t = 0.0
+	st.marks = []
+	# Ngũ Hành không khắc được
+	w.profile.talent = "ngu-hanh"
+	w.profile.element = "hoa"
+	_check(w.element_bonus(b) > 0.0 and absf(Ch6.hit_mult(w, b, false) * (1.0 + w.element_bonus(b)) - 1.0) < 0.001, "Ngũ Hành không khắc được Bản Ngã")
+	w.profile.talent = "tay-nhanh"
+	# GĐ2: Gương vỡ
+	b.hp = b.max_hp * 0.49
+	w._update_enemy(b, 0.016)
+	var mirrors := w.enemies.filter(func(e): return e.kind == "guong-bang" and not e.dead)
+	_check(b.phase == 2 and st.mirror_on and mirrors.size() == 3, "dưới 50%: 4 tấm gương (3 giả)")
+	_check(Ch6.mirror_slots(w).any(func(s): return s.distance_to(b.pos) < 1.0), "Bản Ngã ẩn trong 1 tấm")
+	var slots := Ch6.mirror_slots(w)
+	_check(slots[0].distance_to(slots[1]) >= 230.0, "các gương cách nhau ≥ 23 m")
+	_check(st.invuln_t > 0.0 and Ch6.adjust_damage(w, b, 1000, true) == 0, "vỡ gương: bất tử 3,5 giây")
+	st.invuln_t = 0.0
+	w.player.hp = w.stats.max_hp
+	_check(Ch6.adjust_damage(w, mirrors[0], 999999, true) == 0, "gương giả không mất máu")
+	_check(absf(w.stats.max_hp - w.player.hp - w.stats.max_hp * Ch6.MIRROR_REFLECT_CAP) < 1.0, "đánh nhầm: phản tối đa 4% HP")
+	var hp_r: float = w.player.hp
+	Ch6.adjust_damage(w, mirrors[0], 999999, true)
+	_check(is_equal_approx(w.player.hp, hp_r), "gương giả phản tối đa 1 lần/giây")
+	var old_pos: Vector2 = b.pos
+	Ch6.adjust_damage(w, b, int(b.max_hp * 0.11), true)
+	Ch6._tick_shadow(w, 0.016)
+	_check(st.invuln_t > 0.0, "xoay gương: bất tử 2,5 giây")
+	st.invuln_t = 0.0
+	var mirrors2 := w.enemies.filter(func(e): return e.kind == "guong-bang" and not e.dead)
+	var spots := mirrors2.map(func(e): return e.pos)
+	spots.append(b.pos)
+	var distinct := true
+	for i in spots.size():
+		for j in range(i + 1, spots.size()):
+			if spots[i].distance_to(spots[j]) < 1.0:
+				distinct = false
+	_check(b.pos.distance_to(old_pos) > 1.0 and distinct, "mất 10% HP: gương xoay, tấm thật đổi chỗ")
+	# GĐ3: Thiên phú phản chiếu
+	var atk0: float = b.atk
+	b.hp = b.max_hp * 0.19
+	w._update_enemy(b, 0.016)
+	_check(b.phase == 3 and not st.mirror_on and w.enemies.filter(func(e): return e.kind == "guong-bang" and not e.dead).is_empty(), "dưới 20%: gương tan")
+	_check(st.p3_group == "combat" and is_equal_approx(b.atk, atk0 * Ch6.P3_COMBAT_ATK) and st.p3_form != "", "Thiên phú chiến đấu: +30%% Tấn công (%s)" % st.p3_form)
+	var top: Array = Ch6.top_form("tay-nhanh")
+	_check(top[0] != Talents.get_talent("tay-nhanh").name, "dùng dạng tiến hoá cao nhất (%s)" % top[0])
+	_check(Ch6.talent_group("ngu-hanh") == "slow" and Ch6.talent_group("bay-dan") == "summon" and Ch6.talent_group("may-man") == "other", "nhóm Thiên phú → hiệu ứng GĐ3")
+	st.invuln_t = 0.0
+	st.p3_group = "summon"
+	st.summon_t = 0.0
+	Ch6._tick_shadow(w, 0.016)
+	_check(w.enemies.filter(func(e): return e.kind == "anh-bong").size() == 2, "nhóm triệu hồi: gọi 2 Ảnh Bóng")
+	st.p3_group = "slow"
+	st.pulse_t = 0.0
+	Ch6._tick_shadow(w, 0.016)
+	_check(w.player.slow_timer > 1.5, "nhóm phép thuật / khống chế: làm chậm người chơi")
+	st.invuln_t = 0.0
+	# Đạo Tặc — Kính Ảnh
+	w.profile.talent = "dao-tac"
+	w.profile.copied_skills = []
+	w._on_boss_killed(b)
+	_check("mirror" in w.profile.copied_skills and w.profile.active_copy == "mirror", "Đạo Tặc sao chép Kính Ảnh")
+	var na: int = w.allies.size()
+	_check(Ch6.copy_skill(w, "mirror") and w.allies.size() == na + 1 and is_equal_approx(w.allies[-1].atk, float(w.stats.atk) * Ch6.CLONE_ATK),
+		"Kính Ảnh: 1 bản sao đánh 50% Tấn công")
+	_check(ItemData.BOSS_UNIQUES["ban-nga"] == "guong_ban_nga" and ItemData.UNIQUES.guong_ban_nga.slot == "amulet", "Bản Ngã rơi Gương Bản Ngã (bùa)")
+	w.profile.talent = "tay-nhanh"
+	# Gương Bản Ngã
+	var it := Items.new_item(w.profile, 70, "orange", RngUtil.make(1), "", "", "guong_ban_nga")
+	Items.add_item(w.profile, it)
+	w.equip(int(it.id))
+	w.enemies = []
+	var dummy := w.spawn_enemy("soi-bang", 68, w.player.pos + Vector2(30, 0))
+	var reflected := false
+	for i in 200:
+		var hp0: float = dummy.hp
+		Ch6.player_hurt(w, 1000.0, "")
+		if dummy.hp < hp0:
+			reflected = absf(hp0 - dummy.hp - 500.0) < 2.0 or dummy.dead
+			break
+	_check(reflected, "Gương Bản Ngã: phản 50% sát thương lên quái gần")
+	# Long Băng Bắc Cực
+	w.enemies = []
+	w.profile.bosses["ban-nga"] = true
+	w.debug_now = 1000.0
+	w.player.pos = Vector2(1500, 1700)
+	w._check_rare_boss()
+	var lb := w.rare_boss()
+	_check(lb != null and lb.kind == "long-bang" and lb.level == 72, "hạ Bản Ngã rồi: Long Băng Bắc Cực xuất hiện")
+	lb.skill_cd = 0.0
+	lb.pounce_cd = 99.0
+	st.marks = []
+	Ch6.chase(w, lb, 150.0, 0.016)
+	_check(st.marks.size() == Ch6.ICE_RAIN_N, "Mưa băng: 15 vòng")
+	lb.pounce_cd = 0.0
+	Ch6.chase(w, lb, 150.0, 0.016)
+	_check(lb.state == "windup" and lb.attack_kind == "frostbreath", "Hơi thở vĩnh đông: vung 0,8 giây")
+	st.patches = []
+	Ch6.perform(w, lb)
+	_check(st.patches.size() == 5, "hơi thở để lại 5 mảng băng")
+	st.frost = 0
+	st.frost_immune = 0.0
+	st.ember_until = -99.0
+	w.player.pos = st.patches[0].pos
+	Ch6._tick_zones(w, 0.51)
+	Ch6._tick_zones(w, 0.51)
+	_check(st.frost == 2, "đứng trên mặt băng: +2 tầng mỗi giây (%d)" % st.frost)
+	# Vảy Long Băng
+	var boots := Items.new_item(w.profile, 72, "orange", RngUtil.make(2), "", "", "vay_long_bang")
+	Items.add_item(w.profile, boots)
+	w.equip(int(boots.id))
+	st.frost = 0
+	_check(Ch6.frost_immune(w) and is_equal_approx(Ch6.move_mult(w), Ch6.SCALE_SPEED), "Vảy Long Băng: miễn băng giá, +15% tốc chạy")
+	# Bộ Cực Quang
+	var w3 := _region6_world("6-1")
+	var crit0: float = float(w3.stats.crit)
+	var rng := RngUtil.make(4)
+	for slot in ["weapon", "armor", "helm", "boots", "gloves", "necklace"]:
+		var si := Items.new_item(w3.profile, 62, "purple", rng, slot, "cuc_quang")
+		Items.add_item(w3.profile, si)
+		w3.equip(int(si.id))
+	w3.ch6.frost = 2
+	_check(is_equal_approx(Ch6.move_mult(w3), 1.0), "Bộ Cực Quang 2 món: dưới 3 tầng không chậm")
+	w3.ch6.frost = 3
+	_check(Ch6.move_mult(w3) < 0.75, "3 tầng trở lên vẫn chậm")
+	_check(float(w3.stats.crit) >= crit0 + 0.1 - 0.001, "Bộ Cực Quang 4 món: +10% chí mạng")
+	var foe := w3.spawn_enemy("soi-bang", 62, w3.player.pos + Vector2(40, 0))
+	Ch6.hit_mult(w3, foe, true)
+	_check(foe.slow_t > 1.5, "Bộ Cực Quang 6 món: chí mạng làm chậm quái")
+
+
+## C6-T5: nhiệm vụ chương 6; Đèn Cực Quang; lưới vùng 6.
+func _test_c6_quest() -> void:
+	var w := _region6_world("6-1")
+	w._load_map("6-1")
+	var p = w.profile
+	w.talk("tuyet-nga")
+	_check(int(p.quest.ch6) == 2 and int(p.embers) == 2, "bước 1: gặp Tuyết Nga, nhận 2 Than Hồng")
+	_check(w.talk("lao-han") == "shop", "Lão Hàn mở cửa hàng")
+	p.quest.kills6 = 30
+	Ch6.check_quest(w)
+	_check(int(p.quest.ch6) == 3, "bước 2: 30 quái")
+	w._load_map("6-2")
+	var bs: Array = w.map.beacons
+	for i in bs.size():
+		w.player.pos = bs[i] + Vector2(20, 0)
+		w.ch6.last_pos = w.player.pos
+		_tick(w, {}, 130)
+	_check(p.quest.beacons6.size() == 3, "đứng cạnh 3 Đèn Cực Quang 2 giây: thắp (%d)" % p.quest.beacons6.size())
+	Ch6.check_quest(w)
+	_check(int(p.quest.ch6) == 4, "bước 3: thắp 3 đèn")
+	_check(Ch6.near_fire(w, bs[0]), "đèn đã thắp sưởi như lửa trại")
+	_check(not Ch6.dark_active(w), "bước 4 ở Rừng Băng: Ám Khí chưa chạy")
+	p.quest.dark6 = 3
+	Ch6.check_quest(w)
+	_check(int(p.quest.ch6) == 5, "bước 4: 3 lần mất kiểm soát")
+	_check(not w.gate_open("6-3"), "Gương Băng Vĩnh Dạ còn khoá")
+	p.quest.ch6 = 6
+	_check(w.gate_open("6-3"), "bước 6: hang mở")
+	p.bosses["ban-nga"] = true
+	Ch6.check_quest(w)
+	_check(int(p.quest.ch6) == 7, "bước 6: hạ Bản Ngã")
+	w._load_map("6-1")
+	w.drain_events()
+	w.talk("tuyet-nga")
+	var ends := w.drain_events().filter(func(ev): return ev.type == "chapter_end" and int(ev.get("chapter", 0)) == 6)
+	_check(int(p.quest.ch6) == Story.DONE6 and Ch6.quest_hud(w).get("done", false) and ends.size() == 1, "bước 7: sự thật → chương 6 xong")
+	var total := 0.0
+	for q in Story.QUESTS6:
+		total += float(q.reward.get("exp", 0))
+	var need := 0.0
+	for l in range(60, 72):
+		need += Formulas.exp_to_next(l)
+	_check(total / need >= 0.2 and total / need <= 0.3, "thưởng EXP nhiệm vụ ≈ 25%% (%.0f%%)" % (total / need * 100.0))
+	# lưới vùng 6: Mỏ Tinh Thạch
+	var grid: Array = p.tiles if int(p.tiles_region) == 6 else p.grid_of(6)
+	_check(grid.size() == 45 or grid.size() > 30, "lưới khai phá vùng 6 (%d ô)" % grid.size())
+	var mines := grid.filter(func(t): return t.event == "mine")
+	if not mines.is_empty():
+		p.buildings = {}
+		mines[0].status = "owned"
+		p.buildings[Explore.tile_key("mine", mines[0], 6)] = 0.0
+		var rate := Explore.production_per_minute(p)
+		_check(is_equal_approx(rate.crystal, 1.0) and is_equal_approx(rate.ore, 0.0), "Mỏ vùng 6: Tinh Thạch")
+
+
+## C6-T6: Ám Khí, mất kiểm soát, Ám Hoá; save v12.
+func _test_c6_dark() -> void:
+	var w := _region6_world("6-3", "kiem-khach", "tay-nhanh", 69)
+	w._load_map("6-3")
+	w.enemies = []
+	var p = w.profile
+	var st = w.ch6
+	p.quest.ch6 = 4
+	w.player.pos = _cold6(w)
+	_check(Ch6.dark_active(w), "bước 4 ở Đỉnh Cực Quang: Ám Khí chạy")
+	w._last_combat = w.time
+	Ch6._tick_dark(w, 1.0)
+	_check(absf(st.dark - Ch6.DARK_COMBAT) < 0.01, "đang giao chiến: +2/giây")
+	var mob := w.spawn_enemy("soi-bang", 68, w.player.pos + Vector2(40, 0))
+	Ch6.on_kill(w, mob)
+	_check(absf(st.dark - Ch6.DARK_COMBAT - Ch6.DARK_KILL) < 0.01, "hạ quái: +5")
+	var d0: float = st.dark
+	w.player.pos = Ch6.fires(w)[1]
+	Ch6._tick_dark(w, 0.5)
+	_check(st.dark < d0, "gần lửa: Ám Khí giảm")
+	w.player.pos = w.arena_pos
+	_check(not Ch6.dark_active(w), "trong hang boss: Ám Khí không tăng")
+	# mất kiểm soát
+	w.player.pos = _cold6(w)
+	st.dark = 100.0
+	w._last_combat = w.time
+	Ch6._tick_dark(w, 0.016)
+	_check(st.dark_warn > 0.0 and Ch6.env_text(w).contains("THỨC GIẤC"), "đầy 100: báo 2 giây")
+	Ch6._tick_dark(w, 2.1)
+	_check(st.lost_t > 3.5, "mất kiểm soát 4 giây")
+	w.enemies = []
+	var foe := w.spawn_enemy("soi-bang", 68, w.player.pos + Vector2(300, 0))
+	var inp: Dictionary = Ch6.input_filter(w, {"move": Vector2.LEFT, "aim": w.player.pos, "attack": false, "skill_1": true, "dodge": true})
+	_check(inp.move.x > 0.9 and inp.attack and not inp.get("skill_1", false) and not inp.dodge and inp.aim == foe.pos,
+		"bỏ qua phím: tự lao vào quái gần nhất và đánh thường")
+	_check(is_equal_approx(Ch6.hit_mult(w, foe, false), Ch6.DARK_LOST_ATK), "khi mất kiểm soát: +40% Tấn công")
+	Ch6._tick_dark(w, 4.1)
+	_check(st.lost_t <= 0.0 and int(p.quest.dark6) == 1 and is_equal_approx(st.dark, 0.0), "hết 4 giây: tỉnh lại, tính 1 lần")
+	# sau chương: Ám Hoá
+	p.quest.ch6 = Story.DONE6
+	st.dark = 100.0
+	w._last_combat = w.time
+	Ch6._tick_dark(w, 0.016)
+	_check(st.ascend_t > 5.0 and st.lost_t <= 0.0 and st.dark_warn < 0.0, "sau chương: Ám Hoá 6 giây, không mất kiểm soát")
+	_check(is_equal_approx(Ch6.hit_mult(w, foe, false), Ch6.DARK_ASCEND_ATK), "Ám Hoá: +20% Tấn công")
+	# save v12
+	p.embers = 3
+	p.quest.beacons6 = [0, 2]
+	var d: Dictionary = p.to_dict()
+	_check(int(d.version) >= 12, "save v12+")
+	var p2 := Profile.new()
+	_check(p2.load_dict(d.duplicate(true)) and int(p2.embers) == 3 and p2.quest.beacons6 == [0, 2] and int(p2.quest.ch6) == Story.DONE6, "lưu/nạp trường chương 6")
+	var old: Dictionary = d.duplicate(true)
+	old.version = 11
+	old.erase("embers")
+	var q: Dictionary = old.quest
+	for k in ["ch6", "kills6", "beacons6", "dark6"]:
+		q.erase(k)
+	var p3 := Profile.new()
+	_check(p3.load_dict(old) and int(p3.embers) == 0 and int(p3.quest.ch6) == 0 and p3.quest.beacons6.is_empty(), "save v11 nạp được, chưa tới vùng 6")
+
+
+## TL-B6: 3 lớp × 20 Thiên phú hạ Bản Ngã (cấp 69, đồ chuẩn cấp 69, tiến hoá 1 lần, đã chuyển chức 2).
+func _test_c6_balance() -> void:
+	var avg := func(arr: Array) -> float:
+		var sum := 0.0
+		for x in arr:
+			sum += x
+		return sum / arr.size()
+	var class_avg := {}
+	for class_id in Classes.ORDER:
+		var by_rank := {}
+		var all: Array = []
+		var lines := PackedStringArray()
+		for t in Talents.LIST:
+			var times: Array = []
+			var deaths := 0
+			var won := true
+			for k in 2:
+				var res := _r6_fight(class_id, t.id, [5, 11][k], k)
+				times.append(res[0])
+				deaths += int(res[1])
+				won = won and bool(res[2])
+			var sec: float = avg.call(times)
+			lines.append("%s %s %.0fs/%d" % [t.rank, t.name, sec, deaths])
+			_check(won and deaths == 0, "%s · %s hạ được Bản Ngã, không chết lần nào" % [class_id, t.name])
+			if not by_rank.has(t.rank):
+				by_rank[t.rank] = []
+			by_rank[t.rank].append(sec)
+			all.append(sec)
+		print("       [%s] (" % class_id + " · ".join(lines) + ")")
+		var f: float = avg.call(by_rank.F)
+		var s_: float = avg.call(by_rank.S)
+		class_avg[class_id] = avg.call(all)
+		print("       [%s] F %.1f giây, S %.1f giây, chênh %.0f%%; trung bình %.1f giây" % [class_id, f, s_, absf(f - s_) / maxf(f, s_) * 100.0, class_avg[class_id]])
+		_check(absf(f - s_) / maxf(f, s_) <= 0.25, "%s: F và S chênh ≤ 25%%" % class_id)
+	var a: float = class_avg.values().min()
+	var b: float = class_avg.values().max()
+	print("       (%d lớp: nhanh nhất %.1f, chậm nhất %.1f giây, chênh %.0f%%)" % [class_avg.size(), a, b, (b - a) / b * 100.0])
+	_check((b - a) / b <= 0.25, "các lớp chênh ≤ 25%")
+
+
+func _r6_fight(class_id: String, talent_id: String, seed_value: int, job2_index := 0) -> Array:
+	var w := _region6_world("6-3", class_id, talent_id, 69, seed_value, job2_index)
+	w._load_map("6-3")
+	w.enemies = []
+	w.field_spawn = false
+	var p = w.profile
+	p.quest.ch6 = 6
+	p.points = _class_points(class_id)
+	for k in p.points:
+		p.points[k] = int(p.points[k]) * 17
+	var rng := RngUtil.make(77)
+	for pair in [["weapon", "blue"], ["armor", "blue"], ["helm", "green"], ["boots", "green"], ["gloves", "green"]]:
+		var it := Items.new_item(p, 69, pair[1], rng, pair[0])
+		Items.add_item(p, it)
+		w.equip(int(it.id))
+	w.player.hp = w.stats.max_hp
+	w.player.mp = w.stats.max_mp
+	w.player.pos = w.arena_pos - Vector2(100, 0)
+	var deaths := 0
+	var seconds := 0.0
+	while seconds < 600.0 and not p.bosses.get("ban-nga", false):
+		for ev in w.drain_events():
+			if ev.type == "death":
+				deaths += 1
+		if w.boss() == null and w.player.dead_timer <= 0.0:
+			w.player.pos = w.arena_pos - Vector2(100, 0)
+		w.update(1.0 / 60.0, _bot(w))
+		seconds += 1.0 / 60.0
+	return [seconds, deaths, p.bosses.get("ban-nga", false)]
 
 
 # ------------------------------------------------------------------ SK1 — hệ kỹ năng (docs/13)

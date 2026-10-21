@@ -131,3 +131,6 @@ _region5.register_sprites(SPRITES)
 # M7 (docs/11): vùng 4 Đầm Lầy U Minh — region4.py
 import region4 as _region4  # noqa: E402
 _region4.register_sprites(SPRITES)
+# M9 (docs/14): vùng 6 Băng Nguyên Bắc Cực — region6.py
+import region6 as _region6  # noqa: E402
+_region6.register_sprites(SPRITES)

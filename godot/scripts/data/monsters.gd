@@ -272,6 +272,50 @@ const DEFS := {
 		"element": "", "name": "Xương Nô", "arch": "nhanh", "speed": 150.0, "radius": 14.0, "range": 26.0,
 		"windup": 0.4, "recover": 0.6, "attack": "melee", "color": "#d2c8b2", "steal": {},
 	},
+	# ---------------------------------------------------------------- M9: vùng 6 Băng Nguyên Bắc Cực (06 vùng 6, docs/14)
+	## C6-20: đi bầy 4 con; cắn +1 tầng băng giá.
+	"soi-bang": {
+		"element": "thuy", "name": "Sói Băng", "arch": "bay", "speed": 140.0, "radius": 15.0, "range": 30.0,
+		"windup": 0.45, "recover": 0.7, "attack": "frostbite", "color": "#a8c8e8", "steal": {"agi": 60, "str": 40}, "pack": 4,
+	},
+	## C6-21: ném cầu tuyết vòng 3 m. Tinh anh: Gấu Băng Khổng Lồ (Đập băng 3 đường).
+	"nguoi-tuyet": {
+		"element": "thuy", "name": "Người Tuyết", "arch": "li", "speed": 80.0, "radius": 20.0, "range": 140.0,
+		"windup": 0.9, "recover": 1.2, "attack": "snowball", "color": "#e8eef6", "steal": {"vit": 60, "str": 40},
+		"elite_name": "Gấu Băng Khổng Lồ", "elite_arch": "li", "elite_min_level": 63, "elite_skill": "icecrack", "elite_sprite": "gau-bang",
+	},
+	## C6-22: Băng trụ vòng 4 m, đóng băng 1 giây. Tinh anh: Pháp Sư Bão Tuyết (Bão tuyết).
+	"tinh-linh-bang": {
+		"element": "thuy", "name": "Tinh Linh Băng", "arch": "phep", "speed": 110.0, "radius": 15.0, "range": 180.0,
+		"windup": 1.0, "recover": 1.2, "attack": "icepillar", "color": "#7ad0ff", "steal": {"int": 70, "luk": 30},
+		"elite_name": "Pháp Sư Bão Tuyết", "elite_arch": "phep", "elite_min_level": 66, "elite_skill": "blizzard", "elite_sprite": "phap-su-bao-tuyet",
+		"elite_element": "kim",
+	},
+	## C6-23: mũi tên xuyên, tầm 24 m.
+	"cung-thu-bang": {
+		"element": "kim", "name": "Cung Thủ Băng", "arch": "xa", "speed": 70.0, "radius": 15.0, "range": 240.0,
+		"windup": 0.8, "recover": 1.1, "attack": "icearrow", "color": "#c8d8ec", "steal": {"agi": 70, "luk": 30},
+	},
+	## C6-30: boss chương 6 — cái bóng của chính người chơi (vẽ theo dáng lớp người chơi).
+	"ban-nga": {
+		"element": "kim", "name": "Bản Ngã Bóng Tối", "arch": "boss", "speed": 140.0, "radius": 22.0, "range": 44.0,
+		"windup": 0.5, "recover": 0.8, "attack": "melee", "color": "#2a1a42", "steal": {"str": 34, "agi": 33, "int": 33},
+	},
+	## C6-30b: Gương Băng giả (bất tử, phản sát thương).
+	"guong-bang": {
+		"element": "kim", "name": "Gương Băng", "arch": "li", "speed": 0.0, "radius": 22.0, "range": 0.0,
+		"windup": 1.0, "recover": 1.0, "attack": "none", "color": "#b8d8f0", "steal": {"int": 100},
+	},
+	## C6-30c: Ảnh Bóng (Bản Ngã giai đoạn 3, nhóm triệu hồi).
+	"anh-bong": {
+		"element": "kim", "name": "Ảnh Bóng", "arch": "nhanh", "speed": 150.0, "radius": 13.0, "range": 26.0,
+		"windup": 0.45, "recover": 0.7, "attack": "melee", "color": "#3a2a5a", "steal": {"agi": 100},
+	},
+	## C6-33: boss hiếm 6-3.
+	"long-bang": {
+		"element": "thuy", "name": "Long Băng Bắc Cực", "arch": "li", "speed": 110.0, "radius": 40.0, "range": 60.0,
+		"windup": 0.6, "recover": 0.9, "attack": "icebite", "color": "#9ad8ff", "steal": {"vit": 50, "int": 50},
+	},
 	## C4-30: boss chương 4
 	"nu-vuong": {
 		"element": "thuy", "name": "Nữ Vương Phệ Mộng", "arch": "boss", "speed": 110.0, "radius": 30.0, "range": 50.0,

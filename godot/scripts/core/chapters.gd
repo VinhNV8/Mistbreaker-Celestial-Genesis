@@ -22,11 +22,13 @@ extends RefCounted
 ##   M8: poise_mult(w, e) -> float (nhân sát thương vào thanh Phá Thế) · trap_extra(w) -> int (cộng số bẫy tối đa)
 ##   trap_triggered(w, pos, mul) (bẫy vừa nổ) · meteor_extra(w, pos, mul) -> Array[[pos, mul]] (Thiên Thạch thêm)
 ##   npc_visible(w, npc_id) -> bool (chỉ gọi chương có npc_id trong NPCS; mặc định true)
+##   M9 (D42): input_filter(w, input) -> Dictionary (thay cả phím của khung hình — mất kiểm soát chương 6)
 
 const Ch3 = preload("res://scripts/core/chapter3.gd")
 const Ch4 = preload("res://scripts/core/chapter4.gd")
 const Ch5 = preload("res://scripts/core/chapter5.gd")
-const MODULES := [Ch3, Ch4, Ch5]
+const Ch6 = preload("res://scripts/core/chapter6.gd")
+const MODULES := [Ch3, Ch4, Ch5, Ch6]
 
 
 ## Danh sách chương có hook, tính 1 lần rồi giữ lại (hook được gọi nhiều lần mỗi khung hình cho từng quái).
@@ -216,6 +218,12 @@ static func input_move(w, v: Vector2) -> Vector2:
 	for m in _with("input_move"):
 		v = m.input_move(w, v)
 	return v
+
+
+static func input_filter(w, input: Dictionary) -> Dictionary:
+	for m in _with("input_filter"):
+		input = m.input_filter(w, input)
+	return input
 
 
 static func env_alert(w) -> bool:

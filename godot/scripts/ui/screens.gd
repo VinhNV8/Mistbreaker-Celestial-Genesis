@@ -391,6 +391,9 @@ const VICTORY := {
 	"vien-long": [5, "Viêm Long đã ngã xuống",
 		"Núi lửa ngừng gầm. Long Tâm nóng rực trong tay %s — và trong ánh lửa, cái bóng của chính mình hiện lên… không có mặt.",
 		"Gặp Liệt Diễm ở Trại Tro Hồng để chuyển chức lần 2 (cấp 60, 30 Tinh Thạch). Băng Nguyên Bắc Cực mở sau chuyển chức 2."],
+	"ban-nga": [6, "Bản Ngã Bóng Tối đã tan",
+		"Gương Băng vỡ vụn. Cái bóng không mặt tan thành khói đen và chui vào ngực %s — lạnh buốt, rồi im lặng. Tuyết Nga đang chờ ở Trạm Tuyết Bạc với sự thật về thân phận.",
+		"Về Trạm Tuyết Bạc nói với Tuyết Nga. Quần Đảo Thiên Không (chương 7) sẽ mở ở bản sau."],
 }
 
 

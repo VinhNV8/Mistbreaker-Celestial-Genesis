@@ -854,6 +854,37 @@ func _run_smoke(dir: String) -> void:
 	await _wait(4.0)
 	await _shot(dir, "13d-siege")
 	GameWorld.Ch5._end_siege(world, false, true)
+	# M9: chương 6 Băng Nguyên Bắc Cực
+	p.quest.ch5 = GameWorld.Story.DONE5
+	p.job2 = str(GameWorld.Classes.job2_defs(str(p.class_id))[0].id)
+	p.level = maxi(p.level, 62)
+	world._refresh_stats()
+	world._load_map("6-1")
+	world.player.pos = world.safe_pos + Vector2(60, 40)
+	await _wait(1.0)
+	await _shot(dir, "15c-camp6")
+	world._load_map("6-2")
+	world.player.pos = Vector2(1300, 1280)
+	world.player.shield = 1e9
+	world.player.shield_time = 999.0
+	for k in ["soi-bang", "nguoi-tuyet", "tinh-linh-bang", "cung-thu-bang"]:
+		world.spawn_enemy(k, 65, world.player.pos + Vector2(200 + randf() * 200, randf() * 300 - 150))
+	world.ch6.frost = 3
+	await _wait(1.6)
+	await _shot(dir, "15-region6")
+	p.play_seconds = float(int(p.play_seconds / GameWorld.Ch6.CYCLE) + 1) * GameWorld.Ch6.CYCLE + 200.0
+	await _wait(0.5)
+	await _shot(dir, "15b-night6")
+	p.quest.ch6 = 6
+	world._load_map("6-3")
+	world.player.pos = world.arena_pos - Vector2(120, 0)
+	await _wait(1.0)
+	var bn = world.boss()
+	if bn != null:
+		bn.hp = bn.max_hp * 0.45
+	await _wait(1.2)
+	await _shot(dir, "15d-ban-nga")
+	world.player.shield = 0.0
 	print("SMOKE done: boss_defeated=%s level=%d kills=%d" % [p.boss_defeated, p.level, p.kills])
 	SaveSystem.clear_save()
 	get_tree().quit()

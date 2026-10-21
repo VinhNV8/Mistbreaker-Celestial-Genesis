@@ -13,7 +13,7 @@ const REGIONS := [
 	{"id": 3, "name": "Sa Mạc Xích Sa", "levels": [20, 32], "element": "tho", "maps": ["3-1", "3-2", "3-3"], "unlock": "Hạ Huyền Ảnh · Lực chiến 5.000 · cấp 18"},
 	{"id": 4, "name": "Đầm Lầy U Minh", "levels": [32, 45], "element": "thuy", "maps": ["4-1", "4-2", "4-3"], "unlock": "Hạ Sa Hoàng · chuyển chức 1"},
 	{"id": 5, "name": "Núi Viêm Long", "levels": [45, 60], "element": "hoa", "maps": ["5-1", "5-2", "5-3"], "unlock": "Hạ Nữ Vương · Thiên phú tiến hoá 1 lần · cấp 44"},
-	{"id": 6, "name": "Băng Nguyên Bắc Cực", "levels": [60, 72], "element": "thuy", "maps": [], "unlock": "Chuyển chức 2 (Beta)"},
+	{"id": 6, "name": "Băng Nguyên Bắc Cực", "levels": [60, 72], "element": "thuy", "maps": ["6-1", "6-2", "6-3"], "unlock": "Chuyển chức 2 · hạ Viêm Long · cấp 59"},
 	{"id": 7, "name": "Quần Đảo Thiên Không", "levels": [72, 84], "element": "kim", "maps": [], "unlock": "Lãnh địa cấp 5 (Beta)"},
 	{"id": 8, "name": "Vực Hư Vô", "levels": [84, 95], "element": "", "maps": [], "unlock": "Thiên phú tiến hoá 2 lần (Beta)"},
 	{"id": 9, "name": "Cổng Thiên Đạo", "levels": [95, 100], "element": "", "maps": [], "unlock": "Chuyển chức 3 (Beta)"},
@@ -299,11 +299,77 @@ const MAPS := {
 		"eruption": true,
 		"lava": [[Vector2(1300, 600), 200.0], [Vector2(1400, 2000), 190.0], [Vector2(2400, 400), 170.0], [Vector2(2500, 2150), 170.0],
 			[Vector2(3100, 1280), 150.0]],
+	},
+	# ---------------------------------------------------------------- M9: vùng 6 Băng Nguyên Bắc Cực (06 vùng 6, docs/14)
+	## frost: băng giá + mặt băng trơn (C6-10, C6-12); night: đêm dài (C6-11); fires: lửa trại sưởi băng giá;
+	## beacons: Đèn Cực Quang (nhiệm vụ bước 3, thắp rồi sưởi như lửa).
+	"6-1": {
+		"region": 6,
+		"name": "Đồng Tuyết",
+		"size": Vector2(4480, 2560),
+		"levels": [60, 64],
+		"zone_x": [720.0, 700.0],
+		"safe": {"pos": Vector2(420, 1280), "r": 200.0, "name": "Trạm Tuyết Bạc", "kind": "camp"},
+		"npcs": [["tuyet-nga", "npc-tuyet-nga", Vector2(40, -40), "Tuyết Nga · E"], ["lao-han", "npc-lao-han", Vector2(-80, 60), "Lão Hàn · E"],
+			["lam-nhi-6", "npc-lam-nhi", Vector2(80, 80), "Lam Nhi · E"]],
+		"arena": null,
+		"gate": false,
+		"mobs": [["soi-bang", 60, 45], ["nguoi-tuyet", 61, 35], ["tinh-linh-bang", 63, 20]],
+		"ground": "tile-snow",
+		"fog": 0.15,
+		"tint": Color(0.16, 0.22, 0.32),
+		"wind": 0.0,
+		"trees": 170,
+		"decor": "tundra",
+		"frost": true,
+		"night": true,
+		"fires": [Vector2(370, 1330), Vector2(1500, 700), Vector2(2300, 1900), Vector2(3200, 900), Vector2(3900, 1700)],
+	},
+	"6-2": {
+		"region": 6,
+		"name": "Rừng Băng",
+		"size": Vector2(4480, 2560),
+		"levels": [64, 68],
+		"zone_x": [720.0, 600.0],
+		"safe": {"pos": Vector2(352, 1280), "r": 150.0, "name": "Lều Thợ Săn", "kind": "camp"},
+		"arena": null,
+		"gate": false,
+		"mobs": [["soi-bang", 64, 30], ["nguoi-tuyet", 64, 30], ["tinh-linh-bang", 64, 20], ["cung-thu-bang", 65, 20]],
+		"ground": "tile-snow",
+		"fog": 0.25,
+		"tint": Color(0.12, 0.2, 0.3),
+		"wind": 0.0,
+		"trees": 300,
+		"decor": "tundra",
+		"frost": true,
+		"night": true,
+		"fires": [Vector2(310, 1320), Vector2(2200, 1300)],
+		"beacons": [Vector2(1500, 600), Vector2(2900, 2000), Vector2(3900, 900)],
+	},
+	"6-3": {
+		"region": 6,
+		"name": "Đỉnh Cực Quang",
+		"size": Vector2(4480, 2560),
+		"levels": [68, 72],
+		"zone_x": [720.0, 560.0],
+		"safe": {"pos": Vector2(352, 1280), "r": 140.0, "name": "Đài Cực Quang", "kind": "camp"},
+		"arena": {"pos": Vector2(3872, 1280), "r": 280.0, "boss": "ban-nga", "level": 70, "chapter": 6, "name": "Gương Băng Vĩnh Dạ"},
+		"gate": true,
+		"mobs": [["soi-bang", 68, 25], ["nguoi-tuyet", 68, 25], ["tinh-linh-bang", 68, 25], ["cung-thu-bang", 68, 25]],
+		"ground": "tile-ice",
+		"fog": 0.3,
+		"tint": Color(0.18, 0.14, 0.34),
+		"wind": 0.0,
+		"trees": 150,
+		"decor": "tundra",
+		"frost": true,
+		"night": true,
+		"fires": [Vector2(310, 1320), Vector2(1600, 600), Vector2(1700, 2000), Vector2(2800, 1280)],
 	}
 }
 
 ## Thứ tự để hiển thị và kiểm điều kiện "đã tới map trước".
-const ORDER := ["1-1", "1-3", "2-1", "2-2", "2-3", "3-1", "3-2", "3-3", "4-1", "4-2", "4-3", "5-1", "5-2", "5-3"]
+const ORDER := ["1-1", "1-3", "2-1", "2-2", "2-3", "3-1", "3-2", "3-3", "4-1", "4-2", "4-3", "5-1", "5-2", "5-3", "6-1", "6-2", "6-3"]
 
 
 static func get_map(map_id: String) -> Dictionary:

@@ -629,3 +629,6 @@ _region5.register_icons(ITEMS, RESOURCES, SKILLS)
 # M7 (docs/11): icon vùng 4 trong region4.py
 import region4 as _region4  # noqa: E402
 _region4.register_icons(ITEMS)
+# M9 (docs/14): icon vùng 6 trong region6.py
+import region6 as _region6  # noqa: E402
+_region6.register_icons(ITEMS, RESOURCES, SKILLS)

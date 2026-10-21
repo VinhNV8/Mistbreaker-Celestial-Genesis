@@ -102,6 +102,16 @@ const SETS := {
 			{"count": 6, "text": "Xoáy Kiếm / Mưa Tên / Băng Ngục để lại vòng lửa 5 giây, ×0,3 mỗi giây", "bonus": {}},
 		],
 	},
+	## C6-35 (M9): bộ vùng 6 — 2 món và 6 món xử lý trong core/chapter6.gd.
+	"cuc_quang": {
+		"name": "Bộ Cực Quang",
+		"suffix": "Cực Quang",
+		"tiers": [
+			{"count": 2, "text": "Băng giá dưới 3 tầng không làm chậm", "bonus": {}},
+			{"count": 4, "text": "+10% chí mạng", "bonus": {}},
+			{"count": 6, "text": "Đòn chí mạng làm chậm quái 40% trong 2 giây", "bonus": {}},
+		],
+	},
 	## C3-35 (M6): bộ vùng 3.
 	"sa_hanh": {
 		"name": "Bộ Sa Hành Giả",
@@ -117,9 +127,9 @@ const SETS := {
 const SA_HANH := "sa_hanh"
 const REGION_SET := "frost_hunter"
 ## Đồ Tím rơi ở vùng nào thì thuộc bộ của vùng đó (M4.2).
-const REGION_SETS := {1: "frost_hunter", 2: "phong_hanh", 3: "sa_hanh", 4: "u_minh", 5: "hoa_nguc"}
+const REGION_SETS := {1: "frost_hunter", 2: "phong_hanh", 3: "sa_hanh", 4: "u_minh", 5: "hoa_nguc", 6: "cuc_quang"}
 ## Đồ Cam của từng boss chương.
-const BOSS_UNIQUES := {"boss": "wolf_fang", "huyen-anh": "huyen_anh_mask", "sa-hoang": "sa_hoang_tail", "nu-vuong": "goi_mong", "vien-long": "long_tam"}
+const BOSS_UNIQUES := {"boss": "wolf_fang", "huyen-anh": "huyen_anh_mask", "sa-hoang": "sa_hoang_tail", "nu-vuong": "goi_mong", "vien-long": "long_tam", "ban-nga": "guong_ban_nga"}
 
 ## EQ-16: đồ Cam có hiệu ứng riêng.
 const UNIQUES := {
@@ -151,6 +161,18 @@ const UNIQUES := {
 		"name": "Lông Phượng",
 		"slot": "amulet",
 		"text": "Lần đầu bị hạ thì hồi sinh tại chỗ với 30% HP (hồi 5 phút).",
+	},
+	## C6-31 (M9): rơi từ Bản Ngã Bóng Tối (15%).
+	"guong_ban_nga": {
+		"name": "Gương Bản Ngã",
+		"slot": "amulet",
+		"text": "Khi bị đánh trúng, 10% phản 50% sát thương nhận lên quái gần nhất trong 6 m.",
+	},
+	## C6-34 (M9): rơi từ boss hiếm Long Băng Bắc Cực.
+	"vay_long_bang": {
+		"name": "Vảy Long Băng",
+		"slot": "boots",
+		"text": "Miễn băng giá; +15% tốc chạy.",
 	},
 	## C4-34 (M7): rơi từ Thuỷ Quái Thất Đầu.
 	"vay_that_dau": {

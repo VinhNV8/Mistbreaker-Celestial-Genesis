@@ -4086,6 +4086,522 @@
    },
    "name": "Tinh Quang Sứ",
    "size_mul": 1.0
+  },
+  "soi-bang": {
+   "path": "res://assets/sprites/soi-bang.png",
+   "w": 24,
+   "h": 24,
+   "origin": [
+    12,
+    22
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Sói Băng",
+   "size_mul": 1.0
+  },
+  "nguoi-tuyet": {
+   "path": "res://assets/sprites/nguoi-tuyet.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Người Tuyết",
+   "size_mul": 1.35
+  },
+  "tinh-linh-bang": {
+   "path": "res://assets/sprites/tinh-linh-bang.png",
+   "w": 24,
+   "h": 24,
+   "origin": [
+    12,
+    22
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Tinh Linh Băng",
+   "size_mul": 1.0
+  },
+  "cung-thu-bang": {
+   "path": "res://assets/sprites/cung-thu-bang.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Cung Thủ Băng",
+   "size_mul": 1.0
+  },
+  "gau-bang": {
+   "path": "res://assets/sprites/gau-bang.png",
+   "w": 48,
+   "h": 48,
+   "origin": [
+    24,
+    44
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Gấu Băng Khổng Lồ",
+   "size_mul": 1.6
+  },
+  "phap-su-bao-tuyet": {
+   "path": "res://assets/sprites/phap-su-bao-tuyet.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Pháp Sư Bão Tuyết",
+   "size_mul": 1.2
+  },
+  "ban-nga": {
+   "path": "res://assets/sprites/ban-nga.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Bản Ngã Bóng Tối",
+   "size_mul": 1.3
+  },
+  "guong-bang": {
+   "path": "res://assets/sprites/guong-bang.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Gương Băng",
+   "size_mul": 1.4
+  },
+  "anh-bong": {
+   "path": "res://assets/sprites/anh-bong.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Ảnh Bóng",
+   "size_mul": 0.85
+  },
+  "long-bang": {
+   "path": "res://assets/sprites/long-bang.png",
+   "w": 48,
+   "h": 48,
+   "origin": [
+    24,
+    44
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Long Băng Bắc Cực",
+   "size_mul": 2.1
+  },
+  "npc-tuyet-nga": {
+   "path": "res://assets/sprites/npc-tuyet-nga.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Nữ tư tế Tuyết Nga",
+   "size_mul": 1.0
+  },
+  "npc-lao-han": {
+   "path": "res://assets/sprites/npc-lao-han.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Thợ săn Lão Hàn",
+   "size_mul": 1.0
   }
  },
  "icons": {
@@ -4107,6 +4623,8 @@
   "item-long_phuong": "res://assets/icons/item-long_phuong.png",
   "item-goi_mong": "res://assets/icons/item-goi_mong.png",
   "item-vay_that_dau": "res://assets/icons/item-vay_that_dau.png",
+  "item-guong_ban_nga": "res://assets/icons/item-guong_ban_nga.png",
+  "item-vay_long_bang": "res://assets/icons/item-vay_long_bang.png",
   "res-gold": "res://assets/icons/res-gold.png",
   "res-wood": "res://assets/icons/res-wood.png",
   "res-stone": "res://assets/icons/res-stone.png",
@@ -4119,6 +4637,7 @@
   "res-iron": "res://assets/icons/res-iron.png",
   "res-crystal": "res://assets/icons/res-crystal.png",
   "res-holy_water": "res://assets/icons/res-holy_water.png",
+  "res-ember": "res://assets/icons/res-ember.png",
   "skill-slash": "res://assets/icons/skill-slash.png",
   "skill-spin": "res://assets/icons/skill-spin.png",
   "skill-dodge": "res://assets/icons/skill-dodge.png",
@@ -4137,6 +4656,7 @@
   "skill-meteor": "res://assets/icons/skill-meteor.png",
   "skill-barrier": "res://assets/icons/skill-barrier.png",
   "skill-breath": "res://assets/icons/skill-breath.png",
+  "skill-mirror": "res://assets/icons/skill-mirror.png",
   "talent-than-the": "res://assets/icons/talent-than-the.png",
   "talent-tay-nhanh": "res://assets/icons/talent-tay-nhanh.png",
   "talent-may-man": "res://assets/icons/talent-may-man.png",
@@ -4733,6 +5253,105 @@
    "origin": [
     12,
     25
+   ]
+  },
+  "tile-snow": {
+   "path": "res://assets/env/tile-snow.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    0,
+    0
+   ]
+  },
+  "tile-ice": {
+   "path": "res://assets/env/tile-ice.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    0,
+    0
+   ]
+  },
+  "tree-pine-snow-0": {
+   "path": "res://assets/env/tree-pine-snow-0.png",
+   "w": 30,
+   "h": 46,
+   "origin": [
+    15,
+    43
+   ]
+  },
+  "rock-ice-0": {
+   "path": "res://assets/env/rock-ice-0.png",
+   "w": 28,
+   "h": 22,
+   "origin": [
+    14,
+    18
+   ]
+  },
+  "tree-pine-snow-1": {
+   "path": "res://assets/env/tree-pine-snow-1.png",
+   "w": 30,
+   "h": 46,
+   "origin": [
+    15,
+    43
+   ]
+  },
+  "rock-ice-1": {
+   "path": "res://assets/env/rock-ice-1.png",
+   "w": 28,
+   "h": 22,
+   "origin": [
+    14,
+    18
+   ]
+  },
+  "snow-mound": {
+   "path": "res://assets/env/snow-mound.png",
+   "w": 26,
+   "h": 14,
+   "origin": [
+    13,
+    11
+   ]
+  },
+  "campfire": {
+   "path": "res://assets/env/campfire.png",
+   "w": 28,
+   "h": 28,
+   "origin": [
+    14,
+    22
+   ]
+  },
+  "beacon": {
+   "path": "res://assets/env/beacon.png",
+   "w": 26,
+   "h": 50,
+   "origin": [
+    13,
+    47
+   ]
+  },
+  "beacon-lit": {
+   "path": "res://assets/env/beacon-lit.png",
+   "w": 26,
+   "h": 50,
+   "origin": [
+    13,
+    47
+   ]
+  },
+  "ice-mirror": {
+   "path": "res://assets/env/ice-mirror.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    29
    ]
   }
  }

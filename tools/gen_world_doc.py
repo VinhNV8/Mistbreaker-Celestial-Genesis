@@ -170,7 +170,7 @@ REGIONS = [
         ("5-3 Miệng Núi Lửa", "55–60", "Lưới 15 ô; boss hiếm Phượng Hoàng Tro"),
         ("Dungeon: Long Huyệt", "58", "Boss chương 5")],
   grid="45 ô", res="Mỏ sắt, **Mỏ Tinh Thạch**",
-  set=("Bộ Hoả Ngục", "2: +30% kháng Hỏa · 4: +10% Tấn công · 6: Xoáy Kiếm để lại vòng lửa 5 giây, ×0,3 mỗi giây", "⬜"),
+  set=("Bộ Hoả Ngục", "2: +30% kháng Hỏa · 4: +10% Tấn công · 6: Xoáy Kiếm để lại vòng lửa 5 giây, ×0,3 mỗi giây", "✅ M8"),
   mobs=[("Thằn Lằn Lửa", "Nhanh", "Hỏa", (45, 52), "Chạy để lại vệt lửa 3 giây (×0,2 mỗi giây). **Cắn** ×1,0", "AGI 60 · STR 40", None),
         ("Người Đá Dung Nham", "Giáp", "Thổ", (47, 56), "**Đấm** (×1,3). Khi bị hạ vỡ thành 3 mảnh đá nhỏ (loại Bầy)", "VIT 60 · STR 40", None),
         ("Linh Hồn Lửa", "Tự nổ", "Hỏa", (48, 58), "Lao tới người chơi, **tự nổ** sau vung 0,8 s, vòng 5 m", "INT 50 · LUK 50", None),
@@ -181,7 +181,7 @@ REGIONS = [
    phases=[("1 (100% → 60%)", "**Vuốt** (×1,5) · **Long tức** (nón 70°, 18 m, ×0,6 mỗi 0,25 s trong 2,5 giây)"),
            ("2 (60% → 20%)", "Bay lên. **Dung nham dâng theo lượt** (kịch bản): mỗi 20 giây nền ngập dung nham 6 giây, chỉ 5 đá nổi an toàn; mưa thiên thạch như môi trường"),
            ("3 (dưới 20%)", "Rơi xuống, **Cuồng nộ**: +30% tốc đánh, Long tức mỗi 8 giây")],
-   steal="**Long Tức**: phun lửa nón 12 m, ×0,5 mỗi 0,25 s trong 2 giây", steal_code="⬜",
+   steal="**Long Tức**: phun lửa nón 12 m, ×0,5 mỗi 0,25 s trong 2 giây", steal_code="✅ M8",
    drop="1 đồ Tím · 15% **Long Tâm** (nhẫn Cam: +20% sát thương hệ Hỏa; miễn dung nham 2 giây sau khi né)"),
   rare=dict(name="Phượng Hoàng Tro", lv=60, el="Hỏa", arch="Phép", where="Miệng Núi Lửa",
    skills="**Niết bàn**: lần đầu bị hạ hồi sinh 50% HP, **trừ khi** trúng đòn hệ Thủy trong 5 giây cuối · **Mưa lông lửa** (12 vòng 3 m ngẫu nhiên, ×1,0)",
@@ -197,7 +197,7 @@ REGIONS = [
         ("6-3 Đỉnh Cực Quang", "68–72", "Lưới 15 ô; cốt truyện chương 6 (mảnh Thiên phú thứ hai thức giấc); boss hiếm Long Băng"),
         ("Dungeon: Gương Băng Vĩnh Dạ", "70", "Boss chương 6")],
   grid="45 ô", res="Mỏ Tinh Thạch, rừng thông → Xưởng Gỗ",
-  set=("Bộ Cực Quang", "2: miễn băng giá dưới 3 tầng · 4: +10% chí mạng · 6: đòn chí mạng làm chậm quái 30%", "⬜"),
+  set=("Bộ Cực Quang", "2: băng giá dưới 3 tầng không làm chậm · 4: +10% chí mạng · 6: đòn chí mạng làm chậm quái 40% trong 2 giây", "✅ M9"),
   mobs=[("Sói Băng", "Bầy", "Thủy", (60, 66), "Đi bầy 4 con. **Cắn** ×1,0 + 1 tầng băng giá", "AGI 60 · STR 40", None),
         ("Người Tuyết", "Lì", "Thủy", (61, 68), "**Ném cầu tuyết** (vung 0,9 s, ×1,3, vòng 3 m)", "VIT 60 · STR 40", None),
         ("Tinh Linh Băng", "Phép", "Thủy", (63, 72), "**Băng trụ** (vung 1,0 s, vòng 4 m, ×1,1, đóng băng 1 giây)", "INT 70 · LUK 30", None),
@@ -208,7 +208,7 @@ REGIONS = [
    phases=[("1 (100% → 50%)", "**Sao chép Thiên phú và kỹ năng của chính người chơi** (kịch bản): dùng lại kỹ năng người chơi vừa dùng 3 giây trước, với 80% chỉ số của người chơi"),
            ("2 (50% → 20%)", "**Gương vỡ**: 4 tấm gương, boss ẩn trong 1 tấm (tấm có bóng tối). Đánh nhầm gương: gương phản 50% sát thương"),
            ("3 (dưới 20%)", "Dùng Thiên phú của người chơi ở **dạng tiến hoá cao nhất** của Thiên phú đó")],
-   steal="**Kính Ảnh**: tạo 1 bản sao của bản thân 8 giây, gây 50% sát thương", steal_code="⬜",
+   steal="**Kính Ảnh**: tạo 1 bản sao của bản thân 8 giây, gây 50% sát thương", steal_code="✅ M9",
    drop="1 đồ Tím · 15% **Gương Bản Ngã** (bùa Cam: 10% phản 50% sát thương nhận)"),
   rare=dict(name="Long Băng Bắc Cực", lv=72, el="Thủy", arch="Lì", where="Đỉnh Cực Quang",
    skills="**Hơi thở vĩnh đông** (nón 90°, 20 m: đóng băng nền 3 giây, ai đứng trên bị +2 tầng băng giá mỗi giây) · **Mưa băng** (15 vòng 3 m, ×1,2)",
@@ -402,7 +402,7 @@ w("""
 | # | Vùng | Cấp | Hệ chủ đạo | Mở khoá (kịch bản) | Boss chương | Boss hiếm | Trạng thái |
 | --- | --- | --- | --- | --- | --- | --- | --- |""")
 for R in REGIONS:
-    st = {1: "✅ C1", 2: "✅ M4–M5", 3: "✅ M6", 4: "✅ M7", 5: "✅ M8"}.get(R["n"], "⬜ Beta")
+    st = {1: "✅ C1", 2: "✅ M4–M5", 3: "✅ M6", 4: "✅ M7", 5: "✅ M8", 6: "✅ M9"}.get(R["n"], "⬜ Beta")
     w(f"| {R['n']} | {R['name']} | {R['lv'][0]}–{R['lv'][1]} | {R['el']} | {R['unlock']} | {R['boss']['name']} (cấp {R['boss']['lv']}) | {R['rare']['name']} (cấp {R['rare']['lv']}) | {st} |")
 
 w("""
@@ -492,7 +492,8 @@ w("""
 | M6 | ✅ Xong 21/10/2026 — **Vùng 3 Sa Mạc Xích Sa** ([10](10-chuong-3.md)): 3 map, môi trường, 6 quái + 2 tinh anh, Bọ Cạp Sa Hoàng, Nhân Sư Đá, bộ Sa Hành Giả, Đuôi Sa Hoàng, Mắt Nhân Sư, Độn Thổ |
 | M7 | ✅ Xong 21/10/2026 — **Vùng 4 Đầm Lầy U Minh** ([11](11-chuong-4.md)): 3 map, nước đầm + độc tích luỹ, ảo ảnh, 4 quái + 2 tinh anh, Nữ Vương Phệ Mộng, Thuỷ Quái Thất Đầu, Bộ U Minh, Gối Mộng, Vảy Thất Đầu, Mộng Cảnh |
 | Alpha | Vùng 5 (M8, [12](12-chuong-5.md)) |
-| Beta | Vùng 6–9 |
+| M9 | ✅ Xong 21/10/2026 — **Vùng 6 Băng Nguyên Bắc Cực** ([14](14-chuong-6.md)): 3 map, băng giá + đêm dài + mặt băng trơn, 4 quái + 2 tinh anh, Bản Ngã Bóng Tối, Long Băng Bắc Cực, Bộ Cực Quang, Gương Bản Ngã, Vảy Long Băng, Kính Ảnh |
+| Beta | Vùng 7–9 |
 
 ## 7. Quyết định đã chốt (20/10/2026)
 

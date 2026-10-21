@@ -23,6 +23,7 @@ const Chapters = preload("res://scripts/core/chapters.gd")
 const Ch4 = preload("res://scripts/core/chapter4.gd")
 ## M8: chương 5 Núi Lửa Phẫn Nộ (docs/12) — logic trong core/chapter5.gd.
 const Ch5 = preload("res://scripts/core/chapter5.gd")
+const Ch6 = preload("res://scripts/core/chapter6.gd")
 
 ## Toạ độ map 1-1 (Rừng Sương). Code dùng các biến theo map (world_size, safe_pos, …); hằng số giữ cho test và tham chiếu.
 ## SN-30: ×1,6 so với M4 — phải khớp maps.gd "1-1".
@@ -181,6 +182,8 @@ const RARE_BOSSES := {
 		"say": "rare_thuy_quai", "down": "rare_thuy_quai_down", "intro": "Thuỷ Quái Thất Đầu trồi lên giữa Cung Mộng! (boss hiếm)"},
 	"5-3": {"kind": "phuong-hoang", "level": 60, "after": "vien-long", "unique": "long_phuong", "purple": false,
 		"say": "rare_phuong_hoang", "down": "rare_phuong_hoang_down", "intro": "Phượng Hoàng Tro bùng cháy trên Miệng Núi Lửa! (boss hiếm)"},
+	"6-3": {"kind": "long-bang", "level": 72, "after": "ban-nga", "unique": "vay_long_bang", "purple": false,
+		"say": "rare_long_bang", "down": "rare_long_bang_down", "intro": "Long Băng Bắc Cực đáp xuống Đỉnh Cực Quang! (boss hiếm)"},
 }
 ## Bạch Hổ: Hổ Vồ (chuỗi 3 cú, vòng 6 m ×1,4), Gầm Gió (vòng 10 m: đẩy 8 m, choáng 1 giây), dưới 50% Cưỡi Gió (tốc ×1,5).
 const TIGER_SKILL_CD := 4.0
@@ -519,6 +522,7 @@ var fog = Fog.new()
 var ch3 = Ch3.State.new()
 var ch4 = Ch4.State.new()
 var ch5 = Ch5.State.new()
+var ch6 = Ch6.State.new()
 ## M7: nguồn đòn đang gây sát thương ("fireball", "meteor", …) — Thất Đầu cần đòn hệ Hỏa.
 var hit_source := ""
 var _fog_timer := 0.0
@@ -939,6 +943,7 @@ func update(dt: float, input: Dictionary) -> void:
 		combo = 0
 
 	input = _travel_input(input, dt)
+	input = Chapters.input_filter(self, input)
 	input = _auto_input(input)
 	_kb_aim = bool(input.get("kb_aim", false))
 	var aim: Vector2 = input.aim
@@ -1744,14 +1749,13 @@ func _use_talent() -> void:
 			if profile.copied_skills.is_empty():
 				_message("Đạo Tặc chưa sao chép kỹ năng nào — hãy hạ một boss.", "info")
 				used = false
-			elif active_copy() in ["burrow", "dreamscape"]:
-				Chapters.copy_skill(self, active_copy())
 			elif active_copy() == "clone":
 				# Phân Thân: 2 ảo ảnh hút đòn 6 giây.
 				for k in 2:
 					_add_decoy(p.pos + Vector2.from_angle(k * PI + 0.6) * 60.0, CLONE_DECOY)
 				_text(p.pos + Vector2(0, -40), "Phân Thân!", Color("#b36bff"), true)
-			else:
+			elif not Chapters.copy_skill(self, active_copy()):
+				# Vồ Mồi; kỹ năng các chương 3+ (Độn Thổ, Mộng Cảnh, Long Tức, Kính Ảnh) do chapterN.copy_skill xử lý.
 				_leap()
 	if used:
 		p.talent_cd = talent_skill_cd()
@@ -2319,7 +2323,7 @@ func _on_boss_killed(e: Enemy) -> void:
 	profile.tinh_kim += 1
 	_message("%s đã ngã xuống! +%d Thiên Phú Tinh Hoa, +1 Tinh Kim." % [e.name, ESSENCE_PER_BOSS], "good")
 	# TP-39: Đạo Tặc sao chép kỹ năng boss.
-	var copy: String = {"huyen-anh": "clone", "sa-hoang": "burrow", "nu-vuong": "dreamscape", "vien-long": "breath"}.get(e.kind, "")
+	var copy: String = {"huyen-anh": "clone", "sa-hoang": "burrow", "nu-vuong": "dreamscape", "vien-long": "breath", "ban-nga": "mirror"}.get(e.kind, "")
 	if profile.talent == "dao-tac" and copy != "" and not (copy in profile.copied_skills):
 		profile.copied_skills.append(copy)
 		profile.active_copy = copy
@@ -3580,6 +3584,13 @@ func shop_buy(kind: String) -> Dictionary:
 			profile.gold -= Ch5.SHOP_HOLY
 			profile.holy_water += 1
 			return _shop_result(true, "Mua 1 Bình Nước Thánh (%d). Phím Q khi Phượng Hoàng dưới 15%% HP." % profile.holy_water)
+		"ember":
+			# M9 (C6-13): Lão Hàn ở Trạm Tuyết Bạc
+			if profile.gold < Ch6.SHOP_EMBER:
+				return _shop_result(false, "Cần %d vàng." % Ch6.SHOP_EMBER)
+			profile.gold -= Ch6.SHOP_EMBER
+			profile.embers += 1
+			return _shop_result(true, "Mua 1 Than Hồng (%d). Phím Q khi có ≥ 2 tầng băng giá." % profile.embers)
 		"crystal_kim":
 			if profile.crystal < Ch5.CRYSTAL_PER_KIM:
 				return _shop_result(false, "Cần %d Tinh Thạch." % Ch5.CRYSTAL_PER_KIM)
@@ -3742,7 +3753,7 @@ func _sfx(id: String) -> void:
 
 # ------------------------------------------------------------------ M4.2: gió, quái vùng 2, Huyền Ảnh, ảo ảnh
 
-const COPY_NAMES := {"pounce": "Vồ Mồi", "clone": "Phân Thân", "burrow": "Độn Thổ", "dreamscape": "Mộng Cảnh", "breath": "Long Tức"}
+const COPY_NAMES := {"pounce": "Vồ Mồi", "clone": "Phân Thân", "burrow": "Độn Thổ", "dreamscape": "Mộng Cảnh", "breath": "Long Tức", "mirror": "Kính Ảnh"}
 const WIND_DIRS := [Vector2(1, 0), Vector2(1, 1), Vector2(0, 1), Vector2(-1, 1), Vector2(-1, 0), Vector2(-1, -1), Vector2(0, -1), Vector2(1, -1)]
 
 

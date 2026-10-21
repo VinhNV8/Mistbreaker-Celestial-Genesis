@@ -12,7 +12,8 @@ const Explore = preload("res://scripts/core/explore.gd")
 ## v9: M6 chương 3 — chuyển chức 1 (job), nhiệm vụ chương 3 (quest.ch3/kills3/oases), miễn nắng (docs/10 mục 6).
 ## v10: M7 chương 4 — tiến hoá Thiên phú (evo), nhiệm vụ chương 4, Thuốc Giải, Đuốc Lửa (docs/11 mục 6).
 ## v11: M8 chương 5 — chuyển chức 2 (job2), Tinh Thạch, Bình Nước Thánh, đột kích Kim Luân (docs/12 mục 6).
-## v13: SK1 hệ kỹ năng — Điểm Kỹ Năng, cấp kỹ năng, 4 ô lắp (docs/13). (v12 dành cho M9 chương 6.)
+## v12: M9 chương 6 — nhiệm vụ chương 6, Than Hồng (docs/14 mục 6).
+## v13: SK1 hệ kỹ năng — Điểm Kỹ Năng, cấp kỹ năng, 4 ô lắp (docs/13).
 const VERSION := 13
 
 var talent := ""
@@ -76,7 +77,8 @@ var boss_respawn := {}
 var ore := 0.0
 var iron := 0.0
 ## Nhiệm vụ chính chương 2: bước (0 = chưa nhận), số quái vùng 2 đã hạ.
-var quest := {"ch2": 0, "kills2": 0, "ch3": 0, "kills3": 0, "oases": [], "ch4": 0, "kills4": 0, "orbs4": [], "ch5": 0, "kills5": 0, "raid_won": false}
+var quest := {"ch2": 0, "kills2": 0, "ch3": 0, "kills3": 0, "oases": [], "ch4": 0, "kills4": 0, "orbs4": [], "ch5": 0, "kills5": 0, "raid_won": false,
+	"ch6": 0, "kills6": 0, "beacons6": [], "dark6": 0}
 ## Kỹ năng sao chép đang dùng (Đạo Tặc, TP-39).
 var active_copy := ""
 
@@ -113,6 +115,8 @@ var crystal := 0.0
 var holy_water := 0
 var raid_play := 0.0
 var raid_penalty_until := 0.0
+## M9: Than Hồng (phím Q xoá băng giá).
+var embers := 0
 var evo_essence := 0
 ## Vườn Thảo Dược: giây tích luỹ tới thảo dược kế tiếp.
 var herb_timer := 0.0
@@ -201,6 +205,7 @@ func to_dict() -> Dictionary:
 		"holy_water": holy_water,
 		"raid_play": raid_play,
 		"raid_penalty_until": raid_penalty_until,
+		"embers": embers,
 		"evo_essence": evo_essence,
 		"herb_timer": herb_timer,
 		"merchant": merchant,
@@ -314,9 +319,13 @@ func load_dict(d: Dictionary) -> bool:
 	var orbs4: Array = []
 	for o in q.get("orbs4", []):
 		orbs4.append(int(o))
+	var beacons6: Array = []
+	for o in q.get("beacons6", []):
+		beacons6.append(int(o))
 	quest = {"ch2": int(q.get("ch2", 0)), "kills2": int(q.get("kills2", 0)), "ch3": int(q.get("ch3", 0)), "kills3": int(q.get("kills3", 0)), "oases": oases,
 		"ch4": int(q.get("ch4", 0)), "kills4": int(q.get("kills4", 0)), "orbs4": orbs4,
-		"ch5": int(q.get("ch5", 0)), "kills5": int(q.get("kills5", 0)), "raid_won": bool(q.get("raid_won", false))}
+		"ch5": int(q.get("ch5", 0)), "kills5": int(q.get("kills5", 0)), "raid_won": bool(q.get("raid_won", false)),
+		"ch6": int(q.get("ch6", 0)), "kills6": int(q.get("kills6", 0)), "beacons6": beacons6, "dark6": int(q.get("dark6", 0))}
 	# v10 — save v9 trở xuống: chưa tiến hoá.
 	evo = int(d.get("evo", 0))
 	antidotes = int(d.get("antidotes", 0))
@@ -335,6 +344,8 @@ func load_dict(d: Dictionary) -> bool:
 	holy_water = int(d.get("holy_water", 0))
 	raid_play = float(d.get("raid_play", 0.0))
 	raid_penalty_until = float(d.get("raid_penalty_until", 0.0))
+	# v12 — save v11 trở xuống: chưa tới vùng 6.
+	embers = int(d.get("embers", 0))
 	job = str(d.get("job", ""))
 	heat_free_until = float(d.get("heat_free_until", 0.0))
 	active_copy = str(d.get("active_copy", ""))
