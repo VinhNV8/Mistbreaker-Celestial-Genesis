@@ -5,7 +5,7 @@
 | Dự án | Thiên Phú Khai Giới |
 | Nguồn | Spec_Notes đợt 5: *"Cần nghiên cứu kỹ về skills của từng hệ, đề xuất các hướng build skills, nên cố định, hay mở theo level (chuyển chức) hay là nên đánh quái rơi skills và học…"* · [Kịch bản](kich-ban-game-thien-phu-khai-gioi.md) mục 4 (4 lớp, 3 lần chuyển chức), mục 5 (*"đánh thường + 4 kỹ năng + 1 kỹ năng Thiên phú + né lăn"*, ngũ hành tương khắc) |
 | Loại tài liệu | Nghiên cứu + đề xuất + kế hoạch triển khai |
-| Trạng thái | ✅ **Đã duyệt "theo đề xuất"** (21/10/2026) — Q65–Q70 như cột Đề xuất mục 6. **SK1 xong** (mục 7); SK2, SK3 chưa làm |
+| Trạng thái | ✅ **Đã duyệt "theo đề xuất"** (21/10/2026) — Q65–Q70 như cột Đề xuất mục 6. **SK1, SK2 xong** (mục 7, 8); SK3 chưa làm |
 
 ## 1. Hiện trạng trong game
 
@@ -148,6 +148,32 @@ Biến thể tầng II của mọi kỹ năng sát thương là **một trong 5 
 | Kiểm thử | SK1-T1 (mốc mở, khoá), SK1-T2 (điểm, +8%, −4%, tẩy ở vùng an toàn), SK1-T3 (đổi ô, phím theo ô, save v13 + bù điểm). Sửa CL-T3, SN-T2 (đặt cấp 8), C1-T4 (dùng 2 kỹ năng cấp 1) |
 
 **Tiếp theo:** SK2 — +2 kỹ năng mỗi lớp ở cấp 15/22, +2 kỹ năng chuyển chức 1, biến thể tầng I–III + 5 hệ ở tầng II; SK3 — Bí Kíp + Mảnh Bí Kíp, kỹ năng tối thượng cấp 45, kỹ năng nhánh chuyển chức 2.
+
+## 8. Kết quả SK2 (22/10/2026)
+
+**12 kỹ năng mới** (`classes.gd`, logic `core/skills2.gd`, vẽ `view/skills2_view.gd`, icon `tools/art/skills2_icons.py`):
+
+| Lớp | Cấp 15 | Cấp 22 | Chuyển chức 1 (cần `job`) | Chuyển chức 1 |
+| --- | --- | --- | --- | --- |
+| Kiếm Khách | **Liên Trảm** — 3 nhát nón 90°, 7 m, mỗi nhát ×0,9 | **Hống Kiếm** — vòng 8 m ×1,0, quái thường choáng 1,2 s; boss/tinh anh: gấp đôi vào Phá Thế | **Kiếm Vũ** — 2 giây xoay 10 m, 8 lần ×0,45 | **Phi Kiếm** — 3 kiếm toả 30°, xuyên, ×1,2 |
+| Thợ Săn | **Tên Nảy** — nảy tối đa 4 quái ×1,1; không còn quái thì dội lại mục tiêu ×0,35 | **Lăn Bắn** — lăn lùi (bất tử) + 3 mũi ×0,8 | **Liên Xạ** — 8 mũi ×0,6 trong 1,5 s, vẫn di chuyển | **Tên Độc** — xuyên ×1,0 + độc cộng dồn (như Đuôi Sa Hoàng) |
+| Pháp Sư | **Hoả Tường** — tường 12 m, 4 s, ×0,4 mỗi 0,5 s | **Dịch Chuyển** — 15 m, chỗ cũ nổ băng 6 m ×0,8 + làm chậm | **Mưa Băng** — 9 m, 5 đợt ×0,5 + làm chậm | **Cầu Sấm** — cầu bay 25 m phóng sét ×0,5 mỗi 0,3 s, nổ cuối ×1,5 |
+
+**Biến thể 3 tầng** (mở ở cấp kỹ năng 4 / 7 / 10; đổi ở vùng an toàn; `profile.variants`, save v14):
+
+| Tầng | Kỹ năng sát thương | Kỹ năng hỗ trợ (Thiết Bích, Ưng Nhãn, Pháp Thuẫn) |
+| --- | --- | --- |
+| I | Tiết Kiệm −20% MP · Thần Tốc −15% hồi chiêu | như bên trái |
+| II | **5 hệ**: Hỏa thiêu đốt 3 s (15% Tấn công/giây) · Thủy làm chậm 2 s · Mộc hút máu 4% · Kim bỏ qua 25% Phòng thủ · Thổ +50% vào Phá Thế. Hệ khắc hệ quái: **+30%** | Bền Bỉ hiệu lực +30% · Hồi Phục hồi 10% HP khi dùng |
+| III | Bạo Lực +25% sát thương · Chí Mạng +20% tỉ lệ chí mạng | Tinh Thông −20% hồi chiêu · Vô Ngã không tốn MP |
+
+**Kỹ thuật (D44):** mọi đòn mang **id kỹ năng nguồn** (`GameWorld.skill_ctx`; đạn, Mưa Tên, Bẫy, Thiên Thạch lưu id lúc tạo) để biến thể áp đúng kỹ năng — cả đòn trễ. Đánh thường không nhận biến thể.
+
+**Cân bằng (SK2-T4)** — Huyền Ảnh, bot cấp 23, bộ đồ chuẩn cấp 23; bộ mặc định vs bộ có 2 kỹ năng mới (cấp 15 + 22), giây trung bình 2 seed: Kiếm Khách 27,9 → 27,7 · Thợ Săn 20,3 → 25,7 · Pháp Sư 27,6 → 35,1 — trong ngưỡng 30%, 0 lần chết. Bộ mới yếu hơn khi đánh boss đơn lẻ là chủ ý: kỹ năng cấp 15/22 thiên về diện rộng / khống chế / cơ động.
+
+**Phát hiện:** bot test bấm kỹ năng theo **vị trí ô** (ô 3 Thợ Săn chỉ bấm khi quái cách < 12 m vì trước đây là Bẫy Gai) → đổi bot sang bấm theo **id kỹ năng** (`BOT_SKILL_RULES`); bộ mặc định cho kết quả y hệt trước (TL-B…TL-B6 không đổi).
+
+**Kiểm thử:** SK2-T1 (mốc mở 8 kỹ năng, kỹ năng chuyển chức), SK2-T2 (12 kỹ năng gây sát thương + choáng / dịch chuyển / lăn / độc / tường / cầu), SK2-T3 (biến thể: mở theo cấp kỹ năng, MP, hồi chiêu, 5 hệ, khắc hệ, Bạo Lực, hỗ trợ, vùng an toàn, save v14), SK2-T4 (cân bằng).
 
 ## Nguồn tham khảo
 

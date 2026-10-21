@@ -20,6 +20,8 @@ const Fog = preload("res://scripts/core/fog.gd")
 const Ch3 = preload("res://scripts/core/chapter3.gd")
 ## D38 (M7): mọi chương từ 3 trở đi gắn vào qua bộ điều phối — các dòng móc "Chapters.".
 const Chapters = preload("res://scripts/core/chapters.gd")
+## SK2 (docs/13): kỹ năng cấp 15/22 + chuyển chức 1, biến thể 3 tầng — logic trong core/skills2.gd.
+const Skills2 = preload("res://scripts/core/skills2.gd")
 const Ch4 = preload("res://scripts/core/chapter4.gd")
 ## M8: chương 5 Núi Lửa Phẫn Nộ (docs/12) — logic trong core/chapter5.gd.
 const Ch5 = preload("res://scripts/core/chapter5.gd")
@@ -363,6 +365,8 @@ class PlayerShot:
 	## SN-03: nổ lan khi trúng (Hỏa Cầu): bán kính, hệ số cho quái xung quanh.
 	var splash := 0.0
 	var splash_mul := 0.0
+	## SK2: id kỹ năng bắn ra viên đạn ("" = đánh thường).
+	var skill := ""
 
 
 ## SN-04: Thiên Thạch rơi sau METEOR_DELAY giây.
@@ -371,6 +375,7 @@ class Meteor:
 	var timer := 0.8
 	var radius := 100.0
 	var mul := 3.0
+	var skill := "meteor"
 
 
 ## SN-04: tia sét Lôi Xích (chỉ để vẽ).
@@ -386,12 +391,14 @@ class RainZone:
 	var mul := 0.6
 	var ticks := 5
 	var timer := 0.0
+	var skill := "rain"
 
 
 class Trap:
 	var pos := Vector2.ZERO
 	var ttl := 20.0
 	var mul := 2.0
+	var skill := "trap"
 
 
 ## C1-24: vũng độc Nấm Độc để lại khi chết.
@@ -522,6 +529,9 @@ var fog = Fog.new()
 var ch3 = Ch3.State.new()
 var ch4 = Ch4.State.new()
 var ch5 = Ch5.State.new()
+var sk2 = Skills2.State.new()
+## SK2: kỹ năng đang gây ra đòn (để áp biến thể khi trúng); đạn / mưa tên / bẫy / thiên thạch mang theo id này.
+var skill_ctx := ""
 var ch6 = Ch6.State.new()
 ## M7: nguồn đòn đang gây sát thương ("fireball", "meteor", …) — Thất Đầu cần đòn hệ Hỏa.
 var hit_source := ""
@@ -575,6 +585,7 @@ func _init(p, rng: Callable) -> void:
 
 ## Dựng map: vị trí, quái, thảo dược, rương, thú cưng (MP-01, MP-07).
 func _load_map(id: String) -> void:
+	sk2 = Skills2.State.new()
 	move_target = Vector2.INF
 	map_id = id
 	map = Maps.get_map(id)
@@ -980,6 +991,7 @@ func update(dt: float, input: Dictionary) -> void:
 	_update_rains(dt)
 	_update_traps(dt)
 	_update_mage(dt)
+	Skills2.tick(self, dt)
 	for b in blasts:
 		b.ttl -= dt
 	blasts = blasts.filter(func(b): return b.ttl > 0.0)
@@ -1226,6 +1238,7 @@ func _fire(speed: float, reach: float, mul: float, pierce: bool, kind: String, f
 	s.kind = kind
 	s.force_crit = force_crit
 	s.radius = radius
+	s.skill = skill_ctx
 	shots.append(s)
 	return s
 
@@ -1244,7 +1257,9 @@ func _update_shots(dt: float) -> void:
 			if s.pos.distance_to(e.pos) <= s.radius + e.radius:
 				s.hit[e.id] = true
 				hit_source = s.kind
+				skill_ctx = s.skill
 				_hit_enemy(e, s.mul, s.force_crit)
+				skill_ctx = ""
 				hit_source = ""
 				if s.splash > 0.0:
 					_splash(s, e)
@@ -1418,16 +1433,18 @@ func use_skill(i: int) -> bool:
 			_message("%s mở ở cấp %d." % [sk.name, int(sk.get("unlock", 1))], "info")
 			_passive_msg_cd = 1.5
 		return false
-	if p.mp < float(sk.mp):
+	var cost := skill_mp(i)
+	if p.mp < cost:
 		if _passive_msg_cd <= 0.0:
 			_text(p.pos + Vector2(0, -40), "Thiếu MP", Color("#4a9df8"), false)
 			_passive_msg_cd = 1.0
 		return false
-	p.mp -= float(sk.mp)
+	p.mp -= cost
 	p.skill_cds[i] = skill_cd_of(i)
 	if i == 0:
 		p.skill_cd = p.skill_cds[0]
 	var mul := float(sk.mul) * float(stats.skill_mul) * skill_level_mult(str(sk.id))
+	skill_ctx = str(sk.id)
 	match sk.id:
 		"spin":
 			_spin(mul)
@@ -1475,6 +1492,11 @@ func use_skill(i: int) -> bool:
 		"eagle":
 			p.eagle_time = EAGLE_TIME
 			_text(p.pos + Vector2(0, -40), "Ưng Nhãn!", Color("#ffc940"), true)
+		_:
+			Skills2.cast(self, str(sk.id), mul)
+	if Skills2.is_utility(sk):
+		Skills2.after_cast(self, str(sk.id))
+	skill_ctx = ""
 	quest_event("skill")
 	_sfx("skill")
 	return true
@@ -1492,12 +1514,12 @@ func skill_cd_of(i: int) -> float:
 	# SK1: kỹ năng hỗ trợ (không gây sát thương) giảm hồi chiêu theo cấp.
 	if float(sk.mul) <= 0.0:
 		cd *= 1.0 - Classes.SKILL_LEVEL_CD * (skill_level(str(sk.id)) - 1)
-	return cd
+	return cd * Skills2.cost_mult(self, str(sk.id), "cd")
 
 
 func skill_mp(i: int) -> float:
 	var sk: Dictionary = slot_skill(i)
-	return 0.0 if sk.is_empty() else float(sk.mp)
+	return 0.0 if sk.is_empty() else float(sk.mp) * Skills2.cost_mult(self, str(sk.id), "mp")
 
 
 # ------------------------------------------------------------------ SK1 (docs/13): ô kỹ năng, cấp kỹ năng, Điểm Kỹ Năng
@@ -1524,6 +1546,9 @@ func _ensure_loadout() -> void:
 
 
 func skill_unlocked(sk: Dictionary) -> bool:
+	# SK2: kỹ năng chuyển chức 1 cần đã chuyển chức.
+	if bool(sk.get("job", false)) and str(profile.job) == "":
+		return false
 	return int(profile.level) >= int(sk.get("unlock", 1))
 
 
@@ -1624,7 +1649,9 @@ func _dash_hits() -> void:
 			continue
 		if e.pos.distance_to(p.pos) <= DASH_HIT_R + e.radius:
 			p.dash_hit[e.id] = true
+			skill_ctx = "dash"
 			_hit_enemy(e, p.dash_mul)
+			skill_ctx = ""
 
 
 func _rain(mul: float) -> void:
@@ -1665,9 +1692,11 @@ func _update_rains(dt: float) -> void:
 			continue
 		z.timer = RAIN_INTERVAL
 		z.ticks -= 1
+		skill_ctx = z.skill
 		for e in enemies:
 			if not e.dead and e.pos.distance_to(z.pos) <= z.radius + e.radius:
 				_hit_enemy(e, z.mul)
+		skill_ctx = ""
 	rains = rains.filter(func(z): return z.ticks > 0 or z.timer > 0.0)
 
 
@@ -1686,10 +1715,12 @@ func _update_traps(dt: float) -> void:
 		t.ttl = 0.0
 		_blast(t.pos, TRAP_RADIUS, Color("#ffc940"))
 		_sfx("explode")
+		skill_ctx = t.skill
 		for e in enemies:
 			if not e.dead and e.pos.distance_to(t.pos) <= TRAP_RADIUS + e.radius:
 				e.root_timer = TRAP_ROOT
 				_hit_enemy(e, t.mul)
+		skill_ctx = ""
 		Chapters.trap_triggered(self, t.pos, t.mul)
 	traps = traps.filter(func(t): return t.ttl > 0.0)
 
@@ -2095,9 +2126,11 @@ func _respawn() -> void:
 ## aoe: đòn phép diện rộng của Pháp Sư — Hấp Huyết chỉ hút 50% (SN-05, 05 mục 5).
 func _hit_enemy(e: Enemy, skill_mul: float, force_crit := false, aoe := false) -> void:
 	var talent_bonus := tv(0.2, 0.3) if profile.talent == "huyet-chien" and player.hp < float(stats.max_hp) * 0.3 else 0.0
-	var crit := force_crit or _r() < float(stats.crit) + (EAGLE_CRIT if player.eagle_time > 0.0 else 0.0)
-	var mul := skill_mul * ((1.0 + float(stats.crit_dmg)) if crit else 1.0) * (1.5 if e.broken else 1.0) * Chapters.hit_mult(self, e, crit)
-	var raw := Formulas.compute_damage(stats.atk, e.def, mul, element_bonus(e), talent_bonus) * (0.9 + _r() * 0.2)
+	var sid := Skills2.source(self)
+	var crit := force_crit or _r() < float(stats.crit) + (EAGLE_CRIT if player.eagle_time > 0.0 else 0.0) + Skills2.crit_bonus(self, sid)
+	var mul := skill_mul * ((1.0 + float(stats.crit_dmg)) if crit else 1.0) * (1.5 if e.broken else 1.0) * Chapters.hit_mult(self, e, crit) \
+		* Skills2.hit_mult(self, e, sid)
+	var raw := Formulas.compute_damage(stats.atk, e.def * Skills2.def_mult(self, sid), mul, element_bonus(e), talent_bonus) * (0.9 + _r() * 0.2)
 	var dmg := maxi(1, int(round(raw)))
 	_last_combat = time
 	combo += 1
@@ -2111,6 +2144,7 @@ func _hit_enemy(e: Enemy, skill_mul: float, force_crit := false, aoe := false) -
 		_tame(e)
 		return
 	_apply_damage(e, dmg, crit, true)
+	Skills2.after_hit(self, e, sid, dmg)
 	# M5-01: Vuốt Bạch Hổ — chí mạng gây chảy máu.
 	if crit and not e.dead and has_unique("bach_ho_claw"):
 		if e.bleed_timer <= 0.0:

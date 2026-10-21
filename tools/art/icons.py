@@ -632,3 +632,6 @@ _region4.register_icons(ITEMS)
 # M9 (docs/14): icon vùng 6 trong region6.py
 import region6 as _region6  # noqa: E402
 _region6.register_icons(ITEMS, RESOURCES, SKILLS)
+# SK2 (docs/13): icon 12 kỹ năng mới trong skills2_icons.py
+import skills2_icons as _skills2  # noqa: E402
+_skills2.register(SKILLS)

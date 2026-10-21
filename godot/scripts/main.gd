@@ -848,6 +848,14 @@ func _run_smoke(dir: String) -> void:
 	await _wait(0.3)
 	await _shot(dir, "14b-job2")
 	job2_panel.close()
+	# SK2: bảng Kỹ năng cấp 60 — 8 kỹ năng, biến thể
+	p.skill_levels["spin"] = 10
+	p.skill_levels["lientram"] = 7
+	p.variants["spin"] = ["cd", "hoa", "dmg"]
+	skill_panel.open(world)
+	await _wait(0.3)
+	await _shot(dir, "14c-skills")
+	skill_panel.close()
 	p.quest.ch5 = 4
 	world.ch5.siege = false
 	GameWorld.Ch5.start_siege(world)

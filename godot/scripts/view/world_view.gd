@@ -16,6 +16,7 @@ const CORPSE_TIME := 0.6
 const Ch3 = preload("res://scripts/core/chapter3.gd")
 const Ch4 = preload("res://scripts/core/chapter4.gd")
 const R5View = preload("res://scripts/view/region5_view.gd")
+const SK2View = preload("res://scripts/view/skills2_view.gd")
 const R6View = preload("res://scripts/view/region6_view.gd")
 const HIT_FX_TIME := 0.25
 
@@ -213,6 +214,7 @@ func _draw() -> void:
 		_draw_gate()
 	_draw_desert_overlay(view)
 	R5View.draw_over(self, world, view, _art)
+	SK2View.draw(self, world)
 	R6View.draw_over(self, world, view, _art)
 	_draw_texts()
 	_update_tracking()

@@ -174,6 +174,11 @@ func _init() -> void:
 	_run("SK1-T1 kỹ năng mở theo cấp 1/1/4/8, kỹ năng khoá không dùng được", _test_sk1_unlock)
 	_run("SK1-T2 Điểm Kỹ Năng, cấp kỹ năng +8% / −4% hồi chiêu, tẩy điểm ở vùng an toàn", _test_sk1_levels)
 	_run("SK1-T3 4 ô lắp: đổi chỗ ở vùng an toàn, phím theo ô, save v13 + bù điểm save cũ", _test_sk1_loadout)
+	# SK2 — kỹ năng cấp 15/22 + chuyển chức 1, biến thể (docs/13)
+	_run("SK2-T1 8 kỹ năng mỗi lớp: mở cấp 15/22, kỹ năng chuyển chức cần chuyển chức 1", _test_sk2_unlock)
+	_run("SK2-T2 12 kỹ năng mới gây sát thương + hiệu ứng riêng", _test_sk2_skills)
+	_run("SK2-T3 biến thể 3 tầng: MP/hồi chiêu, 5 hệ, khắc hệ, sát thương, hỗ trợ, save v14", _test_sk2_variants)
+	_run("SK2-T4 cân bằng: bộ kỹ năng mới hạ Huyền Ảnh không chênh quá 30% bộ mặc định", _test_sk2_balance)
 	_run("PACE-T1 nhịp lên cấp 1 → 20 chỉ bằng đánh quái (bot cày, đo phút)", _test_pace_mobs)
 	for c in Classes.ORDER:
 		_run("PACE-T2 %s cấp 10 → 20 vùng 2" % c, _test_pace_r2.bind(c))
@@ -468,12 +473,10 @@ func _bot_base(w: GameWorld) -> Dictionary:
 			mv_m = -dir
 		elif gap_m > 300.0:
 			mv_m = dir
-		return {
+		return _bot_skills(w, {
 			"move": mv_m, "aim": target.pos, "attack": true,
-			"skill_1": gap_m < 340.0, "skill_2": gap_m < 100.0, "skill_3": gap_m < 400.0,
-			"skill_4": p.hp < w.stats.max_hp * 0.8,
 			"talent": true, "dodge": threat,
-		}
+		}, gap_m, false)
 	if w.is_hunter():
 		var gap: float = best - target.radius
 		var mv := Vector2.ZERO
@@ -481,27 +484,49 @@ func _bot_base(w: GameWorld) -> Dictionary:
 			mv = -dir
 		elif gap > 300.0:
 			mv = dir
-		return {
+		return _bot_skills(w, {
 			"move": mv, "aim": target.pos, "attack": true,
-			"skill_1": gap < 380.0, "skill_2": gap < 500.0, "skill_3": gap < 120.0, "skill_4": true,
 			"talent": true, "dodge": threat,
-		}
+		}, gap, false)
 	var close: bool = best < 60.0 + target.radius
 	# M5-02: quái có khiên — chạy vòng sang hông thay vì đứng trước khiên.
 	var circle := Vector2.ZERO
 	if close and Monsters.DEFS[target.kind].get("shield", false) and target.state != "stunned" and absf(angle_difference(target.face, (p.pos - target.pos).angle())) <= GameWorld.SHIELD_ARC:
 		circle = (p.pos - target.pos).normalized().rotated(PI / 2.0)
-	return {
+	return _bot_skills(w, {
 		"move": circle if circle != Vector2.ZERO else (Vector2.ZERO if close else dir),
 		"aim": target.pos,
 		"attack": true,
-		"skill": best < 120.0,
-		"skill_2": best < 200.0 and best > 90.0,
-		"skill_3": best < 380.0,
-		"skill_4": best < 160.0,
 		"talent": true,
 		"dodge": threat,
-	}
+	}, best, true)
+
+
+## SK2: bot bấm kỹ năng theo **id kỹ năng** đang lắp ở mỗi ô (không theo vị trí ô) — bộ lắp mặc định
+## giữ đúng điều kiện cũ. d: khoảng cách tới mục tiêu (cận chiến: tâm–tâm; đánh xa: trừ bán kính).
+const BOT_SKILL_RULES := {
+	"spin": [0.0, 120.0], "dash": [90.0, 200.0], "wave": [0.0, 380.0], "guard": [0.0, 160.0],
+	"lientram": [0.0, 100.0], "hongkiem": [0.0, 110.0], "kiemvu": [0.0, 110.0], "phikiem": [0.0, 380.0],
+	"rain": [0.0, 380.0], "pierce": [0.0, 500.0], "trap": [0.0, 120.0], "eagle": [0.0, 99999.0],
+	"tennay": [0.0, 500.0], "lanban": [0.0, 150.0], "lienxa": [0.0, 450.0], "tendoc": [0.0, 500.0],
+	"chain": [0.0, 340.0], "nova": [0.0, 100.0], "meteor": [0.0, 400.0],
+	"hoatuong": [0.0, 300.0], "dichchuyen": [0.0, 90.0], "muabang": [0.0, 350.0], "causam": [0.0, 300.0],
+}
+
+
+func _bot_skills(w: GameWorld, out: Dictionary, d: float, melee: bool) -> Dictionary:
+	for i in 4:
+		var sk: Dictionary = w.slot_skill(i)
+		var key := "skill" if melee and i == 0 else "skill_%d" % (i + 1)
+		var use := false
+		if not sk.is_empty():
+			if sk.id == "barrier":
+				use = w.player.hp < w.stats.max_hp * 0.8
+			else:
+				var r: Array = BOT_SKILL_RULES.get(str(sk.id), [0.0, 300.0])
+				use = d > float(r[0]) and d < float(r[1])
+		out[key] = use
+	return out
 
 
 ## Bộ đồ chuẩn cấp 5 (vũ khí Xanh dương, áo + mũ Xanh lá) — như người chơi cày tới boss
@@ -4804,7 +4829,7 @@ func _test_sk1_unlock() -> void:
 		var lv: Array = []
 		for sk in Classes.skills_of(class_id):
 			lv.append(int(sk.unlock))
-		_check(lv == [1, 1, 4, 8], "%s: kỹ năng mở ở cấp 1, 1, 4, 8" % class_id)
+		_check(lv.slice(0, 4) == [1, 1, 4, 8], "%s: 4 kỹ năng đầu mở ở cấp 1, 1, 4, 8" % class_id)
 	var w := _world("tay-nhanh")
 	w.profile.level = 1
 	w.player.mp = 999.0
@@ -4892,3 +4917,181 @@ func _test_sk1_loadout() -> void:
 	d.level = 12
 	var old := Profile.new()
 	_check(old.load_dict(d) and old.skill_points == 11 and old.loadout.is_empty(), "save cũ cấp 12: bù 11 Điểm Kỹ Năng, bộ lắp mặc định")
+
+
+# ------------------------------------------------------------------ SK2 — kỹ năng mới + biến thể (docs/13)
+
+
+func _sk2_world(class_id: String, level := 32, job := true) -> GameWorld:
+	var w := _world("tay-nhanh")
+	w.field_spawn = false
+	w.enemies = []
+	w.profile.class_id = class_id
+	w.profile.level = level
+	w.profile.job = str(Classes.job_def(class_id).id) if job else ""
+	w.profile.loadout = []
+	w._refresh_stats()
+	w.player.pos = w.safe_pos
+	w.player.mp = 9999.0
+	return w
+
+
+func _test_sk2_unlock() -> void:
+	for class_id in Classes.ORDER:
+		var lv: Array = []
+		for sk in Classes.skills_of(class_id):
+			lv.append(int(sk.unlock))
+		_check(lv == [1, 1, 4, 8, 15, 22, 30, 30], "%s: 8 kỹ năng mở ở 1, 1, 4, 8, 15, 22, chuyển chức, chuyển chức" % class_id)
+	var w := _sk2_world("kiem-khach", 32, false)
+	_check(not w.skill_unlocked(Classes.skill_by_id("kiem-khach", "kiemvu")), "cấp 32 chưa chuyển chức: Kiếm Vũ còn khoá")
+	_check(w.skill_unlocked(Classes.skill_by_id("kiem-khach", "hongkiem")), "cấp 32: Hống Kiếm đã mở")
+	w.profile.job = "kiem-su"
+	_check(w.skill_unlocked(Classes.skill_by_id("kiem-khach", "kiemvu")), "chuyển chức Kiếm Sư: Kiếm Vũ mở")
+	_check(w.slot_skill(0).id == "spin" and w.slot_skill(3).id == "guard", "bộ lắp mặc định giữ 4 kỹ năng cũ")
+
+
+## Lắp kỹ năng vào ô 1, đặt 3 bù nhìn trước mặt, thi triển. Trả về [world, các bù nhìn].
+func _sk2_cast(class_id: String, id: String) -> Array:
+	var w := _sk2_world(class_id)
+	w.set_slot(0, id)
+	w.player.pos = Vector2(1200, 1280)
+	var dummies: Array = []
+	for off in [Vector2(55, 0), Vector2(110, 20), Vector2(170, -20)]:
+		dummies.append(_dummy(w, "wolf", 30, w.player.pos + off))
+	w.player.facing = 0.0
+	w._aim = dummies[1].pos
+	w.player.skill_cds[0] = 0.0
+	_check(w.use_skill(0), "%s dùng được" % id)
+	return [w, dummies]
+
+
+func _test_sk2_skills() -> void:
+	for class_id in Classes.ORDER:
+		for sk in Classes.skills_of(class_id).slice(4):
+			var r := _sk2_cast(class_id, str(sk.id))
+			var w: GameWorld = r[0]
+			for i in 180:
+				w.update(1.0 / 60.0, {"move": Vector2.ZERO, "aim": w._aim, "attack": false, "skill": false, "talent": false, "dodge": false})
+			var hurt := 0
+			for d in r[1]:
+				if d.hp < d.max_hp:
+					hurt += 1
+			_check(hurt >= 1, "%s · %s gây sát thương (%d/3 quái)" % [class_id, sk.name, hurt])
+	var r1 := _sk2_cast("kiem-khach", "hongkiem")
+	_check(r1[1][0].state == "stunned", "Hống Kiếm: quái thường bị choáng")
+	var r2 := _sk2_cast("phap-su", "dichchuyen")
+	_check(r2[0].player.pos.distance_to(Vector2(1200, 1280)) > 100.0 and r2[1][0].slow_t > 0.0, "Dịch Chuyển: đổi chỗ, nổ băng làm chậm")
+	var r3 := _sk2_cast("tho-san", "lanban")
+	_check(r3[0].player.dodge_time > 0.0 and r3[0].shots.size() == 3, "Lăn Bắn: lăn (bất tử) + 3 mũi tên")
+	var r4 := _sk2_cast("tho-san", "tendoc")
+	_tick(r4[0], {"aim": r4[0]._aim}, 30)
+	_check(r4[1][0].venom_stacks >= 1, "Tên Độc: quái trúng độc")
+	var r5 := _sk2_cast("phap-su", "hoatuong")
+	_check(r5[0].sk2.walls.size() == 1, "Hoả Tường: dựng tường lửa")
+	var r6 := _sk2_cast("phap-su", "causam")
+	_check(r6[0].sk2.orbs.size() == 1, "Cầu Sấm: quả cầu bay")
+
+
+func _sk2_set(w: GameWorld, id: String, tier: int, opt: String) -> Dictionary:
+	return GameWorld.Skills2.set_variant(w, id, tier, opt)
+
+
+func _test_sk2_variants() -> void:
+	var S2 = GameWorld.Skills2
+	var w := _sk2_world("kiem-khach")
+	var p = w.profile
+	w.set_slot(0, "lientram")
+	_check(not _sk2_set(w, "lientram", 0, "mp").ok, "cấp kỹ năng 1: tầng I chưa mở")
+	p.skill_levels["lientram"] = 10
+	var mp0 := w.skill_mp(0)
+	var cd0 := w.skill_cd_of(0)
+	_check(_sk2_set(w, "lientram", 0, "mp").ok and is_equal_approx(w.skill_mp(0), mp0 * 0.8), "tầng I Tiết Kiệm: −20% MP")
+	_sk2_set(w, "lientram", 0, "cd")
+	_check(is_equal_approx(w.skill_cd_of(0), cd0 * 0.85) and is_equal_approx(w.skill_mp(0), mp0), "tầng I Thần Tốc: −15% hồi chiêu (thay Tiết Kiệm)")
+	w.player.pos = w.safe_pos + Vector2(w.safe_r + 400.0, 0)
+	_check(not _sk2_set(w, "lientram", 2, "dmg").ok, "ngoài vùng an toàn: không đổi biến thể")
+	w.player.pos = w.safe_pos
+	var e := _dummy(w, "wolf", 30, w.player.pos + Vector2(40, 0))
+	w.skill_ctx = "lientram"
+	var base: float = S2.hit_mult(w, e, "lientram")
+	_sk2_set(w, "lientram", 1, "kim")
+	_check(is_equal_approx(S2.hit_mult(w, e, "lientram"), base * 1.3), "hệ Kim đánh quái Mộc (Sói): +30%")
+	_check(is_equal_approx(S2.def_mult(w, "lientram"), 0.75), "hệ Kim: bỏ qua 25% Phòng thủ")
+	_sk2_set(w, "lientram", 1, "hoa")
+	w._hit_enemy(e, 1.0)
+	_check(e.bleed_timer > 2.0, "hệ Hỏa: thiêu đốt")
+	_sk2_set(w, "lientram", 1, "thuy")
+	w._hit_enemy(e, 1.0)
+	_check(e.slow_t > 1.5, "hệ Thủy: làm chậm")
+	_sk2_set(w, "lientram", 1, "moc")
+	w.player.hp = 10.0
+	w._hit_enemy(e, 1.0)
+	_check(w.player.hp > 10.0, "hệ Mộc: hút máu")
+	_sk2_set(w, "lientram", 2, "dmg")
+	_check(is_equal_approx(S2.hit_mult(w, e, "lientram"), 1.25), "tầng III Bạo Lực: +25%")
+	w.skill_ctx = ""
+	_check(is_equal_approx(S2.hit_mult(w, e, ""), 1.0), "đánh thường không nhận biến thể")
+	p.skill_levels["guard"] = 10
+	_sk2_set(w, "guard", 1, "long")
+	_sk2_set(w, "guard", 2, "mp0")
+	var gi: int = p.loadout.find("guard")
+	w.player.skill_cds[gi] = 0.0
+	_check(is_equal_approx(w.skill_mp(gi), 0.0) and w.use_skill(gi) and w.player.guard_time > GameWorld.GUARD_TIME * 1.25, "Thiết Bích: Vô Ngã không tốn MP, Bền Bỉ kéo dài 30%")
+	var d: Dictionary = JSON.parse_string(JSON.stringify(p.to_dict()))
+	_check(int(d.version) >= 14, "save version 14")
+	var back := Profile.new()
+	back.load_dict(d)
+	_check(back.variants.get("lientram", []) == p.variants["lientram"], "save giữ biến thể")
+
+
+func _test_sk2_balance() -> void:
+	var builds := {
+		"kiem-khach": ["spin", "lientram", "wave", "hongkiem"],
+		"tho-san": ["rain", "tennay", "pierce", "lanban"],
+		"phap-su": ["chain", "hoatuong", "meteor", "dichchuyen"],
+	}
+	for class_id in Classes.ORDER:
+		var t_def := 0.0
+		var t_new := 0.0
+		var deaths := 0
+		var won := true
+		for seed_value in [5, 11]:
+			var a := _sk2_fight(class_id, [], seed_value)
+			var b := _sk2_fight(class_id, builds[class_id], seed_value)
+			t_def += float(a[0])
+			t_new += float(b[0])
+			deaths += int(b[1])
+			won = won and bool(b[2])
+		print("       [%s] mặc định %.1f giây · bộ mới %.1f giây · chết %d" % [class_id, t_def / 2.0, t_new / 2.0, deaths])
+		_check(won and absf(t_new - t_def) / t_def <= 0.3 and deaths == 0, "%s: bộ mới hạ được Huyền Ảnh, chênh ≤ 30%%, 0 lần chết" % class_id)
+
+
+## Huyền Ảnh (cấp 18), bot cấp 23 (mở cả kỹ năng cấp 22), bộ đồ chuẩn cấp 23.
+func _sk2_fight(class_id: String, loadout: Array, seed_value: int) -> Array:
+	var w := _region2_world("2-3", class_id, "tay-nhanh", 23, seed_value)
+	w.field_spawn = false
+	var p = w.profile
+	p.points = _class_points(class_id)
+	for k in p.points:
+		p.points[k] = int(p.points[k]) * 5
+	if not loadout.is_empty():
+		p.loadout = loadout.duplicate()
+	var rng := RngUtil.make(77)
+	for pair in [["weapon", "blue"], ["armor", "blue"], ["helm", "green"], ["boots", "green"], ["gloves", "green"]]:
+		var it := Items.new_item(p, 23, pair[1], rng, pair[0])
+		Items.add_item(p, it)
+		w.equip(int(it.id))
+	w.player.hp = w.stats.max_hp
+	w.player.mp = w.stats.max_mp
+	w.player.pos = w.arena_pos - Vector2(100, 0)
+	var deaths := 0
+	var seconds := 0.0
+	while seconds < 600.0 and not p.bosses.get("huyen-anh", false):
+		for ev in w.drain_events():
+			if ev.type == "death":
+				deaths += 1
+		if w.boss() == null and w.player.dead_timer <= 0.0:
+			w.player.pos = w.arena_pos - Vector2(100, 0)
+		w.update(1.0 / 60.0, _bot(w))
+		seconds += 1.0 / 60.0
+	return [seconds, deaths, p.bosses.get("huyen-anh", false)]

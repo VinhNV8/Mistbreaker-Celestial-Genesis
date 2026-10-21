@@ -14,7 +14,8 @@ const Explore = preload("res://scripts/core/explore.gd")
 ## v11: M8 chương 5 — chuyển chức 2 (job2), Tinh Thạch, Bình Nước Thánh, đột kích Kim Luân (docs/12 mục 6).
 ## v12: M9 chương 6 — nhiệm vụ chương 6, Than Hồng (docs/14 mục 6).
 ## v13: SK1 hệ kỹ năng — Điểm Kỹ Năng, cấp kỹ năng, 4 ô lắp (docs/13).
-const VERSION := 13
+## v14: SK2 — biến thể kỹ năng {id: [tầng I, II, III]} (docs/13).
+const VERSION := 14
 
 var talent := ""
 var level := 1
@@ -111,6 +112,7 @@ var job2 := ""
 var skill_points := 0
 var skill_levels := {}
 var loadout: Array = []
+var variants := {}
 var crystal := 0.0
 var holy_water := 0
 var raid_play := 0.0
@@ -201,6 +203,7 @@ func to_dict() -> Dictionary:
 		"skill_points": skill_points,
 		"skill_levels": skill_levels,
 		"loadout": loadout,
+		"variants": variants,
 		"crystal": crystal,
 		"holy_water": holy_water,
 		"raid_play": raid_play,
@@ -340,6 +343,13 @@ func load_dict(d: Dictionary) -> bool:
 	loadout = []
 	for k in d.get("loadout", []):
 		loadout.append(str(k))
+	variants = {}
+	var vr: Dictionary = d.get("variants", {})
+	for k in vr:
+		var arr: Array = []
+		for x in vr[k]:
+			arr.append(str(x))
+		variants[str(k)] = arr
 	crystal = float(d.get("crystal", 0.0))
 	holy_water = int(d.get("holy_water", 0))
 	raid_play = float(d.get("raid_play", 0.0))
