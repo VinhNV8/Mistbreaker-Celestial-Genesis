@@ -128,3 +128,6 @@ SPRITES["npc-thach-thu"] = {"builder": "humanoid", "name": "Hộ vệ Thạch Th
 # M8 (docs/12): vùng 5 Núi Viêm Long — khai báo trong region5.py (tách file để các chương làm song song)
 import region5 as _region5  # noqa: E402
 _region5.register_sprites(SPRITES)
+# M7 (docs/11): vùng 4 Đầm Lầy U Minh — region4.py
+import region4 as _region4  # noqa: E402
+_region4.register_sprites(SPRITES)

@@ -13,6 +13,17 @@ const Items = preload("res://scripts/core/items.gd")
 const Formulas = preload("res://scripts/core/formulas.gd")
 const RngUtil = preload("res://scripts/core/rng_util.gd")
 
+## D38: đăng ký với core/chapters.gd.
+const MAPS := ["3-1", "3-2", "3-3"]
+const NPCS := ["sa-lao", "a-moc", "thach-thu"]
+const HOOKS := ["on_load", "tick", "check_quest", "after_spawn", "on_kill", "on_player_hit", "is_hidden", "update_enemy",
+	"chase", "perform", "elite_skill", "update_rare", "boss_phase_two", "copy_skill", "adjust_damage", "atk_mult", "heal_mult",
+	"shot_mult", "move_mult", "hit_mult", "derive_bonus", "derive_after", "skill_trail", "safe_zone", "map_requirement",
+	"gate_open", "env_text", "env_alert", "quest_hud", "fireball_mult", "spin_mult", "chain_jumps", "pierce_cd",
+	"after_shot", "after_slash"]
+const REGION3_POWER := 5000
+const REGION3_LEVEL := 18
+
 # ---------------------------------------------------------------- C3-10…13: môi trường
 const DAY_LEN := 240.0
 const NIGHT_LEN := 120.0
@@ -576,7 +587,7 @@ static func derive_bonus(w, bonus: Dictionary) -> void:
 
 
 ## Sau Stats.derive: Bộ Sa Hành Giả 4 món +10% Phòng thủ.
-static func derive_after(bonus: Dictionary, st: Dictionary) -> void:
+static func derive_after(_w, bonus: Dictionary, st: Dictionary) -> void:
 	if int(bonus.sets.get(ItemData.SA_HANH, 0)) >= 4:
 		st.def = float(st.def) * 1.1
 
@@ -779,3 +790,82 @@ static func talk(w, npc_id: String) -> String:
 			w._force_say("thach_wait" if job(w) == "" else "job_done")
 			return ""
 	return ""
+
+
+# ================================================================ D38: hàm móc tên chung (core/chapters.gd)
+
+
+static func atk_mult(w) -> float:
+	return night_mult(w)
+
+
+static func move_mult(w) -> float:
+	return 1.0 - SLOW_PCT if w.player.slow_timer > 0.0 else 1.0
+
+
+static func safe_zone(w, pos: Vector2) -> bool:
+	return oasis_at(w, pos) >= 0
+
+
+static func update_rare(w, e, dt: float) -> bool:
+	if e.kind != "nhan-su":
+		return false
+	update_sphinx(w, e, dt)
+	return true
+
+
+static func copy_skill(w, id: String) -> bool:
+	if id != "burrow":
+		return false
+	copy_burrow(w)
+	return true
+
+
+static func skill_trail(w, pos: Vector2, r: float) -> void:
+	sand_trail(w, pos, r)
+
+
+static func env_alert(w) -> bool:
+	return storm_on(w) or heat_active(w)
+
+
+## C3-01 (Q53): hạ Huyền Ảnh + Lực chiến ≥ 5.000 + cấp ≥ 18; 3-2, 3-3 theo thứ tự.
+static func map_requirement(w, id: String) -> String:
+	match id:
+		"3-1":
+			if not w.is_boss_defeated("huyen-anh"):
+				return "Hạ Tướng Gián Điệp Huyền Ảnh trước."
+			if w.combat_power() < REGION3_POWER:
+				return "Cần Lực chiến %d (đang %d)." % [REGION3_POWER, w.combat_power()]
+			if int(w.profile.level) < REGION3_LEVEL:
+				return "Cần cấp %d." % REGION3_LEVEL
+		"3-2":
+			return "" if "3-1" in w.profile.unlocked_maps else "Tới Rìa Cát Đỏ trước."
+		"3-3":
+			return "" if "3-2" in w.profile.unlocked_maps else "Tới Ốc Đảo Lãng Quên trước."
+	return ""
+
+
+static func gate_open(w, id: String) -> bool:
+	ensure(w)
+	if id == "3-3":
+		return int(w.profile.quest.ch3) >= 5 or w.is_boss_defeated("sa-hoang")
+	return true
+
+
+## HUD nhiệm vụ: {active, done, title, lines: [[chữ, "gold" | "text" | "muted"]]}.
+static func quest_hud(w) -> Dictionary:
+	ensure(w)
+	var q := quest(w)
+	if not q.is_empty():
+		var st := quest_status(w)
+		var rt := Story.reward_text(q.reward)
+		return {"active": true, "title": "CHƯƠNG 3 · NHIỆM VỤ %d/%d" % [int(w.profile.quest.ch3), Story.QUESTS3.size()],
+			"lines": [["◆ " + str(q.title) + ("  (%d/%d)" % st if int(st[1]) > 1 else ""), "gold"], [str(q.hint), "text"],
+				[("Thưởng: " + rt) if rt != "" else "", "muted"]]}
+	if int(w.profile.quest.ch3) >= Story.DONE3:
+		return {"done": true, "title": "CHƯƠNG 3 · HOÀN THÀNH ✓",
+			"lines": [["Chức: %s" % Classes.title(str(w.profile.class_id), str(w.profile.job)), "text"],
+				["Săn boss hiếm Nhân Sư Đá ở Di Tích Khai Giới Giả — 2 lần mỗi ngày", "muted"],
+				["Chương 4: Đầm Lầy U Minh — đã chuyển chức + hạ Sa Hoàng (phím N)", "muted"]]}
+	return {}

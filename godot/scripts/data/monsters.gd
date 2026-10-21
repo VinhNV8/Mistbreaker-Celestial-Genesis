@@ -205,6 +205,43 @@ const DEFS := {
 		"element": "tho", "name": "Nhân Sư Đá", "arch": "giap", "speed": 90.0, "radius": 34.0, "range": 50.0,
 		"windup": 0.7, "recover": 0.9, "attack": "melee", "color": "#d6a865", "steal": {"int": 40, "vit": 40, "str": 20},
 	},
+	# ---------------------------------------------------------------- M7: vùng 4 Đầm Lầy U Minh (06 vùng 4, docs/11)
+	"ech-doc": {
+		"element": "thuy", "name": "Ếch Độc", "arch": "xa", "speed": 70.0, "radius": 15.0, "range": 120.0,
+		"windup": 0.7, "recover": 1.2, "attack": "tongue", "color": "#5bd16a", "steal": {"agi": 50, "vit": 50},
+	},
+	"dia": {
+		"element": "thuy", "name": "Đỉa Hút Máu", "arch": "nhanh", "speed": 160.0, "radius": 11.0, "range": 26.0,
+		"windup": 0.4, "recover": 0.8, "attack": "latch", "color": "#5a2a3a", "steal": {"vit": 60, "luk": 40},
+	},
+	"hon-ma": {
+		"element": "thuy", "name": "Hồn Ma Đầm", "arch": "phep", "speed": 110.0, "radius": 16.0, "range": 70.0,
+		"windup": 0.9, "recover": 1.1, "attack": "wail", "color": "#b4bac8", "steal": {"int": 70, "luk": 30},
+		"elite_name": "Phù Thuỷ Đầm Lầy", "elite_arch": "phep", "elite_min_level": 36, "elite_skill": "toxrain", "elite_sprite": "phu-thuy-dam",
+	},
+	"ca-sau": {
+		"element": "tho", "name": "Cá Sấu Bùn", "arch": "giap", "speed": 70.0, "radius": 20.0, "range": 40.0,
+		"windup": 0.8, "recover": 1.1, "attack": "chomp", "color": "#4a5a32", "steal": {"str": 60, "vit": 40},
+		"elite_name": "Cá Sấu Chúa", "elite_arch": "giap", "elite_min_level": 40, "elite_skill": "deathroll", "elite_sprite": "ca-sau-chua",
+	},
+	## C4-30: boss chương 4
+	"nu-vuong": {
+		"element": "thuy", "name": "Nữ Vương Phệ Mộng", "arch": "boss", "speed": 110.0, "radius": 30.0, "range": 50.0,
+		"windup": 0.5, "recover": 0.8, "attack": "melee", "color": "#8248b8", "steal": {"int": 50, "agi": 30, "luk": 20},
+	},
+	"mong-chau": {
+		"element": "thuy", "name": "Mộng Châu", "arch": "li", "speed": 0.0, "radius": 16.0, "range": 0.0,
+		"windup": 1.0, "recover": 1.0, "attack": "none", "color": "#c28af0", "steal": {"int": 100},
+	},
+	## C4-33: boss hiếm 4-3 — thân bất tử, 7 đầu
+	"thuy-quai": {
+		"element": "thuy", "name": "Thuỷ Quái Thất Đầu", "arch": "li", "speed": 0.0, "radius": 44.0, "range": 0.0,
+		"windup": 1.0, "recover": 1.0, "attack": "none", "color": "#1f5a9a", "steal": {"vit": 60, "str": 40},
+	},
+	"dau-thuy-quai": {
+		"element": "thuy", "name": "Đầu Thuỷ Quái", "arch": "li", "speed": 0.0, "radius": 18.0, "range": 150.0,
+		"windup": 0.8, "recover": 1.0, "attack": "jet", "color": "#3a86c8", "steal": {"vit": 100},
+	},
 	"boss": {
 		"element": "moc",
 		"name": "Sói Chúa Hư Vô",

@@ -52,7 +52,7 @@ static func derive(level: int, pts: Dictionary, talent: String, bonus := {}, tal
 	var hunter := class_id == "tho-san"
 	var mage := class_id == "phap-su"
 	var flat: Dictionary = bonus.get("flat", {})
-	var tlv := clampi(talent_level, 1, Talents.MAX_TALENT_LEVEL)
+	var tlv := clampi(talent_level, 1, Talents.MAX_EFFECTIVE_LEVEL)
 	# TL-10: mỗi cấp Thiên phú trên 1 → +2% Tấn công và HP.
 	var tl_pct := 0.02 * (tlv - 1)
 	var dragon := Talents.lv_value(0.1, 0.15, tlv) if bonus.get("dragon", false) else 0.0

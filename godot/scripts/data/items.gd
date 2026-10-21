@@ -82,6 +82,16 @@ const SETS := {
 			{"count": 6, "text": "Né lăn hồi chiêu 3 → 2 giây", "bonus": {"dodge_cd": 1.0}},
 		],
 	},
+	## C4-35 (M7): bộ vùng 4 — 2 và 6 món xử lý trong core/chapter4.gd.
+	"u_minh": {
+		"name": "Bộ U Minh",
+		"suffix": "U Minh",
+		"tiers": [
+			{"count": 2, "text": "Độc tích luỹ chậm 50%", "bonus": {}},
+			{"count": 4, "text": "+12% HP tối đa", "bonus": {"max_hp_pct": 0.12}},
+			{"count": 6, "text": "Đòn đánh 15% gây 1 tầng độc lên quái", "bonus": {}},
+		],
+	},
 	## C3-35 (M6): bộ vùng 3.
 	"sa_hanh": {
 		"name": "Bộ Sa Hành Giả",
@@ -97,9 +107,9 @@ const SETS := {
 const SA_HANH := "sa_hanh"
 const REGION_SET := "frost_hunter"
 ## Đồ Tím rơi ở vùng nào thì thuộc bộ của vùng đó (M4.2).
-const REGION_SETS := {1: "frost_hunter", 2: "phong_hanh", 3: "sa_hanh"}
+const REGION_SETS := {1: "frost_hunter", 2: "phong_hanh", 3: "sa_hanh", 4: "u_minh"}
 ## Đồ Cam của từng boss chương.
-const BOSS_UNIQUES := {"boss": "wolf_fang", "huyen-anh": "huyen_anh_mask", "sa-hoang": "sa_hoang_tail"}
+const BOSS_UNIQUES := {"boss": "wolf_fang", "huyen-anh": "huyen_anh_mask", "sa-hoang": "sa_hoang_tail", "nu-vuong": "goi_mong"}
 
 ## EQ-16: đồ Cam có hiệu ứng riêng.
 const UNIQUES := {
@@ -113,6 +123,18 @@ const UNIQUES := {
 		"name": "Mặt Nạ Huyền Ảnh",
 		"slot": "helm",
 		"text": "Né lăn để lại 1 phân thân hút đòn của quái trong 2 giây.",
+	},
+	## C4-31 (M7): rơi từ Nữ Vương Phệ Mộng (15%).
+	"goi_mong": {
+		"name": "Gối Mộng",
+		"slot": "amulet",
+		"text": "15% né hoàn toàn một đòn.",
+	},
+	## C4-34 (M7): rơi từ Thuỷ Quái Thất Đầu.
+	"vay_that_dau": {
+		"name": "Vảy Thất Đầu",
+		"slot": "armor",
+		"text": "Hồi 1% HP mỗi giây; +20% kháng Thủy.",
 	},
 	## C3-31 (M6): rơi từ Bọ Cạp Sa Hoàng (15%).
 	"sa_hoang_tail": {

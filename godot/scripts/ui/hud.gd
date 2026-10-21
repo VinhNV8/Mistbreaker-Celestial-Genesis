@@ -19,7 +19,7 @@ const HUD_RESOURCES := ["gold", "wood", "torches", "stones", "essence", "ore", "
 const HUD_OPTIONAL := ["ore", "iron"]
 const Maps = preload("res://scripts/data/maps.gd")
 const SkillBar = preload("res://scripts/ui/skill_bar.gd")
-const Ch3 = preload("res://scripts/core/chapter3.gd")
+const Chapters = preload("res://scripts/core/chapters.gd")
 ## DH-11: thứ tự ô trên thanh kỹ năng.
 const SKILL_BAR_SCALE := 0.8
 const SLOT_BASIC := 0
@@ -291,7 +291,8 @@ func update_from(w: GameWorld) -> void:
 	var rank_color := Talents.rank_color(t.rank)
 
 	_level.text = "%s · Cấp %d" % [p.name, p.level]
-	_talent.text = "%s · %s" % [t.rank, t.name]
+	var form: Array = GameWorld.Ch4.evo_form(t.id, int(p.evo))
+	_talent.text = "%s · %s" % [form[1], form[0]]
 	_talent.add_theme_color_override("font_color", rank_color)
 	_hp_bar.value = maxf(0.0, pl.hp) / float(s.max_hp)
 	_hp_text.text = "%d / %d" % [ceili(maxf(0.0, pl.hp)), s.max_hp]
@@ -329,12 +330,12 @@ func update_from(w: GameWorld) -> void:
 		else:
 			_wind.add_theme_color_override("font_color", Color("#e8e2c8"))
 		_wind.text = txt
-	# M6 (C3-10…12): ngày/đêm, nắng gắt, bão cát ở sa mạc — dùng chung dòng của gió.
-	var env := Ch3.env_text(w)
+	# M6+ (D38): trạng thái môi trường của chương (sa mạc, đầm lầy…) — dùng chung dòng của gió.
+	var env := Chapters.env_text(w)
 	if env != "":
 		_wind.visible = true
 		_wind.text = env
-		var alert: bool = Ch3.storm_on(w) or Ch3.heat_active(w)
+		var alert: bool = Chapters.env_alert(w)
 		_wind.add_theme_color_override("font_color", Color("#ff9a3c") if alert else Color("#f2d79a"))
 
 	_combo.visible = w.combo >= 5
@@ -342,8 +343,8 @@ func update_from(w: GameWorld) -> void:
 
 	_update_skill_bar(w, t, rank_color)
 	var extra: Array[String] = []
-	if p.talent_level > 1:
-		extra.append("Thiên phú cấp %d" % p.talent_level)
+	if int(p.talent_level) > 1:
+		extra.append("Thiên phú cấp %d%s" % [GameWorld.Ch4.stage_level(p), (" · tiến hoá %d" % int(p.evo)) if int(p.evo) > 0 else ""])
 	if not w.allies.is_empty():
 		extra.append("Đồng minh %d" % w.allies.size())
 	if p.talent == "ngu-hanh":
@@ -421,21 +422,14 @@ func _update_quest(w: GameWorld) -> void:
 	var p = w.profile
 	var q := w.quest()
 	# M4.3: nhiệm vụ chính chương 2 khi đã tới vùng 2 (hoặc chương 1 đã xong).
-	# M6 (C3-41): nhiệm vụ chương 3 khi đã tới vùng 3.
-	var q3 := Ch3.quest(w)
-	if not q3.is_empty():
-		_obj_title.text = "CHƯƠNG 3 · NHIỆM VỤ %d/%d" % [int(p.quest.ch3), Story.QUESTS3.size()]
-		var st3 := Ch3.quest_status(w)
-		_set_obj(0, "◆ " + str(q3.title) + ("  (%d/%d)" % st3 if int(st3[1]) > 1 else ""), UiTheme.GOLD)
-		_set_obj(1, str(q3.hint), UiTheme.TEXT)
-		var rt3 := Story.reward_text(q3.reward)
-		_set_obj(2, ("Thưởng: " + rt3) if rt3 != "" else "", UiTheme.MUTED)
-		return
-	if int(p.quest.ch3) >= Story.DONE3:
-		_obj_title.text = "CHƯƠNG 3 · HOÀN THÀNH ✓"
-		_set_obj(0, "Chức: %s" % Classes.title(str(p.class_id), str(p.job)), UiTheme.TEXT)
-		_set_obj(1, "Săn boss hiếm Nhân Sư Đá ở Di Tích Khai Giới Giả — 2 lần mỗi ngày", UiTheme.MUTED)
-		_set_obj(2, "Chương 4: Đầm Lầy U Minh — sắp mở", UiTheme.MUTED)
+	# M6+ (D38): nhiệm vụ chương 3 trở đi do module chương cung cấp.
+	var qh := Chapters.quest_hud(w)
+	if not qh.is_empty():
+		_obj_title.text = str(qh.title)
+		var colors := {"gold": UiTheme.GOLD, "text": UiTheme.TEXT, "muted": UiTheme.MUTED}
+		for i in 3:
+			var ln: Array = qh.lines[i] if i < qh.lines.size() else ["", "muted"]
+			_set_obj(i, str(ln[0]), colors.get(ln[1], UiTheme.TEXT))
 		return
 	var q2 := w.quest2()
 	if not q2.is_empty() and (q.is_empty() or int(w.map.get("region", 1)) == 2):

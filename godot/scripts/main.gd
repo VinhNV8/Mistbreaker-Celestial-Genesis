@@ -741,6 +741,46 @@ func _run_smoke(dir: String) -> void:
 	await _wait(1.6)
 	await _shot(dir, "11-sa-hoang")
 	world.player.shield = 0.0
+	# M7 (docs/11): vùng 4 Đầm Lầy U Minh — làng chài, đầm lầy có quái, giấc mơ của Nữ Vương, tiến hoá
+	world.enemies = []
+	p.bosses["sa-hoang"] = true
+	p.job = str(world.Ch3.Classes.job_def(str(p.class_id)).id)
+	if not ("4-1" in p.unlocked_maps):
+		p.unlocked_maps.append_array(["4-1", "4-2", "4-3"])
+	p.level = maxi(p.level, 34)
+	world._refresh_stats()
+	world._load_map("4-1")
+	world.player.pos = world.safe_pos + Vector2(10, -10)
+	await _wait(1.0)
+	await _shot(dir, "12b-village4")
+	world._load_map("4-2")
+	world.player.pos = Vector2(1300, 900)
+	world.ch4.poison = 4
+	for k in ["ech-doc", "dia", "hon-ma", "ca-sau"]:
+		var ne = world.spawn_enemy(k, 37, world.player.pos + Vector2(200 + randf() * 200, randf() * 300 - 150))
+		ne.illusion = k == "hon-ma"
+	await _wait(2.5)
+	await _shot(dir, "12-region4")
+	p.quest.ch4 = 5
+	world._load_map("4-3")
+	world.player.pos = world.arena_pos - Vector2(120, 0)
+	world.player.shield = 1e9
+	world.player.shield_time = 999.0
+	await _wait(1.0)
+	var q = world.boss()
+	if q != null:
+		q.hp = q.max_hp * 0.55
+	await _wait(1.2)
+	await _shot(dir, "12c-dream")
+	world.player.shield = 0.0
+	world.ch4.dream_t = 0.0
+	p.talent_level = 10
+	p.evo_essence = 1
+	p.quest.ch4 = 6
+	talent_panel.open(world)
+	await _wait(0.3)
+	await _shot(dir, "12d-talent-evo")
+	talent_panel.close()
 	print("SMOKE done: boss_defeated=%s level=%d kills=%d" % [p.boss_defeated, p.level, p.kills])
 	SaveSystem.clear_save()
 	get_tree().quit()

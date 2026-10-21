@@ -626,3 +626,6 @@ def build_all():
 # M8 (docs/12): icon vùng 5 trong region5.py
 import region5 as _region5  # noqa: E402
 _region5.register_icons(ITEMS, RESOURCES, SKILLS)
+# M7 (docs/11): icon vùng 4 trong region4.py
+import region4 as _region4  # noqa: E402
+_region4.register_icons(ITEMS)

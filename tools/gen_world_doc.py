@@ -143,7 +143,7 @@ REGIONS = [
         ("4-3 Cung Mộng", "41–45", "Lưới 15 ô; cốt truyện chương 4 (tiến hoá bắt buộc); boss hiếm Thuỷ Quái Thất Đầu"),
         ("Dungeon: Cung Phệ Mộng", "43", "Boss chương 4")],
   grid="45 ô", res="Bãi lau → Xưởng Gỗ; đầm → **Vườn Thảo Dược** (Thuốc Giải)",
-  set=("Bộ U Minh", "2: độc tích luỹ chậm 50% · 4: +12% HP · 6: đòn đánh 15% gây 1 tầng độc lên quái", "⬜"),
+  set=("Bộ U Minh", "2: độc tích luỹ chậm 50% · 4: +12% HP · 6: đòn đánh 15% gây 1 tầng độc lên quái", "✅ M7"),
   mobs=[("Ếch Độc", "Xa", "Thủy", (32, 38), "**Lưỡi độc** (vung 0,7 s, 12 m): kéo người chơi 4 m, +1 tầng độc", "AGI 50 · VIT 50", None),
         ("Đỉa Hút Máu", "Nhanh", "Thủy", (33, 40), "**Bám**: dính vào người chơi, hút 1% HP/giây và hồi cho nó; né lăn để gỡ", "VIT 60 · LUK 40", None),
         ("Hồn Ma Đầm", "Phép", "Thủy", (36, 45), "**Phân ảnh** (hồi 12 s): tạo 2 ảo ảnh 1 HP · **Tiếng than** (vòng 8 m, ×1,1)", "INT 70 · LUK 30", None),
@@ -154,7 +154,7 @@ REGIONS = [
    phases=[("1 (100% → 60%)", "**Lời ru** (sóng vòng 12 m, vung 1,0 s, ×1,0, chậm 50% trong 3 giây) · **Gai mộng** (3 gai thẳng, ×1,4)"),
            ("2 (60% → 25%)", "**Giấc mơ** (kịch bản): kéo người chơi vào giấc mơ 12 giây, **đảo ngược điều khiển** (trái ↔ phải, lên ↔ xuống); phá 3 Mộng Châu để thoát sớm"),
            ("3 (dưới 25%)", "**Phệ mộng**: hút 2% HP/giây với người chơi trong 15 m nếu không đứng trong vòng sáng (vòng sáng di chuyển chậm)")],
-   steal="**Mộng Cảnh**: quái trong 10 m đánh nhau trong 4 giây", steal_code="⬜",
+   steal="**Mộng Cảnh**: quái trong 10 m đánh nhau trong 4 giây", steal_code="✅ M7",
    drop="1 đồ Tím · 15% **Gối Mộng** (bùa Cam: 15% né hoàn toàn một đòn)"),
   rare=dict(name="Thuỷ Quái Thất Đầu", lv=45, el="Thủy", arch="Lì", where="Cung Mộng",
    skills="**7 đầu**, mỗi đầu thanh máu riêng (14% HP boss). Đầu bị chặt mọc lại sau 20 giây nếu không bị đòn **hệ Hỏa** trong 5 giây sau khi chặt (Thủy bị Hỏa khắc ngược — dùng ngọc/Ngũ Hành). Mỗi đầu: **Phun nước** (thẳng 15 m, ×1,2)",
@@ -490,7 +490,8 @@ w("""
 | M4 | Vùng 1 đủ 3 map con, 40 ô (Bìa Rừng, Rừng Sâu, Lõi Sương mở sau boss — Q24, Q25) · toàn bộ vùng 2, 45 ô · Mỏ (Đá, Sắt), Bến Cá dạng buff (Q26) · bộ Phong Hành · Mặt Nạ Huyền Ảnh |
 | M5 | Boss hiếm vùng 1–2 (Lão Thụ, Bạch Hổ) · tinh chỉnh hệ số công thức (số đòn, % HP) từ dữ liệu playtest |
 | M6 | ✅ Xong 21/10/2026 — **Vùng 3 Sa Mạc Xích Sa** ([10](10-chuong-3.md)): 3 map, môi trường, 6 quái + 2 tinh anh, Bọ Cạp Sa Hoàng, Nhân Sư Đá, bộ Sa Hành Giả, Đuôi Sa Hoàng, Mắt Nhân Sư, Độn Thổ |
-| Alpha | Vùng 4–5 |
+| M7 | ✅ Xong 21/10/2026 — **Vùng 4 Đầm Lầy U Minh** ([11](11-chuong-4.md)): 3 map, nước đầm + độc tích luỹ, ảo ảnh, 4 quái + 2 tinh anh, Nữ Vương Phệ Mộng, Thuỷ Quái Thất Đầu, Bộ U Minh, Gối Mộng, Vảy Thất Đầu, Mộng Cảnh |
+| Alpha | Vùng 5 (M8, [12](12-chuong-5.md)) |
 | Beta | Vùng 6–9 |
 
 ## 7. Quyết định đã chốt (20/10/2026)

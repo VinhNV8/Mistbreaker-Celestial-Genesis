@@ -52,6 +52,7 @@ Công thức hiệu ứng chính ở Lv n: `giá trị(n) = giá trị(1) × (1 
 
 - **Tinh Hoa Tiến Hoá** rơi từ boss hiếm (kịch bản mục 5: boss hiếm rơi "vật phẩm tiến hoá").
 - Cốt truyện **chương 4 và 7 bắt buộc tiến hoá 1 lần** (kịch bản mục 3). Vùng 5 mở khi tiến hoá 1 lần, vùng 8 mở khi tiến hoá 2 lần (kịch bản mục 6).
+- **Đã code tiến hoá lần 1 (M7, [11](11-chuong-4.md) C4-43, C4-44):** tên + hạng mới theo bảng mục 3, Lv1, hoàn 12 Tinh Hoa, không tụt sức mạnh nhờ *cấp hiệu dụng* (Lv + 9 × số lần tiến hoá). Điều kiện M7: Lv10 + 1 Tinh Hoa Tiến Hoá + nhiệm vụ chương 4 (dùng chung mọi hạng; chuỗi “Phế Vật Nghịch Thiên” của F để sau). Hiệu ứng riêng từng dạng (ví dụ *Kim Cang Thân*) để Alpha — Q55.
 - Tiến hoá xong, cấp Thiên phú **đặt lại Lv1**, kèm 2 bảo đảm (**Q18**):
   - **Không tụt sức mạnh:** dạng mới ở Lv1 luôn mạnh bằng hoặc hơn dạng cũ ở Lv10 (cả thưởng chung +18% lẫn hiệu ứng phụ được giữ làm mức sàn cho tới khi dạng mới luyện vượt qua).
   - **Hoàn 50% Tinh Hoa** đã dùng để luyện dạng cũ (12 trên 25).

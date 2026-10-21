@@ -14,6 +14,7 @@ const Classes = preload("res://scripts/data/classes.gd")
 const Looks = preload("res://scripts/data/looks.gd")
 const CORPSE_TIME := 0.6
 const Ch3 = preload("res://scripts/core/chapter3.gd")
+const Ch4 = preload("res://scripts/core/chapter4.gd")
 const HIT_FX_TIME := 0.25
 
 var world: GameWorld
@@ -212,6 +213,37 @@ func _draw() -> void:
 
 
 # ---------------------------------------------------------------- nền
+## M7 (C4-11, C4-30, C4-33): mưa độc, gốc đầu Thất Đầu, vòng sáng Phệ mộng, giấc mơ đảo điều khiển.
+func _draw_swamp_overlay(view: Rect2) -> void:
+	var st = world.ch4
+	for r in st.rains:
+		var a: float = clampf(r.ttl / Ch4.TOXRAIN_TIME, 0.0, 1.0)
+		draw_circle(r.pos, Ch4.TOXRAIN_R, Color(0.45, 0.85, 0.35, 0.16 * a))
+		draw_arc(r.pos, Ch4.TOXRAIN_R, 0.0, TAU, 40, Color(0.55, 0.95, 0.45, 0.7 * a), 2.0, true)
+		for i in 8:
+			var dp: Vector2 = r.pos + Vector2(fposmod(i * 37.0 + world.time * 60.0, 180.0) - 90.0, fposmod(i * 53.0 + world.time * 140.0, 180.0) - 90.0)
+			if dp.distance_to(r.pos) < Ch4.TOXRAIN_R:
+				draw_line(dp, dp + Vector2(-2, 8), Color(0.6, 1.0, 0.5, 0.7 * a), 2.0)
+	for sp in st.stumps:
+		var burn := (Ch4.REGROW - float(sp.t)) < Ch4.BURN_WINDOW
+		draw_circle(sp.pos, 16.0, Color("#1f5a9a"))
+		draw_arc(sp.pos, 22.0, -PI / 2.0, -PI / 2.0 + TAU * (1.0 - float(sp.t) / Ch4.REGROW), 24, Color(0.4, 0.7, 1.0, 0.9), 3.0, true)
+		if burn:
+			draw_arc(sp.pos, 28.0, 0.0, TAU, 24, Color(1.0, 0.55, 0.2, 0.5 + 0.4 * sin(world.time * 10.0)), 2.0, true)
+			_label("Đốt bằng hệ Hỏa / Q", sp.pos + Vector2(0, -36), Color("#ff9a3c"), 11)
+	var b = world.boss()
+	if b != null and b.kind == "nu-vuong" and b.phase >= 3:
+		var pulse := 0.5 + 0.5 * sin(world.time * 3.0)
+		draw_circle(st.light_pos, Ch4.LIGHT_R, Color(1.0, 0.95, 0.7, 0.18 + 0.08 * pulse))
+		draw_arc(st.light_pos, Ch4.LIGHT_R, 0.0, TAU, 40, Color(1.0, 0.95, 0.7, 0.9), 2.5, true)
+		draw_arc(b.pos, Ch4.DRAIN_R, 0.0, TAU, 48, Color(0.7, 0.3, 1.0, 0.35), 2.0, true)
+	if st.dream_t > 0.0:
+		draw_rect(view, Color(0.35, 0.12, 0.5, 0.28 + 0.06 * sin(world.time * 2.0)))
+		for i in 18:
+			var sp2 := view.position + Vector2(fposmod(i * 173.0 + world.time * 25.0, view.size.x), fposmod(i * 97.0 + world.time * 15.0, view.size.y))
+			draw_circle(sp2, 2.0 + fposmod(i * 1.7, 3.0), Color(1.0, 0.85, 1.0, 0.5))
+
+
 ## M6 (C3-10, C3-12): đêm tối viền, bão cát phủ cát + vệt gió; lốc cát của Bộ Sa Hành Giả.
 func _draw_desert_overlay(view: Rect2) -> void:
 	for t in world.ch3.trails:
@@ -219,6 +251,7 @@ func _draw_desert_overlay(view: Rect2) -> void:
 		for k in 3:
 			var ang: float = world.time * 3.0 + k * TAU / 3.0
 			draw_arc(t.pos, t.r * (0.5 + 0.2 * k), ang, ang + 2.0, 16, Color(0.84, 0.66, 0.4, 0.5 * a), 2.0, true)
+	_draw_swamp_overlay(view)
 	if not Ch3.is_desert(world):
 		return
 	var vis := Ch3.vision(world)
@@ -259,6 +292,28 @@ func _draw_ground(view: Rect2) -> void:
 	var path_tile := "tile-sand-red" if bool(world.map.get("desert", false)) and SpriteLib.has_env("tile-sand-red") else "tile-dirt"
 	if not (_art and SpriteLib.fill_polygon(self, path_pts, path_tile, Color(1, 1, 1, 0.55))):
 		draw_rect(path, Color(0.47, 0.39, 0.27, 0.22))
+	# M7 (C4-10): nước đầm — map mặc định là nước thì phủ nước rồi vẽ cồn đất; ngược lại vẽ các hồ nước.
+	var wd = world.map.get("water", null)
+	if wd != null:
+		var water := Color(0.08, 0.2, 0.26, 0.78)
+		var land := Color("#3a4a2c")
+		if bool(wd.default):
+			draw_rect(Rect2(Vector2.ZERO, size), water)
+			for z in wd.zones:
+				if view.grow(float(z[1])).has_point(z[0]):
+					if not (_art and SpriteLib.fill_polygon(self, _circle_points(z[0], float(z[1])), "tile-swamp")):
+						draw_circle(z[0], float(z[1]), land)
+					draw_arc(z[0], float(z[1]), 0.0, TAU, 48, Color(0.35, 0.45, 0.3, 0.6), 3.0, true)
+		else:
+			for z in wd.zones:
+				if view.grow(float(z[1])).has_point(z[0]):
+					draw_circle(z[0], float(z[1]), water)
+					draw_arc(z[0], float(z[1]), 0.0, TAU, 48, Color(0.4, 0.6, 0.55, 0.5), 3.0, true)
+		# gợn nước
+		for i in 24:
+			var rp := view.position + Vector2(fposmod(i * 211.0 + world.time * 8.0, view.size.x), fposmod(i * 137.0, view.size.y))
+			if Ch4.in_water(world, rp):
+				draw_arc(rp, 6.0 + fposmod(world.time * 4.0 + i, 8.0), PI * 1.1, PI * 1.9, 8, Color(0.7, 0.9, 1.0, 0.25), 1.0)
 	# M6: ốc đảo (C3-13) và bóng râm dưới tảng đá (C3-11)
 	for o in Ch3.oases(world):
 		var oc: Vector2 = o[0]
@@ -378,6 +433,13 @@ func _draw_sorted(view: Rect2) -> void:
 		items.append([world.map.stele3.y, _draw_stele.bind(world.map.stele3)])
 	for pl in world.ch3.pillars:
 		items.append([pl.pos.y, _draw_puzzle_pillar.bind(pl)])
+	# M7: Bọc Mộng (nhiệm vụ chương 4 bước 3)
+	var pods: Array = world.map.get("pods", [])
+	var got: Array = world.profile.quest.get("orbs4", [])
+	if int(world.profile.quest.get("ch4", 0)) == 3:
+		for i in pods.size():
+			if not (i in got) and view.has_point(pods[i]):
+				items.append([pods[i].y, _draw_env_scaled.bind("dream-pod", pods[i], 1.4, false)])
 
 	for h in world.herbs:
 		if h.respawn <= 0.0:
@@ -432,6 +494,14 @@ func _feet(pos: Vector2, r: float) -> Vector2:
 
 func _draw_tree_sprite(t: Dictionary) -> void:
 	var base: Vector2 = t.pos + Vector2(0, t.r * 0.6)
+	# M7: đầm lầy — cây chết, lau sậy, lá súng (trên nước), bụi.
+	if str(world.map.get("decor", "forest")) == "swamp":
+		var wet := Ch4.in_water(world, t.pos)
+		var sid: String = ("lily" if wet else ["dead-tree-0", "reeds-0", "dead-tree-1", "reeds-1"][t.variant])
+		if not SpriteLib.has_env(sid):
+			sid = "bush"
+		SpriteLib.draw_env(self, sid, base, Color.WHITE, 1.0 if t.r < 28.0 else 1.3, t.shade > 0.5)
+		return
 	# M4.2: thảo nguyên — đá, cỏ cao, bụi thay cho cây rừng.
 	if str(world.map.get("decor", "forest")) == "plains":
 		var pid: String = ["rock-0", "tall-grass", "rock-1", "bush"][t.variant]
@@ -552,6 +622,10 @@ func _draw_enemy_sprite(e) -> void:
 		mod = Color(1.25, 0.8, 0.85)
 	if e.elite:
 		mod = Color(1.15, 1.08, 0.85)
+	if e.illusion:
+		mod = Color(0.85, 0.9, 1.0, 0.6 + 0.15 * sin(world.time * 6.0 + e.id))
+	if e.charm_t > 0.0:
+		mod = Color(1.2, 0.8, 1.3)
 	if e.hit_flash > 0.0:
 		mod = Color(1.6, 1.6, 1.6)
 	if world.freeze_timer > 0.0:

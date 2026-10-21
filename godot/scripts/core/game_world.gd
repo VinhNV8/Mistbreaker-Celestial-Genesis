@@ -16,8 +16,11 @@ const RngUtil = preload("res://scripts/core/rng_util.gd")
 const Maps = preload("res://scripts/data/maps.gd")
 const Story = preload("res://scripts/data/story.gd")
 const Fog = preload("res://scripts/core/fog.gd")
-## M6: chương 3 Sa Mạc Lãng Quên (docs/10) — logic trong core/chapter3.gd, ở đây chỉ có các dòng móc "Ch3.".
+## M6: chương 3 Sa Mạc Lãng Quên (docs/10) — logic trong core/chapter3.gd.
 const Ch3 = preload("res://scripts/core/chapter3.gd")
+## D38 (M7): mọi chương từ 3 trở đi gắn vào qua bộ điều phối — các dòng móc "Chapters.".
+const Chapters = preload("res://scripts/core/chapters.gd")
+const Ch4 = preload("res://scripts/core/chapter4.gd")
 
 ## Toạ độ map 1-1 (Rừng Sương). Code dùng các biến theo map (world_size, safe_pos, …); hằng số giữ cho test và tham chiếu.
 ## SN-30: ×1,6 so với M4 — phải khớp maps.gd "1-1".
@@ -172,6 +175,8 @@ const RARE_BOSSES := {
 		"say": "rare_bach_ho", "down": "rare_bach_ho_down", "intro": "Bạch Hổ Phong Vân lao ra từ Mắt Bão! (boss hiếm)"},
 	"3-3": {"kind": "nhan-su", "level": 32, "after": "sa-hoang", "unique": "nhan_su_eye", "purple": false,
 		"say": "rare_nhan_su", "down": "rare_nhan_su_down", "intro": "Nhân Sư Đá thức giấc giữa Di Tích! (boss hiếm)"},
+	"4-3": {"kind": "thuy-quai", "level": 45, "after": "nu-vuong", "unique": "vay_that_dau", "purple": false,
+		"say": "rare_thuy_quai", "down": "rare_thuy_quai_down", "intro": "Thuỷ Quái Thất Đầu trồi lên giữa Cung Mộng! (boss hiếm)"},
 }
 ## Bạch Hổ: Hổ Vồ (chuỗi 3 cú, vòng 6 m ×1,4), Gầm Gió (vòng 10 m: đẩy 8 m, choáng 1 giây), dưới 50% Cưỡi Gió (tốc ×1,5).
 const TIGER_SKILL_CD := 4.0
@@ -226,9 +231,9 @@ const CHALLENGE_GAP := 5
 ## NV-25: quái thấp hơn từ 10 cấp chỉ cho 10% EXP.
 const LOW_LEVEL_GAP := 10
 const LOW_LEVEL_EXP := 0.1
-## C3-01: điều kiện mở vùng 3.
-const REGION3_POWER := 5000
-const REGION3_LEVEL := 18
+## C3-01: điều kiện mở vùng 3 (giữ cho test; logic ở chapter3.gd).
+const REGION3_POWER := Ch3.REGION3_POWER
+const REGION3_LEVEL := Ch3.REGION3_LEVEL
 
 
 class PlayerState:
@@ -327,6 +332,11 @@ class Enemy:
 	var venom_timer := 0.0
 	var venom_tick := 0.0
 	var slow_t := 0.0
+	# M7: ảo ảnh, độc Bộ U Minh, Mộng Cảnh
+	var illusion := false
+	var swamp_stacks := 0
+	var swamp_tick := 0.0
+	var charm_t := 0.0
 
 
 ## Đạn của người chơi: tên, kiếm khí, tên xuyên phá.
@@ -485,6 +495,9 @@ var field_spawn := true
 ## SN-31: sương che của map hiện tại.
 var fog = Fog.new()
 var ch3 = Ch3.State.new()
+var ch4 = Ch4.State.new()
+## M7: nguồn đòn đang gây sát thương ("fireball", "meteor", …) — Thất Đầu cần đòn hệ Hỏa.
+var hit_source := ""
 var _fog_timer := 0.0
 ## Phiên bản sương đã lưu vào hồ sơ (đổi thì lưu lại + kiểm thưởng).
 var _fog_saved := -1
@@ -593,7 +606,7 @@ func _load_map(id: String) -> void:
 		chests.append(c)
 	for pet in profile.pets:
 		_add_ally("pet", str(pet.kind), int(pet.level), player.pos)
-	Ch3.on_load(self)
+	Chapters.on_load(self)
 
 
 ## Cấp quái theo vị trí trên map hiện tại.
@@ -696,8 +709,8 @@ func boss_unlocked() -> bool:
 
 ## Điều kiện mở tường các map sau. Mắt Bão: lật mặt Mạc Tam (nhiệm vụ chương 2 bước 5) hoặc đã hạ Huyền Ảnh.
 func gate_open(id: String) -> bool:
-	if id == "3-3":
-		return int(profile.quest.ch3) >= 5 or is_boss_defeated("sa-hoang")
+	if not Chapters.gate_open(self, id):
+		return false
 	if id == "2-3":
 		return int(profile.quest.ch2) >= 5 or is_boss_defeated("huyen-anh")
 	return true
@@ -746,19 +759,8 @@ func map_requirement(id: String) -> String:
 			return "" if "2-1" in profile.unlocked_maps else "Tới Cửa Gió trước."
 		"2-3":
 			return "" if "2-2" in profile.unlocked_maps else "Tới Thảo Nguyên Hú trước."
-		"3-1":
-			# C3-01 (docs/10, Q53): hạ Huyền Ảnh + Lực chiến ≥ 5.000 + cấp ≥ 18.
-			if not is_boss_defeated("huyen-anh"):
-				return "Hạ Tướng Gián Điệp Huyền Ảnh trước."
-			if combat_power() < REGION3_POWER:
-				return "Cần Lực chiến %d (đang %d)." % [REGION3_POWER, combat_power()]
-			if profile.level < REGION3_LEVEL:
-				return "Cần cấp %d." % REGION3_LEVEL
-		"3-2":
-			return "" if "3-1" in profile.unlocked_maps else "Tới Rìa Cát Đỏ trước."
-		"3-3":
-			return "" if "3-2" in profile.unlocked_maps else "Tới Ốc Đảo Lãng Quên trước."
-	return ""
+	# D38: map chương 3+ do module chương quản.
+	return Chapters.map_requirement(self, id)
 
 
 ## Cảnh báo thử thách vượt ải (MP-05); "" nếu đủ cấp.
@@ -831,7 +833,7 @@ func drain_events() -> Array:
 
 ## Sói Chúa giai đoạn 2 ẩn trong sương mù, chỉ lộ khi vung đòn, bị choáng hoặc ở rất gần.
 func is_hidden(e: Enemy) -> bool:
-	if Ch3.is_hidden(e):
+	if Chapters.is_hidden(e):
 		return true
 	# C1-22: sương Lõi Sương — Tinh Linh Sương ở xa hơn 20 m thì tàng hình.
 	if map_id == "1-3" and e.kind == "wisp" and e.state != "windup" and e.state != "stunned" \
@@ -885,7 +887,7 @@ func update(dt: float, input: Dictionary) -> void:
 	if p.shield_time <= 0.0:
 		p.shield = 0.0
 	_update_wind(dt)
-	Ch3.tick(self, dt)
+	Chapters.tick(self, dt)
 	player.burrow_t -= dt
 	for dc in decoys:
 		dc.ttl -= dt
@@ -904,7 +906,7 @@ func update(dt: float, input: Dictionary) -> void:
 		_quest_poll = 0.5
 		_check_quest_state()
 		_check_quest2()
-		Ch3.check_quest(self)
+		Chapters.check_quest(self)
 		_check_rare_boss()
 	_passive_msg_cd -= dt
 	_combo_timer -= dt
@@ -964,7 +966,7 @@ func update(dt: float, input: Dictionary) -> void:
 
 func _move_player(dt: float, input: Dictionary) -> void:
 	var p := player
-	var move: Vector2 = input.move
+	var move: Vector2 = Chapters.input_move(self, input.move)
 	if input.dodge and p.dodge_cd <= 0.0 and p.dodge_time <= 0.0 and p.root_timer <= 0.0 and p.stun_timer <= 0.0:
 		p.dodge_dir = move.normalized() if move.length() > 0.01 else Vector2.from_angle(p.facing)
 		p.dodge_time = DODGE_TIME
@@ -1009,8 +1011,7 @@ func _move_player(dt: float, input: Dictionary) -> void:
 ## Chân Không Biết Mỏi: +10% tốc chạy khi không giao chiến.
 func move_speed() -> float:
 	var v := float(stats.move_speed)
-	if player.slow_timer > 0.0:
-		v *= 1.0 - Ch3.SLOW_PCT
+	v *= Chapters.move_mult(self)
 	if profile.talent == "chan-khong" and time - _last_combat > OUT_OF_COMBAT:
 		v *= 1.0 + tv(0.1, 0.15)
 	return v
@@ -1073,7 +1074,7 @@ func _cast_fireball() -> void:
 	p.swing_kind = "cast"
 	_sfx("shot")
 	var m := _basic_mul()
-	var s := _fire(FIRE_SPEED, FIRE_RANGE, m[0] * Ch3.fireball_mult(self), false, "fireball", m[1], 12.0)
+	var s := _fire(FIRE_SPEED, FIRE_RANGE, m[0] * Chapters.fireball_mult(self), false, "fireball", m[1], 12.0)
 	s.splash = FIRE_SPLASH
 	s.splash_mul = FIRE_SPLASH_MUL
 
@@ -1178,7 +1179,7 @@ func _shoot() -> void:
 	_sfx("shot")
 	var m := _basic_mul()
 	_fire(SHOT_SPEED, SHOT_RANGE, m[0], false, "arrow", m[1])
-	Ch3.after_shot(self, m[0])
+	Chapters.after_shot(self, m[0])
 
 
 func _fire(speed: float, reach: float, mul: float, pierce: bool, kind: String, force_crit := false, radius := 10.0) -> PlayerShot:
@@ -1200,7 +1201,7 @@ func _fire(speed: float, reach: float, mul: float, pierce: bool, kind: String, f
 
 func _update_shots(dt: float) -> void:
 	# M6: bão cát — đạn bay chậm 30% (tầm giữ nguyên).
-	var sm := Ch3.shot_mult(self)
+	var sm := Chapters.shot_mult(self)
 	for s in shots:
 		s.pos += s.vel * dt * sm
 		s.ttl -= dt * sm
@@ -1211,7 +1212,9 @@ func _update_shots(dt: float) -> void:
 				continue
 			if s.pos.distance_to(e.pos) <= s.radius + e.radius:
 				s.hit[e.id] = true
+				hit_source = s.kind
 				_hit_enemy(e, s.mul, s.force_crit)
+				hit_source = ""
 				if s.splash > 0.0:
 					_splash(s, e)
 				if not s.pierce:
@@ -1271,7 +1274,7 @@ func _chain(mul: float) -> void:
 		return
 	var hit := {}
 	var cur := first
-	for _i in CHAIN_JUMPS + Ch3.chain_jumps(self) + 1:
+	for _i in CHAIN_JUMPS + Chapters.chain_jumps(self) + 1:
 		hit[cur.id] = true
 		b.points.append(cur.pos)
 		_hit_enemy(cur, mul, false, true)
@@ -1289,7 +1292,7 @@ func _nova(mul: float) -> void:
 	var radius := maxf(BURST_RANGE, NOVA_RADIUS * 1.3) if burst else NOVA_RADIUS
 	var m := mul * ((1.0 + tv(1.0, 1.5)) if burst else 1.0)
 	_blast(p.pos, radius, Color("#9de0ff"))
-	Ch3.sand_trail(self, p.pos, radius)
+	Chapters.skill_trail(self, p.pos, radius)
 	_sfx("explode")
 	p.swing = 0.25
 	p.swing_kind = "cast"
@@ -1331,7 +1334,9 @@ func _update_mage(dt: float) -> void:
 		_sfx("explode")
 		for e in enemies:
 			if not e.dead and e.pos.distance_to(m.pos) <= m.radius + e.radius:
+				hit_source = "meteor"
 				_hit_enemy(e, m.mul, false, true)
+				hit_source = ""
 	meteors = meteors.filter(func(m): return m.timer > 0.0)
 	for b in bolts:
 		b.ttl -= dt
@@ -1359,7 +1364,7 @@ func _slash() -> void:
 		if not in_arc and d > e.radius + PLAYER_RADIUS:
 			continue
 		_hit_enemy(e, mul, empowered)
-	Ch3.after_slash(self)
+	Chapters.after_slash(self)
 
 
 ## Dùng kỹ năng i (0–3) của lớp. Trả về true nếu dùng được.
@@ -1435,7 +1440,7 @@ func skill_cd_of(i: int) -> float:
 		return float(stats.spin_cd)
 	var sk: Dictionary = Classes.skill(profile.class_id, i)
 	if sk.id == "pierce":
-		return Ch3.pierce_cd(self, float(sk.cd))
+		return Chapters.pierce_cd(self, float(sk.cd))
 	return float(sk.cd)
 
 
@@ -1457,11 +1462,11 @@ func _spin(mul := SPIN_MUL) -> void:
 	p.swing = 0.3
 	p.swing_kind = "spin"
 	var burst := _consume_burst()
-	var radius := (BURST_RANGE if burst else SPIN_RANGE) * Ch3.spin_mult(self)
+	var radius := (BURST_RANGE if burst else SPIN_RANGE) * Chapters.spin_mult(self)
 	for e in enemies:
 		if not e.dead and e.pos.distance_to(p.pos) <= radius + e.radius:
 			_hit_enemy(e, mul * ((1.0 + tv(1.0, 1.5)) if burst else 1.0))
-	Ch3.sand_trail(self, p.pos, radius)
+	Chapters.skill_trail(self, p.pos, radius)
 
 
 func _dash_hits() -> void:
@@ -1500,7 +1505,7 @@ func _rain(mul: float) -> void:
 	z.ticks = RAIN_TICKS
 	z.timer = 0.0
 	rains.append(z)
-	Ch3.sand_trail(self, z.pos, z.radius)
+	Chapters.skill_trail(self, z.pos, z.radius)
 	p.swing = 0.2
 	p.swing_kind = "shot"
 
@@ -1595,8 +1600,8 @@ func _use_talent() -> void:
 			if profile.copied_skills.is_empty():
 				_message("Đạo Tặc chưa sao chép kỹ năng nào — hãy hạ một boss.", "info")
 				used = false
-			elif active_copy() == "burrow":
-				Ch3.copy_burrow(self)
+			elif active_copy() in ["burrow", "dreamscape"]:
+				Chapters.copy_skill(self, active_copy())
 			elif active_copy() == "clone":
 				# Phân Thân: 2 ảo ảnh hút đòn 6 giây.
 				for k in 2:
@@ -1656,6 +1661,8 @@ func _leap() -> void:
 ## TL-S2: phím Q.
 func drink_potion() -> void:
 	var p := player
+	if Chapters.drink(self):
+		return
 	if profile.talent == "hap-huyet":
 		if _passive_msg_cd <= 0.0:
 			_message("Hấp Huyết: không dùng được bình máu.", "bad")
@@ -1677,7 +1684,7 @@ func drink_potion() -> void:
 
 
 func potion_heal() -> float:
-	return float(stats.max_hp) * POTION_HEAL * ((1.0 + tv(0.3, 0.45)) if profile.talent == "thao-duoc" else 1.0) * Ch3.heal_mult(self)
+	return float(stats.max_hp) * POTION_HEAL * ((1.0 + tv(0.3, 0.45)) if profile.talent == "thao-duoc" else 1.0) * Chapters.heal_mult(self)
 
 
 ## Đền Thiên Phú: luyện cấp Thiên phú bằng Tinh Hoa (TL-10…13).
@@ -1685,17 +1692,17 @@ func level_talent() -> Dictionary:
 	var res := {"ok": false, "message": ""}
 	if not Explore.is_built(profile, "temple"):
 		res.message = "Cần xây Đền Thiên Phú trước (Bản đồ khai phá, phím M)."
-	elif profile.talent_level >= Talents.MAX_TALENT_LEVEL:
+	elif Ch4.stage_level(profile) >= Talents.MAX_TALENT_LEVEL:
 		res.message = "Thiên phú đã đạt cấp tối đa."
-	elif profile.essence < Talents.level_cost(profile.talent_level):
-		res.message = "Cần %d Thiên Phú Tinh Hoa (rơi từ Sói Chúa)." % Talents.level_cost(profile.talent_level)
+	elif profile.essence < Talents.level_cost(Ch4.stage_level(profile)):
+		res.message = "Cần %d Thiên Phú Tinh Hoa (rơi từ boss)." % Talents.level_cost(Ch4.stage_level(profile))
 	else:
-		profile.essence -= Talents.level_cost(profile.talent_level)
+		profile.essence -= Talents.level_cost(Ch4.stage_level(profile))
 		profile.talent_level += 1
 		_refresh_stats()
 		res.ok = true
-		res.message = "%s lên cấp %d!" % [talent().name, profile.talent_level]
-		if profile.talent_level % 5 == 0:
+		res.message = "%s lên cấp %d!" % [Ch4.evo_form(profile.talent, int(profile.evo))[0], Ch4.stage_level(profile)]
+		if profile.talent_level % 5 == 0 and int(profile.evo) == 0:
 			var sub: String = Talents.GROUP_SUB[talent().group][profile.talent_level / 5 - 1]
 			res.message += " Mở hiệu ứng phụ: %s." % sub
 	_message(res.message, "good" if res.ok else "bad")
@@ -1733,9 +1740,9 @@ func _derive(equipment = null) -> Dictionary:
 		bonus.flat["crit"] = float(bonus.flat.get("crit", 0.0)) + 0.05
 	if int(bonus.sets.get("phong_hanh", 0)) >= 4 and group == "explore":
 		bonus.move_pct += 0.10
-	Ch3.derive_bonus(self, bonus)
+	Chapters.derive_bonus(self, bonus)
 	var st := Stats.derive(profile.level, profile.points, profile.talent, bonus, profile.talent_level, profile.class_id, profile.stolen)
-	Ch3.derive_after(bonus, st)
+	Chapters.derive_after(self, bonus, st)
 	return st
 
 
@@ -1851,7 +1858,9 @@ func _damage_player(atk: float, mul: float) -> bool:
 		return false
 	if p.dash_time > 0.0 or p.burrow_t > 0.0:
 		return false
-	atk *= Ch3.night_mult(self)
+	atk *= Chapters.atk_mult(self)
+	if Chapters.dodge_hit(self):
+		return false
 	if p.dodge_time > 0.0:
 		# CB-04: chặn đòn trong 0,15 giây đầu của né lăn = Hoàn hảo.
 		if not p.perfect_used and DODGE_TIME - p.dodge_time <= PERFECT_WINDOW:
@@ -1867,6 +1876,7 @@ func _damage_player(atk: float, mul: float) -> bool:
 		_text(p.pos + Vector2(0, -28), "Né!", Color("#9de0e6"), false)
 		return false
 	# NV-17: kháng hệ của đòn (quái đánh mang hệ của nó).
+	var res_el := _incoming_el
 	var res: float = float(stats.get("res", {}).get(_incoming_el, 0.0))
 	_incoming_el = ""
 	var dmg := maxi(1, int(round(Formulas.compute_damage(atk, stats.def, mul) * (GUARD_REDUCE if p.guard_time > 0.0 else 1.0) * (1.0 - res))))
@@ -1883,6 +1893,7 @@ func _damage_player(atk: float, mul: float) -> bool:
 			_text(p.pos + Vector2(0, -26), "Hút", Color("#b36bff"), false)
 			return true
 	p.hp -= dmg
+	Chapters.player_hurt(self, float(dmg), res_el)
 	p.hurt = 0.2
 	_sfx("player_hurt")
 	combo = 0
@@ -1932,7 +1943,7 @@ func _respawn() -> void:
 func _hit_enemy(e: Enemy, skill_mul: float, force_crit := false, aoe := false) -> void:
 	var talent_bonus := tv(0.2, 0.3) if profile.talent == "huyet-chien" and player.hp < float(stats.max_hp) * 0.3 else 0.0
 	var crit := force_crit or _r() < float(stats.crit) + (EAGLE_CRIT if player.eagle_time > 0.0 else 0.0)
-	var mul := skill_mul * ((1.0 + float(stats.crit_dmg)) if crit else 1.0) * (1.5 if e.broken else 1.0) * Ch3.hit_mult(self, e, crit)
+	var mul := skill_mul * ((1.0 + float(stats.crit_dmg)) if crit else 1.0) * (1.5 if e.broken else 1.0) * Chapters.hit_mult(self, e, crit)
 	var raw := Formulas.compute_damage(stats.atk, e.def, mul, element_bonus(e), talent_bonus) * (0.9 + _r() * 0.2)
 	var dmg := maxi(1, int(round(raw)))
 	_last_combat = time
@@ -1940,7 +1951,7 @@ func _hit_enemy(e: Enemy, skill_mul: float, force_crit := false, aoe := false) -
 	_combo_timer = COMBO_TIMEOUT
 	# Hấp Huyết: 8% sát thương thành máu.
 	if profile.talent == "hap-huyet":
-		player.hp = minf(float(stats.max_hp), player.hp + dmg * tv(LIFESTEAL, 0.12) * (AOE_LIFESTEAL if aoe else 1.0) * Ch3.heal_mult(self))
+		player.hp = minf(float(stats.max_hp), player.hp + dmg * tv(LIFESTEAL, 0.12) * (AOE_LIFESTEAL if aoe else 1.0) * Chapters.heal_mult(self))
 	# Thuần Thú Sư: đòn làm quái thường hoặc quái Ổ quái (TP-30) tụt dưới 10% (Lv10 15%) HP thì thu phục.
 	if profile.talent == "thuan-thu" and e.role in ["field", "nestMinion"] and not e.elite and e.kind != "nam-con" \
 			and e.hp - dmg > 0.0 and e.hp - dmg < e.max_hp * tv(TAME_HP, 0.15) and _ally_count("pet") < ally_cap("pet"):
@@ -1953,7 +1964,7 @@ func _hit_enemy(e: Enemy, skill_mul: float, force_crit := false, aoe := false) -
 			e.bleed_tick = 0.0
 		e.bleed_timer = BLEED_TIME
 		e.bleed_dmg = Formulas.compute_damage(stats.atk, e.def, BLEED_MUL)
-	Ch3.on_player_hit(self, e)
+	Chapters.on_player_hit(self, e)
 
 
 ## TL-S6: Ngũ Hành Linh Căn đánh hệ khắc +30% (Phép thuật cấp 5: +40%).
@@ -1966,7 +1977,7 @@ func element_bonus(e: Enemy) -> float:
 
 
 func _apply_damage(e: Enemy, dmg: int, crit: bool, by_player: bool) -> void:
-	dmg = Ch3.adjust_damage(self, e, dmg, by_player)
+	dmg = Chapters.adjust_damage(self, e, dmg, by_player)
 	if dmg <= 0:
 		return
 	# M4.2: Khiên chặn — giảm 70% sát thương đến từ phía trước (±60° hướng nhìn).
@@ -2015,7 +2026,7 @@ func _damage_poise(e: Enemy, dmg: float) -> void:
 
 
 func _boss_phase_two(e: Enemy) -> void:
-	if Ch3.boss_phase_two(self, e):
+	if Chapters.boss_phase_two(self, e):
 		return
 	e.phase = 2
 	say("boss2")
@@ -2029,6 +2040,8 @@ func _boss_phase_two(e: Enemy) -> void:
 func _kill_enemy(e: Enemy) -> void:
 	e.dead = true
 	_sfx("enemy_die")
+	if Chapters.vanish(self, e):
+		return
 	if e.role == "bossClone":
 		# Bản sao Huyền Ảnh bị hạ: nổ vòng 4 m ×0,8, không cho EXP/đồ.
 		_blast(e.pos, CLONE_BLAST, Color("#b36bff"))
@@ -2041,7 +2054,7 @@ func _kill_enemy(e: Enemy) -> void:
 		quest_event("kill_quest")
 	if int(map.get("region", 1)) == 2 and int(profile.quest.ch2) == 2:
 		profile.quest.kills2 = int(profile.quest.kills2) + 1
-	Ch3.on_kill(self, e)
+	Chapters.on_kill(self, e)
 	var is_boss := e.role == "boss"
 	var base := float(boss_exp(e.level)) if is_boss else float(Formulas.mob_exp(e.level, e.elite))
 	if e.role == "rare":
@@ -2157,7 +2170,7 @@ func _on_boss_killed(e: Enemy) -> void:
 	profile.tinh_kim += 1
 	_message("%s đã ngã xuống! +%d Thiên Phú Tinh Hoa, +1 Tinh Kim." % [e.name, ESSENCE_PER_BOSS], "good")
 	# TP-39: Đạo Tặc sao chép kỹ năng boss.
-	var copy: String = {"huyen-anh": "clone", "sa-hoang": "burrow"}.get(e.kind, "")
+	var copy: String = {"huyen-anh": "clone", "sa-hoang": "burrow", "nu-vuong": "dreamscape"}.get(e.kind, "")
 	if profile.talent == "dao-tac" and copy != "" and not (copy in profile.copied_skills):
 		profile.copied_skills.append(copy)
 		profile.active_copy = copy
@@ -2223,7 +2236,7 @@ func _update_enemy(e: Enemy, dt: float) -> void:
 			_apply_damage(e, maxi(1, roundi(e.bleed_dmg)), false, false)
 			if e.dead:
 				return
-	if Ch3.update_enemy(self, e, dt):
+	if Chapters.update_enemy(self, e, dt):
 		return
 	if e.role == "rare":
 		_update_rare(e, dt)
@@ -2255,8 +2268,8 @@ func _update_enemy(e: Enemy, dt: float) -> void:
 	# Quái thường không theo vào làng; quái ngoài hang không theo vào hang Sói Chúa.
 	var outsider := e.role != "boss" and e.role != "bossMinion"
 	var player_safe := (
-		p.pos.distance_to(safe_pos) < safe_r or (outsider and p.pos.distance_to(arena_pos) < arena_r) \
-			or (outsider and Ch3.oasis_at(self, p.pos) >= 0)
+		(p.pos.distance_to(safe_pos) < safe_r and not Chapters.safe_blocked(self)) or (outsider and p.pos.distance_to(arena_pos) < arena_r) \
+			or (outsider and Chapters.safe_zone(self, p.pos))
 	)
 
 	match e.state:
@@ -2326,7 +2339,7 @@ func _update_enemy(e: Enemy, dt: float) -> void:
 					else:
 						_begin_attack(e, "roots", 1.2)
 					return
-			if Ch3.chase(self, e, d, dt):
+			if Chapters.chase(self, e, d, dt):
 				return
 			if e.elite and def.has("elite_skill"):
 				e.skill_cd -= dt
@@ -2460,8 +2473,6 @@ func _perform_attack(e: Enemy) -> void:
 				p.stun_timer = ROAR_STUN
 				_last_combat = time
 				_text(p.pos + Vector2(0, -40), "Choáng!", Color("#dce6f2"), true)
-		"curse", "sandvortex", "emerge", "roll", "claw", "tail", "sdive", "gaze":
-			Ch3.perform(self, e)
 		"none":
 			pass
 		"explode":
@@ -2471,13 +2482,16 @@ func _perform_attack(e: Enemy) -> void:
 				_damage_player(e.atk, 1.5)
 			# Tự nổ: chết, không cho EXP/đồ.
 			e.dead = true
+		_:
+			# D38: kiểu đòn của các chương 3+ (core/chapterN.gd)
+			Chapters.perform(self, e)
 
 
 ## CB-12: Hú gọi (Sói Đầu Đàn), Sinh sôi (Nấm Mẹ).
 func _elite_skill(e: Enemy, kind: String) -> void:
 	if _elite_skill_m42(e, kind):
 		return
-	if Ch3.elite_skill(self, e, kind):
+	if Chapters.elite_skill(self, e, kind):
 		return
 	var summons := 0
 	for m in enemies:
@@ -2509,7 +2523,12 @@ func _move_toward(e: Enemy, target: Vector2, speed: float, dt: float) -> void:
 		return
 	if e.haste_timer > 0.0:
 		speed *= 1.2
-	e.pos = e.pos.move_toward(target, speed * dt)
+	if e.slow_t > 0.0:
+		speed *= 0.6
+	var next := e.pos.move_toward(target, speed * dt)
+	if Chapters.enemy_avoid(self, e, next):
+		return
+	e.pos = next
 	if e.role == "boss":
 		e.pos = _clamp_to_arena(e.pos, e.radius)
 
@@ -2542,7 +2561,7 @@ func _separate_enemies() -> void:
 
 
 func _update_projectiles(dt: float) -> void:
-	var sm := Ch3.shot_mult(self)
+	var sm := Chapters.shot_mult(self)
 	for pr in projectiles:
 		pr.pos += pr.vel * dt * sm
 		pr.ttl -= dt * sm
@@ -2666,7 +2685,7 @@ func _spawn_field_mob() -> void:
 			if ek != "":
 				kind = ek
 				elite = true
-		Ch3.after_spawn(self, spawn_enemy(kind, level, pos, {"elite": elite}))
+		Chapters.after_spawn(self, spawn_enemy(kind, level, pos, {"elite": elite}))
 		return
 
 
@@ -3207,8 +3226,7 @@ func _check_rare_boss() -> void:
 
 
 func _update_rare(e: Enemy, dt: float) -> void:
-	if e.kind == "nhan-su":
-		Ch3.update_sphinx(self, e, dt)
+	if Chapters.update_rare(self, e, dt):
 		return
 	if e.kind == "bach-ho":
 		# Dưới 50% HP: Cưỡi Gió — tốc ×1,5.
@@ -3314,6 +3332,17 @@ func shop_buy(kind: String) -> Dictionary:
 			profile.gold -= SHOP_STONE
 			profile.stones += 1
 			return _shop_result(true, "Mua 1 Đá Cường Hoá.")
+		"antidote", "torch":
+			# M7 (C4-11, C4-33): Làng Chài Lau
+			var price: int = Ch4.SHOP_ANTIDOTE if kind == "antidote" else Ch4.SHOP_TORCH
+			if profile.gold < price:
+				return _shop_result(false, "Cần %d vàng." % price)
+			profile.gold -= price
+			if kind == "antidote":
+				profile.antidotes += 1
+				return _shop_result(true, "Mua 1 Thuốc Giải (%d). Phím Q khi có ≥ 3 tầng độc." % profile.antidotes)
+			profile.fire_torches += 1
+			return _shop_result(true, "Mua 1 Đuốc Lửa (%d). Phím Q cạnh đầu Thất Đầu vừa chặt." % profile.fire_torches)
 	return _shop_result(false, "Không có món này.")
 
 
@@ -3468,7 +3497,7 @@ func _sfx(id: String) -> void:
 
 # ------------------------------------------------------------------ M4.2: gió, quái vùng 2, Huyền Ảnh, ảo ảnh
 
-const COPY_NAMES := {"pounce": "Vồ Mồi", "clone": "Phân Thân", "burrow": "Độn Thổ"}
+const COPY_NAMES := {"pounce": "Vồ Mồi", "clone": "Phân Thân", "burrow": "Độn Thổ", "dreamscape": "Mộng Cảnh"}
 const WIND_DIRS := [Vector2(1, 0), Vector2(1, 1), Vector2(0, 1), Vector2(-1, 1), Vector2(-1, 0), Vector2(-1, -1), Vector2(0, -1), Vector2(1, -1)]
 
 
@@ -3684,6 +3713,9 @@ func nearest_npc() -> Dictionary:
 
 ## Bấm E cạnh NPC. Trả về hành động cho giao diện: "shop" (mở cửa hàng) hoặc "" (chỉ thoại).
 func talk(npc_id: String) -> String:
+	# D38: NPC của chương 3+ do module chương xử lý.
+	if Chapters.owns_npc(npc_id):
+		return Chapters.talk(self, npc_id)
 	var step: int = int(profile.quest.ch2)
 	match npc_id:
 		"lac-phong":
@@ -3703,8 +3735,6 @@ func talk(npc_id: String) -> String:
 			return "shop"
 		"merchant":
 			return "shop"
-		"sa-lao", "a-moc", "thach-thu":
-			return Ch3.talk(self, npc_id)
 		"elder":
 			_force_say("q%d" % profile.quest_step if profile.quest_step <= Story.QUESTS.size() else "done")
 			return ""

@@ -8,7 +8,7 @@
 | Thứ tự | Sau M6 + Spec_Notes đợt 4. Chia M7.1 (vùng, môi trường, quái) → M7.2 (boss, đồ) → M7.3 (cốt truyện, tiến hoá) |
 | Kiến trúc | Logic trong file mới `core/chapter4.gd`; GameWorld gọi qua bộ điều phối `core/chapters.gd` (D38) để chương 5 (M8) gắn vào không phải sửa lại các chỗ móc |
 | Quy trình | Spec (file này) → code → test → cập nhật 02/03/04/05/06 và mục Kết quả |
-| Trạng thái | 🟡 Spec |
+| Trạng thái | ✅ **Xong 21/10/2026** (phiên game-bc) |
 
 ## 1. Mở vùng 4
 
@@ -92,4 +92,23 @@ Chương 5 (M8, phiên game-c6) dùng **v11**.
 
 ## 9. Kết quả
 
-*(điền sau khi làm xong)*
+| Mã | Trạng thái | Ghi chú |
+| --- | --- | --- |
+| C4-01…03 | ✅ | `maps.gd` 4-1/4-2/4-3 (`water`, `pods`); điều kiện mở trong `Ch4.map_requirement`; lưới vùng 4 dùng bảng sự kiện vùng 2–3 |
+| C4-10…12 | ✅ | `Ch4.in_water / tick / drink / after_spawn / vanish`; HUD dòng trạng thái (độc, lội nước, đỉa bám, đang mơ); view vẽ nước, cồn đất, gợn nước |
+| C4-20…25 | ✅ | Ếch (Lưỡi độc), Đỉa (Bám — né lăn gỡ), Hồn Ma (Phân ảnh + Tiếng than), Cá Sấu (Đớp choáng); tinh anh Phù Thuỷ Đầm Lầy (Mưa độc), Cá Sấu Chúa (Cuộn tử thần) |
+| C4-30…35 | ✅ | Nữ Vương: ngưỡng 60% / 25% riêng (chặn giai đoạn 2 kiểu Sói Chúa); giấc mơ đảo điều khiển qua hook `input_move`; Mộng Châu; vòng sáng trôi quanh hang. Thất Đầu: thân bất tử, 7 đầu, gốc đầu mọc lại 20 giây, đốt bằng Hỏa Cầu/Thiên Thạch (`GameWorld.hit_source`), Ngũ Hành hệ Hỏa hoặc Đuốc Lửa (Q). Gối Mộng (hook `dodge_hit`), Vảy Thất Đầu, Bộ U Minh, Mộng Cảnh |
+| C4-40…42 | ✅ | `story.gd` `QUESTS4` + 17 đoạn thoại; Lam Nhi bị đoạt Thiên phú, cứu ở Cung Mộng; thưởng EXP 1.150.000 ≈ 25% EXP cấp 30 → 45 |
+| C4-43…45 | ✅ | `Ch4.evolve` (Tinh Quang Sứ, nút Tiến hoá trong bảng T); cấp hiệu dụng (D39); HUD + bảng Thiên phú hiện tên/hạng dạng tiến hoá. Hiệu ứng riêng của dạng tiến hoá chưa có (Q55) |
+| Hạ tầng | ✅ | `core/chapters.gd` (D38) — mọi dòng móc của chương 3 chuyển sang `Chapters.`; thêm hook `vanish`, `dodge_hit`, `input_move`, `drink`, `enemy_avoid`, `player_hurt`, `safe_blocked` cho chương 5 |
+
+**Cân bằng TL-B4** (Nữ Vương, cấp 42, bộ đồ chuẩn cấp 42, đã chuyển chức): Kiếm Khách 38,6 · Thợ Săn 29,2 · Pháp Sư 33,3 giây — các lớp chênh 24%, F/S chênh tối đa 5%, 0 lần chết.
+
+**Phát hiện:**
+
+- **F1 — Nhánh mặc định `_:` của `_perform_attack` chặn mất đòn "explode"** (Nấm Con không nổ, test CB-T5 bắt được): GDScript `match` dừng ở nhánh khớp đầu tiên, `_` phải đặt cuối.
+- **F2 — Bộ điều phối chậm** khi lọc danh sách chương ở mỗi lần gọi (hook gọi cho từng quái mỗi khung hình): bộ test dài gấp đôi. Sửa: lưu sẵn danh sách theo hook.
+- **F3 — Mộng Cảnh không có tác dụng:** quái bị mê chờ hết hồi kỹ năng cũ (4 giây = đúng thời gian mê). Sửa: đặt lại hồi chiêu khi bị mê.
+- **F4 — Kiếm Khách luôn chậm nhất ở cấp cao** (vùng 2–4, chênh 24%): giữ trong ngưỡng nhưng sát; nên xem lại khi làm chuyển chức 2 (M8).
+
+**Kiểm thử:** 105 test (thêm C4-T1…T6, TL-B4); smoke thêm `12b-village4`, `12-region4`, `12c-dream`, `12d-talent-evo`.

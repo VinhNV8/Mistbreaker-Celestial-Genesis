@@ -303,7 +303,7 @@ Mỗi vùng gồm 3 map con (Ngoài rìa → Trung tâm → Lõi) và 1 dungeon 
 | Dungeon: Cung Phệ Mộng | 43 | Boss chương 4 |
 
 **Khai phá:** lưới 45 ô. Tài nguyên: Bãi lau → Xưởng Gỗ; đầm → **Vườn Thảo Dược** (Thuốc Giải).  
-**Bộ trang bị vùng:** Bộ U Minh — 2: độc tích luỹ chậm 50% · 4: +12% HP · 6: đòn đánh 15% gây 1 tầng độc lên quái. ⬜
+**Bộ trang bị vùng:** Bộ U Minh — 2: độc tích luỹ chậm 50% · 4: +12% HP · 6: đòn đánh 15% gây 1 tầng độc lên quái. ✅ M7
 
 **Quái thường**
 
@@ -334,7 +334,7 @@ Mỗi vùng gồm 3 map con (Ngoài rìa → Trung tâm → Lõi) và 1 dungeon 
 | 3 (dưới 25%) | **Phệ mộng**: hút 2% HP/giây với người chơi trong 15 m nếu không đứng trong vòng sáng (vòng sáng di chuyển chậm) |
 
 - **Rơi:** 1 đồ Tím · 15% **Gối Mộng** (bùa Cam: 15% né hoàn toàn một đòn) · 3 Thiên Phú Tinh Hoa · 1 Tinh Kim.
-- **Đạo Tặc sao chép:** **Mộng Cảnh**: quái trong 10 m đánh nhau trong 4 giây (⬜).
+- **Đạo Tặc sao chép:** **Mộng Cảnh**: quái trong 10 m đánh nhau trong 4 giây (✅ M7).
 
 **Boss hiếm: Thuỷ Quái Thất Đầu** — xuất hiện ngẫu nhiên 2 lần/ngày ở Cung Mộng (kịch bản mục 5)
 
@@ -686,7 +686,7 @@ Dùng bằng phím L (Thiên phú Đạo Tặc, [05-thien-phu-chi-tiet](05-thien
 | Sói Chúa Hư Vô (chương 1) | **Vồ Mồi**: lao tới điểm ngắm (tối đa 30 m), ×2,5 sát thương vòng 9 m | ✅ |
 | Tướng Gián Điệp Huyền Ảnh (chương 2) | **Phân Thân**: tạo 2 ảo ảnh hút đòn của quái trong 6 giây | ⬜ |
 | Bọ Cạp Sa Hoàng (chương 3) | **Độn Thổ**: chui đất 1,5 giây (bất tử), trồi lên vòng 7 m ×2,0 | ✅ M6 |
-| Nữ Vương Phệ Mộng (chương 4) | **Mộng Cảnh**: quái trong 10 m đánh nhau trong 4 giây | ⬜ |
+| Nữ Vương Phệ Mộng (chương 4) | **Mộng Cảnh**: quái trong 10 m đánh nhau trong 4 giây | ✅ M7 |
 | Viêm Long (chương 5) | **Long Tức**: phun lửa nón 12 m, ×0,5 mỗi 0,25 s trong 2 giây | ⬜ |
 | Bản Ngã Bóng Tối (chương 6) | **Kính Ảnh**: tạo 1 bản sao của bản thân 8 giây, gây 50% sát thương | ⬜ |
 | Thiên Không Cự Thần (chương 7) | **Thiên Chuỳ**: nện đất vòng 10 m ×3,0, choáng 1 giây | ⬜ |
@@ -701,7 +701,8 @@ Dùng bằng phím L (Thiên phú Đạo Tặc, [05-thien-phu-chi-tiet](05-thien
 | M4 | Vùng 1 đủ 3 map con, 40 ô (Bìa Rừng, Rừng Sâu, Lõi Sương mở sau boss — Q24, Q25) · toàn bộ vùng 2, 45 ô · Mỏ (Đá, Sắt), Bến Cá dạng buff (Q26) · bộ Phong Hành · Mặt Nạ Huyền Ảnh |
 | M5 | Boss hiếm vùng 1–2 (Lão Thụ, Bạch Hổ) · tinh chỉnh hệ số công thức (số đòn, % HP) từ dữ liệu playtest |
 | M6 | ✅ Xong 21/10/2026 — **Vùng 3 Sa Mạc Xích Sa** ([10](10-chuong-3.md)): 3 map, môi trường, 6 quái + 2 tinh anh, Bọ Cạp Sa Hoàng, Nhân Sư Đá, bộ Sa Hành Giả, Đuôi Sa Hoàng, Mắt Nhân Sư, Độn Thổ |
-| Alpha | Vùng 4–5 |
+| M7 | ✅ Xong 21/10/2026 — **Vùng 4 Đầm Lầy U Minh** ([11](11-chuong-4.md)): 3 map, nước đầm + độc tích luỹ, ảo ảnh, 4 quái + 2 tinh anh, Nữ Vương Phệ Mộng, Thuỷ Quái Thất Đầu, Bộ U Minh, Gối Mộng, Vảy Thất Đầu, Mộng Cảnh |
+| Alpha | Vùng 5 (M8, [12](12-chuong-5.md)) |
 | Beta | Vùng 6–9 |
 
 ## 7. Quyết định đã chốt (20/10/2026)

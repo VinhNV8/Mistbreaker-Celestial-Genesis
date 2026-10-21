@@ -10,6 +10,11 @@ const SMITH := "Thợ rèn Thiết Ngưu"
 const SALAO := "Học giả Sa Lão"
 const AMOC := "Người dẫn đường A Mộc"
 const THACH := "Hộ vệ Thạch Thủ"
+## M7 (docs/11): Làng Chài Lau
+const NGU := "Trưởng làng Lão Ngư"
+const LAM := "Lam Nhi"
+const TQ := "Tinh Quang Sứ"
+const QUEEN := "Nữ Vương Phệ Mộng"
 
 ## id → [[người nói, lời], ...]
 const DIALOGS := {
@@ -106,6 +111,36 @@ const DIALOGS := {
 	"rare_nhan_su": [["Nhân Sư Đá", "Kẻ nào bước vào Di tích phải trả lời câu đố của ta. Sai — hoá đá muôn đời!"]],
 	"rare_nhan_su_down": [["{name}", "(Nhân Sư vỡ vụn, để lại một viên đá hình con mắt vẫn còn sáng.)"]],
 	"ch3_done": [[SALAO, "Chương sa mạc đã khép lại. Nhưng câu chuyện của Thiên Liệt mới chỉ bắt đầu."]],
+	# ---------------------------------------------------------------- M7: chương 4 Đầm Lầy Mộng (docs/11 mục 5)
+	"r4_arrive": [
+		["{name}", "Sương ở đây ướt và nặng mùi bùn. Sa Lão nói có kẻ đang săn Thiên phú người khác ở Đầm Lầy U Minh…"],
+		["{name}", "(Lội nước đầm lâu sẽ trúng độc tích luỹ — đứng trên đất khô để độc tan dần, hoặc mua Thuốc Giải.)"],
+	],
+	"ngu_meet": [
+		[NGU, "Khai Giới Giả! Đã ba đứa trẻ trong làng ngủ mà không tỉnh lại — Thiên phú của chúng biến mất."],
+		[LAM, "Ta là Lam Nhi. Thiên phú của ta là Tiếng Gọi Thủy Triều, nghe được đầm lầy thì thầm. Ta sẽ dẫn đường cho ngươi."],
+	],
+	"ngu_shop": [[NGU, "Thuốc Giải cho độc đầm, Đuốc Lửa cho thứ quái sống dưới nước — mua đi, đừng tiếc vàng."]],
+	"lam_meet": [[LAM, "Lũ quái trong lau sậy đều bị một giọng hát điều khiển. Cùng ta dẹp chúng — ta muốn nghe rõ giọng hát đó."]],
+	"lam_hint": [[LAM, "Nghe kìa… có tiếng ru từ phía Đầm Sâu. Cẩn thận ảo ảnh — chúng tan ngay khi bị đánh."]],
+	"lam_taken": [
+		[LAM, "Giọng hát… gần lắm rồi… ta… buồn ngủ quá…"],
+		[QUEEN, "Thêm một Thiên phú ngọt ngào. Ngủ đi, bé con — ngươi sẽ mơ mãi mãi."],
+		["{name}", "Lam Nhi! (Cô ấy biến mất cùng sương tím. Thiên phú của cô bị đoạt.) Phải tìm dấu vết ở Đầm Sâu!"],
+	],
+	"pods_done": [[TQ, "Năm Bọc Mộng là ký ức của Lam Nhi. Chúng chỉ về Cung Mộng — Nữ Vương đang giữ cô ở đó."]],
+	"queen_gate": [[TQ, "Cửa Cung Phệ Mộng đã mở. Nếu bị kéo vào giấc mơ, hãy phá các Mộng Châu — trong mơ, trái là phải."]],
+	"lam_saved": [
+		[LAM, "Ta… tỉnh rồi? Thiên phú của ta… đã trở về!"],
+		[LAM, "Nữ Vương không phải chủ. Ả phục vụ một kẻ KHÔNG có Thiên phú — hắn cướp Thiên phú của người khác để sống."],
+		[TQ, "Ma Tôn Vô Diện… Và Thiên phú trong ngực ngươi, Khai Giới Giả, rung lên vì hắn. Tới gặp ta — đã đến lúc tiến hoá."],
+	],
+	"tq_intro": [[TQ, "Thánh Đường Tinh Quang có thể giúp Thiên phú vượt giới hạn — khi ngươi đủ Lv10, có Tinh Hoa Tiến Hoá và đã cứu Lam Nhi."]],
+	"tq_wait": [[TQ, "Chưa đủ. Thiên phú cần Lv10 và 1 Tinh Hoa Tiến Hoá (rơi từ boss hiếm)."]],
+	"lam_after": [[LAM, "Ta sẽ ở lại giữ làng. Nếu tìm ra Ma Tôn Vô Diện — hãy gọi ta."]],
+	"ch4_done": [[TQ, "Thiên phú đã tiến hoá. Núi Viêm Long ở phía nam đang bốc cháy — Thương hội có điều gì đó che giấu."]],
+	"rare_thuy_quai": [["Thuỷ Quái Thất Đầu", "Bảy cái đầu, bảy cái miệng đói! Chặt một — ta mọc lại hai!"]],
+	"rare_thuy_quai_down": [["{name}", "(Bảy cái đầu chìm xuống đầm. Một mảnh vảy sáng xanh nổi lên mặt nước.)"]],
 }
 
 
@@ -118,6 +153,23 @@ const QUESTS2 := [
 	{"title": "Phủ Huyền Ảnh", "hint": "N → Mắt Bão. Hạ Tướng Gián Điệp Huyền Ảnh — chỉ bản thật có bóng.", "type": "boss2", "need": 1, "reward": {"exp": 30000}},
 ]
 const DONE2 := 6
+
+## M7 (docs/11 C4-41): nhiệm vụ chính chương 4. Bước lưu ở profile.quest.ch4 (0 = chưa tới vùng 4, 7 = xong).
+## Thưởng EXP ≈ 25% EXP từ cấp 30 lên 45 (4,6 triệu × 25% ≈ 1,15 triệu).
+const QUESTS4 := [
+	{"title": "Làng Chài Lau", "hint": "Tới Làng Chài Lau (Bãi Lau Mù), đứng cạnh Lão Ngư bấm E.", "type": "talk_ngu", "need": 1, "reward": {"exp": 40000, "gold": 500, "antidotes": 2}},
+	{"title": "Tiếng hát trong lau", "hint": "Cùng Lam Nhi hạ 30 quái vùng 4 (ảo ảnh không tính).", "type": "kills4", "need": 30, "reward": {"exp": 120000}},
+	{"title": "Ký ức của Lam Nhi", "hint": "N → Đầm Sâu. Phá 5 Bọc Mộng trên các cồn đất (đi tới chạm vào).", "type": "pods4", "need": 5, "reward": {"exp": 180000, "stones": 8}},
+	{"title": "Cung Mộng", "hint": "N → Cung Mộng. Khám phá ≥ 40% map để tìm cửa Cung Phệ Mộng.", "type": "explore4", "need": 1, "reward": {"exp": 230000}},
+	{"title": "Nữ Vương Phệ Mộng", "hint": "Hạ Nữ Vương ở phía đông Cung Mộng. Trong mơ: phá 3 Mộng Châu.", "type": "boss4", "need": 1, "reward": {"exp": 280000}},
+	{"title": "Tiến hoá Thiên phú", "hint": "Thiên phú Lv10 + 1 Tinh Hoa Tiến Hoá → gặp Tinh Quang Sứ (E) hoặc bảng Thiên phú (T).", "type": "evolve", "need": 1, "reward": {"exp": 300000, "gold": 2000}},
+]
+const DONE4 := 7
+
+
+static func quest4(step: int) -> Dictionary:
+	return QUESTS4[step - 1] if step >= 1 and step <= QUESTS4.size() else {}
+
 
 ## M6 (docs/10 C3-41): nhiệm vụ chính chương 3. Bước lưu ở profile.quest.ch3 (0 = chưa tới vùng 3, 7 = xong).
 ## Thưởng EXP ≈ 25% EXP từ cấp 20 lên 30 (M5-02: 1,2 triệu × 25% ≈ 300.000).

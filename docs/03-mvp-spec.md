@@ -928,6 +928,17 @@ Thay đổi so với spec các đợt trước:
 | TL-S6 / M3 — Bộc Phá theo Mưa Tên +100% | Mỗi đợt Mưa Tên chỉ +60% (tổng thêm bằng Xoáy Kiếm) |
 | Thông báo gục / boss rút về / Phá Thế ghi cứng "Làng Thanh Thạch", "Sói Chúa" | Lấy tên vùng an toàn và tên boss của map hiện tại |
 
+## 10. Đợt M7 (Alpha) — Chương 4 Đầm Lầy Mộng + tiến hoá Thiên phú
+
+Spec riêng: [11-chuong-4.md](11-chuong-4.md) — vùng 4 (C4-01…03), môi trường đầm lầy (C4-10…12), quái vùng 4 (C4-20…25), Nữ Vương Phệ Mộng, Thuỷ Quái Thất Đầu, đồ/bộ vùng 4, Mộng Cảnh (C4-30…35), cốt truyện Lam Nhi + tiến hoá Thiên phú lần 1 (C4-40…45), save v10, test C4-T1…T6, TL-B4. Kiến trúc: bộ điều phối chương `core/chapters.gd` (D38) — chương 5 (M8, [12](12-chuong-5.md)) gắn vào cùng cách.
+
+Thay đổi so với spec các đợt trước:
+
+| Mục cũ | Thay đổi ở M7 |
+| --- | --- |
+| TP-41 — Lv tối đa 10 | `talent_level` thành cấp hiệu dụng (tối đa 28); Lv hiển thị = cấp hiệu dụng − 9 × số lần tiến hoá (D39) |
+| Phím Q = bình máu | Phím Q ưu tiên vật phẩm chương: Thuốc Giải (≥ 3 tầng độc), Đuốc Lửa (cạnh gốc đầu Thất Đầu) |
+
 ## Phụ lục A — Yêu cầu thay đổi (CR)
 
 Thay đổi do chủ dự án yêu cầu sau khi kịch bản đã viết. Mỗi CR ghi nguồn, đề xuất, trạng thái duyệt, và đợt sẽ làm.

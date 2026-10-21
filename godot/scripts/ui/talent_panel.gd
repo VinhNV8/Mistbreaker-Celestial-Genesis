@@ -1,4 +1,5 @@
 extends "res://scripts/ui/modal.gd"
+const Ch4 = preload("res://scripts/core/chapter4.gd")
 ## Bảng Thiên phú (phím T) — TL-15: thẻ, cấp, hiệu ứng, kỹ năng L, hiệu ứng phụ, luyện cấp.
 
 const Explore = preload("res://scripts/core/explore.gd")
@@ -11,9 +12,12 @@ const W := 520.0
 func _render(content: VBoxContainer) -> void:
 	var p = world.profile
 	var t: Dictionary = world.talent()
-	var color := Talents.rank_color(t.rank)
+	# C4-45 (M7): dạng tiến hoá hiện tại; lv = cấp của dạng hiện tại (talent_level là cấp hiệu dụng).
+	var form: Array = Ch4.evo_form(t.id, int(p.evo))
+	var lv: int = Ch4.stage_level(p)
+	var color := Talents.rank_color(form[1])
 	content.custom_minimum_size.x = W
-	_header(content, "Thiên phú · Cấp %d/%d" % [p.talent_level, Talents.MAX_TALENT_LEVEL], "Đóng (T)")
+	_header(content, "Thiên phú · Cấp %d/%d%s" % [lv, Talents.MAX_TALENT_LEVEL, (" · đã tiến hoá %d lần" % int(p.evo)) if int(p.evo) > 0 else ""], "Đóng (T)")
 
 	var card := PanelContainer.new()
 	card.add_theme_stylebox_override("panel", UiTheme.rank_box(color))
@@ -24,12 +28,12 @@ func _render(content: VBoxContainer) -> void:
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	icon.custom_minimum_size = Vector2(64, 64)
 	row.add_child(icon)
-	var rank := UiTheme.label(t.rank, "Heading")
+	var rank := UiTheme.label(form[1], "Heading")
 	rank.add_theme_font_size_override("font_size", 40)
 	rank.add_theme_color_override("font_color", color)
 	row.add_child(rank)
 	var col := UiTheme.vbox(2)
-	col.add_child(UiTheme.label("%s · %s" % [t.name, Talents.group_name(t)], "Heading"))
+	col.add_child(UiTheme.label("%s · %s" % [form[0], Talents.group_name(t)], "Heading"))
 	col.add_child(UiTheme.label(t.description, "", W - 120))
 	row.add_child(col)
 	card.add_child(row)
@@ -59,32 +63,32 @@ func _render(content: VBoxContainer) -> void:
 	var main_now := Talents.main_effect_text(t.id, p.talent_level)
 	if main_now != "":
 		var nxt := ""
-		if p.talent_level < Talents.MAX_TALENT_LEVEL:
-			nxt = "   →   Cấp %d: %s" % [p.talent_level + 1, Talents.main_effect_text(t.id, p.talent_level + 1)]
-		content.add_child(UiTheme.label("Hiệu ứng chính cấp %d: %s%s" % [p.talent_level, main_now, nxt], "", W))
+		if lv < Talents.MAX_TALENT_LEVEL:
+			nxt = "   →   Cấp %d: %s" % [lv + 1, Talents.main_effect_text(t.id, p.talent_level + 1)]
+		content.add_child(UiTheme.label("Hiệu ứng chính cấp %d: %s%s" % [lv, main_now, nxt], "", W))
 	var bonus: int = 2 * (int(p.talent_level) - 1)
-	content.add_child(UiTheme.label("Cấp %d: +%d%% Tấn công, +%d%% HP (mỗi cấp +2%%)." % [p.talent_level, bonus, bonus], "Muted", W))
+	content.add_child(UiTheme.label("Cấp %d: +%d%% Tấn công, +%d%% HP (mỗi cấp hiệu dụng +2%%)." % [lv, bonus, bonus], "Muted", W))
 	var subs: Array = Talents.GROUP_SUB[t.group]
 	for i in subs.size():
 		var need := (i + 1) * 5
-		var on: bool = p.talent_level >= need
+		var on: bool = int(p.talent_level) >= need
 		var l := UiTheme.label("%s Cấp %d — %s" % ["✓" if on else "○", need, subs[i]], "", W)
 		l.add_theme_color_override("font_color", UiTheme.GOOD if on else UiTheme.MUTED)
 		content.add_child(l)
 
 	content.add_child(HSeparator.new())
-	content.add_child(UiTheme.label("Thiên Phú Tinh Hoa: %d  (rơi từ Sói Chúa, 3 mỗi lần hạ)" % p.essence, "Muted"))
-	if p.talent_level >= Talents.MAX_TALENT_LEVEL:
-		content.add_child(UiTheme.label("Đã đạt cấp tối đa.", "Muted"))
+	content.add_child(UiTheme.label("Thiên Phú Tinh Hoa: %d  (boss chương 3 mỗi lần hạ, boss hiếm 5)" % p.essence, "Muted"))
+	if lv >= Talents.MAX_TALENT_LEVEL:
+		content.add_child(UiTheme.label("Đã đạt cấp tối đa của dạng này.", "Muted"))
 		return
-	var cost := Talents.level_cost(p.talent_level)
+	var cost := Talents.level_cost(lv)
 	var blocker := ""
 	if not Explore.is_built(p, "temple"):
 		blocker = "Cần xây Đền Thiên Phú (Bản đồ khai phá, phím M)." if not Explore.is_started(p, "temple") \
 			else "Đền Thiên Phú đang xây, còn %d giây." % ceili(Explore.remaining(p, "temple"))
 	elif p.essence < cost:
 		blocker = "Thiếu Tinh Hoa."
-	var b := UiTheme.button("Luyện cấp %d → %d (%d Tinh Hoa)" % [p.talent_level, p.talent_level + 1, cost], true)
+	var b := UiTheme.button("Luyện cấp %d → %d (%d Tinh Hoa)" % [lv, lv + 1, cost], true)
 	b.size_flags_horizontal = SIZE_SHRINK_BEGIN
 	b.disabled = blocker != ""
 	b.pressed.connect(func():
@@ -101,13 +105,16 @@ func _render(content: VBoxContainer) -> void:
 ## C1-14 (TP-43): cây tiến hoá hiện trước để người quay hạng thấp thấy đường đi lên.
 func _evolution(content: VBoxContainer, t: Dictionary) -> void:
 	var stages: Array = Talents.EVOLUTION.get(t.id, [])
-	content.add_child(UiTheme.label("CÂY TIẾN HOÁ (mở ở bản Alpha)", "Eyebrow"))
+	content.add_child(UiTheme.label("CÂY TIẾN HOÁ", "Eyebrow"))
 	if stages.is_empty():
 		content.add_child(UiTheme.label("Thiên phú này đã ở đỉnh — không tiến hoá.", "Small", W))
 		return
+	var evo: int = int(world.profile.evo)
 	for i in stages.size():
 		var st: Array = stages[i]
 		var row := UiTheme.hbox(8)
+		if i < evo:
+			row.modulate = Color(0.6, 1.0, 0.6)
 		var rank := UiTheme.label("%s" % st[1], "Heading")
 		rank.add_theme_color_override("font_color", Talents.rank_color(st[1]))
 		rank.custom_minimum_size.x = 34
@@ -115,7 +122,22 @@ func _evolution(content: VBoxContainer, t: Dictionary) -> void:
 		var l := UiTheme.label("Bậc %d · %s — %s" % [i + 1, st[0], st[2]], "Small", W - 50)
 		row.add_child(l)
 		content.add_child(row)
-	content.add_child(UiTheme.label("Điều kiện mỗi bậc: " + (Talents.EVOLUTION_REQ_F if t.rank == "F" else Talents.EVOLUTION_REQ), "Small", W))
+	content.add_child(UiTheme.label("Điều kiện bậc 1 (M7): Thiên phú Lv10 + 1 Tinh Hoa Tiến Hoá + nhiệm vụ chương 4 bước Tiến hoá. Có %d Tinh Hoa Tiến Hoá." % int(world.profile.evo_essence), "Small", W))
+	# C4-43: nút Tiến hoá — hoàn 50% Tinh Hoa đã luyện, không tụt sức mạnh.
+	if evo < stages.size():
+		var why: String = Ch4.can_evolve(world)
+		var eb := UiTheme.button("Tiến hoá → %s (%s)" % [stages[evo][0], stages[evo][1]], why == "")
+		eb.name = "EvolveButton"
+		eb.disabled = why != ""
+		eb.size_flags_horizontal = SIZE_SHRINK_BEGIN
+		eb.pressed.connect(func():
+			Ch4.evolve(world)
+			refresh())
+		content.add_child(eb)
+		if why != "":
+			var wl := UiTheme.label(why, "", W)
+			wl.add_theme_color_override("font_color", Color("#ffb27a"))
+			content.add_child(wl)
 
 
 func _talent_state(content: VBoxContainer, p, t: Dictionary) -> void:

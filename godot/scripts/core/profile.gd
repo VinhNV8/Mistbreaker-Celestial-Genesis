@@ -10,7 +10,8 @@ const Explore = preload("res://scripts/core/explore.gd")
 ## v6: đợt C1 thêm tên, ngoại hình, nhiệm vụ/thoại chương 1, lưới vùng 1 40 ô, boss hiếm, công trình mới (08 mục 3.3).
 ## v7: đợt SN2 thêm sương che bản đồ, thưởng khám phá, bộ lọc phân rã/bán nhanh (09 mục 3).
 ## v9: M6 chương 3 — chuyển chức 1 (job), nhiệm vụ chương 3 (quest.ch3/kills3/oases), miễn nắng (docs/10 mục 6).
-const VERSION := 9
+## v10: M7 chương 4 — tiến hoá Thiên phú (evo), nhiệm vụ chương 4, Thuốc Giải, Đuốc Lửa (docs/11 mục 6).
+const VERSION := 10
 
 var talent := ""
 var level := 1
@@ -73,7 +74,7 @@ var boss_respawn := {}
 var ore := 0.0
 var iron := 0.0
 ## Nhiệm vụ chính chương 2: bước (0 = chưa nhận), số quái vùng 2 đã hạ.
-var quest := {"ch2": 0, "kills2": 0, "ch3": 0, "kills3": 0, "oases": []}
+var quest := {"ch2": 0, "kills2": 0, "ch3": 0, "kills3": 0, "oases": [], "ch4": 0, "kills4": 0, "orbs4": []}
 ## Kỹ năng sao chép đang dùng (Đạo Tặc, TP-39).
 var active_copy := ""
 
@@ -94,6 +95,12 @@ var rare_at := {}
 var job := ""
 ## Uống nước ốc đảo: miễn Nắng gắt tới mốc play_seconds này (C3-11).
 var heat_free_until := 0.0
+
+# --- v10: M7 chương 4
+## Số lần tiến hoá Thiên phú. talent_level là cấp hiệu dụng = Lv + 9 × evo (C4-44).
+var evo := 0
+var antidotes := 0
+var fire_torches := 0
 var evo_essence := 0
 ## Vườn Thảo Dược: giây tích luỹ tới thảo dược kế tiếp.
 var herb_timer := 0.0
@@ -171,6 +178,9 @@ func to_dict() -> Dictionary:
 		"rare_at": rare_at,
 		"job": job,
 		"heat_free_until": heat_free_until,
+		"evo": evo,
+		"antidotes": antidotes,
+		"fire_torches": fire_torches,
 		"evo_essence": evo_essence,
 		"herb_timer": herb_timer,
 		"merchant": merchant,
@@ -281,7 +291,15 @@ func load_dict(d: Dictionary) -> bool:
 	var oases: Array = []
 	for o in q.get("oases", []):
 		oases.append(int(o))
-	quest = {"ch2": int(q.get("ch2", 0)), "kills2": int(q.get("kills2", 0)), "ch3": int(q.get("ch3", 0)), "kills3": int(q.get("kills3", 0)), "oases": oases}
+	var orbs4: Array = []
+	for o in q.get("orbs4", []):
+		orbs4.append(int(o))
+	quest = {"ch2": int(q.get("ch2", 0)), "kills2": int(q.get("kills2", 0)), "ch3": int(q.get("ch3", 0)), "kills3": int(q.get("kills3", 0)), "oases": oases,
+		"ch4": int(q.get("ch4", 0)), "kills4": int(q.get("kills4", 0)), "orbs4": orbs4}
+	# v10 — save v9 trở xuống: chưa tiến hoá.
+	evo = int(d.get("evo", 0))
+	antidotes = int(d.get("antidotes", 0))
+	fire_torches = int(d.get("fire_torches", 0))
 	job = str(d.get("job", ""))
 	heat_free_until = float(d.get("heat_free_until", 0.0))
 	active_copy = str(d.get("active_copy", ""))

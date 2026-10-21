@@ -19,6 +19,8 @@ const Classes = preload("res://scripts/data/classes.gd")
 const Stats = preload("res://scripts/core/stats.gd")
 const MapsData = preload("res://scripts/data/maps.gd")
 const Ch3 = preload("res://scripts/core/chapter3.gd")
+const Ch4 = preload("res://scripts/core/chapter4.gd")
+const Chapters = preload("res://scripts/core/chapters.gd")
 const Looks = preload("res://scripts/data/looks.gd")
 const Story = preload("res://scripts/data/story.gd")
 const GiftCode = preload("res://scripts/core/gift_code.gd")
@@ -138,6 +140,14 @@ func _init() -> void:
 	_run("C3-T5 nhiệm vụ chương 3 (6 bước), lưới vùng 3", _test_c3_quest)
 	_run("C3-T6 chuyển chức 1, kỹ năng chuyển chức, save v9", _test_c3_job)
 	_run("TL-B3 cân bằng vùng 3: 3 lớp × 20 Thiên phú hạ Sa Hoàng", _test_c3_balance)
+	# M7 — Chương 4 Đầm Lầy Mộng (docs/11)
+	_run("C4-T1 mở vùng 4, 3 map đầm lầy, bộ điều phối chương", _test_c4_unlock)
+	_run("C4-T2 nước đầm, độc tích luỹ, Thuốc Giải, Bộ U Minh, ảo ảnh", _test_c4_env)
+	_run("C4-T3 quái vùng 4: Lưỡi độc, Đỉa bám, Phân ảnh, Đớp, Mưa độc, Cuộn tử thần", _test_c4_mobs)
+	_run("C4-T4 Nữ Vương Phệ Mộng, Mộng Cảnh, Gối Mộng, Thuỷ Quái Thất Đầu, Vảy Thất Đầu, Bộ U Minh", _test_c4_bosses)
+	_run("C4-T5 nhiệm vụ chương 4 (6 bước)", _test_c4_quest)
+	_run("C4-T6 tiến hoá Thiên phú lần 1, save v10", _test_c4_evolve)
+	_run("TL-B4 cân bằng vùng 4: 3 lớp × 20 Thiên phú hạ Nữ Vương", _test_c4_balance)
 	_run("PACE-T1 nhịp lên cấp 1 → 20 chỉ bằng đánh quái (bot cày, đo phút)", _test_pace_mobs)
 	for c in Classes.ORDER:
 		_run("PACE-T2 %s cấp 10 → 20 vùng 2" % c, _test_pace_r2.bind(c))
@@ -335,7 +345,31 @@ func _test_save_roundtrip() -> void:
 
 ## Bot đơn giản: lao vào quái gần nhất (Thợ Săn: giữ khoảng cách 18–30 m), đánh liên tục,
 ## dùng 4 kỹ năng khi hồi xong, né khi quái sắp đánh trúng.
+## M7: bot biết cơ chế Nữ Vương — trong mơ thì nhắm Mộng Châu và đảo hướng đi; Phệ mộng thì đứng vào vòng sáng.
 func _bot(w: GameWorld) -> Dictionary:
+	var out := _bot_base(w)
+	var p := w.player
+	if w.ch4.dream_t > 0.0:
+		var orb = null
+		var bd := INF
+		for e in w.enemies:
+			if not e.dead and e.kind == "mong-chau" and e.pos.distance_to(p.pos) < bd:
+				bd = e.pos.distance_to(p.pos)
+				orb = e
+		if orb != null:
+			out.aim = orb.pos
+			var want: Vector2 = (orb.pos - p.pos).normalized() if bd > 60.0 + orb.radius else Vector2.ZERO
+			out.move = -want
+		else:
+			out.move = -Vector2(out.get("move", Vector2.ZERO))
+		return out
+	var b = w.boss()
+	if b != null and b.kind == "nu-vuong" and b.phase >= 3 and p.pos.distance_to(w.ch4.light_pos) > Ch4.LIGHT_R * 0.6:
+		out.move = (w.ch4.light_pos - p.pos).normalized()
+	return out
+
+
+func _bot_base(w: GameWorld) -> Dictionary:
 	var p := w.player
 	var target = null
 	var best := INF
@@ -3162,3 +3196,399 @@ func _test_m5_relic_puzzle() -> void:
 	var gold2: float = p.gold
 	w.claim_tile(int(t3.id))
 	_check(t3.status == "owned" and is_equal_approx(p.gold, gold2 + 80.0), "phá khoá: +80 vàng (thưởng thường)")
+
+
+# ------------------------------------------------------------------ M7 — Chương 4 Đầm Lầy Mộng (docs/11)
+
+func _region4_world(map_id := "4-1", class_id := "kiem-khach", talent := "tay-nhanh", level := 34, seed_value := 5) -> GameWorld:
+	var p := _profile(talent, 3)
+	p.class_id = class_id
+	p.level = level
+	p.boss_defeated = true
+	p.bosses = {"huyen-anh": true, "sa-hoang": true}
+	p.job = str(Classes.job_def(class_id).id)
+	p.unlocked_maps = ["1-1", "1-3", "2-1", "2-2", "2-3", "3-1", "3-2", "3-3", "4-1", "4-2", "4-3"]
+	p.quest = {"ch2": Story.DONE2, "kills2": 0, "ch3": Story.DONE3, "kills3": 0, "oases": [], "ch4": 5, "kills4": 0, "orbs4": []}
+	p.map_id = map_id
+	var w := GameWorld.new(p, RngUtil.make(seed_value))
+	w.enemies = []
+	w.field_spawn = false
+	return w
+
+
+func _dry_spot(w: GameWorld) -> Vector2:
+	for y in range(300, int(w.world_size.y) - 300, 97):
+		for x in range(900, int(w.world_size.x) - 900, 113):
+			var pos := Vector2(x, y)
+			if not Ch4.in_water(w, pos) and pos.distance_to(w.safe_pos) > w.safe_r + 50.0:
+				return pos
+	return Vector2(1500, 300)
+
+
+func _wet_spot(w: GameWorld) -> Vector2:
+	for y in range(300, int(w.world_size.y) - 300, 97):
+		for x in range(900, int(w.world_size.x) - 900, 113):
+			if Ch4.in_water(w, Vector2(x, y)):
+				return Vector2(x, y)
+	return Vector2(1400, 700)
+
+
+## C4-T1: điều kiện mở vùng 4; 3 map; bộ điều phối chương (D38).
+func _test_c4_unlock() -> void:
+	var w := _region3_world("3-3", "kiem-khach", "tay-nhanh", 32)
+	_check(w.travel_blocker("4-1").contains("Sa Hoàng"), "chưa hạ Sa Hoàng: chặn")
+	w.profile.bosses["sa-hoang"] = true
+	_check(w.travel_blocker("4-1").contains("chuyển chức"), "chưa chuyển chức: chặn (%s)" % w.travel_blocker("4-1"))
+	w.profile.job = "kiem-su"
+	_check(w.travel_blocker("4-1") == "", "đã chuyển chức + hạ Sa Hoàng: vào được Bãi Lau Mù")
+	_check(w.travel_blocker("4-2") != "" and w.travel_blocker("4-3") != "", "phải đi 4-1 → 4-2 → 4-3")
+	for pair in [["4-1", [32, 36]], ["4-2", [36, 41]], ["4-3", [41, 45]]]:
+		var m: Dictionary = MapsData.get_map(pair[0])
+		_check(m.levels == pair[1] and m.size == Vector2(4480, 2560) and m.region == 4 and m.has("water"), "%s cấp %s, có nước đầm" % [pair[0], str(pair[1])])
+	_check(MapsData.get_map("4-3").arena.boss == "nu-vuong", "Cung Phệ Mộng: Nữ Vương")
+	_check(Chapters.MODULES.size() >= 2 and "tick" in Ch4.HOOKS, "bộ điều phối chương có chương 3 và 4")
+
+
+## C4-T2: nước đầm, độc tích luỹ, Thuốc Giải, Bộ U Minh, ảo ảnh.
+func _test_c4_env() -> void:
+	var w := _region4_world("4-1")
+	var p = w.profile
+	w.player.pos = _wet_spot(w)
+	_check(Ch4.in_water(w, w.player.pos) and is_equal_approx(Ch4.move_mult(w), 0.85), "lội nước: chậm 15%")
+	w.player.hp = w.stats.max_hp
+	_tick(w, {}, roundi(20.5 * 60))
+	_check(w.ch4.poison == 2, "20 giây trong nước: 2 tầng độc (%d)" % w.ch4.poison)
+	_check(w.player.hp < w.stats.max_hp, "độc làm mất máu")
+	w.ch4.poison = 10
+	w.player.hp = 1.0
+	_tick(w, {}, 60)
+	_check(w.player.hp >= 1.0 and w.player.dead_timer <= 0.0, "độc không làm gục")
+	w.player.pos = _dry_spot(w)
+	w.ch4.poison = 3
+	_tick(w, {}, roundi(3.2 * 60))
+	_check(w.ch4.poison == 2, "đất khô 3 giây: −1 tầng")
+	p.antidotes = 1
+	w.ch4.poison = 4
+	w.drink_potion()
+	_check(w.ch4.poison == 0 and p.antidotes == 0, "Thuốc Giải xoá hết độc")
+	var rng := RngUtil.make(2)
+	for slot in ["helm", "armor"]:
+		p.equipment[slot] = Items.new_item(p, 34, "purple", rng, slot, Ch4.U_MINH)
+	_check(is_equal_approx(Ch4.poison_every(w), 20.0), "Bộ U Minh 2 món: độc tích chậm 50%")
+	# ảo ảnh
+	var e := w.spawn_enemy("ech-doc", 33, w.player.pos + Vector2(80, 0))
+	e.illusion = true
+	var kills0: int = p.kills
+	var xp0: int = p.xp
+	w._hit_enemy(e, 0.01)
+	_check(e.dead and p.kills == kills0 and p.xp == xp0, "ảo ảnh: 1 đòn là tan, không EXP")
+	var n := 0
+	for i in 200:
+		var f := w.spawn_enemy("dia", 33, Vector2(2000, 1200))
+		Chapters.after_spawn(w, f)
+		if f.illusion:
+			n += 1
+	_check(n > 20 and n < 60, "khoảng 20%% quái là ảo ảnh (%d/200)" % n)
+
+
+## C4-T3: quái vùng 4.
+func _test_c4_mobs() -> void:
+	var w := _region4_world("4-1")
+	w.player.pos = _dry_spot(w)
+	w.player.hp = w.stats.max_hp
+	var frog := w.spawn_enemy("ech-doc", 33, w.player.pos + Vector2(110, 0))
+	frog.attack_kind = "tongue"
+	var x0: float = w.player.pos.x
+	w._perform_attack(frog)
+	_check(w.player.pos.x > x0 + 30.0 and w.ch4.poison >= 1, "Lưỡi độc: kéo 4 m, +1 tầng độc")
+	var leech := w.spawn_enemy("dia", 33, w.player.pos + Vector2(20, 0))
+	leech.attack_kind = "latch"
+	w._perform_attack(leech)
+	_check(w.ch4.leech_id == leech.id, "Đỉa bám vào người chơi")
+	leech.hp = leech.max_hp * 0.5
+	var hp_l: float = leech.hp
+	_tick(w, {}, 60)
+	_check(leech.hp > hp_l, "Đỉa hút máu hồi cho nó")
+	_tick(w, {"dodge": true}, 2)
+	_check(w.ch4.leech_id == -1, "né lăn gỡ Đỉa")
+	w.enemies = []
+	var ghost := w.spawn_enemy("hon-ma", 37, w.player.pos + Vector2(200, 0))
+	ghost.state = "chase"
+	ghost.pounce_cd = 0.0
+	_tick(w, {}, 2)
+	_check(w.enemies.filter(func(x): return x.illusion).size() == 2, "Phân ảnh: 2 ảo ảnh")
+	var croc := w.spawn_enemy("ca-sau", 39, w.player.pos + Vector2(30, 0))
+	croc.attack_kind = "chomp"
+	w.player.dodge_time = 0.0
+	w._perform_attack(croc)
+	_check(w.player.stun_timer > 0.9, "Đớp: choáng 1 giây")
+	w.player.stun_timer = 0.0
+	w.enemies = []
+	w.player.dead_timer = 0.0
+	w.player.hp = w.stats.max_hp
+	w.player.shield = 1e9
+	w.player.shield_time = 999.0
+	var witch := w.spawn_enemy("hon-ma", 38, w.player.pos + Vector2(200, 0), {"elite": true})
+	_check(witch.name == "Phù Thuỷ Đầm Lầy", "tinh anh Hồn Ma: Phù Thuỷ Đầm Lầy")
+	w.ch4.poison = 0
+	w._elite_skill(witch, "toxrain")
+	_tick(w, {}, 62)
+	_check(w.ch4.poison >= 2, "Mưa độc: +2 tầng mỗi giây (%d)" % w.ch4.poison)
+	var king := w.spawn_enemy("ca-sau", 41, w.player.pos + Vector2(30, 0), {"elite": true})
+	_check(king.name == "Cá Sấu Chúa", "tinh anh Cá Sấu: Cá Sấu Chúa")
+	king.attack_kind = "deathroll"
+	w.player.shield = 0.0
+	w.player.dead_timer = 0.0
+	w.player.hold_timer = 0.0
+	w.player.hp = w.stats.max_hp
+	w._perform_attack(king)
+	_check(w.player.hold_timer > 1.5 and w.player.hp < w.stats.max_hp, "Cuộn tử thần: giữ 2 giây, gây sát thương")
+
+
+## C4-T4: Nữ Vương, Gối Mộng, Mộng Cảnh, Thất Đầu, Vảy Thất Đầu, Bộ U Minh.
+func _test_c4_bosses() -> void:
+	var w := _region4_world("4-3", "kiem-khach", "dao-tac", 42)
+	w.player.pos = w.arena_pos - Vector2(60, 0)
+	w.player.shield = 1e9
+	w.player.shield_time = 999.0
+	var q := w.spawn_enemy("nu-vuong", 43, w.arena_pos, {"role": "boss"})
+	q.hp = q.max_hp * 0.59
+	_tick(w, {}, 1)
+	_check(q.phase == 2 and w.ch4.dream_t > 0.0, "dưới 60%: giấc mơ")
+	_check(w.enemies.filter(func(e): return e.kind == "mong-chau" and not e.dead).size() == 3, "3 Mộng Châu")
+	_check(Chapters.input_move(w, Vector2.RIGHT) == Vector2.LEFT, "trong mơ: điều khiển đảo ngược")
+	var hq: float = q.hp
+	w._hit_enemy(q, 5.0)
+	_check(q.hp == hq, "đang mơ: Nữ Vương bất tử")
+	for o in w.enemies.filter(func(e): return e.kind == "mong-chau"):
+		o.hp = 1.0
+		w._hit_enemy(o, 5.0)
+	_tick(w, {}, 2)
+	_check(w.ch4.dream_t <= 0.0, "phá 3 Mộng Châu: tỉnh")
+	q.hp = q.max_hp * 0.24
+	_tick(w, {}, 2)
+	_check(q.phase == 3, "dưới 25%: Phệ mộng")
+	w.player.shield = 0.0
+	w.player.pos = q.pos + Vector2(60, 0)
+	w.player.hp = w.stats.max_hp
+	var hp_q: float = q.hp
+	_tick(w, {}, 30)
+	_check(w.player.hp < w.stats.max_hp and q.hp > hp_q, "ngoài vòng sáng: bị hút máu")
+	w.player.pos = w.ch4.light_pos
+	w.player.hp = w.stats.max_hp
+	_tick(w, {}, 2)
+	w.player.pos = w.ch4.light_pos
+	var hp_in: float = w.player.hp
+	_tick(w, {}, 6)
+	_check(w.player.hp >= hp_in - 1.0, "trong vòng sáng: an toàn")
+	w._kill_enemy(q)
+	_check(w.is_boss_defeated("nu-vuong") and "dreamscape" in w.profile.copied_skills, "hạ Nữ Vương: Đạo Tặc học Mộng Cảnh")
+	_check(ItemData.BOSS_UNIQUES["nu-vuong"] == "goi_mong", "Nữ Vương rơi Gối Mộng")
+	# Mộng Cảnh
+	var a := w.spawn_enemy("ca-sau", 42, w.player.pos + Vector2(40, 0))
+	var b := w.spawn_enemy("ca-sau", 42, w.player.pos + Vector2(60, 10))
+	_check(Chapters.copy_skill(w, "dreamscape") and a.charm_t > 0.0 and b.charm_t > 0.0, "Mộng Cảnh: quái trong 10 m bị mê")
+	b.max_hp = 1e6
+	b.hp = b.max_hp
+	_tick(w, {}, 130)
+	_check(b.hp < b.max_hp, "quái bị mê đánh nhau")
+	# Gối Mộng
+	var rng := RngUtil.make(8)
+	w.profile.equipment["amulet"] = Items.new_item(w.profile, 43, "orange", rng, "amulet", "", "goi_mong")
+	w._refresh_stats()
+	var dodged := 0
+	for i in 400:
+		if Ch4.dodge_hit(w):
+			dodged += 1
+	_check(dodged > 30 and dodged < 95, "Gối Mộng: ~15%% né hẳn (%d/400)" % dodged)
+	# Thất Đầu
+	var w2 := _region4_world("4-3", "phap-su", "tay-nhanh", 45)
+	w2.player.pos = Vector2(2000, 1200)
+	w2.player.shield = 1e9
+	w2.player.shield_time = 9999.0
+	var hydra := w2.spawn_enemy("thuy-quai", 45, w2.player.pos + Vector2(250, 0), {"role": "rare"})
+	w2._update_rare(hydra, 0.016)
+	var heads: Array = w2.enemies.filter(func(e): return e.kind == "dau-thuy-quai")
+	_check(heads.size() == 7, "Thất Đầu có 7 đầu")
+	var hb: float = hydra.hp
+	w2._hit_enemy(hydra, 10.0)
+	_check(hydra.hp == hb, "thân bất tử")
+	w2._kill_enemy(heads[0])
+	_check(w2.ch4.stumps.size() == 1, "chặt đầu: để lại gốc")
+	_tick(w2, {}, roundi(20.5 * 60))
+	_check(w2.enemies.filter(func(e): return e.kind == "dau-thuy-quai" and not e.dead).size() == 7, "không đốt: đầu mọc lại sau 20 giây")
+	var heads2: Array = w2.enemies.filter(func(e): return e.kind == "dau-thuy-quai" and not e.dead)
+	for i in 6:
+		w2._kill_enemy(heads2[i])
+	var burn_target: Dictionary = w2.ch4.stumps[0]
+	w2.hit_source = "fireball"
+	var near = heads2[6]
+	near.pos = burn_target.pos + Vector2(40, 0)
+	Chapters.on_player_hit(w2, near)
+	w2.hit_source = ""
+	_check(burn_target.burned, "đòn Hỏa Cầu đốt gốc đầu")
+	w2.profile.fire_torches = 6
+	w2.player.pos = burn_target.pos
+	for i in 6:
+		w2.player.potion_cd = 0.0
+		w2.drink_potion()
+	_check(w2.ch4.stumps.filter(func(s): return not s.burned).is_empty(), "Đuốc Lửa (Q) đốt các gốc còn lại")
+	var essence0: int = w2.profile.essence
+	w2._kill_enemy(heads2[6])
+	_check(hydra.dead and w2.profile.essence > essence0, "chặt đủ 7 đầu: Thất Đầu gục, nhận Tinh Hoa")
+	_check(w2.RARE_BOSSES["4-3"].unique == "vay_that_dau", "Thất Đầu rơi Vảy Thất Đầu")
+	# Vảy Thất Đầu + Bộ U Minh
+	var res0: float = float(w2.stats.res.thuy)
+	w2.profile.equipment["armor"] = Items.new_item(w2.profile, 45, "orange", rng, "armor", "", "vay_that_dau")
+	w2._refresh_stats()
+	_check(float(w2.stats.res.thuy) >= res0 + 0.19, "Vảy Thất Đầu +20% kháng Thủy")
+	w2.player.hp = w2.stats.max_hp * 0.5
+	var hp_v: float = w2.player.hp
+	_tick(w2, {}, 60)
+	_check(w2.player.hp >= hp_v + w2.stats.max_hp * 0.009, "Vảy Thất Đầu hồi 1% HP/giây")
+	var hp0: int = w2.stats.max_hp
+	for slot in ["helm", "boots", "gloves", "amulet"]:
+		w2.profile.equipment[slot] = Items.new_item(w2.profile, 1, "purple", rng, slot, Ch4.U_MINH)
+	w2._refresh_stats()
+	_check(w2.stats.max_hp > hp0, "Bộ U Minh 4 món: +12% HP")
+
+
+## C4-T5: nhiệm vụ chương 4.
+func _test_c4_quest() -> void:
+	var w := _region4_world("4-1", "kiem-khach", "tay-nhanh", 33)
+	var p = w.profile
+	p.quest.ch4 = 0
+	w._load_map("4-1")
+	_check(int(p.quest.ch4) == 1 and w.npcs().size() == 3, "tới vùng 4: nhận nhiệm vụ, 3 NPC")
+	w.talk("lao-ngu")
+	_check(int(p.quest.ch4) == 2 and p.antidotes >= 2, "bước 1: gặp Lão Ngư (+2 Thuốc Giải)")
+	for i in 30:
+		var m := w.spawn_enemy("ech-doc", 33, Vector2(2000, 1200))
+		w._kill_enemy(m)
+	Chapters.check_quest(w)
+	_check(int(p.quest.ch4) == 3, "bước 2: hạ 30 quái")
+	w._load_map("4-2")
+	for pod in w.map.pods:
+		w.player.pos = pod
+		Chapters.check_quest(w)
+	Chapters.check_quest(w)
+	_check(int(p.quest.ch4) == 4, "bước 3: phá 5 Bọc Mộng")
+	w._load_map("4-3")
+	for y in range(0, int(w.world_size.y), 300):
+		for x in range(0, int(w.world_size.x * 0.6), 300):
+			w.fog.reveal(Vector2(x, y), 360.0)
+	_tick(w, {}, 40)
+	_check(int(p.quest.ch4) == 5 and w.boss_unlocked(), "bước 4: khám phá Cung Mộng, mở cửa Cung Phệ Mộng")
+	p.bosses["nu-vuong"] = true
+	Chapters.check_quest(w)
+	_check(int(p.quest.ch4) == 6, "bước 5: hạ Nữ Vương")
+	var total := 0
+	for st in Story.QUESTS4:
+		total += int(st.reward.get("exp", 0))
+	var span := 0
+	for lv in range(30, 45):
+		span += Formulas.exp_to_next(lv)
+	_check(absf(float(total) / span - 0.25) < 0.03, "thưởng EXP chương 4 ≈ 25%% (%.0f%%)" % (100.0 * total / span))
+
+
+## C4-T6: tiến hoá Thiên phú lần 1 — không tụt sức mạnh, hoàn Tinh Hoa; save v10.
+func _test_c4_evolve() -> void:
+	var w := _region4_world("4-1", "kiem-khach", "tay-nhanh", 44)
+	var p = w.profile
+	p.quest.ch4 = 6
+	p.talent_level = 10
+	w._refresh_stats()
+	_check(Ch4.can_evolve(w).contains("Tinh Hoa Tiến Hoá"), "thiếu Tinh Hoa Tiến Hoá: chưa tiến hoá được")
+	p.evo_essence = 1
+	var atk0: float = w.stats.atk
+	var spd0: float = w.stats.atk_speed
+	var hp0: int = w.stats.max_hp
+	var ess0: int = p.essence
+	_check(Ch4.can_evolve(w) == "", "đủ điều kiện")
+	_check(Ch4.evolve(w).ok, "tiến hoá")
+	_check(p.evo == 1 and Ch4.stage_level(p) == 1 and Ch4.evo_form("tay-nhanh", 1) == ["Phong Ảnh Thủ", "C"], "Tay Nhanh → Phong Ảnh Thủ (C), Lv1")
+	_check(p.essence == ess0 + 12, "hoàn 12 Tinh Hoa (%d)" % (p.essence - ess0))
+	_check(w.stats.atk >= atk0 - 0.01 and w.stats.atk_speed >= spd0 - 0.001 and w.stats.max_hp >= hp0, "không tụt sức mạnh sau tiến hoá")
+	p.talent_level += 9
+	w._refresh_stats()
+	_check(w.stats.atk_speed > spd0 and w.stats.atk > atk0, "luyện dạng mới tới Lv10: mạnh hơn Lv10 cũ")
+	Chapters.check_quest(w)
+	_check(int(p.quest.ch4) == Story.DONE4, "bước 6: tiến hoá — chương 4 xong")
+	_check(Ch4.evolved_once(p), "đủ điều kiện tiến hoá để mở vùng 5")
+	var dt := _region4_world("4-1", "kiem-khach", "dao-tac", 44)
+	_check(Ch4.evolved_once(dt.profile) and Ch4.can_evolve(dt).contains("không tiến hoá"), "Đạo Tặc: không tiến hoá, coi như đạt")
+	# save
+	var d: Dictionary = JSON.parse_string(JSON.stringify(p.to_dict()))
+	_check(int(d.version) == Profile.VERSION and Profile.VERSION >= 10, "save version %d" % Profile.VERSION)
+	var back := Profile.new()
+	_check(back.load_dict(d) and back.evo == 1 and int(back.talent_level) == 19 and int(back.quest.ch4) == Story.DONE4, "save giữ tiến hoá, nhiệm vụ chương 4")
+	d.erase("evo")
+	var old := Profile.new()
+	_check(old.load_dict(d) and old.evo == 0, "save cũ: chưa tiến hoá")
+
+
+## TL-B4: 3 lớp × 20 Thiên phú hạ Nữ Vương Phệ Mộng (cấp 42, bộ đồ chuẩn cấp 42, đã chuyển chức).
+func _test_c4_balance() -> void:
+	var avg := func(arr: Array) -> float:
+		var sum := 0.0
+		for x in arr:
+			sum += x
+		return sum / arr.size()
+	var class_avg := {}
+	for class_id in Classes.ORDER:
+		var by_rank := {}
+		var all: Array = []
+		var lines := PackedStringArray()
+		for t in Talents.LIST:
+			var times: Array = []
+			var deaths := 0
+			var won := true
+			for seed_value in [5, 11]:
+				var res := _r4_fight(class_id, t.id, seed_value)
+				times.append(res[0])
+				deaths += int(res[1])
+				won = won and bool(res[2])
+			var sec: float = avg.call(times)
+			lines.append("%s %s %.0fs/%d" % [t.rank, t.name, sec, deaths])
+			_check(won, "%s · %s hạ được Nữ Vương" % [class_id, t.name])
+			if not by_rank.has(t.rank):
+				by_rank[t.rank] = []
+			by_rank[t.rank].append(sec)
+			all.append(sec)
+		print("       [%s] (" % class_id + " · ".join(lines) + ")")
+		var f: float = avg.call(by_rank.F)
+		var s_: float = avg.call(by_rank.S)
+		class_avg[class_id] = avg.call(all)
+		print("       [%s] F %.1f giây, S %.1f giây, chênh %.0f%%; trung bình %.1f giây" % [class_id, f, s_, absf(f - s_) / maxf(f, s_) * 100.0, class_avg[class_id]])
+		_check(absf(f - s_) / maxf(f, s_) <= 0.25, "%s: F và S chênh ≤ 25%%" % class_id)
+	var a: float = class_avg.values().min()
+	var b: float = class_avg.values().max()
+	print("       (%d lớp: nhanh nhất %.1f, chậm nhất %.1f giây, chênh %.0f%%)" % [class_avg.size(), a, b, (b - a) / b * 100.0])
+	_check((b - a) / b <= 0.25, "các lớp chênh ≤ 25%")
+
+
+func _r4_fight(class_id: String, talent_id: String, seed_value: int) -> Array:
+	var w := _region4_world("4-3", class_id, talent_id, 42, seed_value)
+	var p = w.profile
+	p.points = _class_points(class_id)
+	for k in p.points:
+		p.points[k] = int(p.points[k]) * 10
+	var rng := RngUtil.make(77)
+	for pair in [["weapon", "blue"], ["armor", "blue"], ["helm", "green"], ["boots", "green"], ["gloves", "green"]]:
+		var it := Items.new_item(p, 42, pair[1], rng, pair[0])
+		Items.add_item(p, it)
+		w.equip(int(it.id))
+	w.player.hp = w.stats.max_hp
+	w.player.mp = w.stats.max_mp
+	w.player.pos = w.arena_pos - Vector2(100, 0)
+	var deaths := 0
+	var seconds := 0.0
+	while seconds < 600.0 and not p.bosses.get("nu-vuong", false):
+		for ev in w.drain_events():
+			if ev.type == "death":
+				deaths += 1
+		if w.boss() == null and w.player.dead_timer <= 0.0:
+			w.player.pos = w.arena_pos - Vector2(100, 0)
+		w.update(1.0 / 60.0, _bot(w))
+		seconds += 1.0 / 60.0
+	return [seconds, deaths, p.bosses.get("nu-vuong", false)]

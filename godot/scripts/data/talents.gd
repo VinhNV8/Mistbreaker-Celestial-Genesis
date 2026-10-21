@@ -161,8 +161,12 @@ static func main_effect_text(talent_id: String, lv: int) -> String:
 
 
 ## TP-41 (Q17): hiệu ứng chính nội suy tuyến tính từ giá trị Lv1 tới Lv10 (tài liệu 05 mục 2.1).
+## M7 (C4-44): lv là cấp hiệu dụng (Lv + 9 × số lần tiến hoá) nên đi tới MAX_EFFECTIVE_LEVEL; vượt Lv10 thì tăng tiếp tuyến tính.
+const MAX_EFFECTIVE_LEVEL := 28
+
+
 static func lv_value(v1: float, v10: float, lv: int) -> float:
-	return v1 + (v10 - v1) * float(clampi(lv, 1, MAX_TALENT_LEVEL) - 1) / float(MAX_TALENT_LEVEL - 1)
+	return v1 + (v10 - v1) * float(clampi(lv, 1, MAX_EFFECTIVE_LEVEL) - 1) / float(MAX_TALENT_LEVEL - 1)
 
 
 static func rank_index(rank: String) -> int:

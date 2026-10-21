@@ -11,7 +11,7 @@ const REGIONS := [
 	{"id": 1, "name": "Làng Thanh Thạch & Rừng Sương", "levels": [1, 10], "element": "moc", "maps": ["1-1", "1-3"]},
 	{"id": 2, "name": "Đồng Bằng Gió Hú", "levels": [10, 20], "element": "kim", "maps": ["2-1", "2-2", "2-3"], "unlock": "Hạ Sói Chúa · cấp 10 · khai phá vùng 1 ≥ 60%"},
 	{"id": 3, "name": "Sa Mạc Xích Sa", "levels": [20, 32], "element": "tho", "maps": ["3-1", "3-2", "3-3"], "unlock": "Hạ Huyền Ảnh · Lực chiến 5.000 · cấp 18"},
-	{"id": 4, "name": "Đầm Lầy U Minh", "levels": [32, 45], "element": "thuy", "maps": [], "unlock": "Chuyển chức 1 (Alpha)"},
+	{"id": 4, "name": "Đầm Lầy U Minh", "levels": [32, 45], "element": "thuy", "maps": ["4-1", "4-2", "4-3"], "unlock": "Hạ Sa Hoàng · chuyển chức 1"},
 	{"id": 5, "name": "Núi Viêm Long", "levels": [45, 60], "element": "hoa", "maps": [], "unlock": "Thiên phú tiến hoá 1 lần (Alpha)"},
 	{"id": 6, "name": "Băng Nguyên Bắc Cực", "levels": [60, 72], "element": "thuy", "maps": [], "unlock": "Chuyển chức 2 (Beta)"},
 	{"id": 7, "name": "Quần Đảo Thiên Không", "levels": [72, 84], "element": "kim", "maps": [], "unlock": "Lãnh địa cấp 5 (Beta)"},
@@ -172,11 +172,73 @@ const MAPS := {
 		"oases": [[Vector2(1800, 1900), 100.0]],
 		## C3-41 bước 4: Bia Khai Giới Giả
 		"stele3": Vector2(2100, 900),
+	},
+	## M7 (docs/11): vùng 4 Đầm Lầy U Minh. water: {default: map mặc định là nước?, zones: [[tâm, r], …] chỗ ngược lại}.
+	## pods: Bọc Mộng của nhiệm vụ chương 4 bước 3 (4-2).
+	"4-1": {
+		"region": 4,
+		"name": "Bãi Lau Mù",
+		"size": Vector2(4480, 2560),
+		"levels": [32, 36],
+		"zone_x": [720.0, 700.0],
+		"safe": {"pos": Vector2(420, 1280), "r": 200.0, "name": "Làng Chài Lau", "kind": "camp"},
+		"npcs": [["lao-ngu", "npc-lao-ngu", Vector2(40, -40), "Lão Ngư · E"], ["lam-nhi", "npc-lam-nhi", Vector2(-80, 60), "Lam Nhi · E"],
+			["tinh-quang", "npc-tinh-quang", Vector2(80, 80), "Tinh Quang Sứ · E"]],
+		"arena": null,
+		"gate": false,
+		"mobs": [["ech-doc", 32, 40], ["dia", 33, 40], ["hon-ma", 35, 20]],
+		"ground": "tile-swamp",
+		"fog": 0.3,
+		"tint": Color(0.12, 0.22, 0.2),
+		"wind": 0.0,
+		"trees": 260,
+		"decor": "swamp",
+		"water": {"default": false, "zones": [[Vector2(1400, 700), 180.0], [Vector2(2200, 1700), 220.0], [Vector2(3100, 900), 200.0],
+			[Vector2(3600, 1900), 180.0], [Vector2(900, 1950), 150.0], [Vector2(2700, 420), 140.0]]},
+	},
+	"4-2": {
+		"region": 4,
+		"name": "Đầm Sâu",
+		"size": Vector2(4480, 2560),
+		"levels": [36, 41],
+		"zone_x": [720.0, 600.0],
+		"safe": {"pos": Vector2(352, 1280), "r": 150.0, "name": "Cồn Lau", "kind": "camp"},
+		"arena": null,
+		"gate": false,
+		"mobs": [["ech-doc", 36, 25], ["dia", 36, 30], ["hon-ma", 36, 25], ["ca-sau", 38, 20]],
+		"ground": "tile-swamp",
+		"fog": 0.4,
+		"tint": Color(0.1, 0.2, 0.22),
+		"wind": 0.0,
+		"trees": 200,
+		"decor": "swamp",
+		"water": {"default": true, "zones": [[Vector2(1000, 800), 170.0], [Vector2(1800, 1600), 200.0], [Vector2(2600, 700), 180.0],
+			[Vector2(3300, 1500), 190.0], [Vector2(3900, 900), 160.0], [Vector2(700, 1950), 150.0], [Vector2(2300, 2150), 160.0]]},
+		"pods": [Vector2(1000, 800), Vector2(1800, 1600), Vector2(2600, 700), Vector2(3300, 1500), Vector2(3900, 900)],
+	},
+	"4-3": {
+		"region": 4,
+		"name": "Cung Mộng",
+		"size": Vector2(4480, 2560),
+		"levels": [41, 45],
+		"zone_x": [720.0, 560.0],
+		"safe": {"pos": Vector2(352, 1280), "r": 140.0, "name": "Bờ Mộng", "kind": "camp"},
+		"arena": {"pos": Vector2(3872, 1280), "r": 280.0, "boss": "nu-vuong", "level": 43, "chapter": 4, "name": "Cung Phệ Mộng"},
+		"gate": true,
+		"mobs": [["dia", 41, 20], ["hon-ma", 41, 35], ["ca-sau", 41, 35], ["ech-doc", 41, 10]],
+		"ground": "tile-swamp",
+		"fog": 0.5,
+		"tint": Color(0.2, 0.12, 0.3),
+		"wind": 0.0,
+		"trees": 220,
+		"decor": "swamp",
+		"water": {"default": false, "zones": [[Vector2(1200, 600), 260.0], [Vector2(1500, 2000), 240.0], [Vector2(2400, 1300), 220.0],
+			[Vector2(3000, 500), 200.0]]},
 	}
 }
 
 ## Thứ tự để hiển thị và kiểm điều kiện "đã tới map trước".
-const ORDER := ["1-1", "1-3", "2-1", "2-2", "2-3", "3-1", "3-2", "3-3"]
+const ORDER := ["1-1", "1-3", "2-1", "2-2", "2-3", "3-1", "3-2", "3-3", "4-1", "4-2", "4-3"]
 
 
 static func get_map(map_id: String) -> Dictionary:
