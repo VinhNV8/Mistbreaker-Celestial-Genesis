@@ -322,7 +322,7 @@ static func class_select(talent_name: String, on_choose: Callable) -> Control:
 			ic.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			ic.custom_minimum_size = Vector2(32, 32)
 			line.add_child(ic)
-			line.add_child(UiTheme.label("%d · %s — %s" % [i + 1, sk.name, sk.text], "Small", 330))
+			line.add_child(UiTheme.label("%d · %s%s — %s" % [i + 1, sk.name, (" (cấp %d)" % int(sk.unlock)) if int(sk.get("unlock", 1)) > 1 else "", sk.text], "Small", 330))
 			v.add_child(line)
 		var b := UiTheme.button("Chọn %s" % c.name, cid == "kiem-khach")
 		b.name = "Class_" + cid

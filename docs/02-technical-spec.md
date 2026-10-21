@@ -121,6 +121,7 @@ Main (Node, main.gd)
 | `scripts/view/region5_view.gd` | Vẽ vùng 5: hồ dung nham, Long Huyệt ngập + Đá Nổi (`draw_arena`), vòng báo thiên thạch, cột lửa, phun lửa, Cổng Trại (`draw_over`), cây cối núi lửa (`decor_id`) |
 | `scripts/ui/job2_panel.gd` | Bảng chọn 1 trong 2 nhánh chuyển chức 2 (Liệt Diễm, phím E) |
 | `scripts/core/puzzle.gd` | Câu đố ô Di tích (M5-04): Trận Đèn Cổ 3 × 3 và câu hỏi cổ thư; sinh cố định theo (tên nhân vật, vùng, ô) nên không cần lưu save; `GameWorld.relic_press/relic_answer` mở rương với thưởng ×2 |
+| `scripts/ui/skill_panel.gd` | Bảng Kỹ năng (SK1, phím U): cấp kỹ năng, Điểm Kỹ Năng, lắp 4 ô, tẩy điểm (đổi ô / tẩy chỉ ở vùng an toàn) |
 | `scripts/ui/minimap.gd` | Bản đồ nhỏ góc phải HUD (M5-03; SN5-01: chuột trái → `GameWorld.set_move_target`, chuột phải huỷ): ảnh sương 1 pixel/ô dựng lại khi `fog.version` đổi, vẽ làng, hang boss, tường sương, NPC, quái ở vùng đã thấy, boss/boss hiếm nhấp nháy, mũi tên nhân vật; phím V đổi cỡ 230 ↔ 460 px |
 | `scripts/ui/skill_bar.gd` | Thanh kỹ năng 8 ô có khung trang trí, tự vẽ bằng `_draw`: icon cắt tròn, hồi chiêu quét tròn, nhãn phím, tên + dòng phụ; HUD gọi `set_slot(i, {...})` mỗi khung hình (DH-11) |
 | `scripts/ui/modal.gd` | Lớp cha của bảng phủ |
@@ -201,7 +202,7 @@ Giai đoạn `windup` là cửa sổ để người chơi né; `world_view.gd` v
 | Trên Windows | `%APPDATA%\Godot\app_userdata\Thiên Phú Khai Giới\save.json` |
 | Smoke test | `user://smoke_save.json` (tự xoá sau khi chạy, không đụng save thật) |
 | Định dạng | JSON một dòng |
-| Phiên bản hiện tại | **11** (M1 trang bị · M2 Thiên phú, công trình · M3 lớp, INT/LUK, điểm cướp · v5 M4.1 nhiều bản đồ · v6 C1: tên, ngoại hình, nhiệm vụ/thoại chương 1, lưới 40 ô, boss hiếm, Thương nhân, Vườn · v7 SN2: sương che từng map, thưởng khám phá, bộ lọc phân rã/bán nhanh · **v8 M5**: `rare_at` = lịch riêng từng boss hiếm, thay `rare_boss_at`; **v9 M6**: `job` (chuyển chức), `quest.ch3/kills3/oases`, `heat_free_until` · **v10 M7**: `evo` (số lần tiến hoá), `quest.ch4/kills4/orbs4`, `antidotes`, `fire_torches` · **v11 M8**: `job2` (chức 2), Tinh Thạch, Bình Nước Thánh, đột kích, `quest.ch5/kills5/raid_won`). Save v1–v10 được chuyển đổi tự động khi nạp |
+| Phiên bản hiện tại | **11** (M1 trang bị · M2 Thiên phú, công trình · M3 lớp, INT/LUK, điểm cướp · v5 M4.1 nhiều bản đồ · v6 C1: tên, ngoại hình, nhiệm vụ/thoại chương 1, lưới 40 ô, boss hiếm, Thương nhân, Vườn · v7 SN2: sương che từng map, thưởng khám phá, bộ lọc phân rã/bán nhanh · **v8 M5**: `rare_at` = lịch riêng từng boss hiếm, thay `rare_boss_at`; **v9 M6**: `job` (chuyển chức), `quest.ch3/kills3/oases`, `heat_free_until` · **v10 M7**: `evo` (số lần tiến hoá), `quest.ch4/kills4/orbs4`, `antidotes`, `fire_torches` · **v11 M8**: `job2` (chức 2), Tinh Thạch, Bình Nước Thánh, đột kích, `quest.ch5/kills5/raid_won` · v12 M9 chương 6 · **v13 SK1**: `skill_points`, `skill_levels`, `loadout`). Save v1–v12 được chuyển đổi tự động khi nạp |
 
 ```json
 {
@@ -371,6 +372,7 @@ Chạy bot trên nhiều seed, có né và không né, rồi chỉnh HP/ATK boss
 | D39 | Tiến hoá Thiên phú: `talent_level` là **cấp hiệu dụng** = Lv + 9 × `evo` (tối đa 28); chỉ phần hiển thị + luyện cấp dùng `Ch4.stage_level()` (1–10) | Mọi chỗ đang tính hiệu ứng theo `talent_level` (`tv`, `lv_value`, Stats, Items, Explore) tự đúng, không tụt sức mạnh (Q18) | Hiệu ứng riêng của dạng tiến hoá chưa có (Q55); thông báo mở hiệu ứng phụ chỉ ở dạng gốc |
 | D40 | Chức 2 lưu ở trường riêng `profile.job2` (không ghi đè `job`) | Hiệu ứng chức 1 trong `chapter3.gd` kiểm `job` theo id — giữ nguyên được, chức 2 cộng thêm | `Classes.title(lớp, job, job2)` có thêm tham số |
 | D41 | Boss "bất tử theo lượt" (Viêm Long) mở cửa sổ đánh theo **lượng sát thương** (15% HP hoặc tối đa 10 giây), không theo đồng hồ cố định | Thời gian trận tỉ lệ với sát thương — không khuếch đại chênh lệch giữa các lớp (TL-B5 36% → 19%) | Trận có thể dài hơn với người sát thương thấp (giới hạn 10 giây mỗi lần đáp) |
+| D43 | Kỹ năng theo **ô lắp** (`profile.loadout` = id), mọi chỗ đọc kỹ năng đi qua `GameWorld.slot_skill(i)` | Đổi ô / thêm kỹ năng (SK2–SK3) không phải sửa code theo vị trí | Hồi chiêu `skill_cds[i]` vẫn theo ô — khi đổi ô phải đổi kèm |
 | D16 | Đồng hồ xây riêng (`build_clock`) thay vì giờ thực | Không phụ thuộc đồng hồ máy (người chơi chỉnh giờ để gian lận); vẫn chạy offline qua `apply_offline` | Phải nhớ cộng `build_clock` ở cả `update()` và `apply_offline()` |
 
 ## 7. Lỗi đã gặp và cách xử lý

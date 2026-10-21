@@ -1405,8 +1405,13 @@ func _slash() -> void:
 ## Dùng kỹ năng i (0–3) của lớp. Trả về true nếu dùng được.
 func use_skill(i: int) -> bool:
 	var p := player
-	var sk: Dictionary = Classes.skill(profile.class_id, i)
-	if p.skill_cds[i] > 0.0 or p.dead_timer > 0.0:
+	var sk: Dictionary = slot_skill(i)
+	if sk.is_empty() or p.skill_cds[i] > 0.0 or p.dead_timer > 0.0:
+		return false
+	if not skill_unlocked(sk):
+		if _passive_msg_cd <= 0.0:
+			_message("%s mở ở cấp %d." % [sk.name, int(sk.get("unlock", 1))], "info")
+			_passive_msg_cd = 1.5
 		return false
 	if p.mp < float(sk.mp):
 		if _passive_msg_cd <= 0.0:
@@ -1417,7 +1422,7 @@ func use_skill(i: int) -> bool:
 	p.skill_cds[i] = skill_cd_of(i)
 	if i == 0:
 		p.skill_cd = p.skill_cds[0]
-	var mul := float(sk.mul) * float(stats.skill_mul)
+	var mul := float(sk.mul) * float(stats.skill_mul) * skill_level_mult(str(sk.id))
 	match sk.id:
 		"spin":
 			_spin(mul)
@@ -1471,16 +1476,119 @@ func use_skill(i: int) -> bool:
 
 
 func skill_cd_of(i: int) -> float:
-	if i == 0 and profile.class_id == "kiem-khach":
-		return float(stats.spin_cd)
-	var sk: Dictionary = Classes.skill(profile.class_id, i)
-	if sk.id == "pierce":
-		return Chapters.pierce_cd(self, float(sk.cd))
-	return float(sk.cd)
+	var sk: Dictionary = slot_skill(i)
+	if sk.is_empty():
+		return 1.0
+	var cd := float(sk.cd)
+	if sk.id == "spin" and profile.class_id == "kiem-khach":
+		cd = float(stats.spin_cd)
+	elif sk.id == "pierce":
+		cd = Chapters.pierce_cd(self, cd)
+	# SK1: kỹ năng hỗ trợ (không gây sát thương) giảm hồi chiêu theo cấp.
+	if float(sk.mul) <= 0.0:
+		cd *= 1.0 - Classes.SKILL_LEVEL_CD * (skill_level(str(sk.id)) - 1)
+	return cd
 
 
 func skill_mp(i: int) -> float:
-	return float(Classes.skill(profile.class_id, i).mp)
+	var sk: Dictionary = slot_skill(i)
+	return 0.0 if sk.is_empty() else float(sk.mp)
+
+
+# ------------------------------------------------------------------ SK1 (docs/13): ô kỹ năng, cấp kỹ năng, Điểm Kỹ Năng
+
+
+## Kỹ năng đang lắp ở ô i (0–3). Ô trống / dữ liệu hỏng → lắp lại mặc định theo lớp.
+func slot_skill(i: int) -> Dictionary:
+	_ensure_loadout()
+	if i < 0 or i >= profile.loadout.size():
+		return {}
+	return Classes.skill_by_id(profile.class_id, str(profile.loadout[i]))
+
+
+func _ensure_loadout() -> void:
+	var lo: Array = profile.loadout
+	var ok: bool = lo.size() == Classes.SKILL_SLOTS
+	if ok:
+		for id in lo:
+			if Classes.skill_by_id(profile.class_id, str(id)).is_empty():
+				ok = false
+				break
+	if not ok:
+		profile.loadout = Classes.default_loadout(profile.class_id)
+
+
+func skill_unlocked(sk: Dictionary) -> bool:
+	return int(profile.level) >= int(sk.get("unlock", 1))
+
+
+func skill_level(id: String) -> int:
+	return clampi(int(profile.skill_levels.get(id, 1)), 1, Classes.SKILL_MAX_LEVEL)
+
+
+## Hệ số sát thương theo cấp kỹ năng (+8%/cấp).
+func skill_level_mult(id: String) -> float:
+	return 1.0 + Classes.SKILL_LEVEL_MUL * (skill_level(id) - 1)
+
+
+## Đổi ô kỹ năng và tẩy điểm chỉ ở vùng an toàn (làng, trại, thành) — docs/13 mục 4.1, Q67.
+func in_safe_zone() -> bool:
+	return player.pos.distance_to(safe_pos) < safe_r + 20.0 and not Chapters.safe_blocked(self)
+
+
+func skill_upgrade(id: String) -> Dictionary:
+	var sk := Classes.skill_by_id(profile.class_id, id)
+	if sk.is_empty():
+		return _skill_result(false, "Không có kỹ năng này.")
+	if not skill_unlocked(sk):
+		return _skill_result(false, "%s mở ở cấp %d." % [sk.name, int(sk.unlock)])
+	if skill_level(id) >= Classes.SKILL_MAX_LEVEL:
+		return _skill_result(false, "%s đã đạt cấp tối đa." % sk.name)
+	if int(profile.skill_points) <= 0:
+		return _skill_result(false, "Không còn Điểm Kỹ Năng (mỗi lần lên cấp +1).")
+	profile.skill_points = int(profile.skill_points) - 1
+	profile.skill_levels[id] = skill_level(id) + 1
+	return _skill_result(true, "%s lên cấp %d." % [sk.name, skill_level(id)])
+
+
+func skill_reset() -> Dictionary:
+	if not in_safe_zone():
+		return _skill_result(false, "Tẩy điểm kỹ năng ở vùng an toàn (làng, trại, thành).")
+	var refund := 0
+	for id in profile.skill_levels:
+		refund += maxi(0, int(profile.skill_levels[id]) - 1)
+	profile.skill_levels = {}
+	profile.skill_points = int(profile.skill_points) + refund
+	return _skill_result(true, "Tẩy điểm kỹ năng: hoàn %d điểm." % refund)
+
+
+## Lắp kỹ năng id vào ô slot; nếu kỹ năng đang ở ô khác thì 2 ô đổi chỗ (kể cả hồi chiêu).
+func set_slot(slot: int, id: String) -> Dictionary:
+	if not in_safe_zone():
+		return _skill_result(false, "Đổi ô kỹ năng ở vùng an toàn (làng, trại, thành).")
+	var sk := Classes.skill_by_id(profile.class_id, id)
+	if sk.is_empty() or slot < 0 or slot >= Classes.SKILL_SLOTS:
+		return _skill_result(false, "Không lắp được.")
+	_ensure_loadout()
+	var lo: Array = profile.loadout
+	var from := lo.find(id)
+	if from == slot:
+		return _skill_result(true, "")
+	if from >= 0:
+		lo[from] = lo[slot]
+		var tmp: float = player.skill_cds[from]
+		player.skill_cds[from] = player.skill_cds[slot]
+		player.skill_cds[slot] = tmp
+	else:
+		player.skill_cds[slot] = 0.0
+	lo[slot] = id
+	return _skill_result(true, "%s → ô %d." % [sk.name, slot + 1])
+
+
+func _skill_result(ok: bool, msg: String) -> Dictionary:
+	if msg != "":
+		_message(msg, "good" if ok else "bad")
+	return {"ok": ok, "message": msg}
 
 
 ## Ngũ Hành Bộc Phá: kỹ năng 1 trong 2 giây sau khi đổi hệ (+100%, Lv10 +150%). Trả về true nếu kích hoạt.
@@ -1876,6 +1984,11 @@ func add_exp(amount: float, from_combat: bool) -> void:
 		profile.xp -= Formulas.exp_to_next(profile.level)
 		profile.level += 1
 		profile.unspent += Config.POINTS_PER_LEVEL
+		profile.skill_points = int(profile.skill_points) + 1
+		for sk in Classes.skills_of(profile.class_id):
+			if int(sk.get("unlock", 1)) == profile.level:
+				_message("Mở kỹ năng mới: %s! Phím U mở bảng Kỹ năng." % sk.name, "good")
+				_events.append({"type": "skill_unlock", "id": sk.id, "name": sk.name})
 		profile.torches = mini(Explore.torch_max(profile), profile.torches + 1)
 		_refresh_stats()
 		player.hp = stats.max_hp
@@ -1883,7 +1996,7 @@ func add_exp(amount: float, from_combat: bool) -> void:
 		_events.append({"type": "levelup", "level": profile.level})
 		_sfx("levelup")
 		_message(
-			"Lên cấp %d! +%d điểm tiềm năng (C), +1 Đuốc Khai Giới." % [profile.level, Config.POINTS_PER_LEVEL], "good"
+			"Lên cấp %d! +%d điểm tiềm năng (C), +1 Điểm Kỹ Năng (U), +1 Đuốc Khai Giới." % [profile.level, Config.POINTS_PER_LEVEL], "good"
 		)
 
 
@@ -3612,7 +3725,9 @@ func _auto_input(input: Dictionary) -> Dictionary:
 	out.attack = true
 	for i in 4:
 		var key := "skill_%d" % (i + 1)
-		var sk: Dictionary = Classes.skill(profile.class_id, i)
+		var sk: Dictionary = slot_skill(i)
+		if sk.is_empty() or not skill_unlocked(sk):
+			continue
 		var useful: bool = sk.mul > 0.0 and gap < (380.0 if is_ranged() else 160.0)
 		if useful and player.skill_cds[i] <= 0.0 and player.mp >= float(sk.mp) + 10.0:
 			out[key] = true

@@ -161,6 +161,10 @@ func _init() -> void:
 	# Spec_Notes đợt 5
 	_run("SN5-T1 bấm bản đồ nhỏ: tự chạy tới, tới nơi / tự đi / kẹt / đổi map thì dừng", _test_sn5_travel)
 	_run("SN5-T2 chữ nhặt đồ: xếp dòng, gộp vàng, mỗi món một dòng, tối đa 6", _test_sn5_pickup_notes)
+	# SK1 — hệ kỹ năng (docs/13)
+	_run("SK1-T1 kỹ năng mở theo cấp 1/1/4/8, kỹ năng khoá không dùng được", _test_sk1_unlock)
+	_run("SK1-T2 Điểm Kỹ Năng, cấp kỹ năng +8% / −4% hồi chiêu, tẩy điểm ở vùng an toàn", _test_sk1_levels)
+	_run("SK1-T3 4 ô lắp: đổi chỗ ở vùng an toàn, phím theo ô, save v13 + bù điểm save cũ", _test_sk1_loadout)
 	_run("PACE-T1 nhịp lên cấp 1 → 20 chỉ bằng đánh quái (bot cày, đo phút)", _test_pace_mobs)
 	for c in Classes.ORDER:
 		_run("PACE-T2 %s cấp 10 → 20 vùng 2" % c, _test_pace_r2.bind(c))
@@ -1168,6 +1172,7 @@ func _test_hunter_shot() -> void:
 func _test_class_skills() -> void:
 	for class_id in Classes.ORDER:
 		var w := _m3_world(class_id)
+		w.profile.level = 8  # SK1: mở đủ 4 kỹ năng (không tính lại chỉ số)
 		for i in 4:
 			var p := w.player
 			p.mp = w.stats.max_mp
@@ -1186,6 +1191,7 @@ func _test_class_skills() -> void:
 	# Kiếm Khí và Tên Xuyên Phá xuyên quái
 	for pair in [["kiem-khach", 2], ["tho-san", 1]]:
 		var w := _m3_world(pair[0])
+		w.profile.level = 8  # SK1: mở đủ 4 kỹ năng
 		w.player.pos = Vector2(800, 800)
 		w.player.mp = 999.0
 		var a := _dummy(w, "wolf", 1, w.player.pos + Vector2(150, 0))
@@ -1195,6 +1201,7 @@ func _test_class_skills() -> void:
 		_check(a.hp < a.max_hp and b.hp < b.max_hp, "%s: đạn kỹ năng xuyên 2 quái" % pair[0])
 	# Bẫy Gai trói
 	var hw := _m3_world("tho-san")
+	hw.profile.level = 8  # SK1: mở đủ 4 kỹ năng
 	hw.player.pos = Vector2(800, 800)
 	hw.player.mp = 999.0
 	hw.use_skill(2)
@@ -1205,6 +1212,7 @@ func _test_class_skills() -> void:
 	_check(wolf.root_timer > 1.5 and wolf.hp < wolf.max_hp, "Bẫy Gai nổ và trói 2 giây")
 	# Thiết Bích giảm 50%
 	var gw := _m3_world("kiem-khach")
+	gw.profile.level = 8  # SK1: mở đủ 4 kỹ năng
 	gw.player.hp = 1000.0
 	gw._damage_player(40.0, 1.0)
 	var d1 := 1000.0 - gw.player.hp
@@ -1491,8 +1499,8 @@ func _test_c1_quests() -> void:
 	p.unspent = 0
 	w.player.mp = 999.0
 	w.use_skill(1)
-	w.player.skill_cds[2] = 0.0
-	w.use_skill(2)
+	w.player.skill_cds[0] = 0.0
+	w.use_skill(0)
 	_check(p.quest_step == 3, "dùng 2 kỹ năng → bước 3")
 	_tick(w, {"dodge": true}, 1)
 	_check(p.quest_step == 4, "né 1 lần → bước 4")
@@ -2159,6 +2167,7 @@ func _test_sn_mage_stats() -> void:
 ## SN-T2: Hỏa Cầu nổ lan; Lôi Xích nảy; Băng Ngục trói; Thiên Thạch rơi sau 0,8 giây; Pháp Thuẫn hút sát thương.
 func _test_sn_mage_skills() -> void:
 	var w := _m3_world("phap-su")
+	w.profile.level = 8  # SK1: mở đủ 4 kỹ năng
 	w.player.pos = Vector2(900, 900)
 	var a := _dummy(w, "wolf", 1, w.player.pos + Vector2(200, 0))
 	var b := _dummy(w, "wolf", 1, w.player.pos + Vector2(225, 20))
@@ -2170,6 +2179,7 @@ func _test_sn_mage_skills() -> void:
 
 	# Lôi Xích: 6 quái cách nhau 100 → trúng 5 (1 + 4 lần nảy); quái ở xa 300 không trúng.
 	var cw := _m3_world("phap-su")
+	cw.profile.level = 8  # SK1: mở đủ 4 kỹ năng
 	cw.player.pos = Vector2(900, 900)
 	cw.player.mp = 999.0
 	var row: Array = []
@@ -2182,6 +2192,7 @@ func _test_sn_mage_skills() -> void:
 
 	# Băng Ngục: trói 2 giây
 	var nw := _m3_world("phap-su")
+	nw.profile.level = 8  # SK1: mở đủ 4 kỹ năng
 	nw.player.pos = Vector2(900, 900)
 	nw.player.mp = 999.0
 	var near := nw.spawn_enemy("wolf", 1, nw.player.pos + Vector2(60, 0))
@@ -2192,6 +2203,7 @@ func _test_sn_mage_skills() -> void:
 
 	# Thiên Thạch: chưa rơi trước 0,8 giây, rơi sau đó
 	var mw := _m3_world("phap-su")
+	mw.profile.level = 8  # SK1: mở đủ 4 kỹ năng
 	mw.player.pos = Vector2(900, 900)
 	mw.player.mp = 999.0
 	var t := _dummy(mw, "wolf", 1, mw.player.pos + Vector2(250, 0))
@@ -2204,6 +2216,7 @@ func _test_sn_mage_skills() -> void:
 
 	# Pháp Thuẫn: hút sát thương tới 30% HP rồi vỡ
 	var sw := _m3_world("phap-su")
+	sw.profile.level = 8  # SK1: mở đủ 4 kỹ năng
 	sw.player.mp = 999.0
 	sw.player.hp = sw.stats.max_hp
 	sw.use_skill(3)
@@ -4209,3 +4222,101 @@ func _test_sn5_pickup_notes() -> void:
 	_check(w.pickup_notes.size() == GameWorld.PICKUP_NOTES_MAX, "tối đa 6 dòng")
 	_tick(w, {}, 200)
 	_check(w.pickup_notes.is_empty(), "các dòng tự mất sau vài giây")
+
+
+# ------------------------------------------------------------------ SK1 — hệ kỹ năng (docs/13)
+
+
+func _test_sk1_unlock() -> void:
+	for class_id in Classes.ORDER:
+		var lv: Array = []
+		for sk in Classes.skills_of(class_id):
+			lv.append(int(sk.unlock))
+		_check(lv == [1, 1, 4, 8], "%s: kỹ năng mở ở cấp 1, 1, 4, 8" % class_id)
+	var w := _world("tay-nhanh")
+	w.profile.level = 1
+	w.player.mp = 999.0
+	_check(w.use_skill(0) and w.use_skill(1), "cấp 1: dùng được 2 kỹ năng đầu")
+	_check(not w.use_skill(2) and not w.use_skill(3), "cấp 1: kỹ năng 3, 4 còn khoá")
+	w.profile.level = 3
+	w.profile.xp = 0
+	w.add_exp(float(Formulas.exp_to_next(3)) + 1.0, false)
+	_check(w.profile.level == 4 and w.drain_events().any(func(e): return e.type == "skill_unlock" and e.id == "wave"), "lên cấp 4: báo mở Kiếm Khí")
+	w.player.skill_cds[2] = 0.0
+	_check(w.use_skill(2), "cấp 4: dùng được kỹ năng 3")
+
+
+func _test_sk1_levels() -> void:
+	var w := _world("tay-nhanh")
+	var p = w.profile
+	p.level = 10
+	p.skill_points = 0
+	var lv0: int = p.level
+	p.xp = 0
+	w.add_exp(float(Formulas.exp_to_next(lv0)) + 1.0, false)
+	_check(int(p.skill_points) == 1, "lên cấp: +1 Điểm Kỹ Năng")
+	p.skill_points = 20
+	_check(w.skill_upgrade("spin").ok and w.skill_level("spin") == 2 and int(p.skill_points) == 19, "nâng Xoáy Kiếm lên cấp 2 tốn 1 điểm")
+	_check(is_equal_approx(w.skill_level_mult("spin"), 1.08), "cấp 2: +8% hệ số")
+	for i in 20:
+		w.skill_upgrade("spin")
+	_check(w.skill_level("spin") == Classes.SKILL_MAX_LEVEL, "tối đa cấp 10")
+	# kỹ năng hỗ trợ: giảm hồi chiêu
+	var cd1: float = w.skill_cd_of(3)
+	p.skill_points = 9
+	for i in 9:
+		w.skill_upgrade("guard")
+	_check(is_equal_approx(w.skill_cd_of(3), cd1 * (1.0 - 0.04 * 9)), "Thiết Bích cấp 10: −36% hồi chiêu")
+	# sát thương thật tăng theo cấp
+	w.enemies = []
+	var e1 := w.spawn_enemy("wolf", 1, w.player.pos + Vector2(40, 0))
+	e1.max_hp = 1e6
+	e1.hp = 1e6
+	w.player.mp = 999.0
+	p.skill_levels["spin"] = 1
+	w.player.skill_cds[0] = 0.0
+	w.use_skill(0)
+	var d1: float = 1e6 - e1.hp
+	e1.hp = 1e6
+	p.skill_levels["spin"] = 10
+	w.player.skill_cds[0] = 0.0
+	w.use_skill(0)
+	var d10: float = 1e6 - e1.hp
+	_check(d10 > d1 * 1.5, "Xoáy Kiếm cấp 10 mạnh hơn rõ (%.0f → %.0f)" % [d1, d10])
+	# tẩy điểm: chỉ ở vùng an toàn
+	w.player.pos = w.safe_pos + Vector2(w.safe_r + 400.0, 0)
+	_check(not w.skill_reset().ok, "ngoài vùng an toàn: không tẩy điểm")
+	w.player.pos = w.safe_pos
+	var pts: int = int(p.skill_points)
+	_check(w.skill_reset().ok and int(p.skill_points) == pts + 9 + 9 and w.skill_level("spin") == 1, "tẩy điểm ở làng: hoàn đủ điểm")
+
+
+func _test_sk1_loadout() -> void:
+	var w := _world("tay-nhanh")
+	var p = w.profile
+	p.level = 10
+	_check(w.slot_skill(0).id == "spin" and w.slot_skill(3).id == "guard", "mặc định: ô theo thứ tự lớp")
+	w.player.pos = w.safe_pos + Vector2(w.safe_r + 400.0, 0)
+	_check(not w.set_slot(0, "wave").ok, "ngoài vùng an toàn: không đổi ô")
+	w.player.pos = w.safe_pos
+	w.player.skill_cds[2] = 3.0
+	_check(w.set_slot(0, "wave").ok and w.slot_skill(0).id == "wave" and w.slot_skill(2).id == "spin", "đổi ô: Kiếm Khí ↔ Xoáy Kiếm")
+	_check(is_equal_approx(w.player.skill_cds[0], 3.0), "hồi chiêu đi theo kỹ năng khi đổi ô")
+	w.player.skill_cds[0] = 0.0
+	w.player.mp = 999.0
+	w.player.pos = w.safe_pos + Vector2(500, 0)
+	var shots0: int = w.shots.size()
+	_tick(w, {"skill_1": true}, 1)
+	_check(w.shots.size() > shots0, "phím 1 dùng kỹ năng ở ô 1 (Kiếm Khí)")
+	# save v13
+	var d: Dictionary = JSON.parse_string(JSON.stringify(p.to_dict()))
+	_check(int(d.version) >= 13, "save version 13")
+	var back := Profile.new()
+	back.load_dict(d)
+	_check(back.loadout == p.loadout, "save giữ bộ lắp")
+	d.version = 11
+	for k in ["skill_points", "skill_levels", "loadout"]:
+		d.erase(k)
+	d.level = 12
+	var old := Profile.new()
+	_check(old.load_dict(d) and old.skill_points == 11 and old.loadout.is_empty(), "save cũ cấp 12: bù 11 Điểm Kỹ Năng, bộ lắp mặc định")

@@ -13,6 +13,7 @@ const StatsPanel = preload("res://scripts/ui/stats_panel.gd")
 const MapPanel = preload("res://scripts/ui/map_panel.gd")
 const InventoryPanel = preload("res://scripts/ui/inventory_panel.gd")
 const TalentPanel = preload("res://scripts/ui/talent_panel.gd")
+const SkillPanel = preload("res://scripts/ui/skill_panel.gd")
 const WorldMapPanel = preload("res://scripts/ui/world_map_panel.gd")
 const Talents = preload("res://scripts/data/talents.gd")
 const Items = preload("res://scripts/core/items.gd")
@@ -46,6 +47,7 @@ const KEY_ACTIONS := {
 	"toggle_map": [KEY_M, KEY_TAB],
 	"toggle_inventory": [KEY_I, KEY_B],
 	"toggle_talent": [KEY_T],
+	"toggle_skills": [KEY_U],
 	"toggle_world": [KEY_N],
 	"interact": [KEY_E],
 	"auto_fight": [KEY_Z],
@@ -61,6 +63,7 @@ var stats_panel: StatsPanel
 var map_panel: MapPanel
 var inventory_panel: InventoryPanel
 var talent_panel: TalentPanel
+var skill_panel: SkillPanel
 var world_panel: WorldMapPanel
 ## Smoke test gắn bot vào đây để thay cho bàn phím/chuột.
 var bot := Callable()
@@ -215,7 +218,7 @@ func _input(event: InputEvent) -> void:
 				hud.log_message("Cửa hàng ở Làng Thanh Thạch — đứng trong làng rồi bấm E.", "info")
 		get_viewport().set_input_as_handled()
 		return
-	for pair in [["toggle_stats", stats_panel], ["toggle_map", map_panel], ["toggle_inventory", inventory_panel], ["toggle_talent", talent_panel], ["toggle_world", world_panel]]:
+	for pair in [["toggle_stats", stats_panel], ["toggle_map", map_panel], ["toggle_inventory", inventory_panel], ["toggle_talent", talent_panel], ["toggle_world", world_panel], ["toggle_skills", skill_panel]]:
 		if event.is_action_pressed(pair[0]):
 			var target = pair[1]
 			for panel in _panels():
@@ -236,7 +239,7 @@ func _input(event: InputEvent) -> void:
 
 
 func _panels() -> Array:
-	return [stats_panel, map_panel, inventory_panel, talent_panel, world_panel, shop_panel, job2_panel]
+	return [stats_panel, map_panel, inventory_panel, talent_panel, world_panel, shop_panel, job2_panel, skill_panel]
 
 
 func _any_panel_open() -> bool:
@@ -462,6 +465,8 @@ func _start_world(p: Profile) -> void:
 	_ui.add_child(inventory_panel)
 	talent_panel = TalentPanel.new()
 	_ui.add_child(talent_panel)
+	skill_panel = SkillPanel.new()
+	_ui.add_child(skill_panel)
 	world_panel = WorldMapPanel.new()
 	_ui.add_child(world_panel)
 	shop_panel = ShopPanel.new()
@@ -480,7 +485,7 @@ func _start_world(p: Profile) -> void:
 
 func _end_session() -> void:
 	_close_victory()
-	for n in [hud, stats_panel, map_panel, inventory_panel, talent_panel, world_panel, dialog, shop_panel]:
+	for n in [hud, stats_panel, map_panel, inventory_panel, talent_panel, world_panel, dialog, shop_panel, job2_panel, skill_panel]:
 		if n != null:
 			n.queue_free()
 	hud = null
@@ -488,6 +493,7 @@ func _end_session() -> void:
 	map_panel = null
 	inventory_panel = null
 	talent_panel = null
+	skill_panel = null
 	world_panel = null
 	dialog = null
 	shop_panel = null
@@ -663,6 +669,10 @@ func _run_smoke(dir: String) -> void:
 	await _wait(0.3)
 	await _shot(dir, "05d-talent")
 	talent_panel.close()
+	skill_panel.open(world)
+	await _wait(0.3)
+	await _shot(dir, "05g-skills")
+	skill_panel.close()
 	map_panel.open(world)
 	await _wait(0.3)
 	await _shot(dir, "05e-map-buildings")

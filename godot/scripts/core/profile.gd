@@ -12,7 +12,8 @@ const Explore = preload("res://scripts/core/explore.gd")
 ## v9: M6 chương 3 — chuyển chức 1 (job), nhiệm vụ chương 3 (quest.ch3/kills3/oases), miễn nắng (docs/10 mục 6).
 ## v10: M7 chương 4 — tiến hoá Thiên phú (evo), nhiệm vụ chương 4, Thuốc Giải, Đuốc Lửa (docs/11 mục 6).
 ## v11: M8 chương 5 — chuyển chức 2 (job2), Tinh Thạch, Bình Nước Thánh, đột kích Kim Luân (docs/12 mục 6).
-const VERSION := 11
+## v13: SK1 hệ kỹ năng — Điểm Kỹ Năng, cấp kỹ năng, 4 ô lắp (docs/13). (v12 dành cho M9 chương 6.)
+const VERSION := 13
 
 var talent := ""
 var level := 1
@@ -104,6 +105,10 @@ var antidotes := 0
 var fire_torches := 0
 ## M8: chức 2 ("" = chưa), Tinh Thạch, Bình Nước Thánh, giây chơi ở vùng 5 từ lần đột kích trước, phạt ngừng sản xuất tới (giây chơi).
 var job2 := ""
+## SK1: Điểm Kỹ Năng chưa dùng, {id kỹ năng: cấp 1–10}, id kỹ năng ở 4 ô (rỗng = mặc định theo lớp).
+var skill_points := 0
+var skill_levels := {}
+var loadout: Array = []
 var crystal := 0.0
 var holy_water := 0
 var raid_play := 0.0
@@ -189,6 +194,9 @@ func to_dict() -> Dictionary:
 		"antidotes": antidotes,
 		"fire_torches": fire_torches,
 		"job2": job2,
+		"skill_points": skill_points,
+		"skill_levels": skill_levels,
+		"loadout": loadout,
 		"crystal": crystal,
 		"holy_water": holy_water,
 		"raid_play": raid_play,
@@ -314,6 +322,15 @@ func load_dict(d: Dictionary) -> bool:
 	antidotes = int(d.get("antidotes", 0))
 	fire_torches = int(d.get("fire_torches", 0))
 	job2 = str(d.get("job2", ""))
+	# SK1: save cũ chưa có Điểm Kỹ Năng → bù 1 điểm cho mỗi cấp đã lên.
+	skill_points = int(d.get("skill_points", maxi(0, level - 1)))
+	skill_levels = {}
+	var sl: Dictionary = d.get("skill_levels", {})
+	for k in sl:
+		skill_levels[str(k)] = int(sl[k])
+	loadout = []
+	for k in d.get("loadout", []):
+		loadout.append(str(k))
 	crystal = float(d.get("crystal", 0.0))
 	holy_water = int(d.get("holy_water", 0))
 	raid_play = float(d.get("raid_play", 0.0))

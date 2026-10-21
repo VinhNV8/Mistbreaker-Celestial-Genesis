@@ -377,7 +377,10 @@ Mỗi đợt theo quy trình: **viết spec → duyệt → code → test → c�
 
 - [x] SN5-01: bấm bản đồ nhỏ để tự chạy tới
 - [x] SN5-10: chữ nhặt đồ xếp dòng, gộp vàng, không đè nhau
-- [ ] SN5-20: hệ kỹ năng — đề xuất ở [13](13-he-ky-nang.md), **chờ chủ dự án chọn hướng (Q65–Q70)**, sau đó làm SK1 → SK3
+- [x] SN5-20: hệ kỹ năng — đề xuất ở [13](13-he-ky-nang.md), **duyệt "theo đề xuất"** 21/10/2026
+- [x] SK1: mở kỹ năng theo cấp, Điểm Kỹ Năng, cấp kỹ năng 1–10, 4 ô lắp (đổi ở vùng an toàn), bảng Kỹ năng (U), save v13 — [13 mục 7](13-he-ky-nang.md)
+- [ ] SK2: +2 kỹ năng cấp 15/22, +2 kỹ năng chuyển chức 1, biến thể 3 tầng, ngũ hành ở tầng II
+- [ ] SK3: Bí Kíp rơi + Mảnh Bí Kíp, kỹ năng tối thượng cấp 45, kỹ năng nhánh chuyển chức 2
 
 ### G — Đồ hoạ và âm thanh
 
@@ -400,7 +403,7 @@ Mỗi đợt theo quy trình: **viết spec → duyệt → code → test → c�
 | 7 | Q13–Q16: số liệu Đạo Tặc cướp thuộc tính, độc nhất server — [CR-01](03-mvp-spec.md) | Thiên phú SSS | Như CR-01 (đã code ở M3) |
 | 10 | Q28–Q34: 8 kỹ năng, phím 1–4, INT/LUK, né tránh, MP, tinh anh vùng 1, không đổi lớp — [03 mục 5.11](03-mvp-spec.md) | Combat 2 lớp | Như spec M3 (đã code) |
 | 11 | Q46–Q50: phép kết hợp Ngũ Hành của Pháp Sư, cách chuyển cường hoá, bộ lọc mặc định, kích thước map, sương che quái — [09 mục 5](09-spec-notes-dot-2.md) | Pháp Sư, túi đồ, bản đồ | Như 09 mục 5 (đã code) |
-| 13 | Q65–Q70: hướng hệ kỹ năng (cố định / mở theo cấp + chuyển chức / rơi rồi học / kết hợp), số ô kỹ năng, Điểm Kỹ Năng, Bí Kíp giao dịch, ngũ hành ở biến thể, làm kỹ năng hay chương 6 trước — [13 mục 6](13-he-ky-nang.md) | Toàn bộ combat | Chưa code — đề xuất: mở theo cấp + chuyển chức + Bí Kíp |
+| 13 | ~~Q65–Q70: hệ kỹ năng~~ — [13 mục 6](13-he-ky-nang.md) | Toàn bộ combat | **Đã chốt** 21/10/2026 "theo đề xuất": mở theo cấp + chuyển chức + Bí Kíp, 4 ô, Điểm Kỹ Năng riêng, Bí Kíp tầng III khoá nhân vật, ngũ hành ở biến thể tầng II, làm SK1 trước |
 | 12 | Q59–Q64: mức "chiến tranh lãnh địa" ở MVP, thiên thạch −25% HP, Bình Nước Thánh cho Phượng Hoàng, chuyển chức 2 tốn 30 Tinh Thạch, ô Thiên phú phụ 2, phe Kim Luân — [12 mục 8](12-chuong-5.md) | Chương 5 | Như 12 mục 8 |
 
 ### 13.1. Đã chốt

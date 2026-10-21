@@ -4,8 +4,8 @@
 | --- | --- |
 | Dự án | Thiên Phú Khai Giới |
 | Nguồn | Spec_Notes đợt 5: *"Cần nghiên cứu kỹ về skills của từng hệ, đề xuất các hướng build skills, nên cố định, hay mở theo level (chuyển chức) hay là nên đánh quái rơi skills và học…"* · [Kịch bản](kich-ban-game-thien-phu-khai-gioi.md) mục 4 (4 lớp, 3 lần chuyển chức), mục 5 (*"đánh thường + 4 kỹ năng + 1 kỹ năng Thiên phú + né lăn"*, ngũ hành tương khắc) |
-| Loại tài liệu | Nghiên cứu + đề xuất. **Chưa code** — chờ chủ dự án chọn hướng (mục 6) |
-| Trạng thái | 🟡 Chờ duyệt (21/10/2026, phiên game-c6) |
+| Loại tài liệu | Nghiên cứu + đề xuất + kế hoạch triển khai |
+| Trạng thái | ✅ **Đã duyệt "theo đề xuất"** (21/10/2026) — Q65–Q70 như cột Đề xuất mục 6. **SK1 xong** (mục 7); SK2, SK3 chưa làm |
 
 ## 1. Hiện trạng trong game
 
@@ -133,6 +133,21 @@ Biến thể tầng II của mọi kỹ năng sát thương là **một trong 5 
 | Q68 | Bí Kíp có giao dịch được không (khi có chợ ở Beta)? | Bí Kíp tầng I–II giao dịch được, tầng III khoá vào nhân vật |
 | Q69 | Ngũ hành ở biến thể tầng II, hay cho đổi hệ tự do? | **Biến thể tầng II** — đổi bằng cách chọn lại biến thể (miễn phí ở vùng an toàn); tự do đổi hệ là đặc quyền của Ngũ Hành Linh Căn |
 | Q70 | Làm hệ kỹ năng trước hay làm tiếp Chương 6? | Làm **SK1** trước (nền cho mọi chương sau; cân bằng chương 6+ sẽ dựa trên nó) |
+
+## 7. Kết quả SK1 (21/10/2026)
+
+| Hạng mục | Đã làm |
+| --- | --- |
+| Mở theo cấp | Mỗi kỹ năng có `unlock` trong `classes.gd`: 2 kỹ năng đầu cấp 1, kỹ năng 3 cấp 4, kỹ năng 4 cấp 8 (3 lớp). Lên cấp mở kỹ năng thì báo + sự kiện `skill_unlock`. Kỹ năng khoá: ô mờ, ghi "Cấp X", bấm thì báo cấp mở; Tự đánh bỏ qua |
+| Điểm Kỹ Năng | +1 mỗi lần lên cấp (tách khỏi điểm tiềm năng, Q67). Save cũ được bù `cấp − 1` điểm |
+| Cấp kỹ năng 1–10 | Kỹ năng sát thương ×(1 + 8% × (cấp − 1)) → cấp 10 ×1,72; kỹ năng hỗ trợ (Thiết Bích, Ưng Nhãn, Pháp Thuẫn) hồi chiêu −4%/cấp → cấp 10 −36% |
+| 4 ô lắp | `profile.loadout` (id kỹ năng), phím 1–4 theo ô; `GameWorld.slot_skill(i)` thay mọi chỗ đọc kỹ năng theo vị trí. Đổi ô (2 ô đổi chỗ, hồi chiêu đi theo kỹ năng) và **tẩy điểm miễn phí chỉ ở vùng an toàn** |
+| Giao diện | Bảng **Kỹ năng — phím U** (`ui/skill_panel.gd`; phím K đã là kỹ năng 1 khi chơi bàn phím, Q29): cấp, mô tả, +1 cấp, nút ô 1–4, Tẩy điểm. Thanh kỹ năng ghi cấp kỹ năng (ví dụ "Xoáy Kiếm 5"). Màn chọn lớp ghi cấp mở |
+| Save | v13: `skill_points`, `skill_levels`, `loadout` (v12 dành cho M9 chương 6) |
+| Cân bằng | TL-B…TL-B5 không đổi: bot dùng kỹ năng cấp 1 (Điểm Kỹ Năng chưa dùng), các boss ở cấp ≥ 5. Ở TL-B (cấp 5) kỹ năng 4 (hỗ trợ) bị khoá — không ảnh hưởng thời gian. Khi SK2 có thêm kỹ năng, cần build mẫu cho từng lớp trong TL-B |
+| Kiểm thử | SK1-T1 (mốc mở, khoá), SK1-T2 (điểm, +8%, −4%, tẩy ở vùng an toàn), SK1-T3 (đổi ô, phím theo ô, save v13 + bù điểm). Sửa CL-T3, SN-T2 (đặt cấp 8), C1-T4 (dùng 2 kỹ năng cấp 1) |
+
+**Tiếp theo:** SK2 — +2 kỹ năng mỗi lớp ở cấp 15/22, +2 kỹ năng chuyển chức 1, biến thể tầng I–III + 5 hệ ở tầng II; SK3 — Bí Kíp + Mảnh Bí Kíp, kỹ năng tối thượng cấp 45, kỹ năng nhánh chuyển chức 2.
 
 ## Nguồn tham khảo
 

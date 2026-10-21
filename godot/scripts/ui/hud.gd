@@ -381,13 +381,18 @@ func _update_skill_bar(w: GameWorld, t: Dictionary, rank_color: Color) -> void:
 	_skills.set_slot(SLOT_BASIC, {"key": "J", "name": c.basic.name, "icon": SpriteLib.icon("skill-" + str(c.basic.icon)),
 		"sub": "Đánh thường"})
 	for i in 4:
-		var sk: Dictionary = c.skills[i]
+		# SK1: ô kỹ năng theo bộ lắp; chưa mở thì mờ + ghi cấp mở.
+		var sk: Dictionary = w.slot_skill(i)
+		if sk.is_empty():
+			continue
 		var cd_left: float = pl.skill_cds[i]
 		var mp := int(w.skill_mp(i))
+		var locked: bool = not w.skill_unlocked(sk)
 		var low := pl.mp < mp
-		_skills.set_slot(i + 1, {"key": str(i + 1), "name": sk.name, "icon": SpriteLib.icon("skill-" + str(sk.icon)),
-			"cd": cd_left / maxf(0.1, w.skill_cd_of(i)), "cd_text": str(ceili(cd_left)) if cd_left > 0.0 else "",
-			"sub": "%d MP" % mp, "dim": low})
+		var lv: int = w.skill_level(str(sk.id))
+		_skills.set_slot(i + 1, {"key": str(i + 1), "name": sk.name + ((" %d" % lv) if lv > 1 else ""), "icon": SpriteLib.icon("skill-" + str(sk.icon)),
+			"cd": 0.0 if locked else cd_left / maxf(0.1, w.skill_cd_of(i)), "cd_text": "" if locked else (str(ceili(cd_left)) if cd_left > 0.0 else ""),
+			"sub": ("Cấp %d" % int(sk.unlock)) if locked else ("%d MP" % mp), "dim": low or locked})
 	_skills.set_slot(SLOT_DODGE, {"key": "Space", "name": "Né lăn", "icon": SpriteLib.icon("skill-dodge"),
 		"cd": pl.dodge_cd / GameWorld.DODGE_CD, "cd_text": ("%.1f" % pl.dodge_cd) if pl.dodge_cd > 0.0 else ""})
 	var tal := {"key": "L", "icon": SpriteLib.talent_icon(t.id), "ring": rank_color}
