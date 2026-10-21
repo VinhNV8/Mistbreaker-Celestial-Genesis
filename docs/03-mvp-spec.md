@@ -905,6 +905,17 @@ Kịch bản mục 7: "Chinh phục: hạ quái canh giữ **hoặc giải câu 
 | M5-T8 | Câu đố: sinh cố định, đủ 2 loại; Trận Đèn Cổ chưa giải sẵn và giải được trong ≤ 3 bước (thử hết 512 tổ hợp); đáp án đúng vị trí; vùng 1 không hỏi chuyện chương 2; câu ngũ hành khớp bảng khắc; giải được +160 vàng +1 Đá; sai khoá 30 giây; phá khoá +80 vàng |
 | PACE-T1, T2 | Đo nhịp (chạy riêng `--only=PACE`, vài phút): bot cày từ cấp 1 và từ cấp 10, in phút tới từng mốc cấp, số quái, số lần chết theo map |
 
+## 8b. Spec_Notes đợt 4 — gọn giao diện (UI-07)
+
+Ghi chú của chủ dự án: *"Kỹ năng đang to quá — khi mở toàn màn hình bị chiếm khá nhiều diện tích; thanh máu cũng vậy. Thanh tài nguyên nên căn giữa góc trên; vị trí cũ của thanh tài nguyên đổi cho bản đồ nhỏ."*
+
+| Mã | Yêu cầu | Trạng thái |
+| --- | --- | --- |
+| UI-07a | Thanh kỹ năng thu nhỏ ×0,8 (chữ trong thanh vẽ to hơn để vẫn đọc được ở 1366 × 768) | ✅ |
+| UI-07b | Khung nhân vật (góc trái): rộng 290 → 240, thanh HP 20 → 15, MP/EXP 10, chữ nhỏ hơn | ✅ |
+| UI-07c | Thanh tài nguyên ra **giữa cạnh trên**; bỏ dòng gợi ý "rê chuột…" (chỉ hiện khi Đuốc đang hồi); dòng gió/môi trường và thanh máu boss nằm ngay dưới | ✅ |
+| UI-07d | Bản đồ nhỏ lên **góc phải trên**; khung nhiệm vụ (rộng 260) nằm ngay dưới bản đồ nhỏ | ✅ |
+
 ## 9. Đợt M6 (Alpha) — Chương 3 Sa Mạc Lãng Quên
 
 Spec riêng: [10-chuong-3.md](10-chuong-3.md) — vùng 3 Sa Mạc Xích Sa (C3-01…03), môi trường sa mạc (C3-10…13), quái vùng 3 (C3-20…25), Bọ Cạp Sa Hoàng, Nhân Sư Đá, đồ/bộ vùng 3, Độn Thổ (C3-30…35), cốt truyện + chuyển chức 1 (C3-40…44), save v9, test C3-T1…T6, TL-B3.

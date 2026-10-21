@@ -34,7 +34,7 @@ func set_count(n: int) -> void:
 		if _slots[i] == null:
 			_slots[i] = {}
 			_flash[i] = 0.0
-	custom_minimum_size = Vector2(PAD.x * 2.0 + PITCH * n, PAD.y + R * 2.0 + 44.0 + 14.0)
+	custom_minimum_size = Vector2(PAD.x * 2.0 + PITCH * n, PAD.y + R * 2.0 + 56.0 + 14.0)
 	size = custom_minimum_size
 
 
@@ -158,7 +158,7 @@ func _draw_slot(i: int, c: Vector2, d: Dictionary) -> void:
 	# nhãn phím: viên thuốc ở góc dưới phải
 	var key: String = d.get("key", "")
 	if key != "":
-		var ks := 11
+		var ks := 13
 		var kw := maxf(18.0, f.get_string_size(key, HORIZONTAL_ALIGNMENT_LEFT, -1, ks).x + 10.0)
 		var kc := c + Vector2(R * 0.72, R * 0.72)
 		var kr := Rect2(kc - Vector2(kw / 2.0, 9), Vector2(kw, 18))
@@ -171,10 +171,11 @@ func _draw_slot(i: int, c: Vector2, d: Dictionary) -> void:
 		_text_center(f, kc + Vector2(0, 4), key, ks, GOLD_LIGHT)
 	# tên + dòng phụ
 	var nm: String = d.get("name", "")
-	_text_center(f, c + Vector2(0, R + 19), _fit(f, nm, 12, PITCH - 4.0), 12, UiTheme.TEXT)
+	# UI-07: HUD thu nhỏ thanh (scale 0,8) nên chữ vẽ to hơn để vẫn đọc được.
+	_text_center(f, c + Vector2(0, R + 20), _fit(f, nm, 14, PITCH + 2.0), 14, UiTheme.TEXT)
 	var sub: String = d.get("sub", "")
 	if sub != "":
-		_text_center(UiTheme.font(), c + Vector2(0, R + 33), _fit(UiTheme.font(), sub, 11, PITCH - 4.0), 11,
+		_text_center(UiTheme.font(), c + Vector2(0, R + 36), _fit(UiTheme.font(), sub, 13, PITCH + 2.0), 13,
 			DIM.lightened(0.3) if dim else UiTheme.MUTED)
 
 

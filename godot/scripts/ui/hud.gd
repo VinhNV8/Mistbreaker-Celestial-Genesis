@@ -21,6 +21,7 @@ const Maps = preload("res://scripts/data/maps.gd")
 const SkillBar = preload("res://scripts/ui/skill_bar.gd")
 const Ch3 = preload("res://scripts/core/chapter3.gd")
 ## DH-11: thứ tự ô trên thanh kỹ năng.
+const SKILL_BAR_SCALE := 0.8
 const SLOT_BASIC := 0
 const SLOT_DODGE := 5
 const SLOT_TALENT := 6
@@ -72,25 +73,28 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	mouse_filter = MOUSE_FILTER_IGNORE
 
+	# Spec_Notes đợt 4 (UI-07): khung nhân vật gọn hơn — hẹp hơn, thanh và chữ nhỏ hơn.
 	_tl = PanelContainer.new()
-	_tl.custom_minimum_size.x = 290
-	var v := UiTheme.vbox(6)
+	_tl.custom_minimum_size.x = 240
+	var v := UiTheme.vbox(4)
 	_tl.add_child(v)
 	var row := UiTheme.hbox()
 	_level = UiTheme.label("", "Heading")
+	_level.add_theme_font_size_override("font_size", UiTheme.fs(16))
 	_talent = UiTheme.label("")
+	_talent.add_theme_font_size_override("font_size", UiTheme.fs(12))
 	row.add_child(_level)
 	row.add_child(UiTheme.spacer())
 	row.add_child(_talent)
 	v.add_child(row)
-	_hp_bar = _bar("HpBar", 20)
-	_hp_text = _bar_label(_hp_bar, 12)
+	_hp_bar = _bar("HpBar", 15)
+	_hp_text = _bar_label(_hp_bar, 11)
 	v.add_child(_hp_bar)
-	_mp_bar = _bar("MpBar", 12)
-	_mp_text = _bar_label(_mp_bar, 10)
+	_mp_bar = _bar("MpBar", 10)
+	_mp_text = _bar_label(_mp_bar, 9)
 	v.add_child(_mp_bar)
-	_exp_bar = _bar("ExpBar", 14)
-	_exp_text = _bar_label(_exp_bar, 11)
+	_exp_bar = _bar("ExpBar", 10)
+	_exp_text = _bar_label(_exp_bar, 9)
 	v.add_child(_exp_bar)
 	_power = UiTheme.label("", "Small")
 	v.add_child(_power)
@@ -98,7 +102,7 @@ func _ready() -> void:
 	v.add_child(_extra)
 	_points = UiTheme.label("")
 	_points.add_theme_color_override("font_color", UiTheme.GOLD)
-	_points.add_theme_font_size_override("font_size", 13)
+	_points.add_theme_font_size_override("font_size", UiTheme.fs(12))
 	v.add_child(_points)
 	add_child(_tl)
 
@@ -114,7 +118,7 @@ func _ready() -> void:
 		ic.texture = SpriteLib.icon("res-" + str(info.icon))
 		ic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		ic.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		ic.custom_minimum_size = Vector2(26, 26)
+		ic.custom_minimum_size = Vector2(22, 22)
 		cell.add_child(ic)
 		var l := UiTheme.label("0")
 		l.add_theme_font_override("font", UiTheme.bold_font())
@@ -133,7 +137,7 @@ func _ready() -> void:
 	add_child(_minimap)
 
 	_obj = PanelContainer.new()
-	_obj.custom_minimum_size.x = 290
+	_obj.custom_minimum_size.x = 260
 	var ov := UiTheme.vbox(4)
 	_obj.add_child(ov)
 	_obj_title = UiTheme.label("CHƯƠNG 1 · THỨC TỈNH", "Eyebrow")
@@ -172,6 +176,8 @@ func _ready() -> void:
 
 	_skills = SkillBar.new()
 	_skills.set_count(8)
+	# UI-07: thanh kỹ năng nhỏ hơn (Spec_Notes đợt 4: "kỹ năng đang to quá").
+	_skills.scale = Vector2.ONE * SKILL_BAR_SCALE
 	add_child(_skills)
 
 	_log = UiTheme.vbox(4)
@@ -308,7 +314,9 @@ func update_from(w: GameWorld) -> void:
 		_res_labels[rid].text = str(Resources.value(p, rid)) + ("/%d" % torch_cap if rid == "torches" else "")
 		if rid in HUD_OPTIONAL:
 			_res_slots[i].visible = Resources.value(p, rid) > 0
-	_resources.text = ("Đuốc hồi%s · rê chuột vào icon để xem chú thích" % torch_note) if torch_note != "" else "Rê chuột vào icon để xem chú thích"
+	# UI-07: bỏ dòng gợi ý cố định cho gọn; chỉ hiện khi Đuốc đang hồi.
+	_resources.text = ("Đuốc hồi%s" % torch_note) if torch_note != "" else ""
+	_resources.visible = _resources.text != ""
 
 	_update_quest(w)
 	# M4.2 (GI-01): hướng gió + báo trước 2 giây.
@@ -472,21 +480,30 @@ func _objective(i: int, done: bool, text: String) -> void:
 
 func _layout() -> void:
 	var sz := size
+	# Spec_Notes đợt 4 (UI-07): tài nguyên giữa cạnh trên; bản đồ nhỏ góc phải trên, nhiệm vụ ngay dưới.
 	_tl.position = Vector2(12, 12)
 	_tr.reset_size()
-	_tr.position = Vector2(sz.x - _tr.size.x - 12, 12)
-	_obj.position = Vector2(sz.x - _obj.size.x - 12, _tr.position.y + _tr.size.y + 8)
-	_minimap.position = Vector2(sz.x - _minimap.size.x - 12, _obj.position.y + _obj.size.y + 8)
+	_tr.position = Vector2((sz.x - _tr.size.x) / 2.0, 8)
+	_minimap.position = Vector2(sz.x - _minimap.size.x - 12, 12)
+	_obj.reset_size()
+	_obj.position = Vector2(sz.x - _obj.size.x - 12, _minimap.position.y + _minimap.size.y + 8)
 	var boss_w := clampf(sz.x - 680.0, 260.0, 520.0)
 	_boss_box.size = Vector2(boss_w, 0)
-	_boss_box.position = Vector2((sz.x - boss_w) / 2.0, 14)
+	_boss_box.position = Vector2((sz.x - boss_w) / 2.0, _tr.position.y + _tr.size.y + 6)
 	_wind.reset_size()
-	_wind.position = Vector2((sz.x - _wind.size.x) / 2.0, 92.0 if _boss_box.visible else 18.0)
+	var wind_y := _tr.position.y + _tr.size.y + 6
+	if _boss_box.visible:
+		_boss_box.reset_size()
+		_boss_box.size.x = boss_w
+		_boss_box.position.x = (sz.x - boss_w) / 2.0
+		wind_y = _boss_box.position.y + _boss_box.size.y + 4
+	_wind.position = Vector2((sz.x - _wind.size.x) / 2.0, wind_y)
 	_combo.reset_size()
-	_combo.position = Vector2(sz.x - _combo.size.x - 24, maxf(sz.y / 2.0, _minimap.position.y + _minimap.size.y + 8.0))
-	_skills.position = Vector2((sz.x - _skills.size.x) / 2.0, sz.y - _skills.size.y - 14)
+	_combo.position = Vector2(sz.x - _combo.size.x - 24, maxf(sz.y / 2.0, _obj.position.y + _obj.size.y + 8.0))
+	var sk_size: Vector2 = _skills.custom_minimum_size * _skills.scale
+	_skills.position = Vector2((sz.x - sk_size.x) / 2.0, sz.y - sk_size.y - 8)
 	# UI-02: nhật ký nằm trên thanh kỹ năng.
 	_log.reset_size()
-	_log.position = Vector2(12, _skills.position.y - _log.size.y - 10)
+	_log.position = Vector2(12, sz.y - sk_size.y - 8 - _log.size.y - 10)
 	_banner.reset_size()
 	_banner.position = Vector2((sz.x - _banner.size.x) / 2.0, sz.y * 0.28)
