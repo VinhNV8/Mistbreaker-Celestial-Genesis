@@ -117,7 +117,7 @@ func _character_column(p) -> VBoxContainer:
 	var t: Dictionary = world.talent()
 	var title := UiTheme.label("%s" % p.name, "Heading")
 	col.add_child(title)
-	col.add_child(UiTheme.label("%s · Cấp %d · %s %s" % [Classes.get_class_def(p.class_id).name, p.level, t.rank, t.name], "Small"))
+	col.add_child(UiTheme.label("%s · Cấp %d · %s %s" % [Classes.title(str(p.class_id), str(p.job)), p.level, t.rank, t.name], "Small"))
 	# Búp bê giấy: 4 ô trái · chân dung · 4 ô phải
 	var doll := UiTheme.hbox(6)
 	doll.add_child(_slot_column(p, PAPER_LEFT))

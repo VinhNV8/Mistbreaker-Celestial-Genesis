@@ -82,12 +82,24 @@ const SETS := {
 			{"count": 6, "text": "Né lăn hồi chiêu 3 → 2 giây", "bonus": {"dodge_cd": 1.0}},
 		],
 	},
+	## C3-35 (M6): bộ vùng 3.
+	"sa_hanh": {
+		"name": "Bộ Sa Hành Giả",
+		"suffix": "Sa Hành Giả",
+		"tiers": [
+			{"count": 2, "text": "Miễn nhiễm Nắng gắt", "bonus": {}},
+			{"count": 4, "text": "+10% Phòng thủ", "bonus": {}},
+			{"count": 6, "text": "Xoáy Kiếm / Mưa Tên / Băng Ngục để lại lốc cát 4 giây làm chậm quái 40%", "bonus": {}},
+		],
+	},
 }
+## C3-35 (M6): bộ vùng 3 — hiệu ứng xử lý trong code (core/chapter3.gd, GameWorld._derive), bonus để trống.
+const SA_HANH := "sa_hanh"
 const REGION_SET := "frost_hunter"
 ## Đồ Tím rơi ở vùng nào thì thuộc bộ của vùng đó (M4.2).
-const REGION_SETS := {1: "frost_hunter", 2: "phong_hanh"}
+const REGION_SETS := {1: "frost_hunter", 2: "phong_hanh", 3: "sa_hanh"}
 ## Đồ Cam của từng boss chương.
-const BOSS_UNIQUES := {"boss": "wolf_fang", "huyen-anh": "huyen_anh_mask"}
+const BOSS_UNIQUES := {"boss": "wolf_fang", "huyen-anh": "huyen_anh_mask", "sa-hoang": "sa_hoang_tail"}
 
 ## EQ-16: đồ Cam có hiệu ứng riêng.
 const UNIQUES := {
@@ -101,6 +113,18 @@ const UNIQUES := {
 		"name": "Mặt Nạ Huyền Ảnh",
 		"slot": "helm",
 		"text": "Né lăn để lại 1 phân thân hút đòn của quái trong 2 giây.",
+	},
+	## C3-31 (M6): rơi từ Bọ Cạp Sa Hoàng (15%).
+	"sa_hoang_tail": {
+		"name": "Đuôi Sa Hoàng",
+		"slot": "weapon",
+		"text": "Đòn đánh gây độc ×0,2 mỗi giây trong 4 giây, cộng dồn 3 lần.",
+	},
+	## C3-34 (M6): rơi từ boss hiếm Nhân Sư Đá.
+	"nhan_su_eye": {
+		"name": "Mắt Nhân Sư",
+		"slot": "necklace",
+		"text": "+10% chí mạng; chí mạng vào quái bị khắc hệ gây ×1,2.",
 	},
 	## C1-23: rơi từ boss hiếm Lão Thụ Sương Mù.
 	"lao_thu_bark": {

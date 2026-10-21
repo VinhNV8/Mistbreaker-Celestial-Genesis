@@ -7,7 +7,7 @@
 | Mục tiêu | Chương 3 chơi được trọn vẹn từ lúc mở vùng tới chuyển chức lần 1, như chương 2 ở M4 |
 | Thứ tự | Sau M5 (phiên game-c6). Chia 3 đợt con M6.1 → M6.2 → M6.3 |
 | Quy trình | Spec (file này) → code → test → cập nhật 02/03/04/06 và mục Kết quả cuối file |
-| Trạng thái | 🟡 Spec |
+| Trạng thái | ✅ **Xong 21/10/2026** (phiên game-bc) — trừ ô Ốc đảo trên lưới khai phá (C3-03, xem Kết quả) |
 
 Ký hiệu: ✅ xong · 🟡 một phần · ⬜ chưa làm.
 
@@ -95,4 +95,33 @@ Chỉ số lấy từ `Formulas.mob_stats` (như M3). Hệ, loại, kỹ năng n
 
 ## 9. Kết quả
 
-*(điền sau khi làm xong)*
+| Mã | Trạng thái | Ghi chú |
+| --- | --- | --- |
+| C3-01, C3-02 | ✅ | `maps.gd` 3-1/3-2/3-3; `GameWorld.map_requirement`, `gate_open("3-3")` (mở khi tới bước 5 hoặc đã hạ Sa Hoàng) |
+| C3-03 | 🟡 | Lưới vùng 3 cùng cỡ và bảng sự kiện vùng 2 (Mỏ, Bến Cá…). **Chưa có ô Ốc đảo riêng** — cần thêm loại sự kiện trong `explore.gd` |
+| C3-10…13 | ✅ | `core/chapter3.gd` (`tick`, `heat_active`, `storm_on`, `rocks`, `oasis_at`); HUD dòng trạng thái (dùng chung dòng gió); view tối viền ban đêm, phủ cát + vệt gió khi bão; quái không đuổi vào ốc đảo |
+| C3-20…25 | ✅ | `monsters.gd` + `Ch3.chase / perform / elite_skill / adjust_damage`; Bọ Cát sinh bầy ở `_spawn_field_mob` (`Ch3.after_spawn`); Rắn/Sa Hoàng chui cát = bất tử + ẩn, vẽ ụ cát |
+| C3-30…35 | ✅ | Sa Hoàng: giai đoạn 2 dùng `Ch3.boss_phase_two` (không gọi bầy sói của Sói Chúa); Nhân Sư: `RARE_BOSSES["3-3"]` + `Ch3.update_sphinx`; Đuôi Sa Hoàng (độc cộng dồn), Mắt Nhân Sư, Bộ Sa Hành Giả (2 miễn nắng · 4 +10% Phòng thủ · 6 lốc cát cho Xoáy Kiếm/Mưa Tên/Băng Ngục) |
+| C3-40…42 | ✅ | `story.gd` `QUESTS3` + 16 đoạn thoại; NPC Trại Cát Đỏ; Bia Khai Giới Giả ở 3-3 kể Thiên Liệt; thưởng EXP 300.000 = 25% EXP cấp 20 → 30 (cùng tỉ lệ M5-02) |
+| C3-43, C3-44 | ✅ | `classes.gd` `JOBS`; `Ch3.do_job` (Thạch Thủ, phím E); tên chức hiện ở HUD, bảng Chỉ số, túi đồ. Pháp Sư Nguyên Tố: Hỏa Cầu luôn +30% (mọi hệ quái đều có hệ khắc nên "tự đổi sang hệ khắc" = luôn khắc) |
+| Câu đố Di tích | ✅ | Thêm 4 câu hỏi vùng 3 vào `Puzzle.RIDDLES` |
+
+**Cân bằng (TL-B, TL-B2, TL-B3)** — bot, bộ đồ chuẩn đúng cấp, 20 Thiên phú mỗi lớp; giây trung bình hạ boss:
+
+| Lớp | Sói Chúa (cấp 5) | Huyền Ảnh (cấp 17) | Sa Hoàng (cấp 29) |
+| --- | --- | --- | --- |
+| Kiếm Khách | 30,7 | 47,9 | 37,6 |
+| Thợ Săn | 33,0 | 48,2 | 28,6 |
+| Pháp Sư | 30,7 | 49,3 | 32,3 |
+| Lớp nhanh nhất / chậm nhất | chênh 7% | chênh 3% | chênh 24% |
+
+F/S chênh tối đa: vùng 1 9% · vùng 2 23% (Thợ Săn) · vùng 3 14%. 0 lần chết.
+
+**Phát hiện:**
+
+- **F1 — Thợ Săn tăng sức mạnh quá nhanh theo cấp.** Cấp 29 (84 AGI): chí mạng gốc 47%, tốc đánh +50% → hạ Sa Hoàng trong 20 giây, Kiếm Khách 37,6 giây (chênh 47%). Sửa (D37): chí mạng/AGI của Thợ Săn 0,5% → 0,25%, tốc đánh từ AGI tối đa +20%. Vùng 1 gần như không đổi (12 AGI).
+- **F2 — Bộc Phá trên Mưa Tên quá mạnh.** +100% cộng vào cả 5 đợt ×0,6 = thêm ×3,0, trong khi Xoáy Kiếm chỉ thêm ×1,8 → Thợ Săn + Ngũ Hành Linh Căn là tổ hợp nhanh nhất mọi vùng. Sửa: hệ số 0,6 cho Mưa Tên.
+- **F3 — Thông báo ghi cứng tên chương 1.** "hồi sinh tại Làng Thanh Thạch", "Sói Chúa Hư Vô rút về hang", "Phá Thế! Sói Chúa choáng" hiện cả ở sa mạc. Sửa: dùng tên vùng an toàn và tên boss.
+- **F4 — Lỗi định dạng chuỗi** "+15% Tấn công" trong dòng trạng thái ban đêm (lần thứ 4 của dự án) → `%%`.
+
+**Kiểm thử:** 98 test (thêm C3-T1…T6, TL-B3); smoke thêm `10b-camp`, `10-region3`, `10c-night-storm`, `11-sa-hoang`.

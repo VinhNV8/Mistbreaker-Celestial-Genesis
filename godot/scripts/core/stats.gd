@@ -12,6 +12,12 @@ const RES_CAP := 0.5
 ## ở cấp 17 Thợ Săn hạ Huyền Ảnh nhanh hơn 2 lớp kia 31%).
 const AGI_SPEED := 0.01
 const HUNTER_AGI_SPEED := 0.006
+## M6 (TL-B3): chí mạng mỗi điểm AGI — Thợ Săn chỉ +0,25% (lớp khác +0,5%). Ở cấp 29 (84 AGI) Thợ Săn hạ
+## Sa Hoàng nhanh hơn Kiếm Khách 47% vì AGI cộng cả Tấn công, tốc đánh lẫn chí mạng.
+const AGI_CRIT := 0.005
+## M6 (TL-B3): tốc đánh từ AGI của Thợ Săn tối đa +20% (≈ 33 AGI, cấp 12) — tránh tăng tuyến tính mãi.
+const HUNTER_SPEED_CAP := 0.20
+const HUNTER_AGI_CRIT := 0.0025
 ## SN-02: Pháp Sư.
 const MAGE_MP := 30
 const MAGE_MP_REGEN := 1.0
@@ -70,9 +76,9 @@ static func derive(level: int, pts: Dictionary, talent: String, bonus := {}, tal
 		"max_hp": int(round((base_hp + vit_pts * 12 + flat.get("max_hp", 0.0)) * (1.0 + hp_pct))),
 		"atk": (10.0 + lv * 2 + atk_from_pts + flat.get("atk", 0.0)) * (1.0 + atk_pct),
 		"def": 5.0 + lv * 1.5 + vit_pts * 0.5 + flat.get("def", 0.0),
-		"atk_speed": 1.0 + agi_pts * (HUNTER_AGI_SPEED if hunter else AGI_SPEED) + (Talents.lv_value(0.05, 0.075, tlv) if talent == "tay-nhanh" else 0.0) + flat.get("atk_speed", 0.0)
+		"atk_speed": 1.0 + (minf(HUNTER_SPEED_CAP, agi_pts * HUNTER_AGI_SPEED) if hunter else agi_pts * AGI_SPEED) + (Talents.lv_value(0.05, 0.075, tlv) if talent == "tay-nhanh" else 0.0) + flat.get("atk_speed", 0.0)
 			+ float(bonus.get("atk_speed_pct", 0.0)),
-		"crit": minf(0.6, 0.05 + agi_pts * 0.005 + luk_pts * 0.003
+		"crit": minf(0.6, 0.05 + agi_pts * (HUNTER_AGI_CRIT if hunter else AGI_CRIT) + luk_pts * 0.003
 			+ (Talents.lv_value(0.1, 0.15, tlv) if talent == "mat-ung" else 0.0) + flat.get("crit", 0.0) + crit_bonus),
 		## Chí mạng gây ×(1 + crit_dmg); gốc 0,5 → ×1,5.
 		"crit_dmg": 0.5 + flat.get("crit_dmg", 0.0) + crit_dmg_bonus,

@@ -6,6 +6,10 @@ const ELDER := "Trưởng làng Thạch Lão"
 const LAC := "Đội trưởng Lạc Phong"
 const MAC := "Thương nhân Mạc Tam"
 const SMITH := "Thợ rèn Thiết Ngưu"
+## M6 (docs/10): Trại Cát Đỏ
+const SALAO := "Học giả Sa Lão"
+const AMOC := "Người dẫn đường A Mộc"
+const THACH := "Hộ vệ Thạch Thủ"
 
 ## id → [[người nói, lời], ...]
 const DIALOGS := {
@@ -66,6 +70,42 @@ const DIALOGS := {
 		["{name}", "(Khi Huyền Ảnh tan biến, hắn thì thầm: “Mảnh linh hồn… của Chủ nhân…” Thiên phú trong ngực lại rung lên.)"],
 	],
 	"smith": [[SMITH, "Đá với Sắt từ mỏ của ngươi ấy hả? Mang tới đây, ta rèn thành Đá Cường Hoá, cả Tinh Kim nữa."]],
+	# ---------------------------------------------------------------- M6: chương 3 Sa Mạc Lãng Quên (docs/10 mục 5)
+	"r3_arrive": [
+		["{name}", "Nắng như đổ lửa… Lạc Phong nói học giả Sa Lão đang cắm trại ở Rìa Cát Đỏ, ông ấy biết về Khai Giới Giả đời đầu."],
+		["{name}", "(Ban ngày nắng gắt rút máu — đứng trong bóng râm của tảng đá lớn, hoặc uống nước ở ốc đảo.)"],
+	],
+	"salao_meet": [
+		[SALAO, "Lại một Khai Giới Giả… Thiên phú trong ngực con đang rung, phải không? Ta đã thấy cảm giác ấy trên những phiến đá cổ."],
+		[SALAO, "Di tích của Khai Giới Giả đời đầu nằm sâu trong sa mạc. Nhưng bản đồ đã bị quái cát xé vụn — hạ chúng, gom lại các mảnh."],
+	],
+	"salao_q2": [[SALAO, "Các mảnh bản đồ nằm trong bụng lũ quái cát. Cẩn thận Rắn Đồi Cát — vệt cát chuyển động là nó sắp trồi lên."]],
+	"salao_q3": [
+		[SALAO, "Bản đồ chỉ ba ốc đảo ở Ốc Đảo Lãng Quên. Nước ở đó có ký ức — uống ở cả ba, con sẽ thấy đường tới Di tích."],
+		[AMOC, "Nước ốc đảo còn che con khỏi nắng một phút. Đừng để đêm xuống giữa đồng cát — quái mạnh hơn hẳn."],
+	],
+	"salao_q4": [[SALAO, "Ba ốc đảo đều chỉ về một hướng: Di Tích Khai Giới Giả. Tìm Bia Khai Giới Giả ở đó và đọc nó."]],
+	"stele3_read": [
+		["Bia Khai Giới Giả", "\"Một nghìn năm trước, kẻ mạnh nhất trong chúng ta muốn đoạt chính Thiên phú của Thiên Đạo.\""],
+		["Bia Khai Giới Giả", "\"Trời nứt làm chín. Sương Hư Vô tràn ra từ vết nứt — đó là Thiên Liệt. Hắn không chết; hắn mất một mảnh linh hồn.\""],
+		["Bia Khai Giới Giả", "\"Kẻ nào mang mảnh ấy trong ngực, hãy cẩn thận: hắn sẽ tới đòi lại.\""],
+		["{name}", "(Mảnh thứ hai… trong ngực mình?) Phía đông bia là Sào Huyệt Sa Hoàng — con bọ cạp canh giữ lối ra di tích."],
+	],
+	"salao_q5": [[SALAO, "Sa Hoàng chui xuống cát khi bị thương nặng. Nhìn vết cát mà né — và đừng đứng yên trước đuôi độc của nó."]],
+	"sa_hoang_intro": [["Bọ Cạp Sa Hoàng", "Ssss… Mùi Thiên phú. Ta sẽ chôn ngươi cùng những kẻ đời đầu!"]],
+	"sa_hoang_down": [
+		[SALAO, "Sa Hoàng đã ngã! Lối ra di tích mở rồi."],
+		[THACH, "Ta đã canh di tích này ba mươi năm để chờ một người như con. Khi đủ cấp 30, tới gặp ta — ta sẽ dẫn con qua Thử Thách Chuyển Chức."],
+	],
+	"thach_wait": [[THACH, "Chưa được. Hạ Bọ Cạp Sa Hoàng và đạt cấp 30 rồi hãy quay lại."]],
+	"job_done": [
+		[THACH, "Từ hôm nay, con không còn là tân binh. Mang danh xưng mới mà đi tiếp."],
+		[SALAO, "Mảnh thứ hai, Thiên Liệt… Hãy tới Đầm Lầy U Minh ở phía nam. Nghe nói có kẻ đang săn Thiên phú của người khác ở đó."],
+	],
+	"amoc_shop": [[AMOC, "Nước, thuốc, đá cường hoá — sa mạc này không cho không ai cái gì đâu."]],
+	"rare_nhan_su": [["Nhân Sư Đá", "Kẻ nào bước vào Di tích phải trả lời câu đố của ta. Sai — hoá đá muôn đời!"]],
+	"rare_nhan_su_down": [["{name}", "(Nhân Sư vỡ vụn, để lại một viên đá hình con mắt vẫn còn sáng.)"]],
+	"ch3_done": [[SALAO, "Chương sa mạc đã khép lại. Nhưng câu chuyện của Thiên Liệt mới chỉ bắt đầu."]],
 }
 
 
@@ -78,6 +118,22 @@ const QUESTS2 := [
 	{"title": "Phủ Huyền Ảnh", "hint": "N → Mắt Bão. Hạ Tướng Gián Điệp Huyền Ảnh — chỉ bản thật có bóng.", "type": "boss2", "need": 1, "reward": {"exp": 30000}},
 ]
 const DONE2 := 6
+
+## M6 (docs/10 C3-41): nhiệm vụ chính chương 3. Bước lưu ở profile.quest.ch3 (0 = chưa tới vùng 3, 7 = xong).
+## Thưởng EXP ≈ 25% EXP từ cấp 20 lên 30 (M5-02: 1,2 triệu × 25% ≈ 300.000).
+const QUESTS3 := [
+	{"title": "Học giả sa mạc", "hint": "Tới Trại Cát Đỏ (Rìa Cát Đỏ), đứng cạnh Sa Lão bấm E.", "type": "talk_salao", "need": 1, "reward": {"exp": 15000, "gold": 300}},
+	{"title": "Mảnh bản đồ", "hint": "Hạ 30 quái vùng 3. Đứng trong bóng râm tảng đá để tránh nắng.", "type": "kills3", "need": 30, "reward": {"exp": 35000}},
+	{"title": "Ba ốc đảo", "hint": "N → Ốc Đảo Lãng Quên. Uống nước ở cả 3 ốc đảo (đứng trong hồ 1 giây).", "type": "oases", "need": 3, "reward": {"exp": 45000, "potions": 2}},
+	{"title": "Bia Khai Giới Giả", "hint": "N → Di Tích Khai Giới Giả. Khám phá ≥ 40% map và tới Bia Khai Giới Giả.", "type": "stele3", "need": 1, "reward": {"exp": 55000, "stones": 6}},
+	{"title": "Sào Huyệt Sa Hoàng", "hint": "Hạ Bọ Cạp Sa Hoàng ở phía đông Di tích. Né vết cát khi nó chui xuống.", "type": "boss3", "need": 1, "reward": {"exp": 70000}},
+	{"title": "Thử Thách Chuyển Chức", "hint": "Đạt cấp 30, gặp Thạch Thủ ở Trại Cát Đỏ (E) để chuyển chức.", "type": "job", "need": 1, "reward": {"exp": 80000, "gold": 1000}},
+]
+const DONE3 := 7
+
+
+static func quest3(step: int) -> Dictionary:
+	return QUESTS3[step - 1] if step >= 1 and step <= QUESTS3.size() else {}
 
 
 static func quest2(step: int) -> Dictionary:

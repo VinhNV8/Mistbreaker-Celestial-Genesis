@@ -19,6 +19,7 @@ const HUD_RESOURCES := ["gold", "wood", "torches", "stones", "essence", "ore", "
 const HUD_OPTIONAL := ["ore", "iron"]
 const Maps = preload("res://scripts/data/maps.gd")
 const SkillBar = preload("res://scripts/ui/skill_bar.gd")
+const Ch3 = preload("res://scripts/core/chapter3.gd")
 ## DH-11: thứ tự ô trên thanh kỹ năng.
 const SLOT_BASIC := 0
 const SLOT_DODGE := 5
@@ -320,6 +321,13 @@ func update_from(w: GameWorld) -> void:
 		else:
 			_wind.add_theme_color_override("font_color", Color("#e8e2c8"))
 		_wind.text = txt
+	# M6 (C3-10…12): ngày/đêm, nắng gắt, bão cát ở sa mạc — dùng chung dòng của gió.
+	var env := Ch3.env_text(w)
+	if env != "":
+		_wind.visible = true
+		_wind.text = env
+		var alert: bool = Ch3.storm_on(w) or Ch3.heat_active(w)
+		_wind.add_theme_color_override("font_color", Color("#ff9a3c") if alert else Color("#f2d79a"))
 
 	_combo.visible = w.combo >= 5
 	_combo.text = "%d combo · +%d%% EXP" % [w.combo, roundi((Formulas.combo_exp_multiplier(w.combo) - 1.0) * 100.0)]
@@ -405,6 +413,22 @@ func _update_quest(w: GameWorld) -> void:
 	var p = w.profile
 	var q := w.quest()
 	# M4.3: nhiệm vụ chính chương 2 khi đã tới vùng 2 (hoặc chương 1 đã xong).
+	# M6 (C3-41): nhiệm vụ chương 3 khi đã tới vùng 3.
+	var q3 := Ch3.quest(w)
+	if not q3.is_empty():
+		_obj_title.text = "CHƯƠNG 3 · NHIỆM VỤ %d/%d" % [int(p.quest.ch3), Story.QUESTS3.size()]
+		var st3 := Ch3.quest_status(w)
+		_set_obj(0, "◆ " + str(q3.title) + ("  (%d/%d)" % st3 if int(st3[1]) > 1 else ""), UiTheme.GOLD)
+		_set_obj(1, str(q3.hint), UiTheme.TEXT)
+		var rt3 := Story.reward_text(q3.reward)
+		_set_obj(2, ("Thưởng: " + rt3) if rt3 != "" else "", UiTheme.MUTED)
+		return
+	if int(p.quest.ch3) >= Story.DONE3:
+		_obj_title.text = "CHƯƠNG 3 · HOÀN THÀNH ✓"
+		_set_obj(0, "Chức: %s" % Classes.title(str(p.class_id), str(p.job)), UiTheme.TEXT)
+		_set_obj(1, "Săn boss hiếm Nhân Sư Đá ở Di Tích Khai Giới Giả — 2 lần mỗi ngày", UiTheme.MUTED)
+		_set_obj(2, "Chương 4: Đầm Lầy U Minh — sắp mở", UiTheme.MUTED)
+		return
 	var q2 := w.quest2()
 	if not q2.is_empty() and (q.is_empty() or int(w.map.get("region", 1)) == 2):
 		_obj_title.text = "CHƯƠNG 2 · NHIỆM VỤ %d/%d · Hạng %s" % [int(p.quest.ch2), Story.QUESTS2.size(), w.alliance_rank()]
@@ -418,7 +442,7 @@ func _update_quest(w: GameWorld) -> void:
 		_obj_title.text = "CHƯƠNG 2 · HOÀN THÀNH ✓"
 		_set_obj(0, "Hạng Liên minh: %s (Bạc 10 ô, Vàng 25 ô vùng 2)" % w.alliance_rank(), UiTheme.TEXT)
 		_set_obj(1, "Săn boss hiếm Bạch Hổ Phong Vân ở Mắt Bão — xuất hiện 2 lần mỗi ngày", UiTheme.MUTED)
-		_set_obj(2, "Chương 3: Sa Mạc Xích Sa — sắp mở (cần Lực chiến 5.000)", UiTheme.MUTED)
+		_set_obj(2, "Chương 3: Sa Mạc Xích Sa — hạ Huyền Ảnh, Lực chiến 5.000, cấp 18 (phím N)", UiTheme.MUTED)
 		return
 	if q.is_empty():
 		_obj_title.text = "CHƯƠNG 1 · HOÀN THÀNH ✓"

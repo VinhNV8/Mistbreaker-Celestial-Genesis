@@ -13,6 +13,7 @@ const HERO_SPRITE := "hero-kiem-khach"
 const Classes = preload("res://scripts/data/classes.gd")
 const Looks = preload("res://scripts/data/looks.gd")
 const CORPSE_TIME := 0.6
+const Ch3 = preload("res://scripts/core/chapter3.gd")
 const HIT_FX_TIME := 0.25
 
 var world: GameWorld
@@ -21,6 +22,8 @@ var camera: Camera2D
 var _trees: Array = []
 var _patches: Array = []
 var _decor_map := ""
+## M6: cảnh sa mạc [{pos, id, scale, flip}] (xương rồng, cọ quanh ốc đảo, cột di tích)
+var _desert: Array = []
 var _font: Font
 var _art := false
 ## Theo dõi từng thực thể giữa các frame: vị trí cũ (để biết đang chạy), hướng, lúc đổi hoạt ảnh.
@@ -108,6 +111,24 @@ func _build_decor() -> void:
 		if absf(pos.y - safe.y) < 90.0 and pos.x > safe.x and pos.x < path_end:
 			continue
 		_trees.append({"pos": pos, "r": 16.0 + rng.randf() * 22.0, "shade": rng.randf(), "variant": rng.randi() % 4})
+	_desert = []
+	if bool(world.map.get("desert", false)):
+		var n_cactus := roundi(55 * world.area_factor())
+		for i in n_cactus:
+			var cp := Vector2(rng.randf() * size.x, rng.randf() * size.y)
+			if cp.distance_to(safe) < world.safe_r + 60.0 or Ch3.oasis_at(world, cp) >= 0:
+				continue
+			_desert.append({"pos": cp, "id": "cactus-%d" % (rng.randi() % 2), "scale": 1.0 + rng.randf() * 0.4, "flip": rng.randf() < 0.5})
+		for o in Ch3.oases(world):
+			for k in 5:
+				var a := TAU * k / 5.0 + rng.randf() * 0.5
+				_desert.append({"pos": o[0] + Vector2.from_angle(a) * (float(o[1]) + 18.0), "id": "palm", "scale": 1.0 + rng.randf() * 0.3, "flip": rng.randf() < 0.5})
+		if str(world.map.get("decor", "")) == "ruins":
+			for i in roundi(30 * world.area_factor()):
+				var pp := Vector2(rng.randf() * size.x, rng.randf() * size.y)
+				if pp.distance_to(safe) < world.safe_r + 80.0 or (world.map.arena != null and pp.distance_to(world.arena_pos) < world.arena_r + 60.0):
+					continue
+				_desert.append({"pos": pp, "id": "pillar-%d" % (rng.randi() % 2), "scale": 1.0 + rng.randf() * 0.5, "flip": false})
 	for i in roundi(160 * world.area_factor()):
 		_patches.append({"pos": Vector2(rng.randf() * size.x, rng.randf() * size.y), "r": 40.0 + rng.randf() * 110.0, "shade": rng.randf()})
 
@@ -185,11 +206,37 @@ func _draw() -> void:
 		SpriteLib.draw_env(self, "fx-hit-%d" % mini(2, int(f.t / HIT_FX_TIME * 3.0)), f.pos)
 	if not world.boss_unlocked():
 		_draw_gate()
+	_draw_desert_overlay(view)
 	_draw_texts()
 	_update_tracking()
 
 
 # ---------------------------------------------------------------- nền
+## M6 (C3-10, C3-12): đêm tối viền, bão cát phủ cát + vệt gió; lốc cát của Bộ Sa Hành Giả.
+func _draw_desert_overlay(view: Rect2) -> void:
+	for t in world.ch3.trails:
+		var a: float = clampf(t.ttl / Ch3.TRAIL_TTL, 0.0, 1.0)
+		for k in 3:
+			var ang: float = world.time * 3.0 + k * TAU / 3.0
+			draw_arc(t.pos, t.r * (0.5 + 0.2 * k), ang, ang + 2.0, 16, Color(0.84, 0.66, 0.4, 0.5 * a), 2.0, true)
+	if not Ch3.is_desert(world):
+		return
+	var vis := Ch3.vision(world)
+	if Ch3.is_night(world):
+		var c := world.player.pos
+		var inner: float = 520.0 * vis
+		draw_rect(view, Color(0.02, 0.03, 0.08, 0.35))
+		for i in 6:
+			draw_arc(c, inner + i * 60.0, 0.0, TAU, 64, Color(0.02, 0.03, 0.08, 0.12 + i * 0.05), 60.0, false)
+	if Ch3.storm_on(world):
+		draw_rect(view, Color(0.78, 0.55, 0.3, 0.38))
+		for i in 40:
+			var sx := fposmod(world.time * 900.0 + i * 197.0, view.size.x + 200.0) - 100.0
+			var sy := fposmod(i * 131.0 + world.time * 60.0, view.size.y)
+			var a := view.position + Vector2(sx, sy)
+			draw_line(a, a + Vector2(-60, 8), Color(0.95, 0.8, 0.55, 0.45), 2.0)
+
+
 func _draw_ground(view: Rect2) -> void:
 	var size: Vector2 = world.world_size
 	var whole := PackedVector2Array([Vector2.ZERO, Vector2(size.x, 0), size, Vector2(0, size.y)])
@@ -197,7 +244,10 @@ func _draw_ground(view: Rect2) -> void:
 		draw_rect(Rect2(Vector2.ZERO, size), Color("#1c3226"))
 	for p in _patches:
 		if view.has_point(p.pos):
-			if _art:
+			if _art and bool(world.map.get("desert", false)):
+				# M6: sa mạc — gợn cát sáng/đỏ nhạt thay cho mảng cỏ tối
+				draw_circle(p.pos, p.r, Color(1.0, 0.9, 0.65, 0.07) if p.shade > 0.5 else Color(0.6, 0.3, 0.15, 0.07))
+			elif _art:
 				draw_circle(p.pos, p.r, Color(0.35, 0.55, 0.3, 0.07) if p.shade > 0.5 else Color(0.02, 0.06, 0.04, 0.16))
 			else:
 				draw_circle(p.pos, p.r, Color(0.27, 0.43, 0.27, 0.18) if p.shade > 0.5 else Color(0.04, 0.1, 0.07, 0.25))
@@ -206,8 +256,24 @@ func _draw_ground(view: Rect2) -> void:
 	var path_end: float = world.arena_pos.x if world.map.arena != null else size.x
 	var path := Rect2(v.x, v.y - 45.0, path_end - v.x, 90.0)
 	var path_pts := PackedVector2Array([path.position, Vector2(path.end.x, path.position.y), path.end, Vector2(path.position.x, path.end.y)])
-	if not (_art and SpriteLib.fill_polygon(self, path_pts, "tile-dirt", Color(1, 1, 1, 0.55))):
+	var path_tile := "tile-sand-red" if bool(world.map.get("desert", false)) and SpriteLib.has_env("tile-sand-red") else "tile-dirt"
+	if not (_art and SpriteLib.fill_polygon(self, path_pts, path_tile, Color(1, 1, 1, 0.55))):
 		draw_rect(path, Color(0.47, 0.39, 0.27, 0.22))
+	# M6: ốc đảo (C3-13) và bóng râm dưới tảng đá (C3-11)
+	for o in Ch3.oases(world):
+		var oc: Vector2 = o[0]
+		var orr: float = float(o[1])
+		if view.grow(orr).has_point(oc):
+			if _art and SpriteLib.has_env("oasis"):
+				SpriteLib.draw_env(self, "oasis", oc, Color.WHITE, orr / 92.0)
+			else:
+				draw_circle(oc, orr, Color("#3a86c8"))
+			draw_arc(oc, orr, 0.0, TAU, 48, Color(0.5, 0.85, 1.0, 0.35), 2.0, true)
+	for r in Ch3.rocks(world):
+		if view.has_point(r):
+			draw_set_transform(r + Vector2(10, 6), 0.0, Vector2(1.0, 0.5))
+			draw_circle(Vector2.ZERO, Ch3.SHADE_R, Color(0.1, 0.05, 0.02, 0.28))
+			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	# sương mù dày dần về phía đông
 	var tint: Color = world.map.get("tint", Color(0.16, 0.08, 0.27))
 	var clear := Color(tint, 0.0)
@@ -227,6 +293,8 @@ func _draw_village_ground() -> void:
 	var r: float = world.safe_r
 	var kind: String = world.map.safe.kind
 	var tile := "tile-town" if kind == "town" and SpriteLib.has_env("tile-town") else "tile-village"
+	if bool(world.map.get("desert", false)) and SpriteLib.has_env("tile-sand-red"):
+		tile = "tile-sand-red"
 	if not (_art and SpriteLib.fill_polygon(self, _circle_points(c, r), tile)):
 		draw_circle(c, r, Color("#4a3b2a"))
 	draw_arc(c, r, 0.0, TAU, 64, Color("#9aa0a6") if kind == "town" else Color("#7a5f3e"), 7.0 if kind == "town" else 5.0, true)
@@ -236,6 +304,8 @@ func _draw_village_ground() -> void:
 ## Vị trí nhà trong vùng an toàn theo loại.
 func _safe_buildings() -> Array:
 	var kind: String = world.map.safe.kind
+	if bool(world.map.get("desert", false)) and kind == "camp":
+		return [[Vector2(-60, -50), "tent"], [Vector2(-110, 40), "tent"], [Vector2(20, -110), "tent"]]
 	if kind == "camp":
 		return [[Vector2(-50, -40), "hut"]]
 	if kind == "town":
@@ -265,7 +335,8 @@ func _draw_stele_fallback() -> void:
 func _draw_arena() -> void:
 	var c: Vector2 = world.arena_pos
 	var r: float = world.arena_r
-	if not (_art and SpriteLib.fill_polygon(self, _circle_points(c, r, 64), "tile-void", Color(1, 1, 1, 0.85))):
+	var arena_tile := "tile-sand-red" if bool(world.map.get("desert", false)) else "tile-void"
+	if not (_art and SpriteLib.fill_polygon(self, _circle_points(c, r, 64), arena_tile, Color(1, 1, 1, 0.85))):
 		draw_circle(c, r, Color("#251d33"))
 	var locked: bool = world.boss() != null
 	draw_arc(c, r, 0.0, TAU, 96, Color(1.0, 0.33, 0.44, 0.7) if locked else Color(0.63, 0.51, 0.86, 0.35), 5.0 if locked else 3.0, true)
@@ -296,6 +367,17 @@ func _draw_sorted(view: Rect2) -> void:
 		items.append([at.y, _draw_env_at.bind(id, at)])
 	if world.map.safe.kind == "village":
 		items.append([c.y + 16.0, _draw_stele.bind(c + Vector2(0, 16))])
+	# M6: sa mạc
+	for d in _desert:
+		if view.has_point(d.pos):
+			items.append([d.pos.y, _draw_env_scaled.bind(d.id, d.pos, d.scale, d.flip)])
+	for r in Ch3.rocks(world):
+		if view.has_point(r):
+			items.append([r.y, _draw_env_scaled.bind("rock-desert-%d" % (int(r.x) % 2), r, 1.6, int(r.y) % 2 == 0)])
+	if world.map.has("stele3") and view.has_point(world.map.stele3):
+		items.append([world.map.stele3.y, _draw_stele.bind(world.map.stele3)])
+	for pl in world.ch3.pillars:
+		items.append([pl.pos.y, _draw_puzzle_pillar.bind(pl)])
 
 	for h in world.herbs:
 		if h.respawn <= 0.0:
@@ -327,6 +409,21 @@ func _draw_npc(id: String, at: Vector2, label: String) -> void:
 
 func _draw_env_at(id: String, at: Vector2) -> void:
 	SpriteLib.draw_env(self, id, at)
+
+
+func _draw_env_scaled(id: String, at: Vector2, k: float, flip: bool) -> void:
+	SpriteLib.draw_env(self, id, at, Color.WHITE, k, flip)
+
+
+## C3-33: cột đá Câu Đố Nhân Sư — vòng màu theo hệ, cột Mộc là cột an toàn.
+func _draw_puzzle_pillar(pl: Dictionary) -> void:
+	var col := Color(Monsters.ELEMENT_HEX[pl.element])
+	var pulse := 0.5 + 0.5 * sin(world.time * 6.0)
+	draw_circle(pl.pos, Ch3.PILLAR_R, Color(col, 0.18 + 0.1 * pulse))
+	draw_arc(pl.pos, Ch3.PILLAR_R, 0.0, TAU, 40, Color(col, 0.9), 3.0, true)
+	if SpriteLib.has_env("pillar-0"):
+		SpriteLib.draw_env(self, "pillar-0", pl.pos, col.lerp(Color.WHITE, 0.5), 1.4)
+	_label(Monsters.ELEMENT_NAMES[pl.element], pl.pos + Vector2(0, -80), col, 15)
 
 
 func _feet(pos: Vector2, r: float) -> Vector2:
@@ -420,6 +517,13 @@ func _enemy_size(e) -> float:
 
 
 func _draw_enemy_sprite(e) -> void:
+	if e.burrow_t > 0.0 and e.state != "windup":
+		var wob := sin(world.time * 14.0) * 3.0
+		draw_set_transform(e.pos + Vector2(0, e.radius * 0.6), 0.0, Vector2(1.0, 0.45))
+		draw_circle(Vector2.ZERO, e.radius + 6.0 + wob, Color("#a87a44"))
+		draw_circle(Vector2(-3, -4), e.radius * 0.6, Color("#d6a865"))
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+		return
 	if not SpriteLib.has_sprite(e.kind):
 		_draw_enemy(e)
 		return
@@ -825,6 +929,21 @@ func _draw_telegraph(e: GameWorld.Enemy) -> void:
 			draw_circle(e.pos, r, Color(1, 0.4, 0.2, 0.12))
 			draw_circle(e.pos, r * progress, Color(1, 0.4, 0.2, 0.3))
 			draw_arc(e.pos, r, 0.0, TAU, 40, Color(1, 0.4, 0.2, 0.7), 2.0, true)
+		"emerge", "sdive", "tail", "sandvortex":
+			# M6: vòng cát / đuôi độc tại chỗ đánh dấu
+			var rr: float = {"emerge": Ch3.BURROW_R, "sdive": Ch3.DIVE_R, "tail": Ch3.TAIL_R, "sandvortex": Ch3.VORTEX_R}[e.attack_kind]
+			var cc := Color(0.55, 1.0, 0.35) if e.attack_kind == "tail" else Color(0.85, 0.6, 0.3)
+			draw_circle(e.target, rr, Color(cc, 0.12))
+			draw_circle(e.target, rr * progress, Color(cc, 0.32))
+			draw_arc(e.target, rr, 0.0, TAU, 40, Color(cc, 0.8), 2.0, true)
+		"roll":
+			draw_line(e.pos, e.target, Color(1, 0.8, 0.3, 0.2 + progress * 0.5), e.radius * 1.6, true)
+		"gaze":
+			var gd: float = (e.target - e.pos).angle()
+			var gp := PackedVector2Array([e.pos])
+			for i in 9:
+				gp.append(e.pos + Vector2.from_angle(gd - Ch3.GAZE_HALF + 2.0 * Ch3.GAZE_HALF * i / 8.0) * (Ch3.GAZE_R + e.radius))
+			draw_colored_polygon(gp, Color(0.3, 0.75, 1.0, 0.12 + progress * 0.25))
 		_:
 			draw_arc(e.pos, e.radius + e.attack_range * progress, 0.0, TAU, 40, Color(1, 0.24, 0.31, 0.2 + progress * 0.6), 3.0, true)
 

@@ -16,7 +16,7 @@ func _render(content: VBoxContainer) -> void:
 	var p = world.profile
 	content.custom_minimum_size.x = W
 	var town: bool = world.map_id == "2-1"
-	_header(content, ("Thành Biên Đài · Cửa hàng" if town else "Làng Thanh Thạch · Cửa hàng"), "Đóng (E)")
+	_header(content, "%s · Cửa hàng" % str(world.map.safe.name), "Đóng (E)")
 	content.add_child(UiTheme.label("Vàng %d · Đá Cường Hoá %d · Bình máu %d/%d · Túi %d/%d" % [
 		int(p.gold), p.stones, p.potions, GameWorld.POTION_MAX, p.inventory.size(), ItemData.BAG_SIZE], "Muted", W))
 	var body := UiTheme.hbox(24)
@@ -29,7 +29,7 @@ func _render(content: VBoxContainer) -> void:
 	body.add_child(right)
 
 	# --- cửa hàng làng
-	left.add_child(UiTheme.label("THƯƠNG NHÂN MẠC TAM" if town else "THƯƠNG NHÂN LÀNG", "Eyebrow"))
+	left.add_child(UiTheme.label("THƯƠNG NHÂN MẠC TAM" if town else ("NGƯỜI DẪN ĐƯỜNG A MỘC" if world.map_id == "3-1" else "THƯƠNG NHÂN LÀNG"), "Eyebrow"))
 	for row in [["potion", "res-potion", "Bình máu", GameWorld.SHOP_POTION], ["stone", "res-stone", "Đá Cường Hoá", GameWorld.SHOP_STONE]]:
 		var h := UiTheme.hbox(8)
 		h.add_child(_icon(SpriteLib.icon(row[1])))

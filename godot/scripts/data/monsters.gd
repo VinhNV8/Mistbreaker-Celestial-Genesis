@@ -171,6 +171,40 @@ const DEFS := {
 		"element": "kim", "name": "Bản sao Huyền Ảnh", "arch": "boss", "speed": 150.0, "radius": 28.0, "range": 230.0,
 		"windup": 0.6, "recover": 2.2, "attack": "dart1", "color": "#56308a", "steal": {"agi": 100},
 	},
+	# ---------------------------------------------------------------- M6: vùng 3 Sa Mạc Xích Sa (06 vùng 3, docs/10)
+	## C3-20: đi bầy 5 con. Tinh anh: Bọ Hung Giáp Vàng (khiên trước + Lăn cầu).
+	"bo-cat": {
+		"element": "tho", "name": "Bọ Cát", "arch": "bay", "speed": 140.0, "radius": 13.0, "range": 30.0,
+		"windup": 0.4, "recover": 0.6, "attack": "melee", "color": "#b8663a", "steal": {"vit": 50, "str": 50}, "pack": 5,
+		"elite_name": "Bọ Hung Giáp Vàng", "elite_arch": "giap", "elite_min_level": 23, "elite_skill": "roll", "elite_sprite": "bo-hung",
+		"elite_element": "kim",
+	},
+	## C3-21: chui cát 1,5 giây (bất tử), trồi lên dưới chân người chơi vòng 3 m ×1,4.
+	"ran-cat": {
+		"element": "tho", "name": "Rắn Đồi Cát", "arch": "nhanh", "speed": 160.0, "radius": 14.0, "range": 34.0,
+		"windup": 0.5, "recover": 0.8, "attack": "melee", "color": "#8a4428", "steal": {"agi": 60, "str": 40}, "burrow": true,
+	},
+	## C3-22: Nguyền rủa −20% hồi máu 6 giây. Tinh anh: Thủ Lĩnh Xác Ướp (Hồi sinh).
+	"xac-uop": {
+		"element": "tho", "name": "Xác Ướp Khai Giới", "arch": "li", "speed": 80.0, "radius": 17.0, "range": 36.0,
+		"windup": 0.8, "recover": 1.0, "attack": "curse", "color": "#c4b78e", "steal": {"vit": 60, "int": 40},
+		"elite_name": "Thủ Lĩnh Xác Ướp", "elite_arch": "li", "elite_min_level": 27, "elite_skill": "revive", "elite_sprite": "thu-linh-xac-uop",
+	},
+	## C3-23: đánh xa 18 m bằng Lốc cát (vòng 7 m tại chỗ người chơi, chậm 40% 3 giây).
+	"phap-su-cat": {
+		"element": "hoa", "name": "Pháp Sư Cát", "arch": "phep", "speed": 110.0, "radius": 16.0, "range": 180.0,
+		"windup": 1.0, "recover": 1.3, "attack": "sandvortex", "color": "#d6a865", "steal": {"int": 70, "luk": 30},
+	},
+	## C3-30: boss chương 3.
+	"sa-hoang": {
+		"element": "tho", "name": "Bọ Cạp Sa Hoàng", "arch": "boss", "speed": 120.0, "radius": 34.0, "range": 50.0,
+		"windup": 0.6, "recover": 0.8, "attack": "claw", "color": "#5a3418", "steal": {"str": 40, "vit": 40, "agi": 20},
+	},
+	## C3-33: boss hiếm 3-3.
+	"nhan-su": {
+		"element": "tho", "name": "Nhân Sư Đá", "arch": "giap", "speed": 90.0, "radius": 34.0, "range": 50.0,
+		"windup": 0.7, "recover": 0.9, "attack": "melee", "color": "#d6a865", "steal": {"int": 40, "vit": 40, "str": 20},
+	},
 	"boss": {
 		"element": "moc",
 		"name": "Sói Chúa Hư Vô",

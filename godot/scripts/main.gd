@@ -709,6 +709,38 @@ func _run_smoke(dir: String) -> void:
 	await _wait(0.3)
 	await _shot(dir, "09c-town-shop")
 	shop_panel.close()
+	# M6 (docs/10): vùng 3 Sa Mạc Xích Sa — trại, ngày có nắng; đêm + bão cát; Sào Huyệt Sa Hoàng
+	p.bosses["huyen-anh"] = true
+	if not ("3-1" in p.unlocked_maps):
+		p.unlocked_maps.append_array(["3-1", "3-2", "3-3"])
+	p.level = maxi(p.level, 22)
+	world._refresh_stats()
+	world._load_map("3-1")
+	p.play_seconds = 30.0
+	world.player.pos = world.safe_pos + Vector2(10, -10)
+	await _wait(1.0)
+	await _shot(dir, "10b-camp")
+	world.player.pos = world.safe_pos + Vector2(900, 0)
+	for k in ["bo-cat", "ran-cat", "xac-uop", "phap-su-cat"]:
+		var ne = world.spawn_enemy(k, 22, world.player.pos + Vector2(220 + randf() * 200, randf() * 300 - 150))
+		world.Ch3.after_spawn(world, ne)
+	await _wait(3.0)
+	await _shot(dir, "10-region3")
+	p.play_seconds = 250.0
+	world.ch3.storm_left = 20.0
+	await _wait(1.5)
+	await _shot(dir, "10c-night-storm")
+	world.ch3.storm_left = 0.0
+	p.play_seconds = 30.0
+	p.quest.ch3 = 5
+	world._load_map("3-3")
+	world.player.pos = world.arena_pos - Vector2(120, 0)
+	# chỉ để chụp ảnh boss: khiên lớn để nhân vật cấp thấp không gục ngay
+	world.player.shield = 1e9
+	world.player.shield_time = 999.0
+	await _wait(1.6)
+	await _shot(dir, "11-sa-hoang")
+	world.player.shield = 0.0
 	print("SMOKE done: boss_defeated=%s level=%d kills=%d" % [p.boss_defeated, p.level, p.kills])
 	SaveSystem.clear_save()
 	get_tree().quit()
@@ -722,6 +754,8 @@ func _music_for(w: GameWorld) -> String:
 		return "boss"
 	if w.map_id == "1-3":
 		return "core"
+	if int(w.map.get("region", 1)) == 3:
+		return "village" if w.player.pos.distance_to(w.safe_pos) < w.safe_r + 250.0 else "core"
 	if w.player.pos.distance_to(w.safe_pos) < w.safe_r + 250.0:
 		return "village"
 	return "forest"

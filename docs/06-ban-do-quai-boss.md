@@ -241,7 +241,7 @@ Mỗi vùng gồm 3 map con (Ngoài rìa → Trung tâm → Lõi) và 1 dungeon 
 | Dungeon: Sào Huyệt Sa Hoàng | 30 | Boss chương 3 |
 
 **Khai phá:** lưới 45 ô. Tài nguyên: Mỏ đá, Mỏ sắt (**Sắt**), ốc đảo → Vườn Thảo Dược.  
-**Bộ trang bị vùng:** Bộ Sa Hành Giả — 2: miễn nhiễm Nắng gắt · 4: +10% Phòng thủ · 6: Xoáy Kiếm để lại lốc cát 4 giây làm chậm 40%. ⬜
+**Bộ trang bị vùng:** Bộ Sa Hành Giả — 2: miễn nhiễm Nắng gắt · 4: +10% Phòng thủ · 6: Xoáy Kiếm (và Mưa Tên, Băng Ngục) để lại lốc cát 4 giây làm chậm 40%. ✅ M6
 
 **Quái thường**
 
@@ -271,7 +271,7 @@ Mỗi vùng gồm 3 map con (Ngoài rìa → Trung tâm → Lõi) và 1 dungeon 
 | 2 (dưới 50%) | **Chui xuống cát** (kịch bản): bất tử 3 giây, trồi lên dưới chân người chơi vòng 7 m, ×2,2 (vết cát báo 1,2 s) · **Bão cát** (kịch bản): tầm nhìn 40% suốt giai đoạn |
 
 - **Rơi:** 1 đồ Tím · 15% **Đuôi Sa Hoàng** (vũ khí Cam: đòn đánh gây độc ×0,2 mỗi giây trong 4 giây, cộng dồn 3 lần) · 3 Thiên Phú Tinh Hoa · 1 Tinh Kim.
-- **Đạo Tặc sao chép:** **Độn Thổ**: chui đất 1,5 giây (bất tử), trồi lên vòng 7 m ×2,0 (⬜).
+- **Đạo Tặc sao chép:** **Độn Thổ**: chui đất 1,5 giây (bất tử), trồi lên vòng 7 m ×2,0 (✅ M6).
 
 **Boss hiếm: Nhân Sư Đá** — xuất hiện ngẫu nhiên 2 lần/ngày ở Di Tích Khai Giới Giả (kịch bản mục 5)
 
@@ -685,7 +685,7 @@ Dùng bằng phím L (Thiên phú Đạo Tặc, [05-thien-phu-chi-tiet](05-thien
 | --- | --- | --- |
 | Sói Chúa Hư Vô (chương 1) | **Vồ Mồi**: lao tới điểm ngắm (tối đa 30 m), ×2,5 sát thương vòng 9 m | ✅ |
 | Tướng Gián Điệp Huyền Ảnh (chương 2) | **Phân Thân**: tạo 2 ảo ảnh hút đòn của quái trong 6 giây | ⬜ |
-| Bọ Cạp Sa Hoàng (chương 3) | **Độn Thổ**: chui đất 1,5 giây (bất tử), trồi lên vòng 7 m ×2,0 | ⬜ |
+| Bọ Cạp Sa Hoàng (chương 3) | **Độn Thổ**: chui đất 1,5 giây (bất tử), trồi lên vòng 7 m ×2,0 | ✅ M6 |
 | Nữ Vương Phệ Mộng (chương 4) | **Mộng Cảnh**: quái trong 10 m đánh nhau trong 4 giây | ⬜ |
 | Viêm Long (chương 5) | **Long Tức**: phun lửa nón 12 m, ×0,5 mỗi 0,25 s trong 2 giây | ⬜ |
 | Bản Ngã Bóng Tối (chương 6) | **Kính Ảnh**: tạo 1 bản sao của bản thân 8 giây, gây 50% sát thương | ⬜ |
@@ -700,7 +700,8 @@ Dùng bằng phím L (Thiên phú Đạo Tặc, [05-thien-phu-chi-tiet](05-thien
 | M3 | ✅ Xong 20/10/2026 — **Áp công thức chỉ số mới cho vùng 1 (Q22)**: quái lấy chỉ số từ công thức trong code thay cho bảng số cứng · boss chương 1 = 90 đòn (Q23) · Thanh Phá Thế + kỹ năng riêng cho quái tinh anh vùng 1 (Sói Đầu Đàn, Nấm Mẹ) · thêm Mộc Tinh |
 | M4 | Vùng 1 đủ 3 map con, 40 ô (Bìa Rừng, Rừng Sâu, Lõi Sương mở sau boss — Q24, Q25) · toàn bộ vùng 2, 45 ô · Mỏ (Đá, Sắt), Bến Cá dạng buff (Q26) · bộ Phong Hành · Mặt Nạ Huyền Ảnh |
 | M5 | Boss hiếm vùng 1–2 (Lão Thụ, Bạch Hổ) · tinh chỉnh hệ số công thức (số đòn, % HP) từ dữ liệu playtest |
-| Alpha | Vùng 3–5 |
+| M6 | ✅ Xong 21/10/2026 — **Vùng 3 Sa Mạc Xích Sa** ([10](10-chuong-3.md)): 3 map, môi trường, 6 quái + 2 tinh anh, Bọ Cạp Sa Hoàng, Nhân Sư Đá, bộ Sa Hành Giả, Đuôi Sa Hoàng, Mắt Nhân Sư, Độn Thổ |
+| Alpha | Vùng 4–5 |
 | Beta | Vùng 6–9 |
 
 ## 7. Quyết định đã chốt (20/10/2026)

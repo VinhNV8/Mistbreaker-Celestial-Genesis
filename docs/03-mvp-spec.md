@@ -905,6 +905,18 @@ Kịch bản mục 7: "Chinh phục: hạ quái canh giữ **hoặc giải câu 
 | M5-T8 | Câu đố: sinh cố định, đủ 2 loại; Trận Đèn Cổ chưa giải sẵn và giải được trong ≤ 3 bước (thử hết 512 tổ hợp); đáp án đúng vị trí; vùng 1 không hỏi chuyện chương 2; câu ngũ hành khớp bảng khắc; giải được +160 vàng +1 Đá; sai khoá 30 giây; phá khoá +80 vàng |
 | PACE-T1, T2 | Đo nhịp (chạy riêng `--only=PACE`, vài phút): bot cày từ cấp 1 và từ cấp 10, in phút tới từng mốc cấp, số quái, số lần chết theo map |
 
+## 9. Đợt M6 (Alpha) — Chương 3 Sa Mạc Lãng Quên
+
+Spec riêng: [10-chuong-3.md](10-chuong-3.md) — vùng 3 Sa Mạc Xích Sa (C3-01…03), môi trường sa mạc (C3-10…13), quái vùng 3 (C3-20…25), Bọ Cạp Sa Hoàng, Nhân Sư Đá, đồ/bộ vùng 3, Độn Thổ (C3-30…35), cốt truyện + chuyển chức 1 (C3-40…44), save v9, test C3-T1…T6, TL-B3.
+
+Thay đổi so với spec các đợt trước:
+
+| Mục cũ | Thay đổi ở M6 |
+| --- | --- |
+| 5.3 — AGI +0,5% chí mạng, SN-07 — Thợ Săn +0,6% tốc đánh/AGI | Thợ Săn: +0,25% chí mạng/AGI, tốc đánh từ AGI tối đa +20% (TL-B3) |
+| TL-S6 / M3 — Bộc Phá theo Mưa Tên +100% | Mỗi đợt Mưa Tên chỉ +60% (tổng thêm bằng Xoáy Kiếm) |
+| Thông báo gục / boss rút về / Phá Thế ghi cứng "Làng Thanh Thạch", "Sói Chúa" | Lấy tên vùng an toàn và tên boss của map hiện tại |
+
 ## Phụ lục A — Yêu cầu thay đổi (CR)
 
 Thay đổi do chủ dự án yêu cầu sau khi kịch bản đã viết. Mỗi CR ghi nguồn, đề xuất, trạng thái duyệt, và đợt sẽ làm.

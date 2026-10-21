@@ -118,7 +118,7 @@ REGIONS = [
         ("3-3 Di Tích Khai Giới Giả", "28–32", "Lưới 15 ô; cốt truyện chương 3; boss hiếm Nhân Sư Đá"),
         ("Dungeon: Sào Huyệt Sa Hoàng", "30", "Boss chương 3")],
   grid="45 ô", res="Mỏ đá, Mỏ sắt (**Sắt**), ốc đảo → Vườn Thảo Dược",
-  set=("Bộ Sa Hành Giả", "2: miễn nhiễm Nắng gắt · 4: +10% Phòng thủ · 6: Xoáy Kiếm để lại lốc cát 4 giây làm chậm 40%", "⬜"),
+  set=("Bộ Sa Hành Giả", "2: miễn nhiễm Nắng gắt · 4: +10% Phòng thủ · 6: Xoáy Kiếm (và Mưa Tên, Băng Ngục) để lại lốc cát 4 giây làm chậm 40%", "✅ M6"),
   mobs=[("Bọ Cát", "Bầy", "Thổ", (20, 26), "Đi bầy 5 con. **Cắn** (vung 0,4 s, ×1,0)", "VIT 50 · STR 50", None),
         ("Rắn Đồi Cát", "Nhanh", "Thổ", (21, 28), "**Chui cát** 1,5 giây (bất tử, có vệt cát báo), trồi lên dưới chân người chơi, ×1,4", "AGI 60 · STR 40", None),
         ("Xác Ướp Khai Giới", "Lì", "Thổ", (24, 32), "**Nguyền rủa** (vung 0,8 s): −20% hồi máu trong 6 giây", "VIT 60 · INT 40", None),
@@ -128,7 +128,7 @@ REGIONS = [
   boss=dict(name="Bọ Cạp Sa Hoàng", lv=30, ref=29, el="Thổ", arch="Boss",
    phases=[("1 (100% → 50%)", "**Kìm kẹp** (vung 0,6 s, ×1,3, giữ người chơi 1 giây) · **Đuôi độc** (vòng 8 m tại chỗ người chơi, vung 0,9 s, ×1,5 + độc 2% HP/giây 5 giây)"),
            ("2 (dưới 50%)", "**Chui xuống cát** (kịch bản): bất tử 3 giây, trồi lên dưới chân người chơi vòng 7 m, ×2,2 (vết cát báo 1,2 s) · **Bão cát** (kịch bản): tầm nhìn 40% suốt giai đoạn")],
-   steal="**Độn Thổ**: chui đất 1,5 giây (bất tử), trồi lên vòng 7 m ×2,0", steal_code="⬜",
+   steal="**Độn Thổ**: chui đất 1,5 giây (bất tử), trồi lên vòng 7 m ×2,0", steal_code="✅ M6",
    drop="1 đồ Tím · 15% **Đuôi Sa Hoàng** (vũ khí Cam: đòn đánh gây độc ×0,2 mỗi giây trong 4 giây, cộng dồn 3 lần)"),
   rare=dict(name="Nhân Sư Đá", lv=32, el="Thổ", arch="Giáp", where="Di Tích Khai Giới Giả",
    skills="**Câu Đố Nhân Sư**: mỗi khi mất 25% HP, hiện 3 cột đá mang 3 hệ — đứng vào cột mang hệ **khắc Thổ** (Mộc) trong 4 giây, sai cột nhận ×3. **Ánh mắt hoá đá** (nón 45°, 14 m: hoá đá 1,5 giây)",
@@ -489,7 +489,8 @@ w("""
 | M3 | ✅ Xong 20/10/2026 — **Áp công thức chỉ số mới cho vùng 1 (Q22)**: quái lấy chỉ số từ công thức trong code thay cho bảng số cứng · boss chương 1 = 90 đòn (Q23) · Thanh Phá Thế + kỹ năng riêng cho quái tinh anh vùng 1 (Sói Đầu Đàn, Nấm Mẹ) · thêm Mộc Tinh |
 | M4 | Vùng 1 đủ 3 map con, 40 ô (Bìa Rừng, Rừng Sâu, Lõi Sương mở sau boss — Q24, Q25) · toàn bộ vùng 2, 45 ô · Mỏ (Đá, Sắt), Bến Cá dạng buff (Q26) · bộ Phong Hành · Mặt Nạ Huyền Ảnh |
 | M5 | Boss hiếm vùng 1–2 (Lão Thụ, Bạch Hổ) · tinh chỉnh hệ số công thức (số đòn, % HP) từ dữ liệu playtest |
-| Alpha | Vùng 3–5 |
+| M6 | ✅ Xong 21/10/2026 — **Vùng 3 Sa Mạc Xích Sa** ([10](10-chuong-3.md)): 3 map, môi trường, 6 quái + 2 tinh anh, Bọ Cạp Sa Hoàng, Nhân Sư Đá, bộ Sa Hành Giả, Đuôi Sa Hoàng, Mắt Nhân Sư, Độn Thổ |
+| Alpha | Vùng 4–5 |
 | Beta | Vùng 6–9 |
 
 ## 7. Quyết định đã chốt (20/10/2026)

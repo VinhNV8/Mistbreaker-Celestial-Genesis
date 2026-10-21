@@ -63,6 +63,31 @@ const DEFS := {
 }
 
 
+## C3-43, C3-44 (M6, docs/10): chuyển chức 1 ở cấp 30. Mọi chức +10% HP và Tấn công.
+const JOB_LEVEL := 30
+const JOB_BONUS := 0.10
+const JOBS := {
+	"kiem-khach": {"id": "kiem-su", "name": "Kiếm Sư",
+		"text": "Đòn chém thứ 4 phóng kiếm khí ×0,8 (bay 25 m, xuyên); Xoáy Kiếm +30% bán kính."},
+	"tho-san": {"id": "xa-thu", "name": "Xạ Thủ",
+		"text": "Mỗi phát bắn thêm 1 mũi tên phụ ×0,5 vào quái gần thứ 2; Tên Xuyên Phá hồi chiêu 6 → 4 giây."},
+	"phap-su": {"id": "phap-su-nguyen-to", "name": "Pháp Sư Nguyên Tố",
+		"text": "Hỏa Cầu tự đổi sang hệ khắc mục tiêu (+30%); Lôi Xích nảy thêm 2 lần."},
+}
+
+
+static func job_def(class_id: String) -> Dictionary:
+	return JOBS.get(class_id, {})
+
+
+## Tên hiển thị: tên chức nếu đã chuyển, không thì tên lớp.
+static func title(class_id: String, job: String) -> String:
+	var j := job_def(class_id)
+	if job != "" and not j.is_empty() and j.id == job:
+		return str(j.name)
+	return str(get_class_def(class_id).name)
+
+
 static func get_class_def(class_id: String) -> Dictionary:
 	return DEFS.get(class_id, DEFS["kiem-khach"])
 

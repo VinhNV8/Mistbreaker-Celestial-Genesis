@@ -10,7 +10,7 @@ const SMALL_W := 230.0
 const LARGE_W := 460.0
 const HEADER := 18.0
 ## Màu đất theo vùng (vùng 1 rừng, vùng 2 thảo nguyên).
-const GROUND := {1: Color("#2f4a34"), 2: Color("#6b6340")}
+const GROUND := {1: Color("#2f4a34"), 2: Color("#6b6340"), 3: Color("#a87a44")}
 const FOG_COLOR := Color("#0b0d14")
 
 var large := false

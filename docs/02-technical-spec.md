@@ -105,6 +105,7 @@ Main (Node, main.gd)
 | `scripts/core/profile.gd` | Hồ sơ người chơi + chuyển đổi sang/từ Dictionary |
 | `scripts/core/save_system.gd` | Đọc/ghi JSON, thu hoạch offline |
 | `scripts/core/items.gd` | Sinh đồ, chỉ số đồ, mặc/tháo, cường hoá, phân rã, Lực chiến (M1); chuyển cấp cường hoá khi mặc (`plus_after_equip`), bộ lọc phân rã/bán nhanh (`bulk_candidates`) — SN2 |
+| `scripts/core/chapter3.gd` | M6 chương 3 (docs/10): môi trường sa mạc, quái/boss vùng 3, Nhân Sư, đồ/bộ vùng 3, Độn Thổ, nhiệm vụ chương 3, chuyển chức 1. Hàm static nhận `GameWorld`; trạng thái ở `GameWorld.ch3` (`Ch3.State`) |
 | `scripts/core/fog.gd` | Sương che bản đồ: ô 64 px, mở bán kính 36 m, lưu base64 bitset, % khám phá (SN-31) |
 | `scripts/core/game_world.gd` | Mô phỏng: di chuyển, combat, AI quái, boss, EXP, rơi đồ, kỹ năng Thiên phú, đồng minh, thảo dược, rương ẩn |
 | `scripts/view/world_view.gd` | Vẽ bản đồ, quái, vòng báo hiệu, hiệu ứng chém, chữ bay. Có hình thì vẽ sprite (sắp xếp theo chiều sâu, hoạt ảnh theo trạng thái, xác quái, tia trúng đòn); thiếu hình thì vẽ hình khối tạm |
@@ -134,7 +135,7 @@ Main (Node, main.gd)
 | `scripts/ui/talent_panel.gd` | Bảng Thiên phú: hiệu ứng, kỹ năng L, hiệu ứng phụ, luyện cấp (M2) |
 | `scripts/ui/screens.gd` | Màn hình tiêu đề, Lễ Thức Tỉnh, chiến thắng |
 | `scripts/main.gd` | Điểm vào + chế độ smoke test |
-| `tests/run_tests.gd` | 82 test logic chạy headless; chạy một phần bằng `-- --only=<chuỗi trong tên test>` |
+| `tests/run_tests.gd` | 98 test logic chạy headless; chạy một phần bằng `-- --only=<chuỗi trong tên test>` |
 | `tools/audio/*.py` (ngoài `godot/`) | Sinh âm thanh bằng code (thư viện chuẩn Python): `python tools/audio/gen_audio.py [id …]`; danh sách id ở `tools/audio/README.md` |
 | `godot/export_presets.cfg`, `tools/build_windows.sh` | Preset xuất Windows và script build `build/ThienPhuKhaiGioi.exe` (C1-50) |
 | `tools/art/*.py` (ngoài `godot/`) | Bộ sinh hình pixel art (Python 3 + Pillow): `pixel.py` thư viện vẽ, `builders.py` dáng nhân vật/quái, `catalog.py` danh mục sprite, `icons.py`, `env.py`, `build_all.py`. Quy trình ở skill `.claude/skills/game-art/SKILL.md` |
@@ -195,7 +196,7 @@ Giai đoạn `windup` là cửa sổ để người chơi né; `world_view.gd` v
 | Trên Windows | `%APPDATA%\Godot\app_userdata\Thiên Phú Khai Giới\save.json` |
 | Smoke test | `user://smoke_save.json` (tự xoá sau khi chạy, không đụng save thật) |
 | Định dạng | JSON một dòng |
-| Phiên bản hiện tại | **7** (M1 trang bị · M2 Thiên phú, công trình · M3 lớp, INT/LUK, điểm cướp · v5 M4.1 nhiều bản đồ · v6 C1: tên, ngoại hình, nhiệm vụ/thoại chương 1, lưới 40 ô, boss hiếm, Thương nhân, Vườn · v7 SN2: sương che từng map, thưởng khám phá, bộ lọc phân rã/bán nhanh · **v8 M5**: `rare_at` = lịch riêng từng boss hiếm, thay `rare_boss_at`). Save v1–v7 được chuyển đổi tự động khi nạp |
+| Phiên bản hiện tại | **9** (M1 trang bị · M2 Thiên phú, công trình · M3 lớp, INT/LUK, điểm cướp · v5 M4.1 nhiều bản đồ · v6 C1: tên, ngoại hình, nhiệm vụ/thoại chương 1, lưới 40 ô, boss hiếm, Thương nhân, Vườn · v7 SN2: sương che từng map, thưởng khám phá, bộ lọc phân rã/bán nhanh · **v8 M5**: `rare_at` = lịch riêng từng boss hiếm, thay `rare_boss_at`; **v9 M6**: `job` (chuyển chức), `quest.ch3/kills3/oases`, `heat_free_until`). Save v1–v7 được chuyển đổi tự động khi nạp |
 
 ```json
 {
@@ -298,7 +299,7 @@ Chơi chỉ bằng bàn phím: nếu chuột đứng yên quá 1,5 giây mà ng�
 - Chạy một phần: `... --script res://tests/run_tests.gd -- --only=TL-B` (TL-B riêng khoảng 13 giây).
 - 12 test C1 (`C1-T1…T12`, 08 mục 3.4). Hồ sơ test mặc định đặt `quest_step = 12` (đã qua hướng dẫn) để không sinh quái nhiệm vụ/thoại trong test cũ; test chuỗi nhiệm vụ dùng hồ sơ mới. Test thời gian thực đặt `GameWorld.debug_now`.
 - 11 test M4.2–M4.3 (03 mục 6.6, 6.8); TL-B2 đánh Huyền Ảnh 2 lớp × 20 Thiên phú × 2 seed (khoảng 2 phút).
-- Kết quả gần nhất: **82/82 qua** (SN2). Toàn bộ chạy khoảng 1 phút vì có 2 mô phỏng 15 phút chơi và 20 trận boss.
+- Kết quả gần nhất: **98/98 qua** (M6). Toàn bộ chạy khoảng 1 phút vì có 2 mô phỏng 15 phút chơi và 20 trận boss.
 - **Đọc log, không chỉ dòng tổng kết**: có `SCRIPT ERROR` trong log thì coi như hỏng, kể cả khi test báo `ok` (xem mục 7).
 
 ### 5.2. Smoke test (có cửa sổ, khoảng 1–2 phút)
@@ -359,6 +360,8 @@ Chạy bot trên nhiều seed, có né và không né, rồi chỉnh HP/ATK boss
 | D33 | Boss hiếm khai báo bằng bảng `GameWorld.RARE_BOSSES` (map → loại, cấp, boss vùng phải ngã trước, đồ Cam, thoại); lịch lưu theo loại boss (`profile.rare_at`) | Thêm boss hiếm vùng mới = 1 dòng bảng + nhánh AI | Kỹ năng riêng của từng boss vẫn viết tay trong `_update_rare` / `_perform_attack` |
 | D34 | Test cân bằng boss hiếm (M5-T3) cho bot mang 3 bình máu, uống khi dưới 40% HP | Boss hiếm khó hơn boss chương (200 đòn); người chơi thật luôn mang bình | Số đo không so trực tiếp được với TL-B/TL-B2 (không dùng bình) |
 | D35 | Bài đo nhịp lên cấp (`PACE-*`) nằm trong `run_tests.gd` nhưng chỉ chạy khi gọi `--only=PACE` | Cần chạy lại mỗi lần chỉnh EXP mà không làm bộ test thường chậm thêm vài phút | Dễ quên chạy: M5-T5 kiểm nhanh ngân sách EXP bằng công thức để bắt lỗi lớn |
+| D36 | Logic một chương nằm ở file riêng (`core/chapter3.gd`, hàm static nhận world); `game_world.gd` chỉ có dòng móc `Ch3.` | `game_world.gd` đã > 3.600 dòng, nhiều phiên cùng sửa | Truy cập hàm/hằng "riêng" của GameWorld qua `w._…` — đổi tên ở GameWorld phải tìm cả trong chapter3.gd |
+| D37 | Cân bằng Thợ Săn theo cấp: AGI +0,6% tốc đánh (trần +20%), +0,25% chí mạng; Bộc Phá trên Mưa Tên ×0,6 (TL-B3) | AGI cộng 3 lợi ích nên tăng tuyến tính mạnh hơn STR/INT; cấp 29 Thợ Săn nhanh hơn Kiếm Khách 47% | Thợ Săn vùng 1 gần như không đổi; nếu thêm nguồn tốc đánh lớn cho Thợ Săn phải đo lại |
 | D16 | Đồng hồ xây riêng (`build_clock`) thay vì giờ thực | Không phụ thuộc đồng hồ máy (người chơi chỉnh giờ để gian lận); vẫn chạy offline qua `apply_offline` | Phải nhớ cộng `build_clock` ở cả `update()` và `apply_offline()` |
 
 ## 7. Lỗi đã gặp và cách xử lý

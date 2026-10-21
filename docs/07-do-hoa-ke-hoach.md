@@ -109,6 +109,7 @@ Ký hiệu như [04](04-ke-hoach-tien-do.md): ✅ xong · 🟡 một phần · �
 | AR-55 | Pháp Sư (SN-06): sprite `hero-phap-su` + 6 sheet thân + 4 sheet tóc (áo choàng dài `robe`, trượng ngọc `weapon="staff"`, khung đánh = giơ trượng, ngọc sáng); 5 icon kỹ năng `fireball`, `chain`, `nova`, `meteor`, `barrier` | ✅ | `humanoid` thêm `robe`, `orb`; hiệu ứng cầu lửa, sét, vòng băng, thiên thạch, khiên vẽ vector trong `world_view` |
 | AR-56 | Sương che bản đồ (SN-31) | ✅ | Texture 1 điểm ảnh/ô, lọc tuyến tính — không cần hình |
 | AR-57 | Khung giao diện (DH-11): thanh kỹ năng, khung bảng phủ + khung HUD, nút, font Be Vietnam Pro | ✅ | `ui/skill_bar.gd`, `ui/frame_box.gd` vẽ bằng code; font tải từ Google Fonts (OFL) |
+| AR-58 | Vùng 3 (M6, docs/10): builder mới `insect` (Bọ Cát, Bọ Hung), `snake` (Rắn Đồi Cát), `scorpion` (Bọ Cạp Sa Hoàng 48 px); Xác Ướp, Thủ Lĩnh Xác Ướp, Pháp Sư Cát (humanoid robe/staff), Nhân Sư Đá (quadruped cát + bờm vàng); NPC Sa Lão, A Mộc, Thạch Thủ; nền cát/cát đỏ/phế tích, đá đỏ (bóng râm), xương rồng, cọ, ốc đảo, cột di tích, lều; icon Đuôi Sa Hoàng, Mắt Nhân Sư; dải màu `sand`, `sand_red`, `bandage`, `chitin` | ✅ | Ngày/đêm, bão cát, ụ cát khi chui, cột Câu Đố vẽ vector trong `world_view` |
 
 ## 3. Kết quả (20/10/2026)
 

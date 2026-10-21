@@ -25,6 +25,11 @@ const RIDDLES := [
 	{"q": "Bản thật của Huyền Ảnh khác bản sao ở điểm nào?", "a": ["Có bóng", "Cầm khiên", "Biết bay"], "region": 2},
 	{"q": "Lính Đánh Thuê mang khiên nên đánh từ đâu?", "a": ["Bên hông hoặc sau lưng", "Chính diện", "Đứng yên chờ nó"], "region": 2},
 	{"q": "Thợ rèn nào đổi Đá và Sắt thành Tinh Kim?", "a": ["Thiết Ngưu", "Thạch Lão", "Lạc Phong"], "region": 2},
+	# M6: vùng 3 Sa Mạc Xích Sa (docs/10)
+	{"q": "Giữa trưa sa mạc, đứng ở đâu để tránh Nắng gắt?", "a": ["Bóng râm tảng đá lớn", "Giữa đồng cát", "Trên lưng Bọ Hung"], "region": 3},
+	{"q": "Đại nạn khiến trời nứt làm chín, sinh ra sương Hư Vô, gọi là gì?", "a": ["Thiên Liệt", "Bão Cát", "Thiên Đạo"], "region": 3},
+	{"q": "Câu Đố Nhân Sư: đứng vào cột mang hệ nào để an toàn?", "a": ["Mộc", "Thổ", "Hỏa"], "region": 3},
+	{"q": "Ai canh giữ Di Tích và dẫn Khai Giới Giả qua Thử Thách Chuyển Chức?", "a": ["Thạch Thủ", "Sa Lão", "A Mộc"], "region": 3},
 ]
 
 
