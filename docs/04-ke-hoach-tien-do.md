@@ -52,6 +52,7 @@ File này liệt kê **mọi hạng mục trong kịch bản**: trạng thái hi
 | MVP — SN2 | **Spec_Notes đợt 2**: lớp Pháp Sư, phân rã/bán nhanh có bộ lọc, chuyển cấp cường hoá khi mặc đồ, map ×1,6, sương che bản đồ — [09](09-spec-notes-dot-2.md) | ✅ Xong 20/10/2026 (phiên game-bc) |
 | MVP — M5 | Cốt truyện có thoại, hướng dẫn, nhiệm vụ, boss hiếm, Xưởng Rèn, cân bằng 1 → 20 | ✅ Xong 20/10/2026 — [03 mục 8](03-mvp-spec.md): Bạch Hổ, nhịp EXP mới, bản đồ nhỏ, câu đố Di tích, cỡ chữ, .exe. Còn chờ playtest người thật để chỉnh nhịp |
 | Alpha — M6 | **Chương 3 Sa Mạc Lãng Quên**: vùng 3 (3 map, ngày/đêm, nắng gắt, ốc đảo, bão cát), 6 quái + 2 tinh anh, Bọ Cạp Sa Hoàng, Nhân Sư Đá, bộ Sa Hành Giả, 2 đồ Cam, Độn Thổ, nhiệm vụ 6 bước, chuyển chức 1 — [10](10-chuong-3.md) | ✅ Xong 21/10/2026 (phiên game-bc) |
+| Alpha — M8 | **Chương 5 Núi Lửa Phẫn Nộ**: vùng 5 Núi Viêm Long (dung nham, núi lửa phun, nhiệt), 4 quái + 2 tinh anh, Viêm Long (dung nham dâng theo lượt, đá nổi), Phượng Hoàng Tro (Niết bàn), Bộ Hoả Ngục, Long Tâm, Lông Phượng, Long Tức, Thương hội Kim Luân phản bội + Công Trại (chiến tranh lãnh địa), Tinh Thạch, chuyển chức 2 (6 nhánh) — [12](12-chuong-5.md) | 🟡 Spec 21/10/2026 (phiên game-c6), code sau M7 |
 | MVP — G | Đồ hoạ nhân vật, quái, bản đồ, hiệu ứng, âm thanh cho chương 1–2 | 🟡 G1 (hình chương 1, sinh bằng code) xong 20/10/2026 — [07](07-do-hoa-ke-hoach.md); còn âm thanh, khung giao diện, vùng 2 |
 | Thử nghiệm kín | 50–100 người chơi (kịch bản mục 9) | ⬜ Cần M3–M5 + G |
 | Alpha | 4 lớp, chương 1–5, chuyển chức 1–2, dungeon cổng ngẫu nhiên, bảng xếp hạng | ⬜ |
@@ -143,7 +144,7 @@ Thiết kế chi tiết từng Thiên phú (hiệu ứng Lv1 → Lv10, 2 bậc t
 | NV-03 | Lớp Pháp Sư | ✅ | SN2 | SN-T1, SN-T2, TL-B, TL-B2 | Hỏa Cầu nổ lan, Lôi Xích, Băng Ngục (trói), Thiên Thạch, Pháp Thuẫn; Tấn công từ INT, HP thấp nhất, MP +30; vũ khí tên Trượng ([09](09-spec-notes-dot-2.md)) |
 | NV-04 | Lớp Hộ Vệ | ⬜ | Alpha | — | |
 | NV-05 | Chọn lớp khi tạo nhân vật | ✅ | M3 | Smoke `02b-class` | Màn hình sau Lễ Thức Tỉnh; không đổi lớp giữa chừng (Q34) |
-| NV-06 | Chuyển chức 1 (cấp 30) và 2 (cấp 60) | 🟡 | Alpha | C3-T6 | Chuyển chức 1 xong (M6): Kiếm Sư · Xạ Thủ · Pháp Sư Nguyên Tố, +10% HP/Tấn công + 2 hiệu ứng mỗi chức. Còn chuyển chức 2 |
+| NV-06 | Chuyển chức 1 (cấp 30) và 2 (cấp 60) | 🟡 | Alpha | C3-T6 | Chuyển chức 1 xong (M6): Kiếm Sư · Xạ Thủ · Pháp Sư Nguyên Tố, +10% HP/Tấn công + 2 hiệu ứng mỗi chức. Chuyển chức 2: spec M8 ([12](12-chuong-5.md) C5-45, 6 nhánh) |
 | NV-07 | Chuyển chức 3 (cấp 90) | ⬜ | Beta | — | |
 | NV-08 | Cấp tối đa 100 | ✅ | Proto | CHR-01 | |
 | NV-09 | Cấp Thần Vực vô hạn (endgame) | ⬜ | Beta | — | |
@@ -392,6 +393,7 @@ Mỗi đợt theo quy trình: **viết spec → duyệt → code → test → c�
 | 7 | Q13–Q16: số liệu Đạo Tặc cướp thuộc tính, độc nhất server — [CR-01](03-mvp-spec.md) | Thiên phú SSS | Như CR-01 (đã code ở M3) |
 | 10 | Q28–Q34: 8 kỹ năng, phím 1–4, INT/LUK, né tránh, MP, tinh anh vùng 1, không đổi lớp — [03 mục 5.11](03-mvp-spec.md) | Combat 2 lớp | Như spec M3 (đã code) |
 | 11 | Q46–Q50: phép kết hợp Ngũ Hành của Pháp Sư, cách chuyển cường hoá, bộ lọc mặc định, kích thước map, sương che quái — [09 mục 5](09-spec-notes-dot-2.md) | Pháp Sư, túi đồ, bản đồ | Như 09 mục 5 (đã code) |
+| 12 | Q59–Q64: mức "chiến tranh lãnh địa" ở MVP, thiên thạch −25% HP, Bình Nước Thánh cho Phượng Hoàng, chuyển chức 2 tốn 30 Tinh Thạch, ô Thiên phú phụ 2, phe Kim Luân — [12 mục 8](12-chuong-5.md) | Chương 5 | Như 12 mục 8 |
 
 ### 13.1. Đã chốt
 
