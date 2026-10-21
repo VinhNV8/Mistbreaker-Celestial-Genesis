@@ -19,10 +19,14 @@ extends RefCounted
 ##   vanish(w, e) -> bool (true = quái biến mất không cho EXP/đồ: ảo ảnh, Mộng Châu…) · input_move(w, v) -> Vector2
 ##   enemy_avoid(w, e, pos) -> bool (true = quái không được bước tới pos, ví dụ dung nham)
 ##   player_hurt(w, dmg, element) (sau khi người chơi mất máu vì đòn quái) · safe_blocked(w) -> bool (vùng an toàn tạm mất tác dụng)
+##   M8: poise_mult(w, e) -> float (nhân sát thương vào thanh Phá Thế) · trap_extra(w) -> int (cộng số bẫy tối đa)
+##   trap_triggered(w, pos, mul) (bẫy vừa nổ) · meteor_extra(w, pos, mul) -> Array[[pos, mul]] (Thiên Thạch thêm)
+##   npc_visible(w, npc_id) -> bool (chỉ gọi chương có npc_id trong NPCS; mặc định true)
 
 const Ch3 = preload("res://scripts/core/chapter3.gd")
 const Ch4 = preload("res://scripts/core/chapter4.gd")
-const MODULES := [Ch3, Ch4]
+const Ch5 = preload("res://scripts/core/chapter5.gd")
+const MODULES := [Ch3, Ch4, Ch5]
 
 
 ## Danh sách chương có hook, tính 1 lần rồi giữ lại (hook được gọi nhiều lần mỗi khung hình cho từng quái).
@@ -283,6 +287,32 @@ static func pierce_cd(w, cd: float) -> float:
 	return cd
 
 
+static func poise_mult(w, e) -> float:
+	var k := 1.0
+	for m in _with("poise_mult"):
+		k *= float(m.poise_mult(w, e))
+	return k
+
+
+static func trap_extra(w) -> int:
+	var n := 0
+	for m in _with("trap_extra"):
+		n += int(m.trap_extra(w))
+	return n
+
+
+static func trap_triggered(w, pos: Vector2, mul: float) -> void:
+	for m in _with("trap_triggered"):
+		m.trap_triggered(w, pos, mul)
+
+
+static func meteor_extra(w, pos: Vector2, mul: float) -> Array:
+	var out: Array = []
+	for m in _with("meteor_extra"):
+		out.append_array(m.meteor_extra(w, pos, mul))
+	return out
+
+
 static func env_text(w) -> String:
 	var parts := PackedStringArray()
 	for m in _with("env_text"):
@@ -300,6 +330,13 @@ static func talk(w, npc_id: String) -> String:
 		if npc_id in m.NPCS:
 			return m.talk(w, npc_id)
 	return ""
+
+
+static func npc_visible(w, npc_id: String) -> bool:
+	for m in MODULES:
+		if npc_id in m.NPCS and "npc_visible" in m.HOOKS:
+			return m.npc_visible(w, npc_id)
+	return true
 
 
 static func owns_npc(npc_id: String) -> bool:

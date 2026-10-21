@@ -29,11 +29,13 @@ func _render(content: VBoxContainer) -> void:
 	body.add_child(right)
 
 	# --- cửa hàng làng
-	left.add_child(UiTheme.label("THƯƠNG NHÂN MẠC TAM" if town else ("NGƯỜI DẪN ĐƯỜNG A MỘC" if world.map_id == "3-1" else ("LÃO NGƯ" if world.map_id == "4-1" else "THƯƠNG NHÂN LÀNG")), "Eyebrow"))
+	left.add_child(UiTheme.label("THƯƠNG NHÂN MẠC TAM" if town else ("NGƯỜI DẪN ĐƯỜNG A MỘC" if world.map_id == "3-1" else ("LÃO NGƯ" if world.map_id == "4-1" else ("THƯƠNG HỘI KIM LUÂN · TRẠI TRO HỒNG" if world.map_id == "5-1" else "THƯƠNG NHÂN LÀNG"))), "Eyebrow"))
 	var rows: Array = [["potion", "res-potion", "Bình máu", GameWorld.SHOP_POTION], ["stone", "res-stone", "Đá Cường Hoá", GameWorld.SHOP_STONE]]
 	if int(world.map.get("region", 1)) == 4:
 		rows.append(["antidote", "res-herb", "Thuốc Giải (có %d)" % int(p.antidotes), GameWorld.Ch4.SHOP_ANTIDOTE])
 		rows.append(["torch", "res-torch", "Đuốc Lửa (có %d)" % int(p.fire_torches), GameWorld.Ch4.SHOP_TORCH])
+	if int(world.map.get("region", 1)) == 5:
+		rows.append(["holy_water", "res-holy_water", "Bình Nước Thánh (có %d)" % int(p.holy_water), GameWorld.Ch5.SHOP_HOLY])
 	for row in rows:
 		var h := UiTheme.hbox(8)
 		h.add_child(_icon(SpriteLib.icon(row[1])))
@@ -49,6 +51,22 @@ func _render(content: VBoxContainer) -> void:
 			refresh())
 		h.add_child(b)
 		left.add_child(h)
+
+	# --- M8: đổi Tinh Thạch → Tinh Kim
+	if int(world.map.get("region", 1)) == 5:
+		var hc := UiTheme.hbox(8)
+		hc.add_child(_icon(SpriteLib.icon("res-crystal")))
+		var lc := UiTheme.label("%d Tinh Thạch → 1 Tinh Kim (có %d)" % [GameWorld.Ch5.CRYSTAL_PER_KIM, int(p.crystal)])
+		lc.size_flags_horizontal = SIZE_EXPAND_FILL
+		hc.add_child(lc)
+		var bc := UiTheme.button("Đổi")
+		bc.name = "Buy_crystal_kim"
+		bc.disabled = p.crystal < GameWorld.Ch5.CRYSTAL_PER_KIM
+		bc.pressed.connect(func():
+			world.shop_buy("crystal_kim")
+			refresh())
+		hc.add_child(bc)
+		left.add_child(hc)
 
 	# --- Thương nhân lữ hành
 	left.add_child(HSeparator.new())

@@ -374,29 +374,47 @@ static func _card(t, spinning: bool) -> Control:
 	return card
 
 
+## Màn kết chương theo boss chương (MP-06). [chương, tiêu đề, lời kể (%s = tên nhân vật), dòng gợi ý].
+const VICTORY := {
+	"boss": [1, "Sói Chúa Hư Vô đã ngã xuống",
+		"Ánh sáng từ Bia Đá lan tới tận hang sói. Phía đông, Đồng Bằng Gió Hú đang chờ… và Thiên phú trong %s khẽ rung động, như có một mảnh thứ hai đang thức giấc.",
+		"Lõi Sương (cấp 7–10) đã mở; Đồng Bằng Gió Hú mở khi đạt cấp 10 và khai phá 60% vùng 1 — xem bản đồ lục địa (phím N)."],
+	"huyen-anh": [2, "Tướng Gián Điệp Huyền Ảnh đã ngã xuống",
+		"Gió ở Đồng Bằng lặng đi. Liên minh Khai Giới đã sạch bóng gián điệp — nhưng lời thì thầm “mảnh linh hồn của Chủ nhân” vẫn vang trong đầu %s. Phía nam, Sa Mạc Xích Sa đang chờ…",
+		"Sa Mạc Xích Sa mở khi đạt Lực chiến 5.000 và cấp 18 — xem bản đồ lục địa (phím N)."],
+	"sa-hoang": [3, "Bọ Cạp Sa Hoàng đã ngã xuống",
+		"Cát lắng xuống trên Di Tích Khai Giới Giả. Bia đá cổ chờ %s đọc nốt câu chuyện về Thiên Liệt…",
+		"Gặp Thạch Thủ ở Trại Cát Đỏ để chuyển chức lần 1 (cấp 30). Đầm Lầy U Minh mở sau chuyển chức."],
+	"nu-vuong": [4, "Nữ Vương Phệ Mộng đã ngã xuống",
+		"Giấc mơ tan. Lam Nhi tỉnh lại, Thiên phú trở về — nhưng Nữ Vương chỉ là tay sai của “kẻ không có Thiên phú”. %s cảm thấy mảnh thứ hai trong ngực đang lớn dần.",
+		"Tiến hoá Thiên phú với Tinh Quang Sứ ở Làng Chài Lau. Núi Viêm Long mở sau tiến hoá lần 1."],
+	"vien-long": [5, "Viêm Long đã ngã xuống",
+		"Núi lửa ngừng gầm. Long Tâm nóng rực trong tay %s — và trong ánh lửa, cái bóng của chính mình hiện lên… không có mặt.",
+		"Gặp Liệt Diễm ở Trại Tro Hồng để chuyển chức lần 2 (cấp 60, 30 Tinh Thạch). Băng Nguyên Bắc Cực mở sau chuyển chức 2."],
+}
+
+
 static func victory(world, on_continue: Callable, on_title: Callable, boss_id := "boss") -> Control:
 	var page := _page(0.82)
 	var col: VBoxContainer = page[1]
 	var p = world.profile
 	var t: Dictionary = world.talent()
-	var ch2: bool = boss_id == "huyen-anh"
-	col.add_child(_centered("CHƯƠNG 2 HOÀN THÀNH" if ch2 else "CHƯƠNG 1 HOÀN THÀNH", "Eyebrow"))
-	var h := _centered("Tướng Gián Điệp Huyền Ảnh đã ngã xuống" if ch2 else "Sói Chúa Hư Vô đã ngã xuống", "Title")
-	h.add_theme_font_size_override("font_size", 40 if ch2 else 44)
+	var v: Array = VICTORY.get(boss_id, VICTORY["boss"])
+	col.add_child(_centered("CHƯƠNG %d HOÀN THÀNH" % int(v[0]), "Eyebrow"))
+	var h := _centered(str(v[1]), "Title")
+	h.add_theme_font_size_override("font_size", 44 if int(v[0]) == 1 else 40)
 	col.add_child(h)
-	var story := ("Gió ở Đồng Bằng lặng đi. Liên minh Khai Giới đã sạch bóng gián điệp — nhưng lời thì thầm “mảnh linh hồn của Chủ nhân” vẫn vang trong đầu %s. Phía nam, Sa Mạc Xích Sa đang chờ…" % p.name) if ch2 		else ("Ánh sáng từ Bia Đá lan tới tận hang sói. Phía đông, Đồng Bằng Gió Hú đang chờ… và Thiên phú trong %s khẽ rung động, như có một mảnh thứ hai đang thức giấc." % p.name)
-	col.add_child(_centered(story, "Muted", 580))
+	col.add_child(_centered(str(v[2]) % p.name, "Muted", 580))
 	# C1-13 (TN-09): bản đồ lục địa hiện ra, vùng đã qua sáng, vùng kế tiếp nhấp nháy.
 	var art := Continent.new()
-	art.chapter = 2 if ch2 else 1
+	art.chapter = int(v[0])
 	art.custom_minimum_size = Vector2(620, 290)
 	art.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	col.add_child(art)
 	col.add_child(_centered("Thời gian chơi %d phút  ·  Cấp %d  ·  Quái đã hạ %d  ·  Khai phá %d/%d  ·  Thiên phú %s · %s" % [
 		roundi(p.play_seconds / 60.0), p.level, p.kills, Explore.owned_count(p.tiles), Explore.explore_total(p.tiles), t.rank, t.name
 	], "", 600))
-	col.add_child(_centered(("Chương 3 — Sa Mạc Xích Sa — đang được phát triển. Tiếp tục mở rộng lãnh địa vùng 2 để lên hạng Liên minh." if ch2
-		else "Lõi Sương (cấp 7–10) đã mở; Đồng Bằng Gió Hú mở khi đạt cấp 10 và khai phá 60% vùng 1 — xem bản đồ lục địa (phím N)."), "Small", 580))
+	col.add_child(_centered(str(v[3]), "Small", 580))
 	var row := _buttons(col)
 	var b1 := UiTheme.button("Tiếp tục khám phá", true)
 	b1.pressed.connect(on_continue)

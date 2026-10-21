@@ -8,7 +8,7 @@
 | Thứ tự | Sau M7 (phiên game-bc). Chia M8.1 (vùng, môi trường, quái) → M8.2 (boss, đồ) → M8.3 (cốt truyện, chiến tranh lãnh địa, chuyển chức 2) |
 | Kiến trúc | Logic trong file mới `core/chapter5.gd`, gắn vào `core/chapters.gd` (`MODULES += [Ch5]`, khai báo `HOOKS`, `MAPS`) — **không sửa chỗ móc trong `game_world.gd`** trừ khi cần hook mới (báo phiên game-bc trước) |
 | Quy trình | Spec (file này) → code → test → cập nhật 02/03/04/06/07 và mục Kết quả |
-| Trạng thái | 🟡 Spec (21/10/2026, phiên game-c6) |
+| Trạng thái | ✅ **Xong 21/10/2026** (phiên game-c6) — xem mục 9 (một số số liệu đổi so với spec sau khi cân bằng) |
 
 Ký hiệu: ✅ xong · 🟡 một phần · ⬜ chưa làm.
 
@@ -82,7 +82,7 @@ Chỉ số từ `Formulas.mob_stats` (06 vùng 5).
 
 | Trường | Kiểu | Mặc định save cũ |
 | --- | --- | --- |
-| `job` | String — thêm 6 giá trị chức 2 (`kiem-thanh`, `huyet-kiem`, `than-tien`, `tho-bay`, `dai-phap-su`, `tu-linh-su`); chức 1 suy ra từ lớp | giữ nguyên |
+| `job2` | String — `""` hoặc 1 trong 6 nhánh (`kiem-thanh`, `huyet-kiem`, `than-tien`, `tho-bay`, `dai-phap-su`, `tu-linh-su`). Tách khỏi `job` (chức 1) để giữ nguyên 2 hiệu ứng của chức 1 (`Ch3` kiểm `job == "kiem-su"`…) | `""` |
 | `quest.ch5`, `quest.kills5`, `quest.raid_won` | int, int, bool | 0, 0, false |
 | `crystal` (Tinh Thạch) | float | 0 |
 | `holy_water` (Bình Nước Thánh) | int | 0 |
@@ -118,4 +118,38 @@ Chỉ số từ `Formulas.mob_stats` (06 vùng 5).
 
 ## 9. Kết quả
 
-*(điền sau khi làm xong)*
+| Mã | Trạng thái | Ghi chú |
+| --- | --- | --- |
+| C5-01…03 | ✅ | `maps.gd` 5-1/5-2/5-3 (`lava`, `eruption`); `Ch5.map_requirement` (Nữ Vương + `Ch4.evolved_once` + cấp 44); lưới vùng 5 dùng bảng sự kiện vùng 2–4; **Mỏ vùng 5 cho Tinh Thạch** (`Explore.production_per_minute` đếm khoá `mine_r5_*`), Tinh Thạch hiện ở HUD |
+| C5-10…13 | ✅ | `Ch5.tick`: dung nham −5%/giây (né lăn / Long Tâm miễn), núi lửa phun 5-2/5-3, nhiệt +10% tốc đánh (dựng lại chỉ số khi vào/ra vùng nhiệt), Kháng Hỏa giảm; quái tránh dung nham (`enemy_avoid`). View `view/region5_view.gd` |
+| C5-20…26 | ✅ | Thằn Lằn (vệt lửa), Người Đá (Đấm ×1,3; vỡ 3 Mảnh Đá), Linh Hồn Lửa (nổ 5 m, tắt trong dung nham), Pháp Sư Hoả Diệm (3 Cột lửa), Rồng Non (Phun lửa quay 60°/giây), Thợ Rèn Hư Vô (Búa rèn + hào quang +20%, khiên trước), Lính/Đội Trưởng Kim Luân |
+| C5-30…35 | ✅ | Viêm Long 3 giai đoạn (bay = bất tử + không bị nhắm qua `Enemy.fly_t`, ngập dung nham, 5 Đá Nổi, cuồng nộ); Long Tâm, Long Tức (Đạo Tặc), Phượng Hoàng Tro (`RARE_BOSSES["5-3"]`, Niết bàn, Bình Nước Thánh, Băng Ngục/Ngũ Hành Thủy/Hỏa Cầu Nguyên Tố = hệ Thủy), Lông Phượng (hook `player_hurt`), Bộ Hoả Ngục |
+| C5-40…44 | ✅ | `story.gd` `QUESTS5` + 24 đoạn thoại; NPC Trại Tro Hồng (Kim Phú bỏ trốn → Tiểu Hoả, hook mới `npc_visible`); thưởng EXP 2.450.000 ≈ 25% EXP cấp 45 → 60; màn kết chương 5 |
+| C5-42, C5-43 | ✅ | Công Trại 3 đợt (cổng có thanh bền, trại mất an toàn qua `safe_blocked`), đột kích mỗi 30 phút chơi sau chương (thua: Mỏ Tinh Thạch ngừng 30 phút theo `build_clock`) |
+| C5-45…47 | ✅ | `Classes.JOBS2`, `Ch5.can_job2 / do_job2`, bảng chọn nhánh `ui/job2_panel.gd` (Liệt Diễm, phím E), tên chức 2 ở HUD/Chỉ số/túi đồ. Hook mới: `poise_mult`, `trap_extra`, `trap_triggered`, `meteor_extra` |
+| Sửa lỗi chung | ✅ | (1) `main.gd`: NPC trả về `"shop"` ở trại vùng 3–5 (A Mộc, Lão Ngư) không mở được cửa hàng — chỉ mở ở 1-1/2-1. (2) Màn chiến thắng hạ Sa Hoàng / Nữ Vương ghi "CHƯƠNG 1 HOÀN THÀNH" — đổi thành bảng `Screens.VICTORY` theo boss (chương 1–5). (3) `_nova` đặt `hit_source = "nova"` để chương nhận ra đòn Băng Ngục |
+
+**Đổi so với spec (sau khi code + cân bằng):**
+
+| Mục | Spec | Đã làm | Lý do |
+| --- | --- | --- | --- |
+| C5-30 lượt ngập | Chu kỳ cố định 20 giây: bay 9 s → đáp 8 s → bay 3 s | Bay 9 s (báo 3 + ngập 6) → **đáp tới khi mất 15% HP hoặc 10 giây** → bay lại; đáp **ngay cạnh người chơi**, 3 giây đầu không phun Long tức | Chu kỳ cố định "làm tròn" thời gian giai đoạn 2 theo bậc 20 giây: Thợ Săn hạ 40% HP trong 1 lần đáp, Kiếm Khách cần 2 lần → các lớp chênh 36%. Đáp theo lượng sát thương → thời gian tỉ lệ với sát thương |
+| C5-30 Đá Nổi | Vòng 3 m | An toàn khi thân người chơi còn chạm đá (3 m + bán kính người) | 3 m quá chặt — người chơi đứng mép đá bị trôi ra ngoài |
+| C5-21 Mảnh Đá | EXP ×0,2 mỗi mảnh | Không cho EXP/đồ | Đơn giản hoá (hook `vanish`) — tránh 3 mảnh cho EXP như 3 quái |
+| C5-42 Cổng Trại | HP = 30 × cấp | HP = 200 × cấp; lính đứng cạnh cổng đánh 50% Tấn công mỗi 1,5 giây | 30 × cấp vỡ trong vài giây ở cấp 50 |
+| C5-46 Kiếm Thánh | Kiếm khí ở đòn thứ 3 *thay vì* thứ 4 | Đòn thứ 3 phóng **thêm** kiếm khí ×1,0 (đòn thứ 4 của Kiếm Sư giữ nguyên) | Không sửa logic chức 1 trong `chapter3.gd` |
+| C5-46 Thần Tiễn | Tên Xuyên Phá xuyên không giới hạn, ×1,2 | Tên Xuyên Phá hồi chiêu −1 giây (4 → 3) | Tên Xuyên Phá vốn đã xuyên mọi quái |
+| C5-26 Lính Kim Luân | 1/3 mang khiên | 1/3 (theo id quái) chặn 70% đòn trước mặt, không vẽ khiên | Khiên vẽ theo dữ liệu loại quái (`shield` trong `monsters.gd`), không theo từng con |
+| Save | `job` thêm 6 giá trị | Trường mới `job2` | Xem mục 6 |
+
+**Cân bằng TL-B5** (Viêm Long cấp 58, bot cấp 57, bộ đồ chuẩn cấp 57, Thiên phú đã tiến hoá 1 lần, chưa chuyển chức 2; 20 Thiên phú × 2 seed): Kiếm Khách 47,1 · Thợ Săn 39,2 · Pháp Sư 38,3 giây — các lớp chênh 19%, F/S chênh tối đa 16% (Pháp Sư), **0 lần chết**.
+
+**Phát hiện:**
+
+- **F1 — Thời gian giai đoạn nhảy bậc theo chu kỳ** (xem bảng trên): cơ chế "bất tử theo lượt cố định" khuếch đại chênh lệch sát thương nhỏ giữa các lớp thành chênh lệch thời gian lớn. Boss sau nên mở cửa sổ đánh theo lượng sát thương.
+- **F2 — Trạng thái ngập còn sót khi boss sinh lại** (người chơi gục → boss mới giai đoạn 1 vẫn ngập dung nham). Sửa: giai đoạn khác 2 luôn tắt ngập.
+- **F3 — Thiên phú Lv1 ở vùng 5 quá yếu**: cùng trận, Thiên phú Lv1 (chưa tiến hoá) mất 50–230 giây (Kiếm Khách 230). Cấp hiệu dụng sau tiến hoá (D39) là một phần lớn sức mạnh cấp cao — người chơi bỏ luyện Thiên phú sẽ kẹt ở vùng 5. Cân nhắc nhắc luyện Thiên phú trong nhiệm vụ chương 4–5.
+- **F4 — Lỗi định dạng `%` lần thứ 5** ("+10% HP" trong bảng chuyển chức 2) — smoke bắt được.
+- **Bot**: thêm né vòng báo thiên thạch / cột lửa / mưa lông và lên Đá Nổi khi dung nham dâng (trước đó bot cận chiến gục vì đứng yên trong vòng thiên thạch 25% HP).
+
+**Kiểm thử:** 113 test (thêm C5-T1…T7, TL-B5); smoke thêm `13b-camp5`, `13-region5`, `13c-vien-long`, `14b-job2`, `13d-siege`.

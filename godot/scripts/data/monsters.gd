@@ -224,6 +224,54 @@ const DEFS := {
 		"windup": 0.8, "recover": 1.1, "attack": "chomp", "color": "#4a5a32", "steal": {"str": 60, "vit": 40},
 		"elite_name": "Cá Sấu Chúa", "elite_arch": "giap", "elite_min_level": 40, "elite_skill": "deathroll", "elite_sprite": "ca-sau-chua",
 	},
+	# ---------------------------------------------------------------- M8: vùng 5 Núi Viêm Long (06 vùng 5, docs/12)
+	"than-lan-lua": {
+		"element": "hoa", "name": "Thằn Lằn Lửa", "arch": "nhanh", "speed": 160.0, "radius": 14.0, "range": 26.0,
+		"windup": 0.45, "recover": 0.8, "attack": "melee", "color": "#e0562a", "steal": {"agi": 60, "str": 40},
+		"elite_name": "Rồng Non Lửa", "elite_arch": "nhanh", "elite_min_level": 50, "elite_skill": "flamebreath", "elite_sprite": "rong-non",
+	},
+	"nguoi-da": {
+		"element": "tho", "name": "Người Đá Dung Nham", "arch": "giap", "speed": 70.0, "radius": 20.0, "range": 40.0,
+		"windup": 0.8, "recover": 1.1, "attack": "punch", "color": "#45404c", "steal": {"vit": 60, "str": 40},
+		"elite_name": "Thợ Rèn Hư Vô", "elite_arch": "giap", "elite_min_level": 54, "elite_skill": "forgehammer", "elite_sprite": "tho-ren-hu-vo",
+	},
+	## Mảnh Đá: Người Đá vỡ ra khi bị hạ (C5-21).
+	"manh-da": {
+		"element": "tho", "name": "Mảnh Đá", "arch": "bay", "speed": 120.0, "radius": 10.0, "range": 20.0,
+		"windup": 0.4, "recover": 0.8, "attack": "melee", "color": "#6a6470", "steal": {"vit": 100},
+	},
+	"linh-hon-lua": {
+		"element": "hoa", "name": "Linh Hồn Lửa", "arch": "tu_no", "speed": 170.0, "radius": 13.0, "range": 20.0,
+		"windup": 0.8, "recover": 0.5, "attack": "fireburst", "color": "#ff7a1a", "steal": {"int": 50, "luk": 50},
+	},
+	"phap-su-hoa-diem": {
+		"element": "hoa", "name": "Pháp Sư Hoả Diệm", "arch": "phep", "speed": 110.0, "radius": 16.0, "range": 180.0,
+		"windup": 1.0, "recover": 1.2, "attack": "firepillar", "color": "#a8321c", "steal": {"int": 70, "luk": 30},
+	},
+	## Công Trại (C5-42, C5-26): lính Thương hội Kim Luân.
+	"linh-kim-luan": {
+		"element": "kim", "name": "Lính Kim Luân", "arch": "li", "speed": 100.0, "radius": 16.0, "range": 34.0,
+		"windup": 0.6, "recover": 0.9, "attack": "melee", "color": "#d4a83a", "steal": {"str": 50, "vit": 50},
+	},
+	"doi-truong-kim-luan": {
+		"element": "kim", "name": "Đội Trưởng Kim Luân", "arch": "li", "speed": 95.0, "radius": 20.0, "range": 40.0,
+		"windup": 0.7, "recover": 1.0, "attack": "melee", "color": "#b8862a", "steal": {"str": 60, "vit": 40},
+	},
+	## C5-30: boss chương 5.
+	"vien-long": {
+		"element": "hoa", "name": "Viêm Long", "arch": "boss", "speed": 120.0, "radius": 40.0, "range": 60.0,
+		"windup": 0.6, "recover": 0.9, "attack": "claw", "color": "#c83a1a", "steal": {"str": 50, "int": 50},
+	},
+	## C5-33: boss hiếm 5-3.
+	"phuong-hoang": {
+		"element": "hoa", "name": "Phượng Hoàng Tro", "arch": "phep", "speed": 140.0, "radius": 30.0, "range": 200.0,
+		"windup": 0.8, "recover": 1.0, "attack": "featherbolt", "color": "#ff7a1a", "steal": {"int": 60, "luk": 40},
+	},
+	## C5-46: Xương Nô của Tử Linh Sư (đồng minh).
+	"xuong-no": {
+		"element": "", "name": "Xương Nô", "arch": "nhanh", "speed": 150.0, "radius": 14.0, "range": 26.0,
+		"windup": 0.4, "recover": 0.6, "attack": "melee", "color": "#d2c8b2", "steal": {},
+	},
 	## C4-30: boss chương 4
 	"nu-vuong": {
 		"element": "thuy", "name": "Nữ Vương Phệ Mộng", "arch": "boss", "speed": 110.0, "radius": 30.0, "range": 50.0,

@@ -865,7 +865,7 @@ static func quest_hud(w) -> Dictionary:
 				[("Thưởng: " + rt) if rt != "" else "", "muted"]]}
 	if int(w.profile.quest.ch3) >= Story.DONE3:
 		return {"done": true, "title": "CHƯƠNG 3 · HOÀN THÀNH ✓",
-			"lines": [["Chức: %s" % Classes.title(str(w.profile.class_id), str(w.profile.job)), "text"],
+			"lines": [["Chức: %s" % Classes.title(str(w.profile.class_id), str(w.profile.job), str(w.profile.job2)), "text"],
 				["Săn boss hiếm Nhân Sư Đá ở Di Tích Khai Giới Giả — 2 lần mỗi ngày", "muted"],
 				["Chương 4: Đầm Lầy U Minh — đã chuyển chức + hạ Sa Hoàng (phím N)", "muted"]]}
 	return {}

@@ -15,6 +15,12 @@ const NGU := "Trưởng làng Lão Ngư"
 const LAM := "Lam Nhi"
 const TQ := "Tinh Quang Sứ"
 const QUEEN := "Nữ Vương Phệ Mộng"
+## M8 (docs/12): Trại Tro Hồng
+const XICH := "Trưởng tộc Xích Đồng"
+const KIMPHU := "Chưởng quỹ Kim Phú"
+const LIET := "Kiếm khách Liệt Diễm"
+const TIEUHOA := "Tiểu Hoả"
+const DRAGON := "Viêm Long"
 
 ## id → [[người nói, lời], ...]
 const DIALOGS := {
@@ -141,6 +147,46 @@ const DIALOGS := {
 	"ch4_done": [[TQ, "Thiên phú đã tiến hoá. Núi Viêm Long ở phía nam đang bốc cháy — Thương hội có điều gì đó che giấu."]],
 	"rare_thuy_quai": [["Thuỷ Quái Thất Đầu", "Bảy cái đầu, bảy cái miệng đói! Chặt một — ta mọc lại hai!"]],
 	"rare_thuy_quai_down": [["{name}", "(Bảy cái đầu chìm xuống đầm. Một mảnh vảy sáng xanh nổi lên mặt nước.)"]],
+	# ---------------------------------------------------------------- chương 5 (docs/12 C5-40…44)
+	"r5_arrive": [
+		["{name}", "Không khí bỏng rát, tro bay như tuyết. Núi Viêm Long đang thở…"],
+		["{name}", "(Tránh dung nham. Ở Sườn Dung Nham trở lên, núi lửa phun theo chu kỳ — nhìn vòng đỏ dưới đất mà né.)"],
+	],
+	"xich_meet": [
+		[XICH, "Khai Giới Giả! Tộc Hỏa Sơn rèn sắt dưới chân núi này đã ngàn năm. Gần đây Viêm Long thức giấc, núi phun liên tục."],
+		[XICH, "May có Thương hội Kim Luân giúp dựng trại, đổi quặng lấy lương thực. Chưởng quỹ Kim Phú đang cần người dọn đường cho đoàn buôn."],
+	],
+	"kim_task": [[KIMPHU, "Đoàn buôn của ta không qua nổi lũ Thằn Lằn với Người Đá. Dẹp giúp 30 con — Thương hội không quên ân tình đâu."]],
+	"xich_land": [[XICH, "Muốn trụ được ở đây phải có đất. Chiếm 6 ô quanh trại, dựng một Mỏ Tinh Thạch — tinh thể lửa này chỉ núi Viêm Long mới có."]],
+	"kim_betray": [
+		[KIMPHU, "…Ngươi dựng mỏ trên đất của Thương hội à? Tiếc thật. Ta đã định để ngươi sống lâu hơn."],
+		[KIMPHU, "Hư Vô Giáo trả giá gấp mười cho vũ khí rèn bằng Tinh Thạch. Còn Long Tâm của Viêm Long — Chủ nhân muốn nó."],
+		[XICH, "Kim Phú! Lính Kim Luân đang kéo tới cổng trại! Khai Giới Giả, giữ cổng giúp ta!"],
+	],
+	"siege_start": [[XICH, "Chúng tới từ hai hướng! Giữ Cổng Trại — đừng để chúng phá cổng!"]],
+	"siege_won": [
+		[XICH, "Trại vẫn đứng! Kim Phú chạy lên Miệng Núi Lửa rồi — hắn định đoạt Long Tâm trước khi Viêm Long tỉnh hẳn."],
+		[TIEUHOA, "Cửa hàng để cháu trông! Bình Nước Thánh với Tinh Thạch vẫn đổi được như cũ."],
+	],
+	"siege_lost": [[XICH, "Cổng vỡ rồi… Lùi lại! Nói với ta (E) khi sẵn sàng đánh lại."]],
+	"xich_crater": [[XICH, "Lối vào Long Huyệt ở sâu trong Miệng Núi Lửa. Khám phá đủ để tìm ra nó — nhanh lên, trước Kim Phú!"]],
+	"dragon_gate": [[LIET, "Ta là Liệt Diễm. Ta canh Long Huyệt hai mươi năm. Đánh vào thanh Phá Thế khi nó đáp xuống — khi nó bay, đứng trên Đá Nổi."]],
+	"boss5": [[DRAGON, "Kẻ nhỏ bé… mang mùi của kẻ không mặt. Ta sẽ thiêu sạch mảnh linh hồn trong ngực ngươi!"]],
+	"boss5_flood": [[DRAGON, "Núi ơi, dâng lên!"]],
+	"dragon_down": [
+		[KIMPHU, "Long Tâm! Đưa đây — !"],
+		[LIET, "Cút đi, chó săn của Hư Vô Giáo. Lần sau ta không tha."],
+		["{name}", "(Long Tâm nóng rực trong tay. Trong ánh lửa, bóng của chính mình hiện lên… nhưng cái bóng không có mặt.)"],
+	],
+	"liet_job": [[LIET, "Ngươi đã đủ sức đi tiếp con đường của mình. Chọn đi — mỗi con đường chỉ đi được một lần."]],
+	"liet_wait": [[LIET, "Chưa phải lúc. Cấp 60, đã chuyển chức một lần, hạ Viêm Long và mang 30 Tinh Thạch tới đây."]],
+	"ch5_done": [[XICH, "Tộc Hỏa Sơn nợ ngươi. Băng Nguyên Bắc Cực ở phía bắc — nghe nói ở đó, bóng tối biết nói tiếng người."]],
+	"xich_idle": [[XICH, "Lò rèn vẫn đỏ. Lính Kim Luân còn lảng vảng — giữ trại cho tốt."]],
+	"kim_shop": [[KIMPHU, "Bình Nước Thánh, Tinh Thạch — Thương hội có đủ. Giá cả phải chăng!"]],
+	"tieu_hoa_shop": [[TIEUHOA, "Bình Nước Thánh dập được lửa Phượng Hoàng đó! Cần gì cứ bấm E."]],
+	"raid_warn": [[XICH, "Lính Kim Luân lại kéo tới! Về trại giữ cổng!"]],
+	"rare_phuong_hoang": [["Phượng Hoàng Tro", "Lửa không bao giờ chết. Ta đã tái sinh chín lần trên miệng núi này!"]],
+	"rare_phuong_hoang_down": [["{name}", "(Tro tàn rơi lả tả. Lần này ngọn lửa không bùng lên nữa — chỉ còn lại một chiếc lông đỏ rực.)"]],
 }
 
 
@@ -169,6 +215,24 @@ const DONE4 := 7
 
 static func quest4(step: int) -> Dictionary:
 	return QUESTS4[step - 1] if step >= 1 and step <= QUESTS4.size() else {}
+
+
+## M8 (docs/12 C5-41): nhiệm vụ chính chương 5. Bước lưu ở profile.quest.ch5 (0 = chưa tới vùng 5, 8 = xong).
+## Thưởng EXP ≈ 25% EXP từ cấp 45 lên 60 (9,8 triệu × 25% ≈ 2,45 triệu).
+const QUESTS5 := [
+	{"title": "Trại Tro Hồng", "hint": "Tới Trại Tro Hồng (Chân Núi Tro), đứng cạnh Xích Đồng bấm E.", "type": "talk_xich", "need": 1, "reward": {"exp": 100000, "gold": 800, "holy_water": 1}},
+	{"title": "Dọn đường cho đoàn buôn", "hint": "Hạ 30 quái vùng 5 giúp Kim Phú. Tránh dung nham.", "type": "kills5", "need": 30, "reward": {"exp": 250000}},
+	{"title": "Đất dưới chân núi", "hint": "M mở Bản đồ khai phá vùng 5: chiếm 6 ô, có ít nhất 1 Mỏ Tinh Thạch.", "type": "tiles5", "need": 6, "reward": {"exp": 300000, "stones": 8}},
+	{"title": "Thương hội phản bội", "hint": "Về Trại Tro Hồng, nói với Xích Đồng (E) rồi giữ Cổng Trại qua 3 đợt lính Kim Luân.", "type": "siege5", "need": 1, "reward": {"exp": 400000, "gold": 2000}},
+	{"title": "Miệng Núi Lửa", "hint": "N → Miệng Núi Lửa. Khám phá ≥ 40% map để tìm lối vào Long Huyệt.", "type": "explore5", "need": 1, "reward": {"exp": 400000}},
+	{"title": "Viêm Long", "hint": "Hạ Viêm Long ở Long Huyệt (phía đông). Khi dung nham dâng: đứng trên Đá Nổi.", "type": "boss5", "need": 1, "reward": {"exp": 450000, "crystal": 10}},
+	{"title": "Chuyển chức lần 2", "hint": "Cấp 60 + 30 Tinh Thạch → gặp Liệt Diễm (E) ở Trại Tro Hồng, chọn 1 trong 2 nhánh.", "type": "job2", "need": 1, "reward": {"exp": 550000, "gold": 3000}},
+]
+const DONE5 := 8
+
+
+static func quest5(step: int) -> Dictionary:
+	return QUESTS5[step - 1] if step >= 1 and step <= QUESTS5.size() else {}
 
 
 ## M6 (docs/10 C3-41): nhiệm vụ chính chương 3. Bước lưu ở profile.quest.ch3 (0 = chưa tới vùng 3, 7 = xong).
@@ -220,7 +284,8 @@ static func quest(step: int) -> Dictionary:
 
 static func reward_text(r: Dictionary) -> String:
 	var parts := PackedStringArray()
-	for pair in [["exp", "%d EXP"], ["gold", "%d vàng"], ["potions", "%d bình máu"], ["torches", "%d Đuốc"], ["stones", "%d Đá Cường Hoá"]]:
+	for pair in [["exp", "%d EXP"], ["gold", "%d vàng"], ["potions", "%d bình máu"], ["torches", "%d Đuốc"], ["stones", "%d Đá Cường Hoá"],
+			["crystal", "%d Tinh Thạch"], ["holy_water", "%d Bình Nước Thánh"]]:
 		if r.has(pair[0]):
 			parts.append(pair[1] % int(r[pair[0]]))
 	return ", ".join(parts)

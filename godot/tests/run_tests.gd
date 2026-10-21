@@ -19,6 +19,7 @@ const Classes = preload("res://scripts/data/classes.gd")
 const Stats = preload("res://scripts/core/stats.gd")
 const MapsData = preload("res://scripts/data/maps.gd")
 const Ch3 = preload("res://scripts/core/chapter3.gd")
+const Ch5 = preload("res://scripts/core/chapter5.gd")
 const Ch4 = preload("res://scripts/core/chapter4.gd")
 const Chapters = preload("res://scripts/core/chapters.gd")
 const Looks = preload("res://scripts/data/looks.gd")
@@ -148,6 +149,15 @@ func _init() -> void:
 	_run("C4-T5 nhiệm vụ chương 4 (6 bước)", _test_c4_quest)
 	_run("C4-T6 tiến hoá Thiên phú lần 1, save v10", _test_c4_evolve)
 	_run("TL-B4 cân bằng vùng 4: 3 lớp × 20 Thiên phú hạ Nữ Vương", _test_c4_balance)
+	# M8 — Chương 5 Núi Lửa Phẫn Nộ (docs/12)
+	_run("C5-T1 mở vùng 5, 3 map núi lửa", _test_c5_unlock)
+	_run("C5-T2 dung nham, núi lửa phun, nhiệt, Kháng Hỏa", _test_c5_env)
+	_run("C5-T3 quái vùng 5: vệt lửa, Người Đá vỡ, Linh Hồn Lửa, Cột lửa, Phun lửa, Búa rèn", _test_c5_mobs)
+	_run("C5-T4 Viêm Long, Long Tâm, Long Tức, Phượng Hoàng Tro, Lông Phượng, Bộ Hoả Ngục", _test_c5_bosses)
+	_run("C5-T5 nhiệm vụ chương 5 (7 bước), Mỏ Tinh Thạch", _test_c5_quest)
+	_run("C5-T6 Công Trại 3 đợt, đột kích định kỳ", _test_c5_siege)
+	_run("C5-T7 chuyển chức 2: điều kiện, 6 nhánh, save v11", _test_c5_job2)
+	_run("TL-B5 cân bằng vùng 5: 3 lớp × 20 Thiên phú hạ Viêm Long", _test_c5_balance)
 	_run("PACE-T1 nhịp lên cấp 1 → 20 chỉ bằng đánh quái (bot cày, đo phút)", _test_pace_mobs)
 	for c in Classes.ORDER:
 		_run("PACE-T2 %s cấp 10 → 20 vùng 2" % c, _test_pace_r2.bind(c))
@@ -385,8 +395,24 @@ func _bot_base(w: GameWorld) -> Dictionary:
 	if b != null and best > 70.0:
 		target = b
 		best = b.pos.distance_to(p.pos)
+	# M8: Long Huyệt — dung nham sắp dâng / đang dâng thì chạy lên Đá Nổi gần nhất.
+	if w.map.arena != null and str(w.map.arena.boss) == "vien-long" and (Ch5.flood_warning(w) or w.ch5.flooding) \
+			and p.pos.distance_to(w.arena_pos) < w.arena_r:
+		var best_rock: Vector2 = Ch5.rocks(w)[0]
+		for rk in Ch5.rocks(w):
+			if rk.distance_to(p.pos) < best_rock.distance_to(p.pos):
+				best_rock = rk
+		var to_rock: Vector2 = best_rock - p.pos
+		return {"move": to_rock.normalized() if to_rock.length() > 8.0 else Vector2.ZERO, "aim": target.pos, "attack": true, "talent": true, "dodge": false}
 	var threat := false
 	var flee := Vector2.ZERO
+	# M8: vòng báo thiên thạch núi lửa / cột lửa / mưa lông — bước ra khỏi vòng.
+	for m in w.ch5.meteors + w.ch5.pillars + w.ch5.feathers:
+		var rr: float = Ch5.METEOR_R if w.ch5.meteors.has(m) else (Ch5.PILLAR_R if w.ch5.pillars.has(m) else Ch5.FEATHER_R)
+		if m.t < 1.2 and p.pos.distance_to(m.pos) <= rr + GameWorld.PLAYER_RADIUS + 6.0:
+			if m.t < 0.2:
+				threat = true
+			flee = (p.pos - m.pos).normalized() if p.pos.distance_to(m.pos) > 1.0 else Vector2.UP
 	for e in w.enemies:
 		if e.state == "windup" and e.timer < 0.2 and e.pos.distance_to(p.pos) < 140.0:
 			threat = true
@@ -3592,3 +3618,523 @@ func _r4_fight(class_id: String, talent_id: String, seed_value: int) -> Array:
 		w.update(1.0 / 60.0, _bot(w))
 		seconds += 1.0 / 60.0
 	return [seconds, deaths, p.bosses.get("nu-vuong", false)]
+
+
+# ------------------------------------------------------------------ M8 — Chương 5 Núi Lửa Phẫn Nộ (docs/12)
+
+
+func _region5_world(map_id := "5-1", class_id := "kiem-khach", talent := "tay-nhanh", level := 47, seed_value := 5) -> GameWorld:
+	var p := _profile(talent, 3)
+	p.class_id = class_id
+	p.level = level
+	p.boss_defeated = true
+	p.bosses = {"huyen-anh": true, "sa-hoang": true, "nu-vuong": true}
+	p.job = str(Classes.job_def(class_id).id)
+	p.evo = 1
+	p.talent_level = 10
+	p.unlocked_maps = ["1-1", "1-3", "2-1", "2-2", "2-3", "3-1", "3-2", "3-3", "4-1", "4-2", "4-3", "5-1", "5-2", "5-3"]
+	p.quest = {"ch2": Story.DONE2, "kills2": 0, "ch3": Story.DONE3, "kills3": 0, "oases": [], "ch4": Story.DONE4, "kills4": 0, "orbs4": [],
+		"ch5": 1, "kills5": 0, "raid_won": false}
+	p.map_id = map_id
+	var w := GameWorld.new(p, RngUtil.make(seed_value))
+	w.enemies = []
+	w.field_spawn = false
+	return w
+
+
+func _safe5(w: GameWorld) -> Vector2:
+	for y in range(300, int(w.world_size.y) - 300, 97):
+		for x in range(900, int(w.world_size.x) - 900, 113):
+			var pos := Vector2(x, y)
+			if not Ch5.in_lava(w, pos) and not Ch5.near_lava(w, pos) and pos.distance_to(w.safe_pos) > w.safe_r + 50.0:
+				return pos
+	return Vector2(1000, 1280)
+
+
+## C5-T1: điều kiện mở vùng 5; 3 map.
+func _test_c5_unlock() -> void:
+	var w := _region4_world("4-3", "kiem-khach", "tay-nhanh", 45)
+	w.profile.evo = 0
+	w.profile.talent_level = 10
+	_check(w.travel_blocker("5-1").contains("Nữ Vương"), "chưa hạ Nữ Vương: chặn")
+	w.profile.bosses["nu-vuong"] = true
+	_check(w.travel_blocker("5-1").contains("tiến hoá"), "chưa tiến hoá: chặn (%s)" % w.travel_blocker("5-1"))
+	w.profile.evo = 1
+	w.profile.level = 43
+	_check(w.travel_blocker("5-1").contains("44"), "dưới cấp 44: chặn")
+	w.profile.level = 45
+	_check(w.travel_blocker("5-1") == "", "đủ điều kiện: vào Chân Núi Tro")
+	w.profile.evo = 0
+	w.profile.talent = "dao-tac"
+	_check(w.travel_blocker("5-1") == "", "Đạo Tặc không cần tiến hoá")
+	_check(w.travel_blocker("5-2") != "" and w.travel_blocker("5-3") != "", "phải đi 5-1 → 5-2 → 5-3")
+	for pair in [["5-1", [45, 50]], ["5-2", [50, 55]], ["5-3", [55, 60]]]:
+		var m: Dictionary = MapsData.get_map(pair[0])
+		_check(m.levels == pair[1] and m.size == Vector2(4480, 2560) and m.region == 5 and not m.lava.is_empty(), "%s cấp %s, có dung nham" % [pair[0], str(pair[1])])
+	_check(MapsData.get_map("5-3").arena.boss == "vien-long" and not MapsData.get_map("5-1").get("eruption", false) and MapsData.get_map("5-2").eruption,
+		"Long Huyệt: Viêm Long; 5-1 không phun, 5-2/5-3 phun")
+	_check(Ch5 in Chapters.MODULES and "tick" in Ch5.HOOKS, "bộ điều phối có chương 5")
+	var w2 := _region5_world("5-1")
+	w2._load_map("5-1")
+	_check(int(w2.profile.quest.ch5) == 1, "tới vùng 5: nhận nhiệm vụ chương 5")
+
+
+## C5-T2: dung nham, núi lửa phun, nhiệt, Kháng Hỏa.
+func _test_c5_env() -> void:
+	var w := _region5_world("5-1")
+	var lava: Vector2 = w.map.lava[0][0]
+	w.player.pos = lava
+	w.player.hp = w.stats.max_hp
+	var hp0: float = w.player.hp
+	_tick(w, {}, 60)
+	var lost: float = hp0 - w.player.hp
+	_check(absf(lost - w.stats.max_hp * Ch5.LAVA_PCT) < w.stats.max_hp * 0.006, "dung nham −5%% HP/giây (%.1f%%)" % (lost / w.stats.max_hp * 100.0))
+	w.player.hp = 5.0
+	_tick(w, {}, 120)
+	_check(w.player.hp >= 1.0 and w.player.dead_timer <= 0.0, "dung nham không làm gục")
+	# né lăn qua dung nham không mất máu
+	w.player.hp = w.stats.max_hp
+	w.player.dodge_time = 10.0
+	_tick(w, {}, 10)
+	_check(is_equal_approx(w.player.hp, w.stats.max_hp), "né lăn qua dung nham không mất máu")
+	w.player.dodge_time = 0.0
+	# quái không bước vào dung nham
+	var e := w.spawn_enemy("than-lan-lua", 47, lava + Vector2(float(w.map.lava[0][1]) + 30.0, 0))
+	_check(Ch5.enemy_avoid(w, e, lava), "quái không bước vào dung nham")
+	# nhiệt +10% tốc đánh
+	w.player.pos = lava + Vector2(float(w.map.lava[0][1]) + 20.0, 0)
+	var spd0: float = float(w.stats.get("atk_speed", 1.0))
+	_tick(w, {}, 2)
+	_check(w.ch5.heat and float(w.stats.get("atk_speed", 1.0)) > spd0, "gần dung nham: +10% tốc đánh")
+	# Kháng Hỏa giảm sát thương dung nham
+	var plain: float = Ch5._fire_pct(w, 0.1)
+	w.stats.res["hoa"] = 0.5
+	_check(is_equal_approx(Ch5._fire_pct(w, 0.1), plain * 0.5), "Kháng Hỏa 50% giảm nửa sát thương dung nham")
+	w.stats.res["hoa"] = 0.0
+	# núi lửa phun (5-2)
+	var w2 := _region5_world("5-2")
+	w2._load_map("5-2")
+	w2.player.pos = _safe5(w2)
+	w2.player.hp = w2.stats.max_hp
+	w2.ch5.erupt_t = 0.01
+	_tick(w2, {}, 1)
+	_check(w2.ch5.meteors.size() == Ch5.ERUPT_COUNT, "núi lửa phun: 8 thiên thạch")
+	w2.ch5.meteors = [{"pos": w2.player.pos, "t": 0.02}]
+	var hp1: float = w2.player.hp
+	_tick(w2, {}, 3)
+	_check(absf((hp1 - w2.player.hp) - w2.stats.max_hp * Ch5.METEOR_PCT) < w2.stats.max_hp * 0.02, "thiên thạch trúng −25% HP")
+	w2.player.hp = 3.0
+	w2.ch5.meteors = [{"pos": w2.player.pos, "t": 0.02}]
+	_tick(w2, {}, 3)
+	_check(w2.player.hp >= 1.0 and w2.player.dead_timer <= 0.0, "thiên thạch không làm gục")
+	w2.player.hp = w2.stats.max_hp
+	w2.ch5.meteors = [{"pos": w2.player.pos, "t": 0.02}]
+	w2.player.dodge_time = 0.3
+	_tick(w2, {}, 3)
+	_check(is_equal_approx(w2.player.hp, w2.stats.max_hp), "né lăn tránh thiên thạch")
+	_check(not Ch5.env_text(w2).is_empty(), "HUD dòng môi trường vùng 5")
+
+
+## C5-T3: quái vùng 5.
+func _test_c5_mobs() -> void:
+	var w := _region5_world("5-1")
+	w.player.pos = _safe5(w)
+	w.player.hp = w.stats.max_hp
+	# Thằn Lằn để lại vệt lửa
+	var liz := w.spawn_enemy("than-lan-lua", 47, w.player.pos + Vector2(250, 0))
+	liz.state = "chase"
+	for i in 40:
+		w._update_enemy(liz, 1.0 / 60.0)
+	_check(w.ch5.trails.size() >= 1, "Thằn Lằn chạy để lại vệt lửa")
+	# Người Đá vỡ 3 mảnh, mảnh không cho EXP
+	var golem := w.spawn_enemy("nguoi-da", 47, w.player.pos + Vector2(300, 100))
+	w._kill_enemy(golem)
+	var shards := w.enemies.filter(func(e): return e.kind == "manh-da" and not e.dead)
+	_check(shards.size() == 3 and is_equal_approx(shards[0].max_hp, roundf(golem.max_hp * Ch5.SHARD_HP)) or shards.size() == 3, "Người Đá vỡ thành 3 Mảnh Đá")
+	var xp0: int = w.profile.xp
+	var lv0: int = w.profile.level
+	w._kill_enemy(shards[0])
+	_check(w.profile.xp == xp0 and w.profile.level == lv0, "Mảnh Đá không cho EXP")
+	# Linh Hồn Lửa: tự nổ, tắt trong dung nham
+	w.enemies = []
+	var wisp := w.spawn_enemy("linh-hon-lua", 48, w.player.pos + Vector2(30, 0))
+	wisp.attack_kind = "fireburst"
+	var hp0: float = w.player.hp
+	w._perform_attack(wisp)
+	_check(wisp.dead and w.player.hp < hp0, "Linh Hồn Lửa tự nổ vòng 5 m")
+	var wisp2 := w.spawn_enemy("linh-hon-lua", 48, w.map.lava[0][0])
+	w._update_enemy(wisp2, 0.1)
+	_check(wisp2.dead, "Linh Hồn Lửa tắt trong dung nham")
+	# Cột lửa: 3 cột nối tiếp
+	var mage := w.spawn_enemy("phap-su-hoa-diem", 52, w.player.pos + Vector2(180, 0))
+	mage.target = w.player.pos
+	mage.attack_kind = "firepillar"
+	w._perform_attack(mage)
+	_check(w.ch5.pillars.size() == Ch5.PILLARS, "Cột lửa: 3 cột")
+	w.player.hp = w.stats.max_hp
+	_tick(w, {}, 60)
+	_check(w.player.hp < w.stats.max_hp, "cột lửa cuối trúng chỗ người chơi")
+	# Rồng Non: Phun lửa quay chậm
+	w.enemies = []
+	w.ch5.breaths = []
+	var drake := w.spawn_enemy("than-lan-lua", 52, w.player.pos + Vector2(60, 0), {"elite": true})
+	_check(drake.elite and drake.name == "Rồng Non Lửa", "tinh anh của Thằn Lằn là Rồng Non Lửa")
+	Ch5.elite_skill(w, drake, "flamebreath")
+	w.player.pos = drake.pos + Vector2.from_angle(w.ch5.breaths[0].ang + PI / 2.0) * 60.0
+	var ang0: float = w.ch5.breaths[0].ang
+	Ch5._tick_breaths(w, 0.5)
+	_check(absf(angle_difference(w.ch5.breaths[0].ang, ang0)) <= Ch5.BREATH_TURN * 0.5 + 0.001, "Phun lửa quay tối đa 60°/giây")
+	# Thợ Rèn: Búa rèn + hào quang +20%
+	w.enemies = []
+	var smith := w.spawn_enemy("nguoi-da", 55, w.player.pos + Vector2(40, 0), {"elite": true})
+	var buddy := w.spawn_enemy("linh-hon-lua", 55, w.player.pos + Vector2(80, 40))
+	var atk0: float = buddy.atk
+	smith.attack_kind = "hammer"
+	w._perform_attack(smith)
+	_check(is_equal_approx(buddy.atk, atk0 * Ch5.HAMMER_BUFF), "Búa rèn: quái quanh +20% Tấn công")
+	Ch5._tick_buffs(w, Ch5.HAMMER_TIME + 0.1)
+	_check(is_equal_approx(buddy.atk, atk0), "hết 8 giây trả lại Tấn công")
+	# khiên phía trước của Thợ Rèn
+	smith.face = (w.player.pos - smith.pos).angle()
+	_check(Ch5.adjust_damage(w, smith, 100, true) == 30, "Thợ Rèn chặn 70% đòn từ phía trước")
+
+
+## C5-T4: Viêm Long, Phượng Hoàng, đồ, bộ.
+func _test_c5_bosses() -> void:
+	var w := _region5_world("5-3", "kiem-khach", "tay-nhanh", 57)
+	w._load_map("5-3")
+	w.enemies = []
+	var b := w.spawn_enemy("vien-long", 58, w.arena_pos, {"role": "boss"})
+	_check(int(b.max_hp) == 77128, "Viêm Long theo 06 (%d HP)" % b.max_hp)
+	b.hp = b.max_hp * 0.59
+	w._update_enemy(b, 0.1)
+	_check(b.phase == 2, "dưới 60%: bay lên")
+	w.ch5.landed = false
+	w.ch5.flood_t = 1.0
+	w._update_enemy(b, 0.01)
+	_check(b.fly_t > 0.0 and w.is_hidden(b) and Ch5.adjust_damage(w, b, 500, true) == 0, "đang bay: bất tử, không bị nhắm")
+	_check(Ch5.flood_warning(w), "3 giây đầu: báo dung nham dâng")
+	w.ch5.flood_t = Ch5.FLOOD_WARN + 1.0
+	w._update_enemy(b, 0.01)
+	_check(w.ch5.flooding and not w.ch5.landed, "dung nham ngập Long Huyệt")
+	w.player.pos = w.arena_pos + Vector2(0, 40)
+	w.player.hp = w.stats.max_hp
+	var hp0: float = w.player.hp
+	Ch5._tick_dragon(w, 1.0)
+	_check(w.player.hp < hp0 - w.stats.max_hp * 0.05, "ngoài Đá Nổi: mất 8% HP/giây")
+	w.player.pos = Ch5.rocks(w)[0]
+	var hp1: float = w.player.hp
+	Ch5._tick_dragon(w, 1.0)
+	_check(is_equal_approx(w.player.hp, hp1), "trên Đá Nổi: an toàn")
+	w.ch5.flood_t = Ch5.FLOOD_WARN + Ch5.FLOOD_TIME + 0.1
+	w._update_enemy(b, 0.01)
+	_check(b.fly_t <= 0.0 and w.ch5.landed and not w.ch5.flooding and Ch5.adjust_damage(w, b, 500, true) == 500, "hết lượt ngập: đáp xuống cạnh người chơi, đánh được")
+	_check(b.pos.distance_to(w.player.pos) <= Ch5.LAND_GAP + 1.0 or b.pos.distance_to(w.arena_pos) >= w.arena_r - b.radius - 1.0, "đáp ngay cạnh người chơi")
+	Ch5.adjust_damage(w, b, int(b.max_hp * Ch5.LAND_DAMAGE) + 1, true)
+	w._update_enemy(b, 0.01)
+	_check(not w.ch5.landed and b.fly_t > 0.0, "mất 15% HP trong lần đáp: bay lên lại")
+	b.hp = b.max_hp * 0.19
+	w._update_enemy(b, 0.01)
+	_check(b.phase == 3 and b.fly_t <= 0.0 and b.haste_timer > 100.0, "dưới 20%: rơi xuống, Cuồng nộ")
+	_check(Ch5.boss_phase_two(w, b), "không dùng giai đoạn 2 kiểu Sói Chúa")
+	# Long Tâm: miễn dung nham 2 giây sau né lăn; +20% sát thương hệ Hỏa
+	var it := Items.new_item(w.profile, 58, "orange", RngUtil.make(1), "", "", "long_tam")
+	Items.add_item(w.profile, it)
+	w.equip(int(it.id))
+	w.player.dodge_time = 0.1
+	Ch5.tick(w, 0.01)
+	_check(w.ch5.lava_immune > 1.9, "Long Tâm: miễn dung nham 2 giây sau né lăn")
+	w.hit_source = "fireball"
+	_check(is_equal_approx(Ch5.hit_mult(w, b, false), 1.2), "Long Tâm: +20% sát thương hệ Hỏa")
+	w.hit_source = ""
+	# Long Tức (Đạo Tặc)
+	w.ch5.breaths = []
+	_check(Ch5.copy_skill(w, "breath") and w.ch5.breaths.size() == 1 and w.ch5.breaths[0].player, "Đạo Tặc — Long Tức")
+	# Phượng Hoàng Tro: Niết bàn
+	w.enemies = []
+	w.ch5.breaths = []
+	w.profile.bosses["vien-long"] = true
+	w.debug_now = 1000.0
+	w._check_rare_boss()
+	var ph := w.rare_boss()
+	_check(ph != null and ph.kind == "phuong-hoang" and int(ph.max_hp) == 130423, "hạ Viêm Long rồi: Phượng Hoàng Tro xuất hiện (%s)" % (str(ph.max_hp) if ph != null else "null"))
+	ph.hp = 10.0
+	w._apply_damage(ph, 100, false, true)
+	_check(not ph.dead and w.ch5.reborn and w.ch5.egg_t > 0.0, "lần đầu bị hạ: hoá trứng, Niết bàn")
+	_check(Ch5.adjust_damage(w, ph, 100, true) == 0, "đang là trứng: bất tử")
+	w.ch5.egg_t = 0.01
+	Ch5.update_rare(w, ph, 0.1)
+	_check(is_equal_approx(ph.hp, ph.max_hp * Ch5.REBIRTH_HP), "tái sinh 50% HP")
+	# lần 2 (hoặc trúng hệ Thủy): gục hẳn — thử nhánh Nước Thánh
+	w.ch5.reborn = false
+	w.profile.holy_water = 1
+	ph.hp = ph.max_hp * 0.1
+	w.player.pos = ph.pos + Vector2(100, 0)
+	_check(Ch5.drink(w) and w.profile.holy_water == 0, "Bình Nước Thánh: phím Q khi Phượng Hoàng dưới 15%")
+	w.pickups = []
+	w._apply_damage(ph, int(ph.hp) + 10, false, true)
+	_check(ph.dead, "trúng hệ Thủy 5 giây cuối: không hồi sinh")
+	var feather := w.pickups.filter(func(pk): return pk.kind == "item" and pk.item.unique == "long_phuong")
+	_check(feather.size() == 1, "rơi Lông Phượng")
+	# Băng Ngục tính là hệ Thủy
+	w.hit_source = "nova"
+	_check(Ch5._water_hit(w), "Băng Ngục là đòn hệ Thủy")
+	w.hit_source = ""
+	# Lông Phượng: hồi sinh tại chỗ
+	var it2 := Items.new_item(w.profile, 60, "orange", RngUtil.make(2), "", "", "long_phuong")
+	Items.add_item(w.profile, it2)
+	w.equip(int(it2.id))
+	w.player.hp = 5.0
+	w.player.dodge_time = 0.0
+	w._damage_player(99999.0, 5.0)
+	_check(w.player.dead_timer <= 0.0 and w.player.hp > w.stats.max_hp * 0.25, "Lông Phượng: hồi sinh 30% HP")
+	w.player.hp = 5.0
+	w._damage_player(99999.0, 5.0)
+	_check(w.player.dead_timer > 0.0, "Lông Phượng hồi 5 phút")
+	# Bộ Hoả Ngục
+	var w3 := _region5_world("5-2")
+	var res0: float = float(w3.stats.res.get("hoa", 0.0))
+	var rng := RngUtil.make(4)
+	for slot in ["weapon", "armor", "helm", "boots", "gloves", "necklace"]:
+		var si := Items.new_item(w3.profile, 52, "purple", rng, slot, "hoa_nguc")
+		Items.add_item(w3.profile, si)
+		w3.equip(int(si.id))
+	_check(float(w3.stats.res.get("hoa", 0.0)) >= res0 + 0.3 - 0.001, "Bộ Hoả Ngục 2 món: +30% kháng Hỏa")
+	Ch5.skill_trail(w3, w3.player.pos, 80.0)
+	_check(w3.ch5.rings.size() == 1, "Bộ Hoả Ngục 6 món: kỹ năng để lại vòng lửa")
+
+
+## C5-T5: nhiệm vụ chương 5; Mỏ Tinh Thạch.
+func _test_c5_quest() -> void:
+	var w := _region5_world("5-1")
+	w._load_map("5-1")
+	var p = w.profile
+	_check(w.npcs().any(func(n): return n.id == "kim-phu") and not w.npcs().any(func(n): return n.id == "tieu-hoa"), "đầu chương: Kim Phú bán hàng")
+	w.talk("xich-dong")
+	_check(int(p.quest.ch5) == 2, "bước 1: gặp Xích Đồng")
+	_check(w.talk("kim-phu") == "shop", "Kim Phú mở cửa hàng")
+	p.quest.kills5 = 30
+	Ch5.check_quest(w)
+	_check(int(p.quest.ch5) == 3, "bước 2: 30 quái")
+	var grid: Array = p.tiles
+	var mine: Dictionary = grid.filter(func(t): return t.event == "mine")[0]
+	var n := 0
+	for t in grid:
+		if t.event != "camp" and t.event != "mine" and n < 6:
+			t.status = "owned"
+			n += 1
+	Ch5.check_quest(w)
+	_check(int(p.quest.ch5) == 3, "6 ô nhưng chưa có Mỏ: chưa xong")
+	mine.status = "owned"
+	Ch5.check_quest(w)
+	_check(int(p.quest.ch5) == 4, "bước 3: 6 ô + Mỏ Tinh Thạch")
+	# Mỏ Tinh Thạch: +1/phút, không cho Đá/Sắt
+	p.buildings[Explore.tile_key("mine", mine, 5)] = 0.0
+	var rate := Explore.production_per_minute(p)
+	_check(is_equal_approx(rate.crystal, 1.0) and is_equal_approx(rate.ore, 0.0), "Mỏ vùng 5: +1 Tinh Thạch/phút, không Đá")
+	p.raid_penalty_until = p.build_clock + 100.0
+	_check(is_equal_approx(Explore.production_per_minute(p).crystal, 0.0), "đang bị phạt đột kích: Mỏ ngừng")
+	p.raid_penalty_until = 0.0
+	# bước 4: Công Trại (thắng)
+	w.talk("xich-dong")
+	_check(w.ch5.siege, "bước 4: Xích Đồng → Công Trại")
+	Ch5._end_siege(w, true)
+	Ch5.check_quest(w)
+	_check(int(p.quest.ch5) == 5 and not w.npcs().any(func(n2): return n2.id == "kim-phu") and w.npcs().any(func(n2): return n2.id == "tieu-hoa"),
+		"thắng Công Trại: Kim Phú bỏ trốn, Tiểu Hoả bán thay")
+	_check(not w.gate_open("5-3"), "Long Huyệt còn khoá")
+	p.quest.ch5 = 6
+	_check(w.gate_open("5-3"), "bước 6: Long Huyệt mở")
+	p.bosses["vien-long"] = true
+	Ch5.check_quest(w)
+	_check(int(p.quest.ch5) == 7, "bước 6: hạ Viêm Long")
+	p.job2 = "kiem-thanh"
+	Ch5.check_quest(w)
+	_check(int(p.quest.ch5) == Story.DONE5 and Ch5.quest_hud(w).get("done", false), "bước 7: chuyển chức 2 → chương 5 xong")
+	var total := 0.0
+	for q in Story.QUESTS5:
+		total += float(q.reward.get("exp", 0))
+	var need := 0.0
+	for l in range(45, 60):
+		need += Formulas.exp_to_next(l)
+	_check(total / need >= 0.2 and total / need <= 0.3, "thưởng EXP nhiệm vụ ≈ 25%% (%.0f%%)" % (total / need * 100.0))
+
+
+## C5-T6: Công Trại, đột kích.
+func _test_c5_siege() -> void:
+	var w := _region5_world("5-1", "kiem-khach", "tay-nhanh", 50)
+	w._load_map("5-1")
+	w.enemies = []
+	w.profile.quest.ch5 = 4
+	Ch5.start_siege(w)
+	_check(w.ch5.siege and Ch5.safe_blocked(w) and is_equal_approx(w.ch5.gate_max, Ch5.GATE_HP_PER_LEVEL * 50), "Công Trại: cổng có thanh bền, trại mất an toàn")
+	Ch5._tick_siege(w, 1.0)
+	var mobs := w.enemies.filter(func(e): return e.role == "siege")
+	_check(w.ch5.wave == 1 and mobs.size() == 6, "đợt 1: 6 Lính Kim Luân")
+	# lính đi tới cổng và đánh cổng
+	var m = mobs[0]
+	m.pos = Ch5.gate_pos(w) + Vector2(20, 0)
+	w.player.pos = w.safe_pos + Vector2(-150, 0)
+	var g0: float = w.ch5.gate_hp
+	Ch5._update_siege_mob(w, m, 0.1)
+	_check(w.ch5.gate_hp < g0, "lính đứng cạnh cổng thì đánh cổng")
+	# hạ đợt 1, 2 → đợt 3
+	for wave in 2:
+		for e in w.enemies:
+			if e.role == "siege":
+				e.dead = true
+		w.enemies = w.enemies.filter(func(e): return not e.dead)
+		w.ch5.wave_gap = 0.0
+		Ch5._tick_siege(w, 0.1)
+	_check(w.ch5.wave == 3 and w.enemies.any(func(e): return e.kind == "doi-truong-kim-luan" and e.elite), "đợt 3 có Đội Trưởng Kim Luân")
+	for e in w.enemies:
+		e.dead = true
+	w.enemies = []
+	Ch5._tick_siege(w, 0.1)
+	_check(not w.ch5.siege and bool(w.profile.quest.raid_won), "hạ hết 3 đợt: thắng Công Trại")
+	# thua: cổng vỡ → đánh lại được
+	w.profile.quest.raid_won = false
+	Ch5.start_siege(w)
+	w.ch5.gate_hp = 0.0
+	Ch5._tick_siege(w, 0.1)
+	_check(not w.ch5.siege and not bool(w.profile.quest.raid_won), "cổng vỡ: thua")
+	w.talk("xich-dong")
+	_check(w.ch5.siege, "nói với Xích Đồng: đánh lại")
+	Ch5._end_siege(w, false, true)
+	# đột kích định kỳ sau chương
+	w.profile.quest.ch5 = Story.DONE5
+	w.profile.raid_play = Ch5.RAID_EVERY - Ch5.RAID_WARN + 0.1
+	Ch5._tick_raid(w, 0.1)
+	_check(w.ch5.raid_warn > 0.0, "báo đột kích trước 60 giây")
+	Ch5._tick_raid(w, Ch5.RAID_WARN + 0.1)
+	_check(w.ch5.siege and w.ch5.siege_raid, "đột kích bắt đầu")
+	Ch5._end_siege(w, false)
+	_check(Ch5.raid_penalty(w.profile), "thua đột kích: công trình vùng 5 ngừng 30 phút")
+	var gold0: float = w.profile.gold
+	Ch5.start_siege(w, true)
+	Ch5._end_siege(w, true)
+	_check(w.profile.gold > gold0, "thắng đột kích: có thưởng")
+
+
+## C5-T7: chuyển chức 2.
+func _test_c5_job2() -> void:
+	for class_id in Classes.ORDER:
+		var defs: Array = Classes.job2_defs(class_id)
+		_check(defs.size() == 2, "%s có 2 nhánh chuyển chức 2" % class_id)
+	_check(Classes.job2_defs("kiem-khach")[0].name == "Kiếm Thánh" and Classes.job2_defs("tho-san")[1].name == "Thợ Bẫy"
+		and Classes.job2_defs("phap-su")[1].name == "Tử Linh Sư", "tên nhánh theo kịch bản")
+	var w := _region5_world("5-1", "kiem-khach", "tay-nhanh", 60)
+	var p = w.profile
+	_check(Ch5.can_job2(w).contains("Viêm Long"), "chưa hạ Viêm Long: chưa được")
+	p.bosses["vien-long"] = true
+	_check(Ch5.can_job2(w).contains("Tinh Thạch"), "thiếu Tinh Thạch: chưa được")
+	p.crystal = 30.0
+	_check(Ch5.can_job2(w) == "" and w.talk("liet-dien") == "job2", "đủ điều kiện: Liệt Diễm mở bảng chọn nhánh")
+	var hp0: int = w.stats.max_hp
+	_check(Ch5.do_job2(w, "kiem-thanh") and p.job2 == "kiem-thanh" and is_equal_approx(p.crystal, 0.0), "chọn Kiếm Thánh, tốn 30 Tinh Thạch")
+	_check(w.stats.max_hp > hp0 and Classes.title(p.class_id, p.job, p.job2) == "Kiếm Thánh", "+10% HP, tên chức mới")
+	_check(not Ch5.do_job2(w, "huyet-kiem") and p.job2 == "kiem-thanh", "không đổi nhánh sau khi chọn")
+	_check(is_equal_approx(Ch5.poise_mult(w, null), Ch5.KT_POISE), "Kiếm Thánh: Phá Thế +40%")
+	# các nhánh khác
+	p.job2 = "huyet-kiem"
+	w.player.hp = w.stats.max_hp * 0.4
+	var dummy := w.spawn_enemy("than-lan-lua", 50, w.player.pos + Vector2(50, 0))
+	_check(is_equal_approx(Ch5.hit_mult(w, dummy, false), Ch5.HK_MUL), "Huyết Kiếm: dưới 50% HP +20% sát thương")
+	var hpb: float = w.player.hp
+	Ch5.adjust_damage(w, dummy, 1000, true)
+	_check(is_equal_approx(w.player.hp, hpb + 60.0), "Huyết Kiếm: hút 6% sát thương")
+	p.job2 = "than-tien"
+	_check(is_equal_approx(Ch5.pierce_cd(w, 4.0), 3.0) and is_equal_approx(Ch5.hit_mult(w, dummy, true), Ch5.TT_CRIT_MUL), "Thần Tiễn: Tên Xuyên Phá −1 giây, chí mạng ×1,2")
+	p.job2 = "tho-bay"
+	_check(Ch5.trap_extra(w) == 2, "Thợ Bẫy: thêm 2 bẫy")
+	p.job2 = "dai-phap-su"
+	_check(Ch5.meteor_extra(w, Vector2.ZERO, 3.0).size() == 1 and is_equal_approx(float(Ch5.meteor_extra(w, Vector2.ZERO, 3.0)[0][1]), 1.8), "Đại Pháp Sư: thêm 1 Thiên Thạch ×0,6")
+	p.job2 = "tu-linh-su"
+	var bones0 := Ch5._bones(w)
+	for i in 30:
+		var f := w.spawn_enemy("than-lan-lua", 50, w.player.pos + Vector2(80, 0))
+		Ch5.on_kill(w, f)
+	_check(Ch5._bones(w) > bones0 and Ch5._bones(w) <= Ch5.TL_MAX, "Tử Linh Sư: dựng Xương Nô (tối đa 3)")
+	_check(Ch5.hit_mult(w, dummy, false) > 1.0, "mỗi Xương Nô +5% sát thương")
+	# save v11 + chuyển đổi v10
+	var d: Dictionary = JSON.parse_string(JSON.stringify(p.to_dict()))
+	_check(int(d.version) >= 11, "save version 11")
+	var back := Profile.new()
+	back.load_dict(d)
+	_check(back.job2 == "tu-linh-su" and int(back.quest.ch5) == int(p.quest.ch5), "save giữ chức 2 và nhiệm vụ chương 5")
+	d.version = 10
+	for k in ["job2", "crystal", "holy_water", "raid_play", "raid_penalty_until"]:
+		d.erase(k)
+	var old := Profile.new()
+	_check(old.load_dict(d) and old.job2 == "" and is_equal_approx(old.crystal, 0.0), "save v10 nạp được, chưa chuyển chức 2")
+
+
+## TL-B5: 3 lớp × 20 Thiên phú hạ Viêm Long (cấp 57, đồ chuẩn cấp 57, đã tiến hoá 1 lần, chưa chuyển chức 2).
+func _test_c5_balance() -> void:
+	var avg := func(arr: Array) -> float:
+		var sum := 0.0
+		for x in arr:
+			sum += x
+		return sum / arr.size()
+	var class_avg := {}
+	for class_id in Classes.ORDER:
+		var by_rank := {}
+		var all: Array = []
+		var lines := PackedStringArray()
+		for t in Talents.LIST:
+			var times: Array = []
+			var deaths := 0
+			var won := true
+			for seed_value in [5, 11]:
+				var res := _r5_fight(class_id, t.id, seed_value)
+				times.append(res[0])
+				deaths += int(res[1])
+				won = won and bool(res[2])
+			var sec: float = avg.call(times)
+			lines.append("%s %s %.0fs/%d" % [t.rank, t.name, sec, deaths])
+			_check(won and deaths == 0, "%s · %s hạ được Viêm Long, không chết lần nào" % [class_id, t.name])
+			if not by_rank.has(t.rank):
+				by_rank[t.rank] = []
+			by_rank[t.rank].append(sec)
+			all.append(sec)
+		print("       [%s] (" % class_id + " · ".join(lines) + ")")
+		var f: float = avg.call(by_rank.F)
+		var s_: float = avg.call(by_rank.S)
+		class_avg[class_id] = avg.call(all)
+		print("       [%s] F %.1f giây, S %.1f giây, chênh %.0f%%; trung bình %.1f giây" % [class_id, f, s_, absf(f - s_) / maxf(f, s_) * 100.0, class_avg[class_id]])
+		_check(absf(f - s_) / maxf(f, s_) <= 0.25, "%s: F và S chênh ≤ 25%%" % class_id)
+	var a: float = class_avg.values().min()
+	var b: float = class_avg.values().max()
+	print("       (%d lớp: nhanh nhất %.1f, chậm nhất %.1f giây, chênh %.0f%%)" % [class_avg.size(), a, b, (b - a) / b * 100.0])
+	_check((b - a) / b <= 0.25, "các lớp chênh ≤ 25%")
+
+
+func _r5_fight(class_id: String, talent_id: String, seed_value: int) -> Array:
+	var w := _region5_world("5-3", class_id, talent_id, 57, seed_value)
+	w._load_map("5-3")
+	w.enemies = []
+	w.field_spawn = false
+	var p = w.profile
+	p.quest.ch5 = 6
+	p.points = _class_points(class_id)
+	for k in p.points:
+		p.points[k] = int(p.points[k]) * 14
+	var rng := RngUtil.make(77)
+	for pair in [["weapon", "blue"], ["armor", "blue"], ["helm", "green"], ["boots", "green"], ["gloves", "green"]]:
+		var it := Items.new_item(p, 57, pair[1], rng, pair[0])
+		Items.add_item(p, it)
+		w.equip(int(it.id))
+	w.player.hp = w.stats.max_hp
+	w.player.mp = w.stats.max_mp
+	w.player.pos = w.arena_pos - Vector2(100, 0)
+	var deaths := 0
+	var seconds := 0.0
+	while seconds < 600.0 and not p.bosses.get("vien-long", false):
+		for ev in w.drain_events():
+			if ev.type == "death":
+				deaths += 1
+		if w.boss() == null and w.player.dead_timer <= 0.0:
+			w.player.pos = w.arena_pos - Vector2(100, 0)
+		w.update(1.0 / 60.0, _bot(w))
+		seconds += 1.0 / 60.0
+	return [seconds, deaths, p.bosses.get("vien-long", false)]

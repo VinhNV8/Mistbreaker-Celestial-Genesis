@@ -20,6 +20,8 @@ const LIST := [
 		"desc": "Mỏ trên ô Núi đá (vùng 2) sản xuất, cả khi offline. Thợ rèn Thiết Ngưu đổi 10 Đá → 1 Đá Cường Hoá."},
 	{"id": "iron", "icon": "iron", "name": "Sắt",
 		"desc": "Mỏ sản xuất. Thợ rèn Thiết Ngưu đổi 20 Đá + 10 Sắt → 1 Tinh Kim."},
+	{"id": "crystal", "icon": "crystal", "name": "Tinh Thạch",
+		"desc": "Mỏ Tinh Thạch ở vùng 5 sản xuất. Cần 30 để chuyển chức 2; Kim Phú / Tiểu Hoả đổi 5 Tinh Thạch → 1 Tinh Kim."},
 	{"id": "potions", "icon": "potion", "name": "Bình máu",
 		"desc": "Phím Q hồi 35% HP, hồi chiêu 8 giây, mang tối đa 5. Mua ở cửa hàng làng (phím E)."},
 ]

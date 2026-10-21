@@ -22,7 +22,7 @@ func _render(content: VBoxContainer) -> void:
 	var s: Dictionary = world.stats
 	var t: Dictionary = world.talent()
 	content.custom_minimum_size.x = 560
-	_header(content, "%s · Cấp %d" % [Classes.title(str(p.class_id), str(p.job)), p.level], "Đóng (C)")
+	_header(content, "%s · Cấp %d" % [Classes.title(str(p.class_id), str(p.job), str(p.job2)), p.level], "Đóng (C)")
 
 	var card := PanelContainer.new()
 	card.add_theme_stylebox_override("panel", UiTheme.rank_box(Talents.rank_color(t.rank)))

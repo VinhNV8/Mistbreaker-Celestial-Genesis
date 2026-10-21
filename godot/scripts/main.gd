@@ -23,6 +23,7 @@ const CreateScreen = preload("res://scripts/ui/create_screen.gd")
 const DialogBox = preload("res://scripts/ui/dialog_box.gd")
 const GiftCode = preload("res://scripts/core/gift_code.gd")
 const ShopPanel = preload("res://scripts/ui/shop_panel.gd")
+const Job2Panel = preload("res://scripts/ui/job2_panel.gd")
 const PauseMenu = preload("res://scripts/ui/pause_menu.gd")
 const Settings = preload("res://scripts/core/settings.gd")
 const AudioManager = preload("res://scripts/audio/audio_manager.gd")
@@ -74,6 +75,7 @@ var _screen: Control
 var _victory: Control
 var dialog: DialogBox
 var shop_panel: ShopPanel
+var job2_panel: Job2Panel
 var audio: AudioManager
 var _pause: PauseMenu
 ## Sau khi đóng thoại, bỏ qua phím 0,2 giây (Space vừa dùng để tắt thoại không thành né lăn).
@@ -194,16 +196,23 @@ func _input(event: InputEvent) -> void:
 	# C1-32, M4.3: phím E — nói chuyện với NPC gần nhất, hoặc mở cửa hàng khi đứng trong làng/thành.
 	if event.is_action_pressed("interact"):
 		var npc := world.nearest_npc()
+		var act := ""
 		if shop_panel.is_open():
 			shop_panel.close()
-		elif not npc.is_empty() and world.talk(str(npc.id)) != "shop":
-			pass
-		elif world.in_village():
-			for panel in _panels():
-				panel.close()
-			shop_panel.open(world)
+		elif job2_panel.is_open():
+			job2_panel.close()
 		else:
-			hud.log_message("Cửa hàng ở Làng Thanh Thạch — đứng trong làng rồi bấm E.", "info")
+			act = world.talk(str(npc.id)) if not npc.is_empty() else ""
+			if act == "shop" or (npc.is_empty() and world.in_village()):
+				for panel in _panels():
+					panel.close()
+				shop_panel.open(world)
+			elif act == "job2":
+				for panel in _panels():
+					panel.close()
+				job2_panel.open(world)
+			elif npc.is_empty():
+				hud.log_message("Cửa hàng ở Làng Thanh Thạch — đứng trong làng rồi bấm E.", "info")
 		get_viewport().set_input_as_handled()
 		return
 	for pair in [["toggle_stats", stats_panel], ["toggle_map", map_panel], ["toggle_inventory", inventory_panel], ["toggle_talent", talent_panel], ["toggle_world", world_panel]]:
@@ -227,7 +236,7 @@ func _input(event: InputEvent) -> void:
 
 
 func _panels() -> Array:
-	return [stats_panel, map_panel, inventory_panel, talent_panel, world_panel, shop_panel]
+	return [stats_panel, map_panel, inventory_panel, talent_panel, world_panel, shop_panel, job2_panel]
 
 
 func _any_panel_open() -> bool:
@@ -453,6 +462,8 @@ func _start_world(p: Profile) -> void:
 	_ui.add_child(world_panel)
 	shop_panel = ShopPanel.new()
 	_ui.add_child(shop_panel)
+	job2_panel = Job2Panel.new()
+	_ui.add_child(job2_panel)
 	dialog = DialogBox.new()
 	_ui.add_child(dialog)
 	dialog.setup(p.name, p.class_id, p.look)
@@ -476,6 +487,7 @@ func _end_session() -> void:
 	world_panel = null
 	dialog = null
 	shop_panel = null
+	job2_panel = null
 	world = null
 	_view.world = null
 	_view.visible = false
@@ -781,6 +793,53 @@ func _run_smoke(dir: String) -> void:
 	await _wait(0.3)
 	await _shot(dir, "12d-talent-evo")
 	talent_panel.close()
+	# M8: chương 5 Núi Viêm Long
+	p.evo = maxi(1, int(p.evo))
+	p.bosses["nu-vuong"] = true
+	p.level = maxi(p.level, 50)
+	world._refresh_stats()
+	world._load_map("5-1")
+	world.player.pos = world.safe_pos + Vector2(60, 40)
+	await _wait(1.0)
+	await _shot(dir, "13b-camp5")
+	world._load_map("5-2")
+	world.player.pos = Vector2(1300, 1280)
+	world.player.shield = 1e9
+	world.player.shield_time = 999.0
+	for k in ["than-lan-lua", "nguoi-da", "linh-hon-lua", "phap-su-hoa-diem"]:
+		world.spawn_enemy(k, 52, world.player.pos + Vector2(200 + randf() * 200, randf() * 300 - 150))
+	world.ch5.erupt_t = 0.5
+	await _wait(1.6)
+	await _shot(dir, "13-region5")
+	p.quest.ch5 = 6
+	world._load_map("5-3")
+	world.player.pos = world.arena_pos - Vector2(120, 0)
+	await _wait(1.0)
+	var vl = world.boss()
+	if vl != null:
+		vl.hp = vl.max_hp * 0.55
+		await _wait(0.3)
+		world.ch5.flood_t = GameWorld.Ch5.FLOOD_WARN + 1.0
+	await _wait(1.0)
+	await _shot(dir, "13c-vien-long")
+	world.player.shield = 0.0
+	world._load_map("5-1")
+	world.player.pos = world.safe_pos + Vector2(80, 80)
+	p.level = 60
+	p.crystal = 30.0
+	p.bosses["vien-long"] = true
+	if str(p.job) == "":
+		p.job = str(GameWorld.Classes.job_def(str(p.class_id)).id)
+	job2_panel.open(world)
+	await _wait(0.3)
+	await _shot(dir, "14b-job2")
+	job2_panel.close()
+	p.quest.ch5 = 4
+	world.ch5.siege = false
+	GameWorld.Ch5.start_siege(world)
+	await _wait(4.0)
+	await _shot(dir, "13d-siege")
+	GameWorld.Ch5._end_siege(world, false, true)
 	print("SMOKE done: boss_defeated=%s level=%d kills=%d" % [p.boss_defeated, p.level, p.kills])
 	SaveSystem.clear_save()
 	get_tree().quit()

@@ -402,7 +402,7 @@ w("""
 | # | Vùng | Cấp | Hệ chủ đạo | Mở khoá (kịch bản) | Boss chương | Boss hiếm | Trạng thái |
 | --- | --- | --- | --- | --- | --- | --- | --- |""")
 for R in REGIONS:
-    st = "✅ C1" if R["n"] == 1 else ("✅ M4–M5" if R["n"] == 2 else ("⬜ Alpha" if R["n"] <= 5 else "⬜ Beta"))
+    st = {1: "✅ C1", 2: "✅ M4–M5", 3: "✅ M6", 4: "✅ M7", 5: "✅ M8"}.get(R["n"], "⬜ Beta")
     w(f"| {R['n']} | {R['name']} | {R['lv'][0]}–{R['lv'][1]} | {R['el']} | {R['unlock']} | {R['boss']['name']} (cấp {R['boss']['lv']}) | {R['rare']['name']} (cấp {R['rare']['lv']}) | {st} |")
 
 w("""

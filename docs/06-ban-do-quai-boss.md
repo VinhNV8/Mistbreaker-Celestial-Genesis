@@ -80,9 +80,9 @@ Trước M3, code dùng công thức cũ của prototype (`HP × (1 + 0,35·(L�
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | Rừng Sương | 1–10 | Mộc | Bắt đầu game | Sói Chúa Hư Vô (cấp 6) | Lão Thụ Sương Mù (cấp 9) | ✅ C1 |
 | 2 | Đồng Bằng Gió Hú | 10–20 | Kim | Hạ Sói Chúa (kịch bản) | Tướng Gián Điệp Huyền Ảnh (cấp 18) | Bạch Hổ Phong Vân (cấp 20) | ✅ M4–M5 |
-| 3 | Sa Mạc Xích Sa | 20–32 | Thổ | Lực chiến 5.000 (kịch bản) | Bọ Cạp Sa Hoàng (cấp 30) | Nhân Sư Đá (cấp 32) | ⬜ Alpha |
-| 4 | Đầm Lầy U Minh | 32–45 | Thủy | Chuyển chức 1 (kịch bản) | Nữ Vương Phệ Mộng (cấp 43) | Thuỷ Quái Thất Đầu (cấp 45) | ⬜ Alpha |
-| 5 | Núi Viêm Long | 45–60 | Hỏa | Thiên phú tiến hoá 1 lần (kịch bản) | Viêm Long (cấp 58) | Phượng Hoàng Tro (cấp 60) | ⬜ Alpha |
+| 3 | Sa Mạc Xích Sa | 20–32 | Thổ | Lực chiến 5.000 (kịch bản) | Bọ Cạp Sa Hoàng (cấp 30) | Nhân Sư Đá (cấp 32) | ✅ M6 |
+| 4 | Đầm Lầy U Minh | 32–45 | Thủy | Chuyển chức 1 (kịch bản) | Nữ Vương Phệ Mộng (cấp 43) | Thuỷ Quái Thất Đầu (cấp 45) | ✅ M7 |
+| 5 | Núi Viêm Long | 45–60 | Hỏa | Thiên phú tiến hoá 1 lần (kịch bản) | Viêm Long (cấp 58) | Phượng Hoàng Tro (cấp 60) | ✅ M8 |
 | 6 | Băng Nguyên Bắc Cực | 60–72 | Thủy + Kim | Chuyển chức 2 (kịch bản) | Bản Ngã Bóng Tối (cấp 70) | Long Băng Bắc Cực (cấp 72) | ⬜ Beta |
 | 7 | Quần Đảo Thiên Không | 72–84 | Kim + Mộc | Lãnh địa cấp 5, xây Cảng Khí Cầu (kịch bản) | Thiên Không Cự Thần (cấp 82) | Kỳ Lân Mây (cấp 84) | ⬜ Beta |
 | 8 | Vực Hư Vô | 84–95 | Hư Vô (không hệ) | Thiên phú tiến hoá 2 lần (kịch bản) | Giáo Chủ Hư Vô (cấp 93) | Hư Vô Thú (cấp 95) | ⬜ Beta |

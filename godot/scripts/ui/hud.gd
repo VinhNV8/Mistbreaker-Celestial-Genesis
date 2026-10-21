@@ -14,9 +14,9 @@ const Classes = preload("res://scripts/data/classes.gd")
 const Story = preload("res://scripts/data/story.gd")
 const Resources = preload("res://scripts/data/resources.gd")
 ## C1-03: tài nguyên hiện trên HUD (icon + số, rê chuột xem chú thích).
-const HUD_RESOURCES := ["gold", "wood", "torches", "stones", "essence", "ore", "iron"]
+const HUD_RESOURCES := ["gold", "wood", "torches", "stones", "essence", "ore", "iron", "crystal"]
 ## TB-11: Đá, Sắt chỉ hiện khi đã có.
-const HUD_OPTIONAL := ["ore", "iron"]
+const HUD_OPTIONAL := ["ore", "iron", "crystal"]
 const Maps = preload("res://scripts/data/maps.gd")
 const SkillBar = preload("res://scripts/ui/skill_bar.gd")
 const Chapters = preload("res://scripts/core/chapters.gd")

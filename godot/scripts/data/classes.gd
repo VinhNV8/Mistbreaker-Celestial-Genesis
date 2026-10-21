@@ -76,12 +76,52 @@ const JOBS := {
 }
 
 
+## C5-45, C5-46 (M8): chuyển chức 2 — chọn 1 trong 2 nhánh (kịch bản mục 4, Q51). Lưu ở profile.job2.
+const JOB2_LEVEL := 60
+const JOB2_BONUS := 0.10
+const JOB2_CRYSTAL := 30
+const JOBS2 := {
+	"kiem-khach": [
+		{"id": "kiem-thanh", "name": "Kiếm Thánh", "color": "#ffd76a",
+			"text": "Mỗi đòn chém thứ 3 phóng thêm kiếm khí ×1,0; sát thương vào thanh Phá Thế +40%."},
+		{"id": "huyet-kiem", "name": "Huyết Kiếm", "color": "#ff4a5a",
+			"text": "Hút máu 6% sát thương gây ra; dưới 50% HP +20% sát thương."},
+	],
+	"tho-san": [
+		{"id": "than-tien", "name": "Thần Tiễn", "color": "#8fd8ff",
+			"text": "+10% chí mạng, sát thương chí mạng ×1,2; Tên Xuyên Phá hồi chiêu thêm −1 giây."},
+		{"id": "tho-bay", "name": "Thợ Bẫy", "color": "#9ad46a",
+			"text": "Đặt tối đa 4 bẫy, bẫy tồn tại 40 giây; bẫy khi kích nổ thêm vòng 4 m ×1,5."},
+	],
+	"phap-su": [
+		{"id": "dai-phap-su", "name": "Đại Pháp Sư", "color": "#c89aff",
+			"text": "Thiên Thạch rơi 2 viên (viên thứ 2 ×0,6); +30% hồi MP."},
+		{"id": "tu-linh-su", "name": "Tử Linh Sư", "color": "#9a8a6a",
+			"text": "Quái thường bị hạ 20% dựng thành Xương Nô 12 giây (tối đa 3); mỗi Xương Nô +5% sát thương."},
+	],
+}
+
+
+static func job2_defs(class_id: String) -> Array:
+	return JOBS2.get(class_id, [])
+
+
+static func job2_def(class_id: String, job2: String) -> Dictionary:
+	for j in job2_defs(class_id):
+		if j.id == job2:
+			return j
+	return {}
+
+
 static func job_def(class_id: String) -> Dictionary:
 	return JOBS.get(class_id, {})
 
 
-## Tên hiển thị: tên chức nếu đã chuyển, không thì tên lớp.
-static func title(class_id: String, job: String) -> String:
+## Tên hiển thị: tên chức 2 nếu đã chuyển chức 2, tên chức 1 nếu đã chuyển, không thì tên lớp.
+static func title(class_id: String, job: String, job2 := "") -> String:
+	var j2 := job2_def(class_id, job2)
+	if not j2.is_empty():
+		return str(j2.name)
 	var j := job_def(class_id)
 	if job != "" and not j.is_empty() and j.id == job:
 		return str(j.name)

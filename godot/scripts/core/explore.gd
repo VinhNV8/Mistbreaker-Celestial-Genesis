@@ -468,6 +468,14 @@ static func upgrade_camp(p) -> Dictionary:
 static func production_per_minute(p) -> Dictionary:
 	var lumber := count_built(p, "lumber")
 	var mines := count_built(p, "mine")
+	# M8 (C5-03): Mỏ vùng 5 là Mỏ Tinh Thạch (+1/phút), không cho Đá/Sắt; đột kích thua thì ngừng 30 phút.
+	var crystal_mines := 0
+	for key in p.buildings:
+		if str(key).begins_with("mine_r5_") and is_built(p, str(key)):
+			crystal_mines += 1
+	mines -= crystal_mines
+	if float(p.get("build_clock")) < float(p.get("raid_penalty_until")):
+		crystal_mines = 0
 	var survivors := 0
 	for rg in region_grids(p):
 		survivors += count_owned(rg[1], "survivor")
@@ -476,7 +484,8 @@ static func production_per_minute(p) -> Dictionary:
 		mult += Talents.lv_value(0.2, 0.3, p.talent_level)
 	if Talents.has_sub(p.talent, p.talent_level, "territory", 1):
 		mult += 0.1
-	return {"gold": lumber * 3.0 * mult, "wood": lumber * 6.0 * mult, "ore": mines * 4.0 * mult, "iron": mines * 2.0 * mult}
+	return {"gold": lumber * 3.0 * mult, "wood": lumber * 6.0 * mult, "ore": mines * 4.0 * mult, "iron": mines * 2.0 * mult,
+		"crystal": crystal_mines * 1.0 * mult}
 
 
 static func tick_production(p, seconds: float) -> Dictionary:
@@ -489,7 +498,9 @@ static func tick_production(p, seconds: float) -> Dictionary:
 	var iron: float = rate.iron * seconds / 60.0
 	p.ore += ore
 	p.iron += iron
-	return {"gold": gold, "wood": wood, "ore": ore, "iron": iron}
+	var crystal: float = rate.crystal * seconds / 60.0
+	p.crystal += crystal
+	return {"gold": gold, "wood": wood, "ore": ore, "iron": iron, "crystal": crystal}
 
 
 ## KP-06: Bến Cá +3% HP tối đa mỗi cái, tối đa +15% (Q26).

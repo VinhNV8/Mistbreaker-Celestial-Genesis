@@ -15,6 +15,7 @@ const Looks = preload("res://scripts/data/looks.gd")
 const CORPSE_TIME := 0.6
 const Ch3 = preload("res://scripts/core/chapter3.gd")
 const Ch4 = preload("res://scripts/core/chapter4.gd")
+const R5View = preload("res://scripts/view/region5_view.gd")
 const HIT_FX_TIME := 0.25
 
 var world: GameWorld
@@ -166,6 +167,7 @@ func _draw() -> void:
 	_draw_village_ground()
 	if world.map.arena != null:
 		_draw_arena()
+		R5View.draw_arena(self, world, _art)
 	if _art:
 		_draw_sorted(view)
 	else:
@@ -208,6 +210,7 @@ func _draw() -> void:
 	if not world.boss_unlocked():
 		_draw_gate()
 	_draw_desert_overlay(view)
+	R5View.draw_over(self, world, view, _art)
 	_draw_texts()
 	_update_tracking()
 
@@ -314,6 +317,8 @@ func _draw_ground(view: Rect2) -> void:
 			var rp := view.position + Vector2(fposmod(i * 211.0 + world.time * 8.0, view.size.x), fposmod(i * 137.0, view.size.y))
 			if Ch4.in_water(world, rp):
 				draw_arc(rp, 6.0 + fposmod(world.time * 4.0 + i, 8.0), PI * 1.1, PI * 1.9, 8, Color(0.7, 0.9, 1.0, 0.25), 1.0)
+	# M8: dung nham, Đá Nổi, vệt lửa (region5_view.gd)
+	R5View.draw_ground(self, world, view, _art)
 	# M6: ốc đảo (C3-13) và bóng râm dưới tảng đá (C3-11)
 	for o in Ch3.oases(world):
 		var oc: Vector2 = o[0]
@@ -390,7 +395,7 @@ func _draw_stele_fallback() -> void:
 func _draw_arena() -> void:
 	var c: Vector2 = world.arena_pos
 	var r: float = world.arena_r
-	var arena_tile := "tile-sand-red" if bool(world.map.get("desert", false)) else "tile-void"
+	var arena_tile := "tile-sand-red" if bool(world.map.get("desert", false)) else ("tile-basalt" if str(world.map.get("decor", "")) == "volcano" else "tile-void")
 	if not (_art and SpriteLib.fill_polygon(self, _circle_points(c, r, 64), arena_tile, Color(1, 1, 1, 0.85))):
 		draw_circle(c, r, Color("#251d33"))
 	var locked: bool = world.boss() != null
@@ -501,6 +506,10 @@ func _draw_tree_sprite(t: Dictionary) -> void:
 		if not SpriteLib.has_env(sid):
 			sid = "bush"
 		SpriteLib.draw_env(self, sid, base, Color.WHITE, 1.0 if t.r < 28.0 else 1.3, t.shade > 0.5)
+		return
+	# M8: núi lửa — đá dung nham, cây cháy, miệng phun.
+	if str(world.map.get("decor", "forest")) == "volcano":
+		SpriteLib.draw_env(self, R5View.decor_id(t.variant), base, Color.WHITE, 1.0 if t.r < 28.0 else 1.4, t.shade > 0.5)
 		return
 	# M4.2: thảo nguyên — đá, cỏ cao, bụi thay cho cây rừng.
 	if str(world.map.get("decor", "forest")) == "plains":

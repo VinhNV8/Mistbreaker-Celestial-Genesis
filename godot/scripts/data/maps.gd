@@ -12,7 +12,7 @@ const REGIONS := [
 	{"id": 2, "name": "Đồng Bằng Gió Hú", "levels": [10, 20], "element": "kim", "maps": ["2-1", "2-2", "2-3"], "unlock": "Hạ Sói Chúa · cấp 10 · khai phá vùng 1 ≥ 60%"},
 	{"id": 3, "name": "Sa Mạc Xích Sa", "levels": [20, 32], "element": "tho", "maps": ["3-1", "3-2", "3-3"], "unlock": "Hạ Huyền Ảnh · Lực chiến 5.000 · cấp 18"},
 	{"id": 4, "name": "Đầm Lầy U Minh", "levels": [32, 45], "element": "thuy", "maps": ["4-1", "4-2", "4-3"], "unlock": "Hạ Sa Hoàng · chuyển chức 1"},
-	{"id": 5, "name": "Núi Viêm Long", "levels": [45, 60], "element": "hoa", "maps": [], "unlock": "Thiên phú tiến hoá 1 lần (Alpha)"},
+	{"id": 5, "name": "Núi Viêm Long", "levels": [45, 60], "element": "hoa", "maps": ["5-1", "5-2", "5-3"], "unlock": "Hạ Nữ Vương · Thiên phú tiến hoá 1 lần · cấp 44"},
 	{"id": 6, "name": "Băng Nguyên Bắc Cực", "levels": [60, 72], "element": "thuy", "maps": [], "unlock": "Chuyển chức 2 (Beta)"},
 	{"id": 7, "name": "Quần Đảo Thiên Không", "levels": [72, 84], "element": "kim", "maps": [], "unlock": "Lãnh địa cấp 5 (Beta)"},
 	{"id": 8, "name": "Vực Hư Vô", "levels": [84, 95], "element": "", "maps": [], "unlock": "Thiên phú tiến hoá 2 lần (Beta)"},
@@ -234,11 +234,76 @@ const MAPS := {
 		"decor": "swamp",
 		"water": {"default": false, "zones": [[Vector2(1200, 600), 260.0], [Vector2(1500, 2000), 240.0], [Vector2(2400, 1300), 220.0],
 			[Vector2(3000, 500), 200.0]]},
+	},
+	# ---------------------------------------------------------------- M8: vùng 5 Núi Viêm Long (06 vùng 5, docs/12)
+	## lava: [[tâm, bán kính], …] — hồ dung nham (C5-10); "eruption": true — núi lửa phun (C5-11).
+	"5-1": {
+		"region": 5,
+		"name": "Chân Núi Tro",
+		"size": Vector2(4480, 2560),
+		"levels": [45, 50],
+		"zone_x": [720.0, 700.0],
+		"safe": {"pos": Vector2(420, 1280), "r": 200.0, "name": "Trại Tro Hồng", "kind": "camp"},
+		"npcs": [["xich-dong", "npc-xich-dong", Vector2(40, -40), "Xích Đồng · E"], ["kim-phu", "npc-kim-phu", Vector2(-80, 60), "Kim Phú · E"],
+			["tieu-hoa", "npc-tieu-hoa", Vector2(-80, 60), "Tiểu Hoả · E"],
+			["liet-dien", "npc-liet-dien", Vector2(80, 80), "Liệt Diễm · E"]],
+		"arena": null,
+		"gate": false,
+		"mobs": [["than-lan-lua", 45, 45], ["nguoi-da", 47, 35], ["linh-hon-lua", 48, 20]],
+		"ground": "tile-ash",
+		"fog": 0.12,
+		"tint": Color(0.3, 0.12, 0.08),
+		"wind": 0.0,
+		"trees": 140,
+		"decor": "volcano",
+		"lava": [[Vector2(1500, 700), 120.0], [Vector2(2300, 1900), 150.0], [Vector2(3200, 900), 130.0], [Vector2(3800, 1800), 110.0]],
+	},
+	"5-2": {
+		"region": 5,
+		"name": "Sườn Dung Nham",
+		"size": Vector2(4480, 2560),
+		"levels": [50, 55],
+		"zone_x": [720.0, 600.0],
+		"safe": {"pos": Vector2(352, 1280), "r": 150.0, "name": "Trạm Đá Đen", "kind": "camp"},
+		"arena": null,
+		"gate": false,
+		"mobs": [["than-lan-lua", 50, 30], ["nguoi-da", 50, 30], ["linh-hon-lua", 51, 20], ["phap-su-hoa-diem", 52, 20]],
+		"ground": "tile-basalt",
+		"fog": 0.2,
+		"tint": Color(0.32, 0.1, 0.06),
+		"wind": 0.0,
+		"trees": 110,
+		"decor": "volcano",
+		"eruption": true,
+		## 2 dòng dung nham cắt ngang (chuỗi hồ nối nhau), chừa cầu đá ở giữa và trên lối mòn.
+		"lava": [[Vector2(1600, 300), 120.0], [Vector2(1650, 560), 120.0], [Vector2(1700, 820), 110.0], [Vector2(1650, 1780), 110.0],
+			[Vector2(1600, 2040), 120.0], [Vector2(1650, 2300), 120.0], [Vector2(3000, 300), 120.0], [Vector2(2950, 560), 120.0],
+			[Vector2(2900, 830), 110.0], [Vector2(2950, 1760), 110.0], [Vector2(3000, 2020), 120.0], [Vector2(3050, 2290), 120.0]],
+	},
+	"5-3": {
+		"region": 5,
+		"name": "Miệng Núi Lửa",
+		"size": Vector2(4480, 2560),
+		"levels": [55, 60],
+		"zone_x": [720.0, 560.0],
+		"safe": {"pos": Vector2(352, 1280), "r": 140.0, "name": "Đỉnh Khói", "kind": "camp"},
+		"arena": {"pos": Vector2(3872, 1280), "r": 280.0, "boss": "vien-long", "level": 58, "chapter": 5, "name": "Long Huyệt"},
+		"gate": true,
+		"mobs": [["than-lan-lua", 55, 25], ["nguoi-da", 55, 30], ["linh-hon-lua", 56, 20], ["phap-su-hoa-diem", 56, 25]],
+		"ground": "tile-basalt",
+		"fog": 0.3,
+		"tint": Color(0.38, 0.08, 0.04),
+		"wind": 0.0,
+		"trees": 90,
+		"decor": "volcano",
+		"eruption": true,
+		"lava": [[Vector2(1300, 600), 200.0], [Vector2(1400, 2000), 190.0], [Vector2(2400, 400), 170.0], [Vector2(2500, 2150), 170.0],
+			[Vector2(3100, 1280), 150.0]],
 	}
 }
 
 ## Thứ tự để hiển thị và kiểm điều kiện "đã tới map trước".
-const ORDER := ["1-1", "1-3", "2-1", "2-2", "2-3", "3-1", "3-2", "3-3", "4-1", "4-2", "4-3"]
+const ORDER := ["1-1", "1-3", "2-1", "2-2", "2-3", "3-1", "3-2", "3-3", "4-1", "4-2", "4-3", "5-1", "5-2", "5-3"]
 
 
 static func get_map(map_id: String) -> Dictionary:

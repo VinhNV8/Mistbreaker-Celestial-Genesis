@@ -21,6 +21,8 @@ const Ch3 = preload("res://scripts/core/chapter3.gd")
 ## D38 (M7): mọi chương từ 3 trở đi gắn vào qua bộ điều phối — các dòng móc "Chapters.".
 const Chapters = preload("res://scripts/core/chapters.gd")
 const Ch4 = preload("res://scripts/core/chapter4.gd")
+## M8: chương 5 Núi Lửa Phẫn Nộ (docs/12) — logic trong core/chapter5.gd.
+const Ch5 = preload("res://scripts/core/chapter5.gd")
 
 ## Toạ độ map 1-1 (Rừng Sương). Code dùng các biến theo map (world_size, safe_pos, …); hằng số giữ cho test và tham chiếu.
 ## SN-30: ×1,6 so với M4 — phải khớp maps.gd "1-1".
@@ -177,6 +179,8 @@ const RARE_BOSSES := {
 		"say": "rare_nhan_su", "down": "rare_nhan_su_down", "intro": "Nhân Sư Đá thức giấc giữa Di Tích! (boss hiếm)"},
 	"4-3": {"kind": "thuy-quai", "level": 45, "after": "nu-vuong", "unique": "vay_that_dau", "purple": false,
 		"say": "rare_thuy_quai", "down": "rare_thuy_quai_down", "intro": "Thuỷ Quái Thất Đầu trồi lên giữa Cung Mộng! (boss hiếm)"},
+	"5-3": {"kind": "phuong-hoang", "level": 60, "after": "vien-long", "unique": "long_phuong", "purple": false,
+		"say": "rare_phuong_hoang", "down": "rare_phuong_hoang_down", "intro": "Phượng Hoàng Tro bùng cháy trên Miệng Núi Lửa! (boss hiếm)"},
 }
 ## Bạch Hổ: Hổ Vồ (chuỗi 3 cú, vòng 6 m ×1,4), Gầm Gió (vòng 10 m: đẩy 8 m, choáng 1 giây), dưới 50% Cưỡi Gió (tốc ×1,5).
 const TIGER_SKILL_CD := 4.0
@@ -337,6 +341,8 @@ class Enemy:
 	var swamp_stacks := 0
 	var swamp_tick := 0.0
 	var charm_t := 0.0
+	## M8: Viêm Long đang bay (bất tử, không bị nhắm).
+	var fly_t := 0.0
 
 
 ## Đạn của người chơi: tên, kiếm khí, tên xuyên phá.
@@ -496,6 +502,7 @@ var field_spawn := true
 var fog = Fog.new()
 var ch3 = Ch3.State.new()
 var ch4 = Ch4.State.new()
+var ch5 = Ch5.State.new()
 ## M7: nguồn đòn đang gây sát thương ("fireball", "meteor", …) — Thất Đầu cần đòn hệ Hỏa.
 var hit_source := ""
 var _fog_timer := 0.0
@@ -1296,10 +1303,12 @@ func _nova(mul: float) -> void:
 	_sfx("explode")
 	p.swing = 0.25
 	p.swing_kind = "cast"
+	hit_source = "nova"
 	for e in enemies:
 		if not e.dead and e.pos.distance_to(p.pos) <= radius + e.radius:
 			e.root_timer = maxf(e.root_timer, NOVA_ROOT)
 			_hit_enemy(e, m, false, true)
+	hit_source = ""
 
 
 ## SN-04 Thiên Thạch: vòng báo hiệu tại điểm ngắm (không có quái thì quái gần nhất trong tầm).
@@ -1321,6 +1330,13 @@ func _meteor(mul: float) -> void:
 	m.radius = METEOR_RADIUS
 	m.mul = mul
 	meteors.append(m)
+	for extra in Chapters.meteor_extra(self, pos, mul):
+		var m2 := Meteor.new()
+		m2.pos = extra[0]
+		m2.timer = METEOR_DELAY + 0.25
+		m2.radius = METEOR_RADIUS
+		m2.mul = float(extra[1])
+		meteors.append(m2)
 	p.swing = 0.3
 	p.swing_kind = "cast"
 
@@ -1415,7 +1431,7 @@ func use_skill(i: int) -> bool:
 			t.ttl = TRAP_TTL
 			t.mul = mul
 			traps.append(t)
-			while traps.size() > TRAP_MAX:
+			while traps.size() > TRAP_MAX + Chapters.trap_extra(self):
 				traps.pop_front()
 		"chain":
 			_chain(mul)
@@ -1542,6 +1558,7 @@ func _update_traps(dt: float) -> void:
 			if not e.dead and e.pos.distance_to(t.pos) <= TRAP_RADIUS + e.radius:
 				e.root_timer = TRAP_ROOT
 				_hit_enemy(e, t.mul)
+		Chapters.trap_triggered(self, t.pos, t.mul)
 	traps = traps.filter(func(t): return t.ttl > 0.0)
 
 
@@ -1996,7 +2013,7 @@ func _apply_damage(e: Enemy, dmg: int, crit: bool, by_player: bool) -> void:
 
 	# CB-07: boss và tinh anh có thanh Phá Thế; Thiết Bích +50% vào thanh.
 	if e.max_poise > 0.0:
-		_damage_poise(e, dmg * (GUARD_POISE if by_player and player.guard_time > 0.0 else 1.0))
+		_damage_poise(e, dmg * (GUARD_POISE if by_player and player.guard_time > 0.0 else 1.0) * (Chapters.poise_mult(self, e) if by_player else 1.0))
 	if e.role != "boss" and by_player and e.state != "windup":
 		e.pos += (e.pos - player.pos).normalized() * 10.0
 
@@ -2170,7 +2187,7 @@ func _on_boss_killed(e: Enemy) -> void:
 	profile.tinh_kim += 1
 	_message("%s đã ngã xuống! +%d Thiên Phú Tinh Hoa, +1 Tinh Kim." % [e.name, ESSENCE_PER_BOSS], "good")
 	# TP-39: Đạo Tặc sao chép kỹ năng boss.
-	var copy: String = {"huyen-anh": "clone", "sa-hoang": "burrow", "nu-vuong": "dreamscape"}.get(e.kind, "")
+	var copy: String = {"huyen-anh": "clone", "sa-hoang": "burrow", "nu-vuong": "dreamscape", "vien-long": "breath"}.get(e.kind, "")
 	if profile.talent == "dao-tac" and copy != "" and not (copy in profile.copied_skills):
 		profile.copied_skills.append(copy)
 		profile.active_copy = copy
@@ -3343,6 +3360,19 @@ func shop_buy(kind: String) -> Dictionary:
 				return _shop_result(true, "Mua 1 Thuốc Giải (%d). Phím Q khi có ≥ 3 tầng độc." % profile.antidotes)
 			profile.fire_torches += 1
 			return _shop_result(true, "Mua 1 Đuốc Lửa (%d). Phím Q cạnh đầu Thất Đầu vừa chặt." % profile.fire_torches)
+		"holy_water":
+			# M8 (C5-33, Q61): Trại Tro Hồng
+			if profile.gold < Ch5.SHOP_HOLY:
+				return _shop_result(false, "Cần %d vàng." % Ch5.SHOP_HOLY)
+			profile.gold -= Ch5.SHOP_HOLY
+			profile.holy_water += 1
+			return _shop_result(true, "Mua 1 Bình Nước Thánh (%d). Phím Q khi Phượng Hoàng dưới 15%% HP." % profile.holy_water)
+		"crystal_kim":
+			if profile.crystal < Ch5.CRYSTAL_PER_KIM:
+				return _shop_result(false, "Cần %d Tinh Thạch." % Ch5.CRYSTAL_PER_KIM)
+			profile.crystal -= Ch5.CRYSTAL_PER_KIM
+			profile.tinh_kim += 1
+			return _shop_result(true, "Đổi %d Tinh Thạch → 1 Tinh Kim." % Ch5.CRYSTAL_PER_KIM)
 	return _shop_result(false, "Không có món này.")
 
 
@@ -3497,7 +3527,7 @@ func _sfx(id: String) -> void:
 
 # ------------------------------------------------------------------ M4.2: gió, quái vùng 2, Huyền Ảnh, ảo ảnh
 
-const COPY_NAMES := {"pounce": "Vồ Mồi", "clone": "Phân Thân", "burrow": "Độn Thổ", "dreamscape": "Mộng Cảnh"}
+const COPY_NAMES := {"pounce": "Vồ Mồi", "clone": "Phân Thân", "burrow": "Độn Thổ", "dreamscape": "Mộng Cảnh", "breath": "Long Tức"}
 const WIND_DIRS := [Vector2(1, 0), Vector2(1, 1), Vector2(0, 1), Vector2(-1, 1), Vector2(-1, 0), Vector2(-1, -1), Vector2(0, -1), Vector2(1, -1)]
 
 
@@ -3695,6 +3725,8 @@ func npcs() -> Array:
 	var out: Array = []
 	for n in map.get("npcs", []):
 		if n[0] == "mac-tam" and int(profile.quest.ch2) >= 5:
+			continue
+		if not Chapters.npc_visible(self, str(n[0])):
 			continue
 		out.append({"id": n[0], "sprite": n[1], "pos": safe_pos + n[2], "name": n[3]})
 	return out
