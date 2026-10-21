@@ -939,6 +939,16 @@ Thay đổi so với spec các đợt trước:
 | TP-41 — Lv tối đa 10 | `talent_level` thành cấp hiệu dụng (tối đa 28); Lv hiển thị = cấp hiệu dụng − 9 × số lần tiến hoá (D39) |
 | Phím Q = bình máu | Phím Q ưu tiên vật phẩm chương: Thuốc Giải (≥ 3 tầng độc), Đuốc Lửa (cạnh gốc đầu Thất Đầu) |
 
+## 9. Spec_Notes đợt 5 (21/10/2026)
+
+| Mã | Ghi chú của chủ dự án | Đã làm | Trạng thái |
+| --- | --- | --- | --- |
+| SN5-01 | *"Map: chỉ định vị trí hoặc nhấn vào vị trí thì nhân vật sẽ chạy đúng vị trí tương ứng trên bản đồ"* | Chuột trái lên **bản đồ nhỏ** (cỡ nhỏ hoặc cỡ lớn, phím V) → nhân vật **tự chạy thẳng** tới điểm đó; cờ vàng đánh dấu điểm đến trên bản đồ nhỏ và trong thế giới. **Huỷ** khi: tới nơi (≤ 2,4 m), người chơi tự di chuyển hoặc né lăn, chuột phải lên bản đồ, gục, đổi map, hoặc **kẹt** (không gần thêm được trong 1,5 giây — tường sương, cổng, hang boss khoá). Đang tự chạy thì Tự đánh nhường (như khi tự di chuyển). Bấm chuột lên bản đồ nhỏ không vung kiếm / dùng kỹ năng | ✅ |
+| SN5-10 | *"Khi nhặt đồ: nếu nhiều đồ được nhặt cùng lúc, thì text đang bị đè lên nhau"* | Chữ nhặt đồ tách khỏi chữ sát thương: **xếp thành cột trên đầu nhân vật**, mỗi dòng cách 20 px, mới nhất ở dưới, tối đa 6 dòng, mờ dần sau 1,8 giây (đồ 2,4 giây). Vàng / Đá / HP nhặt liên tiếp trong 1 giây **gộp một dòng** ("+50 vàng"); mỗi món đồ một dòng riêng theo màu độ hiếm | ✅ |
+| SN5-20 | *"Cần nghiên cứu kỹ về skills của từng hệ, đề xuất các hướng build skills…"* | Nghiên cứu thị trường + đề xuất: [13-he-ky-nang.md](13-he-ky-nang.md) — **mở theo cấp + chuyển chức (nền) + Bí Kíp rơi để mở biến thể + ngũ hành ở biến thể tầng II**; câu hỏi Q65–Q70 | 🟡 Chờ duyệt |
+
+**Kiểm thử:** SN5-T1 (tự chạy: tới nơi, tự đi huỷ, kẹt sau tường sương, đổi map huỷ, toạ độ bản đồ nhỏ → thế giới), SN5-T2 (gộp vàng, mỗi món một dòng, tối đa 6 dòng, tự mất).
+
 ## Phụ lục A — Yêu cầu thay đổi (CR)
 
 Thay đổi do chủ dự án yêu cầu sau khi kịch bản đã viết. Mỗi CR ghi nguồn, đề xuất, trạng thái duyệt, và đợt sẽ làm.

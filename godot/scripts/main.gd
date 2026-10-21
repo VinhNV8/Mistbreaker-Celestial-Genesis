@@ -285,12 +285,16 @@ func _read_input() -> Dictionary:
 	var kb_aim := Time.get_ticks_msec() - _last_mouse_move > 1500
 	if kb_aim:
 		aim = world.player.pos + _kb_dir * 100.0
+	# SN5-01: chuột đang ở trên giao diện nhận chuột (bản đồ nhỏ…) thì nút chuột không đánh / không dùng kỹ năng.
+	var over_ui := get_viewport().gui_get_hovered_control() != null
+	var mouse_attack := Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and not Input.is_physical_key_pressed(KEY_J)
+	var mouse_skill := Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT) and not Input.is_physical_key_pressed(KEY_K)
 	return {
 		"move": move,
 		"aim": aim,
 		"kb_aim": kb_aim,
-		"attack": Input.is_action_pressed("attack"),
-		"skill": Input.is_action_just_pressed("skill"),
+		"attack": Input.is_action_pressed("attack") and not (over_ui and mouse_attack),
+		"skill": Input.is_action_just_pressed("skill") and not (over_ui and mouse_skill),
 		"skill_1": Input.is_action_just_pressed("skill_1"),
 		"skill_2": Input.is_action_just_pressed("skill_2"),
 		"skill_3": Input.is_action_just_pressed("skill_3"),

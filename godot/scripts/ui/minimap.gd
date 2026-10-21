@@ -2,6 +2,7 @@ extends Control
 ## M5-03 (Spec_Notes đợt 3): bản đồ nhỏ theo thời gian thực ở góc phải HUD.
 ## Đất đã khám phá (sương che SN-31), làng/thành, hang boss, tường sương, NPC, quái trong vùng đã thấy,
 ## boss và boss hiếm, nhân vật (mũi tên theo hướng nhìn). Phím V: đổi cỡ nhỏ / lớn.
+## SN5-01: chuột trái lên bản đồ → nhân vật tự chạy tới điểm đó; chuột phải → huỷ.
 
 const UiTheme = preload("res://scripts/ui/ui_theme.gd")
 const GameWorld = preload("res://scripts/core/game_world.gd")
@@ -21,8 +22,31 @@ var _fog_map := ""
 
 
 func _ready() -> void:
-	mouse_filter = MOUSE_FILTER_IGNORE
+	mouse_filter = MOUSE_FILTER_STOP
+	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	tooltip_text = "Chuột trái: tự chạy tới · chuột phải: huỷ · V: phóng to"
 	_resize()
+
+
+## Toạ độ thế giới từ toạ độ trên bản đồ nhỏ (chỉ trong khung bản đồ, không tính dòng tiêu đề).
+func world_at(local: Vector2) -> Vector2:
+	var rect := Rect2(Vector2(0, HEADER), size - Vector2(0, HEADER))
+	if _world == null or not rect.has_point(local):
+		return Vector2.INF
+	return (local - rect.position) / rect.size * _world.world_size
+
+
+func _gui_input(event: InputEvent) -> void:
+	if _world == null or not (event is InputEventMouseButton) or not event.pressed:
+		return
+	if event.button_index == MOUSE_BUTTON_LEFT:
+		var wp := world_at(event.position)
+		if wp != Vector2.INF:
+			_world.set_move_target(wp)
+			accept_event()
+	elif event.button_index == MOUSE_BUTTON_RIGHT:
+		_world.clear_move_target()
+		accept_event()
 
 
 func toggle_size() -> void:
@@ -113,6 +137,12 @@ func _draw() -> void:
 			draw_circle(mp, 2.6, Color("#ffb347"))
 		else:
 			draw_circle(mp, 1.6, Color("#ff5a5a"))
+	# điểm đến (SN5-01)
+	if w.has_move_target():
+		var tp := _to_map(w.move_target, rect)
+		draw_line(_to_map(w.player.pos, rect), tp, Color(1, 0.85, 0.3, 0.6), 1.0, true)
+		draw_line(tp, tp + Vector2(0, -9), UiTheme.GOLD, 1.5)
+		draw_colored_polygon(PackedVector2Array([tp + Vector2(0, -9), tp + Vector2(6, -7), tp + Vector2(0, -5)]), UiTheme.GOLD)
 	# nhân vật: mũi tên theo hướng nhìn
 	var pp := _to_map(w.player.pos, rect)
 	var dir := Vector2.from_angle(w.player.facing)

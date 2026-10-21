@@ -121,7 +121,7 @@ Main (Node, main.gd)
 | `scripts/view/region5_view.gd` | Vẽ vùng 5: hồ dung nham, Long Huyệt ngập + Đá Nổi (`draw_arena`), vòng báo thiên thạch, cột lửa, phun lửa, Cổng Trại (`draw_over`), cây cối núi lửa (`decor_id`) |
 | `scripts/ui/job2_panel.gd` | Bảng chọn 1 trong 2 nhánh chuyển chức 2 (Liệt Diễm, phím E) |
 | `scripts/core/puzzle.gd` | Câu đố ô Di tích (M5-04): Trận Đèn Cổ 3 × 3 và câu hỏi cổ thư; sinh cố định theo (tên nhân vật, vùng, ô) nên không cần lưu save; `GameWorld.relic_press/relic_answer` mở rương với thưởng ×2 |
-| `scripts/ui/minimap.gd` | Bản đồ nhỏ góc phải HUD (M5-03): ảnh sương 1 pixel/ô dựng lại khi `fog.version` đổi, vẽ làng, hang boss, tường sương, NPC, quái ở vùng đã thấy, boss/boss hiếm nhấp nháy, mũi tên nhân vật; phím V đổi cỡ 230 ↔ 460 px |
+| `scripts/ui/minimap.gd` | Bản đồ nhỏ góc phải HUD (M5-03; SN5-01: chuột trái → `GameWorld.set_move_target`, chuột phải huỷ): ảnh sương 1 pixel/ô dựng lại khi `fog.version` đổi, vẽ làng, hang boss, tường sương, NPC, quái ở vùng đã thấy, boss/boss hiếm nhấp nháy, mũi tên nhân vật; phím V đổi cỡ 230 ↔ 460 px |
 | `scripts/ui/skill_bar.gd` | Thanh kỹ năng 8 ô có khung trang trí, tự vẽ bằng `_draw`: icon cắt tròn, hồi chiêu quét tròn, nhãn phím, tên + dòng phụ; HUD gọi `set_slot(i, {...})` mỗi khung hình (DH-11) |
 | `scripts/ui/modal.gd` | Lớp cha của bảng phủ |
 | `scripts/ui/stats_panel.gd` | Bảng chỉ số |

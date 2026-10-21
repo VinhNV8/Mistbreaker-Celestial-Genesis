@@ -158,6 +158,9 @@ func _init() -> void:
 	_run("C5-T6 Công Trại 3 đợt, đột kích định kỳ", _test_c5_siege)
 	_run("C5-T7 chuyển chức 2: điều kiện, 6 nhánh, save v11", _test_c5_job2)
 	_run("TL-B5 cân bằng vùng 5: 3 lớp × 20 Thiên phú hạ Viêm Long", _test_c5_balance)
+	# Spec_Notes đợt 5
+	_run("SN5-T1 bấm bản đồ nhỏ: tự chạy tới, tới nơi / tự đi / kẹt / đổi map thì dừng", _test_sn5_travel)
+	_run("SN5-T2 chữ nhặt đồ: xếp dòng, gộp vàng, mỗi món một dòng, tối đa 6", _test_sn5_pickup_notes)
 	_run("PACE-T1 nhịp lên cấp 1 → 20 chỉ bằng đánh quái (bot cày, đo phút)", _test_pace_mobs)
 	for c in Classes.ORDER:
 		_run("PACE-T2 %s cấp 10 → 20 vùng 2" % c, _test_pace_r2.bind(c))
@@ -4138,3 +4141,71 @@ func _r5_fight(class_id: String, talent_id: String, seed_value: int) -> Array:
 		w.update(1.0 / 60.0, _bot(w))
 		seconds += 1.0 / 60.0
 	return [seconds, deaths, p.bosses.get("vien-long", false)]
+
+
+# ------------------------------------------------------------------ Spec_Notes đợt 5
+
+
+func _test_sn5_travel() -> void:
+	var w := _world("tay-nhanh")
+	w.field_spawn = false
+	w.enemies = []
+	w.player.pos = Vector2(900, 1280)
+	var goal := Vector2(1300, 1100)
+	w.set_move_target(goal)
+	_check(w.has_move_target(), "đặt điểm đến")
+	_tick(w, {}, 30)
+	_check(w.player.pos.distance_to(goal) < Vector2(900, 1280).distance_to(goal) - 50.0, "tự chạy về phía điểm đến")
+	_tick(w, {}, 400)
+	_check(not w.has_move_target() and w.player.pos.distance_to(goal) <= GameWorld.TRAVEL_ARRIVE + 4.0, "tới nơi thì dừng")
+	w.set_move_target(Vector2(300, 300))
+	_tick(w, {"move": Vector2.RIGHT}, 2)
+	_check(not w.has_move_target(), "tự di chuyển thì huỷ")
+	# kẹt sau tường sương trước hang Sói Chúa (chưa mở)
+	w.profile.boss_defeated = false
+	w.profile.level = 1
+	w.player.pos = Vector2(w.gate_x - 100.0, 1280)
+	w.set_move_target(Vector2(w.gate_x + 600.0, 1280))
+	_tick(w, {}, 240)
+	_check(not w.has_move_target() and w.player.pos.x <= w.gate_x + 1.0, "kẹt ở tường sương: dừng sau 1,5 giây")
+	w.set_move_target(Vector2(500, 500))
+	w._load_map("1-1")
+	_check(not w.has_move_target(), "đổi map thì huỷ")
+	# toạ độ bản đồ nhỏ → thế giới
+	var Minimap = load("res://scripts/ui/minimap.gd")
+	var mm = Minimap.new()
+	mm.update_from(w)
+	var mid: Vector2 = mm.world_at(Vector2(mm.size.x / 2.0, Minimap.HEADER + (mm.size.y - Minimap.HEADER) / 2.0))
+	_check(mid.distance_to(w.world_size / 2.0) < 30.0, "giữa bản đồ nhỏ = giữa map")
+	_check(mm.world_at(Vector2(10, 5)) == Vector2.INF, "bấm vào dòng tiêu đề không tính")
+	mm.free()
+
+
+func _test_sn5_pickup_notes() -> void:
+	var w := _world("tay-nhanh")
+	w.field_spawn = false
+	w.enemies = []
+	w.pickups = []
+	var p := w.player
+	for v in [12.0, 30.0, 8.0]:
+		var pk := GameWorld.Pickup.new()
+		pk.pos = p.pos
+		pk.kind = "gold"
+		pk.value = v
+		w.pickups.append(pk)
+	for i in 2:
+		var it := Items.new_item(w.profile, 5, "blue", RngUtil.make(10 + i))
+		var pk2 := GameWorld.Pickup.new()
+		pk2.pos = p.pos
+		pk2.kind = "item"
+		pk2.item = it
+		w.pickups.append(pk2)
+	_tick(w, {}, 1)
+	var gold_notes := w.pickup_notes.filter(func(n): return n.key == "gold")
+	_check(gold_notes.size() == 1 and gold_notes[0].text == "+50 vàng", "3 túi vàng cùng lúc gộp thành 1 dòng (%s)" % (gold_notes[0].text if gold_notes.size() > 0 else "—"))
+	_check(w.pickup_notes.filter(func(n): return n.key.begins_with("item_")).size() == 2, "mỗi món đồ một dòng riêng")
+	for i in 10:
+		w._pickup_note("item_x%d" % i, "Đồ %d" % i, 0.0, Color.WHITE, true)
+	_check(w.pickup_notes.size() == GameWorld.PICKUP_NOTES_MAX, "tối đa 6 dòng")
+	_tick(w, {}, 200)
+	_check(w.pickup_notes.is_empty(), "các dòng tự mất sau vài giây")

@@ -458,12 +458,28 @@ class FloatText:
 	var big := false
 
 
+## SN5-10 (Spec_Notes đợt 5): dòng nhặt đồ xếp chồng trên đầu nhân vật — không đè nhau; vàng/đá/HP nhặt liền nhau được gộp.
+class PickupNote:
+	var key := ""
+	var fmt := ""
+	var amount := 0.0
+	var text := ""
+	var color := Color.WHITE
+	var ttl := 0.0
+	var big := false
+
+
 var profile
 var player := PlayerState.new()
 var enemies: Array = []
 var projectiles: Array = []
 var pickups: Array = []
 var texts: Array = []
+var pickup_notes: Array = []
+## SN5-01: điểm đến khi bấm bản đồ nhỏ (Vector2.INF = không có).
+var move_target := Vector2.INF
+var _travel_best := INF
+var _travel_stuck := 0.0
 var allies: Array = []
 var herbs: Array = []
 var chests: Array = []
@@ -555,6 +571,7 @@ func _init(p, rng: Callable) -> void:
 
 ## Dựng map: vị trí, quái, thảo dược, rương, thú cưng (MP-01, MP-07).
 func _load_map(id: String) -> void:
+	move_target = Vector2.INF
 	map_id = id
 	map = Maps.get_map(id)
 	profile.map_id = id
@@ -861,6 +878,7 @@ func update(dt: float, input: Dictionary) -> void:
 	time += dt
 	profile.play_seconds += dt
 	_tick_texts(dt)
+	_tick_pickup_notes(dt)
 	Explore.tick_production(profile, dt)
 	if Explore.regen_torches(profile, dt) > 0:
 		_message("+1 Đuốc Khai Giới đã hồi.", "info")
@@ -920,6 +938,7 @@ func update(dt: float, input: Dictionary) -> void:
 	if _combo_timer <= 0.0:
 		combo = 0
 
+	input = _travel_input(input, dt)
 	input = _auto_input(input)
 	_kb_aim = bool(input.get("kb_aim", false))
 	var aim: Vector2 = input.aim
@@ -2601,20 +2620,20 @@ func _update_pickups(dt: float) -> void:
 			if pk.kind == "gold":
 				var gold: float = pk.value * (1.1 if Talents.has_sub(profile.talent, profile.talent_level, "economy", 1) else 1.0)
 				profile.gold += gold
-				_text(p.pos + Vector2(0, -30), "+%d vàng" % int(gold), Color("#ffc940"), false)
+				_pickup_note("gold", "+%d vàng", gold, Color("#ffc940"))
 				_sfx("pickup_gold")
 			elif pk.kind == "stone":
 				profile.stones += int(pk.value)
-				_text(p.pos + Vector2(0, -30), "+1 Đá Cường Hoá", Color("#9ec8ff"), false)
+				_pickup_note("stone", "+%d Đá Cường Hoá", float(pk.value), Color("#9ec8ff"))
 			elif pk.kind == "item":
 				var res := Items.add_item(profile, pk.item)
-				_text(p.pos + Vector2(0, -44), Items.display_name(pk.item), Items.rarity_color(pk.item), true)
+				_pickup_note("item_%d" % int(pk.item.id), Items.display_name(pk.item), 0.0, Items.rarity_color(pk.item), true)
 				_sfx("pickup_item")
 				_events.append({"type": "item", "text": res.message, "rarity": pk.item.rarity})
 			else:
 				var heal := int(round(float(stats.max_hp) * pk.value))
 				p.hp = minf(float(stats.max_hp), p.hp + heal)
-				_text(p.pos + Vector2(0, -30), "+%d HP" % heal, Color("#5bd16a"), false)
+				_pickup_note("heal", "+%d HP", float(heal), Color("#5bd16a"))
 	pickups = pickups.filter(func(pk): return pk.ttl > 0.0)
 
 
@@ -2932,6 +2951,87 @@ func _text(pos: Vector2, text: String, color: Color, big: bool) -> void:
 	t.ttl = 1.1 if big else 0.8
 	t.big = big
 	texts.append(t)
+
+
+const PICKUP_NOTE_TTL := 1.8
+const PICKUP_MERGE := 1.0
+const PICKUP_NOTES_MAX := 6
+
+
+## fmt có "%d" thì là số lượng gộp được; không thì là dòng riêng (tên món đồ).
+func _pickup_note(key: String, fmt: String, amount: float, color: Color, big := false) -> void:
+	if fmt.contains("%d"):
+		for n in pickup_notes:
+			if n.key == key and PICKUP_NOTE_TTL - n.ttl < PICKUP_MERGE:
+				n.amount += amount
+				n.text = fmt % int(round(n.amount))
+				n.ttl = PICKUP_NOTE_TTL
+				return
+	var note := PickupNote.new()
+	note.key = key
+	note.fmt = fmt
+	note.amount = amount
+	note.text = (fmt % int(round(amount))) if fmt.contains("%d") else fmt
+	note.color = color
+	note.ttl = PICKUP_NOTE_TTL + (0.6 if big else 0.0)
+	note.big = big
+	pickup_notes.append(note)
+	while pickup_notes.size() > PICKUP_NOTES_MAX:
+		pickup_notes.pop_front()
+
+
+func _tick_pickup_notes(dt: float) -> void:
+	for n in pickup_notes:
+		n.ttl -= dt
+	pickup_notes = pickup_notes.filter(func(n): return n.ttl > 0.0)
+
+
+# ------------------------------------------------------------------ SN5-01: bấm bản đồ nhỏ để tự chạy tới
+
+
+const TRAVEL_ARRIVE := 24.0
+const TRAVEL_STUCK := 1.5
+
+
+func set_move_target(pos: Vector2) -> void:
+	move_target = pos.clamp(Vector2.ONE * PLAYER_RADIUS, world_size - Vector2.ONE * PLAYER_RADIUS)
+	_travel_best = player.pos.distance_to(move_target)
+	_travel_stuck = 0.0
+	_message("Tự chạy tới điểm đã chọn — di chuyển hoặc chuột phải trên bản đồ để huỷ.", "info")
+
+
+func clear_move_target() -> void:
+	move_target = Vector2.INF
+
+
+func has_move_target() -> bool:
+	return move_target != Vector2.INF
+
+
+func _travel_input(input: Dictionary, dt: float) -> Dictionary:
+	if not has_move_target():
+		return input
+	var mv: Vector2 = input.get("move", Vector2.ZERO)
+	if mv.length() > 0.01 or input.get("dodge", false) or player.dead_timer > 0.0:
+		clear_move_target()
+		return input
+	var d := player.pos.distance_to(move_target)
+	if d <= TRAVEL_ARRIVE:
+		clear_move_target()
+		return input
+	# Kẹt (tường sương, cổng, hang boss khoá…): không gần thêm được trong 1,5 giây thì dừng.
+	if d < _travel_best - 4.0:
+		_travel_best = d
+		_travel_stuck = 0.0
+	else:
+		_travel_stuck += dt
+		if _travel_stuck >= TRAVEL_STUCK:
+			clear_move_target()
+			_message("Không đi tiếp được tới điểm đã chọn.", "info")
+			return input
+	var out := input.duplicate()
+	out.move = (move_target - player.pos).normalized()
+	return out
 
 
 func _tick_texts(dt: float) -> void:

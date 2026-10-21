@@ -1076,6 +1076,20 @@ func _draw_player() -> void:
 
 
 func _draw_texts() -> void:
+	# SN5-10: dòng nhặt đồ xếp chồng trên đầu nhân vật (mới nhất ở dưới), không đè nhau.
+	var notes: Array = world.pickup_notes
+	for i in notes.size():
+		var n = notes[i]
+		var row := notes.size() - 1 - i
+		var at: Vector2 = world.player.pos + Vector2(0, -96.0 - row * 20.0)
+		_label(n.text, at, Color(n.color, minf(1.0, n.ttl * 2.0)), 16 if n.big else 14, true)
+	# SN5-01: điểm đến khi bấm bản đồ nhỏ
+	if world.has_move_target():
+		var tp: Vector2 = world.move_target
+		var k := 0.5 + 0.5 * sin(world.time * 6.0)
+		draw_arc(tp, 14.0 + 4.0 * k, 0.0, TAU, 24, Color(1, 0.85, 0.3, 0.8), 2.0, true)
+		draw_line(tp, tp + Vector2(0, -26), Color("#ffc940"), 2.0)
+		draw_colored_polygon(PackedVector2Array([tp + Vector2(0, -26), tp + Vector2(14, -21), tp + Vector2(0, -16)]), Color("#ffc940"))
 	for t in world.texts:
 		var size := 19 if t.big else 15
 		var c: Color = t.color
