@@ -382,4 +382,7 @@ def build_all():
     for i in range(2):
         out["pillar-%d" % i] = pillar(90 + i)
     out["tent"] = tent()
+    # M8: vùng 5 Núi Viêm Long (region5.py)
+    import region5
+    region5.register_env(out)
     return {k: (cv.to_image(), origin) for k, (cv, origin) in out.items()}

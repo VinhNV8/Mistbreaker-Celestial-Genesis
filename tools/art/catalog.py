@@ -124,3 +124,7 @@ SPRITES["npc-a-moc"] = {"builder": "humanoid", "name": "Người dẫn đường
 SPRITES["npc-thach-thu"] = {"builder": "humanoid", "name": "Hộ vệ Thạch Thủ",
                             "spec": {"skin": "skin", "hair": "hair_dark", "cloth": "stone", "pants": "sand_red", "trim": "gold",
                                      "weapon": "sword", "cape": "sand"}}
+
+# M8 (docs/12): vùng 5 Núi Viêm Long — khai báo trong region5.py (tách file để các chương làm song song)
+import region5 as _region5  # noqa: E402
+_region5.register_sprites(SPRITES)

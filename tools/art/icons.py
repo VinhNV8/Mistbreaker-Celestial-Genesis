@@ -622,3 +622,7 @@ def build_all():
     for tid, rank, group, glyph in TALENTS:
         out["talent-" + tid] = talent_icon(glyph, rank, group).to_image()
     return out
+
+# M8 (docs/12): icon vùng 5 trong region5.py
+import region5 as _region5  # noqa: E402
+_region5.register_icons(ITEMS, RESOURCES, SKILLS)

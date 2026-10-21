@@ -2839,6 +2839,694 @@
    },
    "name": "Hộ vệ Thạch Thủ",
    "size_mul": 1.0
+  },
+  "than-lan-lua": {
+   "path": "res://assets/sprites/than-lan-lua.png",
+   "w": 24,
+   "h": 24,
+   "origin": [
+    12,
+    22
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Thằn Lằn Lửa",
+   "size_mul": 0.9
+  },
+  "nguoi-da": {
+   "path": "res://assets/sprites/nguoi-da.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Người Đá Dung Nham",
+   "size_mul": 1.4
+  },
+  "manh-da": {
+   "path": "res://assets/sprites/manh-da.png",
+   "w": 24,
+   "h": 24,
+   "origin": [
+    12,
+    22
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Mảnh Đá",
+   "size_mul": 0.7
+  },
+  "linh-hon-lua": {
+   "path": "res://assets/sprites/linh-hon-lua.png",
+   "w": 24,
+   "h": 24,
+   "origin": [
+    12,
+    22
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Linh Hồn Lửa",
+   "size_mul": 1.0
+  },
+  "phap-su-hoa-diem": {
+   "path": "res://assets/sprites/phap-su-hoa-diem.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Pháp Sư Hoả Diệm",
+   "size_mul": 1.0
+  },
+  "rong-non": {
+   "path": "res://assets/sprites/rong-non.png",
+   "w": 48,
+   "h": 48,
+   "origin": [
+    24,
+    44
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Rồng Non Lửa",
+   "size_mul": 0.8
+  },
+  "tho-ren-hu-vo": {
+   "path": "res://assets/sprites/tho-ren-hu-vo.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Thợ Rèn Hư Vô",
+   "size_mul": 1.25
+  },
+  "linh-kim-luan": {
+   "path": "res://assets/sprites/linh-kim-luan.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Lính Kim Luân",
+   "size_mul": 1.0
+  },
+  "doi-truong-kim-luan": {
+   "path": "res://assets/sprites/doi-truong-kim-luan.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Đội Trưởng Kim Luân",
+   "size_mul": 1.25
+  },
+  "vien-long": {
+   "path": "res://assets/sprites/vien-long.png",
+   "w": 48,
+   "h": 48,
+   "origin": [
+    24,
+    44
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Viêm Long",
+   "size_mul": 2.0
+  },
+  "phuong-hoang": {
+   "path": "res://assets/sprites/phuong-hoang.png",
+   "w": 24,
+   "h": 24,
+   "origin": [
+    12,
+    22
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Phượng Hoàng Tro",
+   "size_mul": 2.2
+  },
+  "xuong-no": {
+   "path": "res://assets/sprites/xuong-no.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Xương Nô",
+   "size_mul": 1.0
+  },
+  "npc-xich-dong": {
+   "path": "res://assets/sprites/npc-xich-dong.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Trưởng tộc Xích Đồng",
+   "size_mul": 1.0
+  },
+  "npc-kim-phu": {
+   "path": "res://assets/sprites/npc-kim-phu.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Chưởng quỹ Kim Phú",
+   "size_mul": 1.0
+  },
+  "npc-liet-dien": {
+   "path": "res://assets/sprites/npc-liet-dien.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Kiếm khách Liệt Diễm",
+   "size_mul": 1.0
+  },
+  "npc-tieu-hoa": {
+   "path": "res://assets/sprites/npc-tieu-hoa.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Tiểu Hoả",
+   "size_mul": 1.0
   }
  },
  "icons": {
@@ -2856,6 +3544,8 @@
   "item-bach_ho_claw": "res://assets/icons/item-bach_ho_claw.png",
   "item-sa_hoang_tail": "res://assets/icons/item-sa_hoang_tail.png",
   "item-nhan_su_eye": "res://assets/icons/item-nhan_su_eye.png",
+  "item-long_tam": "res://assets/icons/item-long_tam.png",
+  "item-long_phuong": "res://assets/icons/item-long_phuong.png",
   "res-gold": "res://assets/icons/res-gold.png",
   "res-wood": "res://assets/icons/res-wood.png",
   "res-stone": "res://assets/icons/res-stone.png",
@@ -2866,6 +3556,8 @@
   "res-potion": "res://assets/icons/res-potion.png",
   "res-ore": "res://assets/icons/res-ore.png",
   "res-iron": "res://assets/icons/res-iron.png",
+  "res-crystal": "res://assets/icons/res-crystal.png",
+  "res-holy_water": "res://assets/icons/res-holy_water.png",
   "skill-slash": "res://assets/icons/skill-slash.png",
   "skill-spin": "res://assets/icons/skill-spin.png",
   "skill-dodge": "res://assets/icons/skill-dodge.png",
@@ -2883,6 +3575,7 @@
   "skill-nova": "res://assets/icons/skill-nova.png",
   "skill-meteor": "res://assets/icons/skill-meteor.png",
   "skill-barrier": "res://assets/icons/skill-barrier.png",
+  "skill-breath": "res://assets/icons/skill-breath.png",
   "talent-than-the": "res://assets/icons/talent-than-the.png",
   "talent-tay-nhanh": "res://assets/icons/talent-tay-nhanh.png",
   "talent-may-man": "res://assets/icons/talent-may-man.png",
@@ -3308,6 +4001,114 @@
    "origin": [
     24,
     36
+   ]
+  },
+  "tile-lava-0": {
+   "path": "res://assets/env/tile-lava-0.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    0,
+    0
+   ]
+  },
+  "tile-lava-1": {
+   "path": "res://assets/env/tile-lava-1.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    0,
+    0
+   ]
+  },
+  "tile-ash": {
+   "path": "res://assets/env/tile-ash.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    0,
+    0
+   ]
+  },
+  "tile-basalt": {
+   "path": "res://assets/env/tile-basalt.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    0,
+    0
+   ]
+  },
+  "rock-lava-0": {
+   "path": "res://assets/env/rock-lava-0.png",
+   "w": 30,
+   "h": 22,
+   "origin": [
+    15,
+    18
+   ]
+  },
+  "tree-ash-0": {
+   "path": "res://assets/env/tree-ash-0.png",
+   "w": 26,
+   "h": 40,
+   "origin": [
+    13,
+    37
+   ]
+  },
+  "rock-lava-1": {
+   "path": "res://assets/env/rock-lava-1.png",
+   "w": 30,
+   "h": 22,
+   "origin": [
+    15,
+    18
+   ]
+  },
+  "tree-ash-1": {
+   "path": "res://assets/env/tree-ash-1.png",
+   "w": 26,
+   "h": 40,
+   "origin": [
+    13,
+    37
+   ]
+  },
+  "floating-rock": {
+   "path": "res://assets/env/floating-rock.png",
+   "w": 42,
+   "h": 24,
+   "origin": [
+    21,
+    12
+   ]
+  },
+  "vent": {
+   "path": "res://assets/env/vent.png",
+   "w": 24,
+   "h": 18,
+   "origin": [
+    12,
+    12
+   ]
+  },
+  "forge": {
+   "path": "res://assets/env/forge.png",
+   "w": 36,
+   "h": 34,
+   "origin": [
+    18,
+    31
+   ]
+  },
+  "fx-meteor": {
+   "path": "res://assets/env/fx-meteor.png",
+   "w": 16,
+   "h": 24,
+   "origin": [
+    8,
+    18
    ]
   }
  }
