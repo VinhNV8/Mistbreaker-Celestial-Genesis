@@ -5,7 +5,7 @@
 | Dự án | Thiên Phú Khai Giới |
 | Nguồn | Spec_Notes đợt 5: *"Cần nghiên cứu kỹ về skills của từng hệ, đề xuất các hướng build skills, nên cố định, hay mở theo level (chuyển chức) hay là nên đánh quái rơi skills và học…"* · [Kịch bản](kich-ban-game-thien-phu-khai-gioi.md) mục 4 (4 lớp, 3 lần chuyển chức), mục 5 (*"đánh thường + 4 kỹ năng + 1 kỹ năng Thiên phú + né lăn"*, ngũ hành tương khắc) |
 | Loại tài liệu | Nghiên cứu + đề xuất + kế hoạch triển khai |
-| Trạng thái | ✅ **Đã duyệt "theo đề xuất"** (21/10/2026) — Q65–Q70 như cột Đề xuất mục 6. **SK1, SK2 xong** (mục 7, 8); SK3 chưa làm |
+| Trạng thái | ✅ **Đã duyệt "theo đề xuất"** (21/10/2026) — Q65–Q70 như cột Đề xuất mục 6. **SK1, SK2, SK3 xong** (mục 7, 8, 9) — hệ kỹ năng hoàn chỉnh theo đề xuất |
 
 ## 1. Hiện trạng trong game
 
@@ -174,6 +174,54 @@ Biến thể tầng II của mọi kỹ năng sát thương là **một trong 5 
 **Phát hiện:** bot test bấm kỹ năng theo **vị trí ô** (ô 3 Thợ Săn chỉ bấm khi quái cách < 12 m vì trước đây là Bẫy Gai) → đổi bot sang bấm theo **id kỹ năng** (`BOT_SKILL_RULES`); bộ mặc định cho kết quả y hệt trước (TL-B…TL-B6 không đổi).
 
 **Kiểm thử:** SK2-T1 (mốc mở 8 kỹ năng, kỹ năng chuyển chức), SK2-T2 (12 kỹ năng gây sát thương + choáng / dịch chuyển / lăn / độc / tường / cầu), SK2-T3 (biến thể: mở theo cấp kỹ năng, MP, hồi chiêu, 5 hệ, khắc hệ, Bạo Lực, hỗ trợ, vùng an toàn, save v14), SK2-T4 (cân bằng).
+
+## 9. Kết quả SK3 (22/10/2026)
+
+**Tối thượng cấp 45** (hồi 60 giây, 50 MP, icon viền vàng):
+
+| Lớp | Kỹ năng |
+| --- | --- |
+| Kiếm Khách | **Vạn Kiếm Quy Tông** — 3 giây mưa kiếm vòng 15 m, 12 đợt ×0,6 |
+| Thợ Săn | **Thiên Tiễn Vũ** — mưa tên vùng 20 m, 10 đợt ×0,7 |
+| Pháp Sư | **Thiên Hoả Phần Thế** — 5 thiên thạch quanh điểm ngắm, mỗi viên 10 m ×2,5 |
+
+**Kỹ năng nhánh chuyển chức 2** (cấp 60, `"job2"` trong `classes.gd`; chỉ mở và chỉ hiện trong bảng Kỹ năng cho nhánh đã chọn):
+
+| Nhánh | Kỹ năng 1 | Kỹ năng 2 |
+| --- | --- | --- |
+| Kiếm Thánh | Thánh Kiếm Trảm — kiếm thánh 50 m xuyên ×3,0 | Kiếm Vực — vùng 10 m đi theo mình 4 s, ×0,35 / 0,5 s, làm chậm |
+| Huyết Kiếm | Huyết Bạo — đốt 10% HP, nổ 9 m ×2,5, hút lại 20% | Huyết Ảnh — lao 2 lần về quái gần nhất ×1,2 |
+| Thần Tiễn | Phá Không Tiễn — xuyên 70 m, luôn chí mạng ×4,0 | Tam Liên Thần Tiễn — 3 mũi xuyên liên tiếp ×1,5 |
+| Thợ Bẫy | Bãi Mìn — 5 bẫy quanh mình ×1,2 (ngoài giới hạn bẫy) | Lưới Bẫy — lưới 8 m ×0,8, trói 3 s |
+| Đại Pháp Sư | Thiên Lôi — sét trời 6 quái ×2,0 | Băng Phong Thiên Hạ — băng nổ 14 m ×1,5, trói 3 s |
+| Tử Linh Sư | Triệu Hồi Xương — 3 Xương Nô 15 s | Khí Độc Tử Vong — vùng 10 m 5 s ×0,25 / 0,5 s + độc cộng dồn |
+
+**Bí Kíp** (biến thể thứ 3 mỗi tầng, ký hiệu ✦ trong bảng Kỹ năng):
+
+| Tầng | Kỹ năng sát thương | Kỹ năng hỗ trợ |
+| --- | --- | --- |
+| I | Song Phát — 25% hồi chiêu ngay sau khi dùng | Song Phát |
+| II | Âm Dương — luôn khắc hệ quái trúng (+30%), không hiệu ứng phụ | Thanh Tâm — dùng kỹ năng hồi 20% MP |
+| III | Vô Song — +40% sát thương lên boss, boss hiếm, tinh anh | Kiên Cố — 2 giây giảm 50% sát thương nhận vào |
+
+- **Nguồn rơi** (Bí Kíp ngẫu nhiên của lớp mình, 75% ưu tiên kỹ năng chưa có sách tầng đó): tinh anh 5% (tầng I) · boss vùng 40% (tầng II) · Chúa Hang 25% (tầng II, khi có hang phụ — Spec_Notes đợt 6) · **boss hiếm 100% (tầng III)** · giải câu đố Di tích 30% (tầng I hoặc II).
+- **Chống xui** (Q68 / mục 4.3): Bí Kíp trùng → 1 Mảnh Bí Kíp; **5 Mảnh** đổi Bí Kíp chọn trước (nút "Đổi 5 Mảnh" cạnh biến thể còn khoá, ở vùng an toàn).
+- Nhận Bí Kíp: dòng nhặt đồ màu vàng + thông báo. Save v16: `secret_books {id: [I, II, III]}`, `book_shards` (v15 dành cho hang phụ của phiên game-39).
+
+**Cân bằng (SK3-T4)** — Viêm Long, bot cấp 60, bộ đồ chuẩn cấp 60; bộ mặc định vs **bộ nhánh** (kỹ năng 1 + 2 kỹ năng nhánh + tối thượng), giây trung bình 2 seed:
+
+| Lớp · nhánh | Mặc định | Bộ nhánh |
+| --- | --- | --- |
+| Kiếm Khách · Kiếm Thánh | 37,6 | 37,2 |
+| Kiếm Khách · Huyết Kiếm | 42,1 | 39,0 |
+| Thợ Săn · Thần Tiễn | 34,5 | 29,2 |
+| Thợ Săn · Thợ Bẫy | 35,5 | 37,2 |
+| Pháp Sư · Đại Pháp Sư | 31,1 | 32,2 |
+| Pháp Sư · Tử Linh Sư | 32,5 | 33,0 |
+
+Mọi nhánh trong ±15% bộ mặc định, 0 lần chết. Thần Tiễn nhanh nhất (Phá Không Tiễn luôn chí mạng) — vẫn trong ngưỡng.
+
+**Kiểm thử:** SK3-T1 (tối thượng cấp 45, 2 kỹ năng mỗi nhánh, khoá theo nhánh), SK3-T2 (15 kỹ năng gây sát thương + Triệu Hồi, Huyết Bạo, Lưới Bẫy), SK3-T3 (Bí Kíp: nhận, trùng → Mảnh, đổi 5 Mảnh, Song Phát ~25%, Âm Dương, Vô Song, Thanh Tâm, boss hiếm 100%, tinh anh ~5%, save v16), SK3-T4 (cân bằng 6 nhánh).
 
 ## Nguồn tham khảo
 

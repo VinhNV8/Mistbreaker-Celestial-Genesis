@@ -185,6 +185,11 @@ func _init() -> void:
 	_run("SK2-T2 12 kỹ năng mới gây sát thương + hiệu ứng riêng", _test_sk2_skills)
 	_run("SK2-T3 biến thể 3 tầng: MP/hồi chiêu, 5 hệ, khắc hệ, sát thương, hỗ trợ, save v14", _test_sk2_variants)
 	_run("SK2-T4 cân bằng: bộ kỹ năng mới hạ Huyền Ảnh không chênh quá 30% bộ mặc định", _test_sk2_balance)
+	# SK3 — tối thượng, kỹ năng nhánh chuyển chức 2, Bí Kíp (docs/13)
+	_run("SK3-T1 tối thượng cấp 45, 2 kỹ năng mỗi nhánh chuyển chức 2, khoá theo nhánh", _test_sk3_unlock)
+	_run("SK3-T2 15 kỹ năng SK3 gây sát thương + hiệu ứng riêng", _test_sk3_skills)
+	_run("SK3-T3 Bí Kíp: nhận, trùng thành Mảnh, đổi 5 Mảnh, Song Phát / Âm Dương / Vô Song / Thanh Tâm, nguồn rơi, save v16", _test_sk3_books)
+	_run("SK3-T4 cân bằng: bộ kỹ năng nhánh hạ Viêm Long không chậm quá 30% bộ mặc định", _test_sk3_balance)
 	_run("PACE-T1 nhịp lên cấp 1 → 20 chỉ bằng đánh quái (bot cày, đo phút)", _test_pace_mobs)
 	for c in Classes.ORDER:
 		_run("PACE-T2 %s cấp 10 → 20 vùng 2" % c, _test_pace_r2.bind(c))
@@ -516,6 +521,9 @@ const BOT_SKILL_RULES := {
 	"rain": [0.0, 380.0], "pierce": [0.0, 500.0], "trap": [0.0, 120.0], "eagle": [0.0, 99999.0],
 	"tennay": [0.0, 500.0], "lanban": [0.0, 150.0], "lienxa": [0.0, 450.0], "tendoc": [0.0, 500.0],
 	"chain": [0.0, 340.0], "nova": [0.0, 100.0], "meteor": [0.0, 400.0],
+	"vankiem": [0.0, 130.0], "thanhkiem": [0.0, 450.0], "kiemvuc": [0.0, 90.0], "huyetbao": [0.0, 90.0], "huyetanh": [60.0, 250.0],
+	"thientien": [0.0, 400.0], "phakhong": [0.0, 600.0], "tamlien": [0.0, 500.0], "baimin": [0.0, 120.0], "luoibay": [0.0, 250.0],
+	"thienhoa": [0.0, 400.0], "thienloi": [0.0, 400.0], "bangphong": [0.0, 120.0], "trieuhoi": [0.0, 400.0], "khidoc": [0.0, 300.0],
 	"hoatuong": [0.0, 300.0], "dichchuyen": [0.0, 90.0], "muabang": [0.0, 350.0], "causam": [0.0, 300.0],
 }
 
@@ -4383,7 +4391,7 @@ func _test_sn6_cave_clear() -> void:
 	_check(Caves.reopen_in(w, "1-1") > 1100.0, "hang đóng ~20 phút")
 	var d: Dictionary = w.profile.to_dict()
 	var p2 := Profile.new()
-	_check(p2.load_dict(JSON.parse_string(JSON.stringify(d))) and int(d.version) == 15 and float(p2.caves.get("1-1", 0.0)) > 0.0, "save v15 giữ thời điểm hang mở lại")
+	_check(p2.load_dict(JSON.parse_string(JSON.stringify(d))) and int(d.version) >= 15 and float(p2.caves.get("1-1", 0.0)) > 0.0, "save v15 giữ thời điểm hang mở lại")
 	var w2 := GameWorld.new(p2, RngUtil.make(3))
 	_check(w2.map_id == "1-1", "vào lại game khi đang trong hang → map cha")
 	_check(w2.travel_blocker("cave-1-1").begins_with("Hang đã dọn"), "ra map cha: vào lại hang bị chặn (%s)" % w2.travel_blocker("cave-1-1"))
@@ -5095,7 +5103,7 @@ func _sk2_world(class_id: String, level := 32, job := true) -> GameWorld:
 func _test_sk2_unlock() -> void:
 	for class_id in Classes.ORDER:
 		var lv: Array = []
-		for sk in Classes.skills_of(class_id):
+		for sk in Classes.skills_of(class_id).slice(0, 8):
 			lv.append(int(sk.unlock))
 		_check(lv == [1, 1, 4, 8, 15, 22, 30, 30], "%s: 8 kỹ năng mở ở 1, 1, 4, 8, 15, 22, chuyển chức, chuyển chức" % class_id)
 	var w := _sk2_world("kiem-khach", 32, false)
@@ -5123,7 +5131,7 @@ func _sk2_cast(class_id: String, id: String) -> Array:
 
 func _test_sk2_skills() -> void:
 	for class_id in Classes.ORDER:
-		for sk in Classes.skills_of(class_id).slice(4):
+		for sk in Classes.skills_of(class_id).slice(4, 8):
 			var r := _sk2_cast(class_id, str(sk.id))
 			var w: GameWorld = r[0]
 			for i in 180:
@@ -5251,3 +5259,214 @@ func _sk2_fight(class_id: String, loadout: Array, seed_value: int) -> Array:
 		w.update(1.0 / 60.0, _bot(w))
 		seconds += 1.0 / 60.0
 	return [seconds, deaths, p.bosses.get("huyen-anh", false)]
+
+
+# ------------------------------------------------------------------ SK3 — tối thượng, kỹ năng nhánh chuyển chức 2, Bí Kíp (docs/13)
+
+
+func _sk3_world(class_id: String, branch := 0, level := 60) -> GameWorld:
+	var w := _sk2_world(class_id, level)
+	w.profile.job2 = str(Classes.job2_defs(class_id)[branch].id)
+	w._refresh_stats()
+	w.player.mp = 9999.0
+	return w
+
+
+func _test_sk3_unlock() -> void:
+	for class_id in Classes.ORDER:
+		var ult: Array = Classes.skills_of(class_id).filter(func(s): return s.get("ultimate", false))
+		_check(ult.size() == 1 and int(ult[0].unlock) == 45 and float(ult[0].cd) >= 60.0, "%s: 1 kỹ năng tối thượng cấp 45, hồi 60 giây" % class_id)
+		for j in Classes.job2_defs(class_id):
+			var own: Array = Classes.skills_of(class_id).filter(func(s): return str(s.get("job2", "")) == str(j.id))
+			_check(own.size() == 2, "%s · %s: 2 kỹ năng nhánh" % [class_id, j.name])
+	var w := _sk3_world("kiem-khach", 0, 44)
+	_check(not w.skill_unlocked(Classes.skill_by_id("kiem-khach", "vankiem")), "cấp 44: tối thượng còn khoá")
+	w.profile.level = 60
+	_check(w.skill_unlocked(Classes.skill_by_id("kiem-khach", "vankiem")), "cấp 60: tối thượng mở")
+	_check(w.skill_unlocked(Classes.skill_by_id("kiem-khach", "thanhkiem")) and not w.skill_unlocked(Classes.skill_by_id("kiem-khach", "huyetbao")),
+		"Kiếm Thánh: mở kỹ năng Kiếm Thánh, không mở kỹ năng Huyết Kiếm")
+	w.profile.job2 = ""
+	_check(not w.skill_unlocked(Classes.skill_by_id("kiem-khach", "thanhkiem")), "chưa chuyển chức 2: kỹ năng nhánh khoá")
+
+
+func _sk3_cast(class_id: String, branch: int, id: String) -> Array:
+	var w := _sk3_world(class_id, branch)
+	w.set_slot(0, id)
+	w.player.pos = Vector2(1200, 1280)
+	var dummies: Array = []
+	for off in [Vector2(55, 0), Vector2(110, 20), Vector2(170, -20)]:
+		dummies.append(_dummy(w, "wolf", 58, w.player.pos + off))
+	w.player.facing = 0.0
+	w._aim = dummies[1].pos
+	w.player.skill_cds[0] = 0.0
+	_check(w.use_skill(0), "%s dùng được" % id)
+	return [w, dummies]
+
+
+func _test_sk3_skills() -> void:
+	for class_id in Classes.ORDER:
+		for sk in Classes.skills_of(class_id).slice(8):
+			var branch := 0
+			if sk.has("job2"):
+				branch = 0 if str(Classes.job2_defs(class_id)[0].id) == str(sk.job2) else 1
+			var r := _sk3_cast(class_id, branch, str(sk.id))
+			var w: GameWorld = r[0]
+			for i in 240:
+				w.update(1.0 / 60.0, {"move": Vector2.ZERO, "aim": w._aim, "attack": false, "skill": false, "talent": false, "dodge": false})
+			var hurt := 0
+			for d in r[1]:
+				if d.hp < d.max_hp:
+					hurt += 1
+			_check(hurt >= 1, "%s · %s gây sát thương (%d/3 quái)" % [class_id, sk.name, hurt])
+	var r1 := _sk3_cast("phap-su", 1, "trieuhoi")
+	_check(r1[0].allies.filter(func(a): return not a.dead and a.kind == "bone").size() == 3, "Triệu Hồi Xương: 3 Xương Nô")
+	var r2 := _sk3_cast("kiem-khach", 1, "huyetbao")
+	_check(r2[0].player.hp < r2[0].stats.max_hp, "Huyết Bạo: đốt 10% HP")
+	var r3 := _sk3_cast("tho-san", 1, "luoibay")
+	_check(r3[1][1].root_timer > 2.5, "Lưới Bẫy: trói 3 giây")
+
+
+func _test_sk3_books() -> void:
+	var S2 = GameWorld.Skills2
+	var w := _sk3_world("kiem-khach")
+	var p = w.profile
+	p.skill_levels["spin"] = 10
+	_check(not S2.set_variant(w, "spin", 0, "song").ok, "chưa có Bí Kíp: không chọn Song Phát")
+	_check(S2.grant_book(w, "spin", 0) and S2.has_book(w, "spin", 0), "nhận Bí Kíp Xoáy Kiếm tầng I")
+	_check(S2.set_variant(w, "spin", 0, "song").ok, "có Bí Kíp: chọn được Song Phát")
+	var shards0: int = int(p.book_shards)
+	_check(not S2.grant_book(w, "spin", 0) and int(p.book_shards) == shards0 + 1, "Bí Kíp trùng → +1 Mảnh")
+	# Song Phát: 25% hồi chiêu ngay
+	var resets := 0
+	var used := 0
+	w._ensure_loadout()
+	var slot: int = p.loadout.find("spin")
+	for i in 80:
+		w.player.skill_cds[slot] = 0.0
+		w.player.mp = 9999.0
+		if w.use_skill(slot):
+			used += 1
+			if w.player.skill_cds[slot] <= 0.0:
+				resets += 1
+	_check(used == 80, "dùng Xoáy Kiếm 80 lần")
+	_check(resets >= 8 and resets <= 35, "Song Phát hồi chiêu ngay ~25%% (%d/80)" % resets)
+	# Âm Dương: luôn khắc hệ; Vô Song: +40% boss/tinh anh
+	S2.grant_book(w, "spin", 1)
+	S2.grant_book(w, "spin", 2)
+	S2.set_variant(w, "spin", 1, "amduong")
+	S2.set_variant(w, "spin", 2, "vosong")
+	var mob := _dummy(w, "linh-danh-thue", 30, w.player.pos + Vector2(60, 0))
+	var elite := w.spawn_enemy("linh-danh-thue", 30, w.player.pos + Vector2(80, 0), {"elite": true})
+	_check(is_equal_approx(S2.hit_mult(w, mob, "spin"), 1.3) and is_equal_approx(S2.hit_mult(w, elite, "spin"), 1.3 * 1.4), "Âm Dương ×1,3 mọi quái có hệ; Vô Song ×1,4 với tinh anh")
+	# kỹ năng hỗ trợ: Thanh Tâm, Kiên Cố
+	p.skill_levels["guard"] = 10
+	S2.grant_book(w, "guard", 1)
+	S2.grant_book(w, "guard", 2)
+	S2.set_variant(w, "guard", 1, "thanhtam")
+	S2.set_variant(w, "guard", 2, "kienco")
+	var gi: int = p.loadout.find("guard")
+	var gcost: float = w.skill_mp(gi)
+	w.player.mp = gcost + 5.0
+	w.player.skill_cds[gi] = 0.0
+	_check(w.use_skill(gi) and w.player.mp >= 5.0 + w.stats.max_mp * 0.19, "Thanh Tâm: hồi 20% MP")
+	# nguồn rơi
+	var w2 := _sk3_world("tho-san")
+	var books0 := 0
+	var rare := w2.spawn_enemy("bach-ho", 20, w2.player.pos + Vector2(300, 0), {"role": "rare"})
+	S2.on_kill(w2, rare)
+	for k in w2.profile.secret_books:
+		if w2.profile.secret_books[k].size() > 2 and w2.profile.secret_books[k][2]:
+			books0 += 1
+	_check(books0 == 1, "boss hiếm: luôn rơi 1 Bí Kíp tầng III")
+	var got := 0
+	for i in 400:
+		var el := w2.spawn_enemy("linh-danh-thue", 30, w2.player.pos + Vector2(200, 0), {"elite": true})
+		var before: int = _book_count(w2) + int(w2.profile.book_shards)
+		S2.on_kill(w2, el)
+		if _book_count(w2) + int(w2.profile.book_shards) > before:
+			got += 1
+		el.dead = true
+	w2.enemies = []
+	_check(got >= 8 and got <= 35, "tinh anh: ~5%% rơi Bí Kíp tầng I (%d/400)" % got)
+	# đổi Mảnh
+	w2.profile.book_shards = 5
+	w2.player.pos = w2.safe_pos
+	var target_id := "trap"
+	w2.profile.secret_books.erase(target_id)
+	_check(S2.exchange_book(w2, target_id, 1).ok and S2.has_book(w2, target_id, 1) and int(w2.profile.book_shards) == 0, "5 Mảnh đổi Bí Kíp chọn trước")
+	# save v16
+	var d: Dictionary = JSON.parse_string(JSON.stringify(p.to_dict()))
+	_check(int(d.version) >= 16, "save version 16")
+	var back := Profile.new()
+	back.load_dict(d)
+	_check(back.secret_books.get("spin", []) == [true, true, true] and back.book_shards == p.book_shards, "save giữ Bí Kíp và Mảnh")
+
+
+func _book_count(w: GameWorld) -> int:
+	var n := 0
+	for k in w.profile.secret_books:
+		for b in w.profile.secret_books[k]:
+			if b:
+				n += 1
+	return n
+
+
+## TL-SK3: mỗi nhánh chuyển chức 2 — bộ kỹ năng nhánh (2 kỹ năng nhánh + tối thượng + kỹ năng 1) hạ Viêm Long
+## (bot cấp 60) không chậm hơn bộ mặc định quá 30%, 0 lần chết.
+func _test_sk3_balance() -> void:
+	for class_id in Classes.ORDER:
+		for bi in 2:
+			var j: Dictionary = Classes.job2_defs(class_id)[bi]
+			var own: Array = []
+			for s in Classes.skills_of(class_id):
+				if str(s.get("job2", "")) == str(j.id):
+					own.append(str(s.id))
+			var ult: String = str(Classes.skills_of(class_id).filter(func(s): return s.get("ultimate", false))[0].id)
+			var build := [str(Classes.skills_of(class_id)[0].id), own[0], own[1], ult]
+			var t_def := 0.0
+			var t_new := 0.0
+			var deaths := 0
+			var won := true
+			for seed_value in [5, 11]:
+				var a := _sk3_fight(class_id, bi, [], seed_value)
+				var b := _sk3_fight(class_id, bi, build, seed_value)
+				t_def += float(a[0])
+				t_new += float(b[0])
+				deaths += int(b[1])
+				won = won and bool(b[2])
+			print("       [%s · %s] mặc định %.1f giây · bộ nhánh %.1f giây · chết %d" % [class_id, j.name, t_def / 2.0, t_new / 2.0, deaths])
+			_check(won and t_new <= t_def * 1.3 and deaths == 0, "%s · %s: bộ nhánh hạ Viêm Long, không chậm quá 30%%, 0 lần chết" % [class_id, j.name])
+
+
+func _sk3_fight(class_id: String, branch: int, loadout: Array, seed_value: int) -> Array:
+	var w := _region5_world("5-3", class_id, "tay-nhanh", 60, seed_value)
+	w._load_map("5-3")
+	w.enemies = []
+	w.field_spawn = false
+	var p = w.profile
+	p.quest.ch5 = 6
+	p.job2 = str(Classes.job2_defs(class_id)[branch].id)
+	p.points = _class_points(class_id)
+	for k in p.points:
+		p.points[k] = int(p.points[k]) * 15
+	if not loadout.is_empty():
+		p.loadout = loadout.duplicate()
+	var rng := RngUtil.make(77)
+	for pair in [["weapon", "blue"], ["armor", "blue"], ["helm", "green"], ["boots", "green"], ["gloves", "green"]]:
+		var it := Items.new_item(p, 60, pair[1], rng, pair[0])
+		Items.add_item(p, it)
+		w.equip(int(it.id))
+	w.player.hp = w.stats.max_hp
+	w.player.mp = w.stats.max_mp
+	w.player.pos = w.arena_pos - Vector2(100, 0)
+	var deaths := 0
+	var seconds := 0.0
+	while seconds < 600.0 and not p.bosses.get("vien-long", false):
+		for ev in w.drain_events():
+			if ev.type == "death":
+				deaths += 1
+		if w.boss() == null and w.player.dead_timer <= 0.0:
+			w.player.pos = w.arena_pos - Vector2(100, 0)
+		w.update(1.0 / 60.0, _bot(w))
+		seconds += 1.0 / 60.0
+	return [seconds, deaths, p.bosses.get("vien-long", false)]

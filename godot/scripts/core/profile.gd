@@ -16,7 +16,8 @@ const Explore = preload("res://scripts/core/explore.gd")
 ## v13: SK1 hệ kỹ năng — Điểm Kỹ Năng, cấp kỹ năng, 4 ô lắp (docs/13).
 ## v14: SK2 — biến thể kỹ năng {id: [tầng I, II, III]} (docs/13).
 ## v15: hang phụ — caves {map cha: giây chơi khi hang mở lại} (docs/15).
-const VERSION := 15
+## v16: SK3 — Bí Kíp {id kỹ năng: [tầng I, II, III]}, Mảnh Bí Kíp (docs/13).
+const VERSION := 16
 
 var talent := ""
 var level := 1
@@ -116,6 +117,8 @@ var loadout: Array = []
 var variants := {}
 ## HP-07: hang đã dọn → mở lại khi play_seconds ≥ giá trị (docs/15).
 var caves := {}
+var secret_books := {}
+var book_shards := 0
 var crystal := 0.0
 var holy_water := 0
 var raid_play := 0.0
@@ -208,6 +211,8 @@ func to_dict() -> Dictionary:
 		"loadout": loadout,
 		"variants": variants,
 		"caves": caves,
+		"secret_books": secret_books,
+		"book_shards": book_shards,
 		"crystal": crystal,
 		"holy_water": holy_water,
 		"raid_play": raid_play,
@@ -358,6 +363,14 @@ func load_dict(d: Dictionary) -> bool:
 		for x in vr[k]:
 			arr.append(str(x))
 		variants[str(k)] = arr
+	secret_books = {}
+	var sb: Dictionary = d.get("secret_books", {})
+	for k in sb:
+		var arr2: Array = []
+		for x in sb[k]:
+			arr2.append(bool(x))
+		secret_books[str(k)] = arr2
+	book_shards = int(d.get("book_shards", 0))
 	crystal = float(d.get("crystal", 0.0))
 	holy_water = int(d.get("holy_water", 0))
 	raid_play = float(d.get("raid_play", 0.0))

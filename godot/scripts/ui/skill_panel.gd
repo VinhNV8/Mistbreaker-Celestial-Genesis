@@ -13,8 +13,8 @@ func _render(content: VBoxContainer) -> void:
 	content.custom_minimum_size.x = 780
 	_header(content, "Kỹ năng · %s" % Classes.title(str(p.class_id), str(p.job), str(p.job2)), "Đóng (U)")
 	var safe: bool = world.in_safe_zone()
-	var info := UiTheme.label("Điểm Kỹ Năng: %d  ·  Mỗi lần lên cấp +1  ·  Kỹ năng sát thương +8%%/cấp, kỹ năng hỗ trợ −4%% hồi chiêu/cấp (tối đa cấp %d)" % [
-		int(p.skill_points), Classes.SKILL_MAX_LEVEL], "", 760)
+	var info := UiTheme.label("Điểm Kỹ Năng: %d  ·  Mảnh Bí Kíp: %d  ·  Kỹ năng sát thương +8%%/cấp, hỗ trợ −4%% hồi chiêu/cấp (tối đa cấp %d)" % [
+		int(p.skill_points), int(p.book_shards), Classes.SKILL_MAX_LEVEL], "", 760)
 	info.add_theme_color_override("font_color", UiTheme.GOLD)
 	content.add_child(info)
 	content.add_child(UiTheme.label(("Đang ở vùng an toàn: đổi ô và tẩy điểm miễn phí." if safe
@@ -26,6 +26,9 @@ func _render(content: VBoxContainer) -> void:
 	list.size_flags_horizontal = SIZE_EXPAND_FILL
 	scroll.add_child(list)
 	for sk in Classes.skills_of(str(p.class_id)):
+		# SK3: đã chọn nhánh chuyển chức 2 thì ẩn kỹ năng của nhánh còn lại.
+		if sk.has("job2") and str(p.job2) != "" and str(sk.job2) != str(p.job2):
+			continue
 		list.add_child(_row(sk, safe))
 	content.add_child(scroll)
 	var foot := UiTheme.hbox(10)
@@ -60,7 +63,14 @@ func _row(sk: Dictionary, safe: bool) -> Control:
 	var slot: int = world.profile.loadout.find(id)
 	var title := "%s · cấp %d/%d%s" % [sk.name, lv, Classes.SKILL_MAX_LEVEL, ("  ·  ô %d" % (slot + 1)) if slot >= 0 else ""]
 	if not unlocked:
-		title = "%s · %s" % [sk.name, "cần chuyển chức 1" if bool(sk.get("job", false)) and str(world.profile.job) == "" else "mở ở cấp %d" % int(sk.unlock)]
+		var why := "mở ở cấp %d" % int(sk.unlock)
+		if bool(sk.get("job", false)) and str(world.profile.job) == "":
+			why = "cần chuyển chức 1"
+		elif sk.has("job2") and str(world.profile.job2) != str(sk.job2):
+			why = "cần chuyển chức 2: %s" % Classes.job2_def(str(world.profile.class_id), str(sk.job2)).get("name", "")
+		title = "%s · %s" % [sk.name, why]
+	elif bool(sk.get("ultimate", false)):
+		title += "  ·  TỐI THƯỢNG"
 	var el := Skills2.element_of(world, id)
 	if el != "":
 		title += "  ·  hệ %s" % Skills2.ELEMENT_NAMES[el]
@@ -113,10 +123,23 @@ func _variants(sk: Dictionary, safe: bool) -> Control:
 		row.add_child(lab)
 		for o in tiers[t]:
 			var chosen: bool = t < cur.size() and str(cur[t]) == str(o[0])
-			var b := UiTheme.button(str(o[1]), chosen)
+			var book: bool = o.size() > 3
+			var owned: bool = not book or Skills2.has_book(world, id, t)
+			var b := UiTheme.button(("✦ " if book else "") + str(o[1]), chosen)
 			b.name = "Var_%s_%d_%s" % [id, t, o[0]]
-			b.tooltip_text = str(o[2])
-			b.disabled = not open or not safe or chosen
+			b.tooltip_text = str(o[2]) + ("" if owned else "\nChưa có Bí Kíp — rơi từ tinh anh / boss / boss hiếm / Di tích, hoặc đổi %d Mảnh." % Skills2.SHARDS_PER_BOOK)
+			b.disabled = not open or not safe or chosen or not owned
+			if book and not owned and open:
+				var ex := UiTheme.button("Đổi %d Mảnh" % Skills2.SHARDS_PER_BOOK)
+				ex.name = "Book_%s_%d" % [id, t]
+				ex.disabled = not safe or int(world.profile.book_shards) < Skills2.SHARDS_PER_BOOK
+				var tt: int = t
+				ex.pressed.connect(func():
+					Skills2.exchange_book(world, id, tt)
+					refresh())
+				row.add_child(b)
+				row.add_child(ex)
+				continue
 			var tier: int = t
 			var opt: String = o[0]
 			b.pressed.connect(func():

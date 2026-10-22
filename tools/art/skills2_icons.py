@@ -139,9 +139,141 @@ def g_causam(cv):
     cv.set(14, 14, (255, 255, 255, 255))
 
 
+# ---------------------------------------------------------------- SK3: tối thượng (viền vàng) + kỹ năng nhánh chuyển chức 2
+def _ult(cv, hex_bg):
+    _bg(cv, hex_bg)
+    for (x0, y0, x1, y1) in ((2, 2, 30, 2), (2, 30, 30, 30), (2, 2, 2, 30), (30, 2, 30, 30)):
+        cv.line(x0, y0, x1, y1, R["gold"][3], 1.2)
+
+
+def g_vankiem(cv):
+    _ult(cv, "#3a2a10")
+    for i in range(8):
+        a = math.radians(i * 45)
+        x, y = 16 + math.cos(a) * 11, 16 + math.sin(a) * 11
+        cv.line(16 + math.cos(a) * 4, 16 + math.sin(a) * 4, x, y, R["steel"][3], 1.4)
+    cv.ellipse(16, 16, 3, 3, R["gold"][3])
+
+
+def g_thientien(cv):
+    _ult(cv, "#203a1a")
+    for i in range(7):
+        x = 5 + i * 3.6
+        cv.line(x, 4 + (i % 2) * 3, x - 3, 22 + (i % 3) * 2, hexc("#f0e6c8"), 1.1)
+    cv.shade_ellipse(16, 26, 11, 2.5, R["dirt"])
+
+
+def g_thienhoa(cv):
+    _ult(cv, "#3a1408")
+    for (x, y, r) in ((10, 20, 4.5), (21, 14, 3.5), (18, 25, 3)):
+        cv.line(x + 6, y - 9, x, y, R["fire"][3], 2.0)
+        cv.shade_ellipse(x, y, r, r, R["fire"])
+
+
+def g_thanhkiem(cv):
+    _bg(cv, "#4a4020")
+    cv.line(4, 28, 28, 4, hexc("#fff2c8", 140), 5)
+    cv.line(4, 28, 28, 4, hexc("#ffffff"), 1.6)
+    _sword(cv, 0.6, 6, 6)
+
+
+def g_kiemvuc(cv):
+    _bg(cv, "#30405a")
+    cv.arc(16, 16, 12, 0, math.tau, hexc("#c8e6ff", 200), 1.4)
+    for i in range(6):
+        a = math.radians(i * 60)
+        x, y = 16 + math.cos(a) * 9, 16 + math.sin(a) * 9
+        cv.line(x, y - 4, x, y + 3, R["steel"][3], 1.2)
+
+
+def g_huyetbao(cv):
+    _bg(cv, "#4a1420")
+    for i in range(8):
+        a = math.radians(i * 45 + 10)
+        cv.line(16, 16, 16 + math.cos(a) * 12, 16 + math.sin(a) * 12, hexc("#ff4a5a"), 1.4)
+    cv.shade_ellipse(16, 16, 5, 5, R["blood"])
+
+
+def g_huyetanh(cv):
+    _bg(cv, "#3a1420")
+    for k, a in enumerate((90, 180)):
+        x0 = 4 + k * 6
+        cv.line(x0, 24 - k * 8, x0 + 16, 18 - k * 8, hexc("#ff4a5a", a), 2.0)
+    _sword(cv, 0.55, 10, 2)
+
+
+def g_phakhong(cv):
+    _bg(cv, "#1a3a4a")
+    cv.line(3, 26, 29, 6, hexc("#8fd8ff", 120), 4)
+    cv.line(3, 26, 29, 6, hexc("#ffffff"), 1.4)
+    cv.shade_poly([(29, 6), (23, 7), (27, 11)], R["steel"])
+
+
+def g_tamlien(cv):
+    _bg(cv, "#1a3a4a")
+    for k in range(3):
+        y = 9 + k * 7
+        cv.line(4, y, 26, y, hexc("#f0e6c8"), 1.3)
+        cv.shade_poly([(28, y), (24, y - 2), (24, y + 2)], R["steel"])
+
+
+def g_baimin(cv):
+    _bg(cv, "#2c4a2c")
+    for i in range(5):
+        a = math.radians(i * 72 - 90)
+        x, y = 16 + math.cos(a) * 9, 16 + math.sin(a) * 9
+        cv.shade_ellipse(x, y, 3, 2.2, R["steel"])
+        cv.set(x, y - 1, hexc("#ff5a3a"))
+
+
+def g_luoibay(cv):
+    _bg(cv, "#2c4a2c")
+    for k in range(-2, 3):
+        cv.line(6, 16 + k * 4, 26, 16 + k * 4, R["leather"][2], 1.0)
+        cv.line(16 + k * 4, 6, 16 + k * 4, 26, R["leather"][2], 1.0)
+    cv.arc(16, 16, 11, 0, math.tau, R["leather"][3], 1.2)
+
+
+def g_thienloi(cv):
+    _bg(cv, "#24204a")
+    for x0 in (8, 16, 24):
+        pts = [(x0 + 2, 3), (x0 - 2, 12), (x0 + 2, 14), (x0 - 1, 27)]
+        for a, b in zip(pts, pts[1:]):
+            cv.line(*a, *b, hexc("#fff6a0"), 1.3)
+
+
+def g_bangphong(cv):
+    _bg(cv, "#1a304a")
+    for i in range(6):
+        a = math.radians(i * 60)
+        cv.line(16, 16, 16 + math.cos(a) * 12, 16 + math.sin(a) * 12, hexc("#9de0ff"), 1.6)
+        cv.line(16 + math.cos(a) * 7, 16 + math.sin(a) * 7, 16 + math.cos(a + 0.4) * 9, 16 + math.sin(a + 0.4) * 9, hexc("#ffffff"), 1.0)
+
+
+def g_trieuhoi(cv):
+    _bg(cv, "#2a2620")
+    for x in (9, 16, 23):
+        cv.shade_ellipse(x, 12, 3, 3, R["white"])
+        cv.line(x, 15, x, 24, R["white"][2], 1.4)
+        cv.line(x - 3, 19, x + 3, 19, R["white"][2], 1.0)
+
+
+def g_khidoc(cv):
+    _bg(cv, "#20381e")
+    for (x, y, r) in ((11, 18, 6), (20, 15, 7), (16, 23, 5)):
+        cv.ellipse(x, y, r, r * 0.8, hexc("#7ae07a", 120))
+    cv.shade_ellipse(16, 12, 3, 3, R["white"])
+    cv.set(15, 12, (20, 20, 20, 255))
+    cv.set(17, 12, (20, 20, 20, 255))
+
+
 SKILLS2 = {"lientram": g_lientram, "hongkiem": g_hongkiem, "kiemvu": g_kiemvu, "phikiem": g_phikiem,
            "tennay": g_tennay, "lanban": g_lanban, "lienxa": g_lienxa, "tendoc": g_tendoc,
-           "hoatuong": g_hoatuong, "dichchuyen": g_dichchuyen, "muabang": g_muabang, "causam": g_causam}
+           "hoatuong": g_hoatuong, "dichchuyen": g_dichchuyen, "muabang": g_muabang, "causam": g_causam,
+           "vankiem": g_vankiem, "thientien": g_thientien, "thienhoa": g_thienhoa,
+           "thanhkiem": g_thanhkiem, "kiemvuc": g_kiemvuc, "huyetbao": g_huyetbao, "huyetanh": g_huyetanh,
+           "phakhong": g_phakhong, "tamlien": g_tamlien, "baimin": g_baimin, "luoibay": g_luoibay,
+           "thienloi": g_thienloi, "bangphong": g_bangphong, "trieuhoi": g_trieuhoi, "khidoc": g_khidoc}
 
 
 def register(skills):

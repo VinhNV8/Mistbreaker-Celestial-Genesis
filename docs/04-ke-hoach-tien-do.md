@@ -381,7 +381,7 @@ Mỗi đợt theo quy trình: **viết spec → duyệt → code → test → c�
 - [x] SN5-20: hệ kỹ năng — đề xuất ở [13](13-he-ky-nang.md), **duyệt "theo đề xuất"** 21/10/2026
 - [x] SK1: mở kỹ năng theo cấp, Điểm Kỹ Năng, cấp kỹ năng 1–10, 4 ô lắp (đổi ở vùng an toàn), bảng Kỹ năng (U), save v13 — [13 mục 7](13-he-ky-nang.md)
 - [x] SK2: +2 kỹ năng cấp 15/22, +2 kỹ năng chuyển chức 1 (12 kỹ năng mới), biến thể 3 tầng, ngũ hành ở tầng II, save v14 — [13 mục 8](13-he-ky-nang.md)
-- [ ] SK3: Bí Kíp rơi + Mảnh Bí Kíp, kỹ năng tối thượng cấp 45, kỹ năng nhánh chuyển chức 2
+- [x] SK3: Bí Kíp rơi + Mảnh Bí Kíp, kỹ năng tối thượng cấp 45, kỹ năng nhánh chuyển chức 2 (12), save v16 — [13 mục 9](13-he-ky-nang.md)
 
 ### Spec_Notes đợt 6 ([03 mục 8b](03-mvp-spec.md))
 

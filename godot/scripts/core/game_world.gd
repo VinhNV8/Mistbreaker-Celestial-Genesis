@@ -1474,7 +1474,9 @@ func _update_mage(dt: float) -> void:
 		for e in enemies:
 			if not e.dead and e.pos.distance_to(m.pos) <= m.radius + e.radius:
 				hit_source = "meteor"
+				skill_ctx = m.skill
 				_hit_enemy(e, m.mul, false, true)
+				skill_ctx = ""
 				hit_source = ""
 	meteors = meteors.filter(func(m): return m.timer > 0.0)
 	for b in bolts:
@@ -1578,8 +1580,7 @@ func use_skill(i: int) -> bool:
 			_text(p.pos + Vector2(0, -40), "Ưng Nhãn!", Color("#ffc940"), true)
 		_:
 			Skills2.cast(self, str(sk.id), mul)
-	if Skills2.is_utility(sk):
-		Skills2.after_cast(self, str(sk.id))
+	Skills2.after_cast(self, str(sk.id), i)
 	skill_ctx = ""
 	quest_event("skill")
 	_sfx("skill")
@@ -1632,6 +1633,9 @@ func _ensure_loadout() -> void:
 func skill_unlocked(sk: Dictionary) -> bool:
 	# SK2: kỹ năng chuyển chức 1 cần đã chuyển chức.
 	if bool(sk.get("job", false)) and str(profile.job) == "":
+		return false
+	# SK3: kỹ năng nhánh chuyển chức 2 chỉ cho nhánh đã chọn.
+	if sk.has("job2") and str(profile.job2) != str(sk.job2):
 		return false
 	return int(profile.level) >= int(sk.get("unlock", 1))
 
@@ -2367,6 +2371,7 @@ func _kill_enemy(e: Enemy) -> void:
 		pickups.append(orb)
 
 	_drop_loot(e)
+	Skills2.on_kill(self, e)
 	# Bầy Đàn Bóng Tối: 15% quái bị hạ đứng dậy làm lính bóng tối.
 	if profile.talent == "dao-tac":
 		_try_steal(e)
@@ -3083,6 +3088,8 @@ func relic_press(id: int, i: int) -> Dictionary:
 	relic_puzzles.erase(_relic_key(id))
 	var res := claim_tile(id, true)
 	res["solved"] = true
+	if res.get("ok", false):
+		Skills2.on_relic(self)
 	return res
 
 
@@ -3101,6 +3108,8 @@ func relic_answer(id: int, choice: int) -> Dictionary:
 	relic_puzzles.erase(_relic_key(id))
 	var res := claim_tile(id, true)
 	res["solved"] = true
+	if res.get("ok", false):
+		Skills2.on_relic(self)
 	return res
 
 
