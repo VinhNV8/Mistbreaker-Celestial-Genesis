@@ -188,6 +188,8 @@ const RARE_BOSSES := {
 		"say": "rare_phuong_hoang", "down": "rare_phuong_hoang_down", "intro": "Phượng Hoàng Tro bùng cháy trên Miệng Núi Lửa! (boss hiếm)"},
 	"6-3": {"kind": "long-bang", "level": 72, "after": "ban-nga", "unique": "vay_long_bang", "purple": false,
 		"say": "rare_long_bang", "down": "rare_long_bang_down", "intro": "Long Băng Bắc Cực đáp xuống Đỉnh Cực Quang! (boss hiếm)"},
+	"7-3": {"kind": "ky-lan-may", "level": 84, "after": "cu-than", "unique": "sung_ky_lan", "purple": false,
+		"say": "rare_ky_lan", "down": "rare_ky_lan_down", "intro": "Kỳ Lân Mây phi giữa Thiên Cung Đổ Nát! (boss hiếm)"},
 }
 ## Bạch Hổ: Hổ Vồ (chuỗi 3 cú, vòng 6 m ×1,4), Gầm Gió (vòng 10 m: đẩy 8 m, choáng 1 giây), dưới 50% Cưỡi Gió (tốc ×1,5).
 const TIGER_SKILL_CD := 4.0
@@ -2460,7 +2462,7 @@ func _on_boss_killed(e: Enemy) -> void:
 	profile.tinh_kim += 1
 	_message("%s đã ngã xuống! +%d Thiên Phú Tinh Hoa, +1 Tinh Kim." % [e.name, ESSENCE_PER_BOSS], "good")
 	# TP-39: Đạo Tặc sao chép kỹ năng boss.
-	var copy: String = {"huyen-anh": "clone", "sa-hoang": "burrow", "nu-vuong": "dreamscape", "vien-long": "breath", "ban-nga": "mirror"}.get(e.kind, "")
+	var copy: String = {"huyen-anh": "clone", "sa-hoang": "burrow", "nu-vuong": "dreamscape", "vien-long": "breath", "ban-nga": "mirror", "cu-than": "thien_chuy"}.get(e.kind, "")
 	if profile.talent == "dao-tac" and copy != "" and not (copy in profile.copied_skills):
 		profile.copied_skills.append(copy)
 		profile.active_copy = copy
@@ -3921,7 +3923,7 @@ func _sfx(id: String) -> void:
 
 # ------------------------------------------------------------------ M4.2: gió, quái vùng 2, Huyền Ảnh, ảo ảnh
 
-const COPY_NAMES := {"pounce": "Vồ Mồi", "clone": "Phân Thân", "burrow": "Độn Thổ", "dreamscape": "Mộng Cảnh", "breath": "Long Tức", "mirror": "Kính Ảnh"}
+const COPY_NAMES := {"pounce": "Vồ Mồi", "clone": "Phân Thân", "burrow": "Độn Thổ", "dreamscape": "Mộng Cảnh", "breath": "Long Tức", "mirror": "Kính Ảnh", "thien_chuy": "Thiên Chuỳ"}
 const WIND_DIRS := [Vector2(1, 0), Vector2(1, 1), Vector2(0, 1), Vector2(-1, 1), Vector2(-1, 0), Vector2(-1, -1), Vector2(0, -1), Vector2(1, -1)]
 
 

@@ -22,6 +22,11 @@ const SkillBar = preload("res://scripts/ui/skill_bar.gd")
 const Chapters = preload("res://scripts/core/chapters.gd")
 const CharFrame = preload("res://scripts/ui/char_frame.gd")
 const AutoButton = preload("res://scripts/ui/auto_button.gd")
+const QuestBox = preload("res://scripts/ui/quest_box.gd")
+const LogBox = preload("res://scripts/ui/log_box.gd")
+## UI-20: nhật ký tối đa 5 dòng, mỗi dòng sống 6 giây rồi mờ dần.
+const LOG_MAX := 5
+const LOG_LIFE := 6.0
 ## DH-11: thứ tự ô trên thanh kỹ năng.
 ## UI-10: thanh đã vẽ gọn (ô R 22, không tên) nên giữ tỉ lệ 1.
 const SKILL_BAR_SCALE := 1.0
@@ -29,6 +34,8 @@ const SLOT_BASIC := 0
 const SLOT_DODGE := 5
 const SLOT_TALENT := 6
 const SLOT_POTION := 7
+## UI-16: bề rộng khung nhiệm vụ.
+const OBJ_W := 240
 
 var _tl: CharFrame
 ## UI-12: nút bật/tắt Tự đánh (main nối tín hiệu auto_toggled → world.toggle_auto()).
@@ -102,18 +109,30 @@ func _ready() -> void:
 	_minimap = Minimap.new()
 	add_child(_minimap)
 
+	# UI-16 (Spec_Notes đợt 7): khung nhiệm vụ gọn — nền mờ + vạch vàng bên trái (không khung gỗ), chữ nhỏ,
+	# 3 dòng: mục tiêu (vàng, đậm) · gợi ý · thưởng; bỏ dòng phím tắt (chuyển vào Trợ giúp F1).
+	# UI-16b (đợt 7): nền QuestBox cùng phong cách khung nhân vật; tiêu đề căn giữa + đường kẻ có ngọc.
 	_obj = PanelContainer.new()
-	_obj.custom_minimum_size.x = 260
-	var ov := UiTheme.vbox(4)
+	_obj.custom_minimum_size.x = OBJ_W
+	_obj.add_theme_stylebox_override("panel", QuestBox.new())
+	var ov := UiTheme.vbox(3)
 	_obj.add_child(ov)
-	_obj_title = UiTheme.label("CHƯƠNG 1 · THỨC TỈNH", "Eyebrow")
+	_obj_title = UiTheme.label("CHƯƠNG 1 · THỨC TỈNH", "HudLabel")
+	_obj_title.add_theme_font_size_override("font_size", UiTheme.fs(11))
+	_obj_title.add_theme_font_override("font", UiTheme.bold_font())
+	_obj_title.add_theme_color_override("font_color", Color("#e8c77a"))
+	_obj_title.add_theme_constant_override("outline_size", 3)
+	_obj_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	ov.add_child(_obj_title)
+	ov.add_child(QuestBox.Divider.new())
 	for i in 3:
-		var l := UiTheme.label("", "", 266)
-		l.add_theme_font_size_override("font_size", 14)
+		var l := UiTheme.label("", "HudLabel", OBJ_W - 22)
+		l.add_theme_font_size_override("font_size", UiTheme.fs([13, 12, 11][i]))
+		l.add_theme_constant_override("outline_size", 3)
+		if i == 0:
+			l.add_theme_font_override("font", UiTheme.bold_font())
 		_objectives.append(l)
 		ov.add_child(l)
-	ov.add_child(UiTheme.label("M: Khai phá · N: Lục địa · I: Túi đồ · C: Chỉ số · T: Thiên phú", "Small", 266))
 	add_child(_obj)
 
 	_boss_box = UiTheme.vbox(4)
@@ -146,7 +165,7 @@ func _ready() -> void:
 	_skills.scale = Vector2.ONE * SKILL_BAR_SCALE
 	add_child(_skills)
 
-	_log = UiTheme.vbox(4)
+	_log = UiTheme.vbox(3)
 	add_child(_log)
 
 	_banner = UiTheme.label("", "HudLabel")
@@ -222,22 +241,70 @@ func _bar_label(bar: ProgressBar, font_size: int) -> Label:
 	return l
 
 
+## UI-20: dòng nhật ký — dải nền mờ dần (LogBox), huy hiệu màu theo loại, chữ có viền; dòng mới trượt vào từ
+## trái + hiện dần, dòng cũ mờ dần rồi biến mất. Phần số trong câu (+5, 10 phút…) tô đậm màu loại tin.
 func log_message(text: String, tone := "info") -> void:
 	var item := PanelContainer.new()
-	item.theme_type_variation = {"good": "LogGood", "bad": "LogBad"}.get(tone, "LogInfo")
+	item.add_theme_stylebox_override("panel", LogBox.new(tone))
 	item.mouse_filter = MOUSE_FILTER_IGNORE
-	var l := UiTheme.label(text, "", 320)
-	l.add_theme_font_size_override("font_size", 14)
+	var l := RichTextLabel.new()
+	l.bbcode_enabled = true
+	l.fit_content = true
+	l.scroll_active = false
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	l.custom_minimum_size.x = 300
+	l.mouse_filter = MOUSE_FILTER_IGNORE
+	l.add_theme_font_override("normal_font", UiTheme.font())
+	l.add_theme_font_override("bold_font", UiTheme.bold_font())
+	l.add_theme_font_size_override("normal_font_size", UiTheme.fs(13))
+	l.add_theme_font_size_override("bold_font_size", UiTheme.fs(13))
+	l.add_theme_color_override("default_color", Color("#ece6d8"))
+	l.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
+	l.add_theme_constant_override("outline_size", 3)
+	l.text = _log_bbcode(text, LogBox.color_of(tone))
 	item.add_child(l)
 	_log.add_child(item)
-	while _log.get_child_count() > 6:
+	while _log.get_child_count() > LOG_MAX:
 		var old := _log.get_child(0)
 		_log.remove_child(old)
 		old.queue_free()
+	item.modulate.a = 0.0
 	var tw := item.create_tween()
-	tw.tween_interval(7.0)
-	tw.tween_property(item, "modulate:a", 0.0, 1.0)
+	tw.tween_property(item, "modulate:a", 1.0, 0.18)
+	tw.tween_interval(LOG_LIFE)
+	tw.tween_property(item, "modulate:a", 0.0, 0.8)
 	tw.tween_callback(item.queue_free)
+
+
+## Tô đậm các cụm số ("+5", "10 phút", "+1 Tinh Kim"…) bằng màu loại tin; thoát ký tự [ ] của BBCode.
+static func _log_bbcode(text: String, col: Color) -> String:
+	var safe := text.replace("[", "[lb]")
+	var re := RegEx.new()
+	re.compile("[+−-]?[0-9][0-9.,]*%?")
+	var out := ""
+	var last := 0
+	for m in re.search_all(safe):
+		out += safe.substr(last, m.get_start() - last)
+		out += "[b][color=#%s]%s[/color][/b]" % [col.to_html(false), _group_thousands(m.get_string())]
+		last = m.get_end()
+	return out + safe.substr(last)
+
+
+## "80000" → "80.000" (chỉ số nguyên ≥ 5 chữ số, có thể có dấu +/−).
+static func _group_thousands(n: String) -> String:
+	var sign := ""
+	var digits := n
+	if n.length() > 0 and not n[0].is_valid_int():
+		sign = n[0]
+		digits = n.substr(1)
+	if digits.length() < 5 or not digits.is_valid_int():
+		return n
+	var out := ""
+	for i in digits.length():
+		if i > 0 and (digits.length() - i) % 3 == 0:
+			out += "."
+		out += digits[i]
+	return sign + out
 
 
 func banner(text: String) -> void:
@@ -439,6 +506,8 @@ func _update_quest(w: GameWorld) -> void:
 
 
 func _set_obj(i: int, text: String, color: Color) -> void:
+	# UI-16: tiêu đề gọn ("CHƯƠNG 2 · NHIỆM VỤ 1/5" → "CHƯƠNG 2 · 1/5"); thưởng nhạt hơn
+	_obj_title.text = _obj_title.text.replace("NHIỆM VỤ ", "")
 	_objectives[i].text = text
 	_objectives[i].visible = text != ""
 	_objectives[i].add_theme_color_override("font_color", color)

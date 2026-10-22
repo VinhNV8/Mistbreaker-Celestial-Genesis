@@ -25,6 +25,11 @@ const DRAGON := "Viêm Long"
 const NGA := "Nữ tư tế Tuyết Nga"
 const HAN := "Thợ săn Lão Hàn"
 const SHADOW := "Bản Ngã Bóng Tối"
+## M10 chương 7 (docs/16 C7-40)
+const VANHAC := "Lão đạo Vân Hạc"
+const PHONG := "Thuyền trưởng Phong Linh"
+const GIAOCHU := "Giáo Chủ Hư Vô"
+const CUTHAN := "Thiên Không Cự Thần"
 
 ## id → [[người nói, lời], ...]
 const DIALOGS := {
@@ -191,6 +196,42 @@ const DIALOGS := {
 	"raid_warn": [[XICH, "Lính Kim Luân lại kéo tới! Về trại giữ cổng!"]],
 	"rare_phuong_hoang": [["Phượng Hoàng Tro", "Lửa không bao giờ chết. Ta đã tái sinh chín lần trên miệng núi này!"]],
 	"rare_phuong_hoang_down": [["{name}", "(Tro tàn rơi lả tả. Lần này ngọn lửa không bùng lên nữa — chỉ còn lại một chiếc lông đỏ rực.)"]],
+	# ---------------------------------------------------------------- chương 7 (docs/16 C7-40…42)
+	"r7_port": [[NGA, "Bia Đá gốc nằm trên Quần Đảo Thiên Không, giữa mây. Muốn lên đó phải có khí cầu — nâng lãnh địa thành Hoàng Thành rồi xây Cảng Khí Cầu."]],
+	"r7_port_done": [[NGA, "Cảng Khí Cầu đã xong! Khí cầu đang đợi ở Đỉnh Cực Quang — tìm Bến Khí Cầu ở rìa phải."]],
+	"r7_arrive": [
+		["{name}", "Mặt đất ở dưới chân… chỉ là một hòn đảo trôi giữa mây."],
+		["{name}", "(Rơi khỏi mép đảo sẽ về Đá Neo gần nhất và mất 10% HP. Chạm Đá Neo để lưu. Cầu gió tắt 5 giây mỗi 30 giây — nhìn nó nhấp nháy là chạy.)"],
+	],
+	"van_meet": [
+		[VANHAC, "Khai Giới Giả… lão đã đợi ngươi ba trăm năm. Lão là người cuối cùng của Thánh Đường đời đầu, giữ Thiên Cung này."],
+		[VANHAC, "Bia Đá gốc ở Đài Cự Thần, phía đông Thiên Cung Đổ Nát. Nhưng Hư Vô Giáo đã tới trước — chúng khắc ấn lên người khổng lồ canh Bia."],
+		[NGA, "Bản dập Bia Băng ta mang theo khớp với chữ trên cột Thiên Cung. Đi thôi, {name}."],
+	],
+	"van_birds": [[VANHAC, "Bầy chim trời phát điên từ khi ấn Hư Vô xuất hiện. Dẹp chúng đi — cẩn thận Đại Bàng Mây, chúng quạt người ta khỏi mép đảo."]],
+	"van_pillars": [[VANHAC, "Đảo Rừng Treo có 3 Trụ Gió cổ. Đứng cạnh mỗi trụ 2 giây để kích — cầu gió gần trụ sẽ không tắt nữa."]],
+	"pillar_lit": [["{name}", "(Trụ Gió ngân lên. Cây cầu gió gần đó sáng ổn định — không còn chập chờn.)"]],
+	"van_anchors": [[VANHAC, "Hư Vô Giáo cắm 3 Neo Hư Vô quanh Thiên Cung, kéo cả hòn đảo rơi xuống. Phá chúng trước khi quá muộn!"]],
+	"anchor_broken": [["{name}", "(Neo Hư Vô vỡ tan. Thiên Cung rung nhẹ rồi nổi cao lên một chút.)"]],
+	"cu_than_gate": [[VANHAC, "Đài Cự Thần ở tận cùng phía đông. Cự Thần đánh rất nặng — đứng trên nền còn nguyên, vành ngoài sẽ vỡ dần."]],
+	"stele_rite": [
+		[CUTHAN, "…Bia… Đá… Ta… đã canh nó… ba trăm năm… (Người khổng lồ quỳ xuống và hoá đá.)"],
+		["Bia Đá gốc", "Mảnh thứ hai đang lớn trong ngươi. Chỉ ở Cổng Thiên Đạo mới phong ấn lại được — và phải mang Thiên phú đã tiến hoá hai lần."],
+		[VANHAC, "Nghịch Thiên Cải Mệnh… nghi thức cổ của Thánh Đường. Đặt tay lên Bia, Khai Giới Giả."],
+	],
+	"stele_wait": [[VANHAC, "Bia Đá gốc đòi Thiên phú Lv10 và 1 Tinh Hoa Tiến Hoá (boss hiếm rơi). Chuẩn bị xong hãy quay lại."]],
+	"ch7_end": [
+		["{name}", "(Ánh sáng từ Bia tràn vào ngực. Thiên phú bùng lên một hình dạng mới.)"],
+		[GIAOCHU, "Cảm ơn, Khai Giới Giả. Ngươi đã đánh thức Bia giúp ta."],
+		["{name}", "(Một bóng đen khoác áo choàng rút đi một mảnh vỡ từ Bia Đá gốc rồi tan vào hư không.)"],
+		[VANHAC, "Giáo Chủ Hư Vô! Hắn dùng mảnh Bia để mở Cổng Thiên Đạo cho Ma Tôn… Hắn đã rút về Vực Hư Vô."],
+	],
+	"ch7_done": [[VANHAC, "Bia Đá gốc giờ là nơi đổi tiến hoá. Vực Hư Vô ở dưới tầng mây — chương sau ngươi sẽ phải xuống đó."]],
+	"vanhac_idle": [[VANHAC, "Đá Neo là bạn của người đi trên mây. Chạm vào chúng mỗi khi đi qua."]],
+	"phong_shop": [[PHONG, "Lông Vũ Gió đây! Bấm Q để lơ lửng 2 giây — lướt qua khe hay lỡ chân đều cứu được."]],
+	"nga7_idle": [[NGA, "Chữ trên Bia Băng và cột Thiên Cung là cùng một thứ tiếng… tiếng của người đầu tiên chạm vào Thiên phú."]],
+	"rare_ky_lan": [["Kỳ Lân Mây", "(Tiếng sấm rền giữa trời quang. Một con kỳ lân xanh lục phi vòng quanh đảo, để lại vệt sét.)"]],
+	"rare_ky_lan_down": [["{name}", "(Kỳ Lân Mây ngã xuống, chỉ còn chiếc sừng xoắn lấp lánh tia điện.)"]],
 	# ---------------------------------------------------------------- chương 6 (docs/14 C6-40…44)
 	"r6_arrive": [
 		["{name}", "Gió buốt tới tận xương. Ở đây đêm dài hơn ngày…"],
@@ -307,6 +348,26 @@ static func quest6(step: int) -> Dictionary:
 	return QUESTS6[step - 1] if step >= 1 and step <= QUESTS6.size() else {}
 
 
+## M10 (docs/16 C7-41): nhiệm vụ chính chương 7. Bước lưu ở profile.quest.ch7: 0 = chưa xong chương 6, 1 = Dựng Cảng Khí Cầu
+## (bước 0 của spec), 2…8 = bước 1…7, 9 = xong. Thưởng EXP ≈ 25% EXP cấp 72 → 84 ≈ 4,91 triệu, tăng dần theo bước.
+## Mục tiêu ≤ 30 ký tự, gợi ý ≤ 40 ký tự (UI-16).
+const QUESTS7 := [
+	{"title": "Dựng Cảng Khí Cầu", "hint": "Nâng lãnh địa lên Hoàng Thành, xây Cảng", "type": "port7", "need": 1, "reward": {"exp": 200000, "gold": 3000}},
+	{"title": "Lên đảo", "hint": "Tới Bến Mây, nói chuyện với Vân Hạc", "type": "talk_vanhac", "need": 1, "reward": {"exp": 350000, "feathers": 3}},
+	{"title": "Bầy chim dữ", "hint": "Hạ 30 quái vùng 7", "type": "kills7", "need": 30, "reward": {"exp": 500000}},
+	{"title": "Nối cầu gió", "hint": "Kích 3 Trụ Gió ở Đảo Rừng Treo", "type": "pillars7", "need": 3, "reward": {"exp": 600000, "stones": 10}},
+	{"title": "Neo Hư Vô", "hint": "Phá 3 Neo Hư Vô ở Thiên Cung", "type": "anchors7", "need": 3, "reward": {"exp": 700000}},
+	{"title": "Tìm Đài Cự Thần", "hint": "Khám phá 40% Thiên Cung Đổ Nát", "type": "explore7", "need": 1, "reward": {"exp": 750000}},
+	{"title": "Thiên Không Cự Thần", "hint": "Hạ Cự Thần ở Đài Cự Thần", "type": "boss7", "need": 1, "reward": {"exp": 850000, "crystal": 12}},
+	{"title": "Nghịch Thiên Cải Mệnh", "hint": "Chạm Bia Đá gốc, tiến hoá lần 2", "type": "evo7", "need": 1, "reward": {"exp": 960000, "gold": 6000}},
+]
+const DONE7 := 9
+
+
+static func quest7(step: int) -> Dictionary:
+	return QUESTS7[step - 1] if step >= 1 and step <= QUESTS7.size() else {}
+
+
 ## M6 (docs/10 C3-41): nhiệm vụ chính chương 3. Bước lưu ở profile.quest.ch3 (0 = chưa tới vùng 3, 7 = xong).
 ## Thưởng EXP ≈ 25% EXP từ cấp 20 lên 30 (M5-02: 1,2 triệu × 25% ≈ 300.000).
 const QUESTS3 := [
@@ -357,7 +418,7 @@ static func quest(step: int) -> Dictionary:
 static func reward_text(r: Dictionary) -> String:
 	var parts := PackedStringArray()
 	for pair in [["exp", "%d EXP"], ["gold", "%d vàng"], ["potions", "%d bình máu"], ["torches", "%d Đuốc"], ["stones", "%d Đá Cường Hoá"],
-			["crystal", "%d Tinh Thạch"], ["holy_water", "%d Bình Nước Thánh"], ["embers", "%d Than Hồng"]]:
+			["crystal", "%d Tinh Thạch"], ["holy_water", "%d Bình Nước Thánh"], ["embers", "%d Than Hồng"], ["feathers", "%d Lông Vũ Gió"]]:
 		if r.has(pair[0]):
 			parts.append(pair[1] % int(r[pair[0]]))
 	return ", ".join(parts)

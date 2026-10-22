@@ -13,6 +13,7 @@ const MapPanel = preload("res://scripts/ui/map_panel.gd")
 const InventoryPanel = preload("res://scripts/ui/inventory_panel.gd")
 const TalentPanel = preload("res://scripts/ui/talent_panel.gd")
 const SkillPanel = preload("res://scripts/ui/skill_panel.gd")
+const HelpPanel = preload("res://scripts/ui/help_panel.gd")
 const WorldMapPanel = preload("res://scripts/ui/world_map_panel.gd")
 const Talents = preload("res://scripts/data/talents.gd")
 const Items = preload("res://scripts/core/items.gd")
@@ -51,6 +52,7 @@ const KEY_ACTIONS := {
 	"interact": [KEY_E],
 	"auto_fight": [KEY_Z],
 	"toggle_minimap": [KEY_V],
+	"toggle_help": [KEY_F1, KEY_H],
 	"potion": [KEY_Q],
 	"close_panel": [KEY_ESCAPE],
 }
@@ -62,6 +64,8 @@ var map_panel: MapPanel
 var inventory_panel: InventoryPanel
 var talent_panel: TalentPanel
 var skill_panel: SkillPanel
+## UI-17: bảng Trợ giúp (F1 / H).
+var help_panel: HelpPanel
 var world_panel: WorldMapPanel
 ## Smoke test gắn bot vào đây để thay cho bàn phím/chuột.
 var bot := Callable()
@@ -225,7 +229,7 @@ func _input(event: InputEvent) -> void:
 			inventory_panel.toggle_tab(world, pair[1])
 			get_viewport().set_input_as_handled()
 			return
-	for pair in [["toggle_map", map_panel], ["toggle_talent", talent_panel], ["toggle_world", world_panel], ["toggle_skills", skill_panel]]:
+	for pair in [["toggle_map", map_panel], ["toggle_talent", talent_panel], ["toggle_world", world_panel], ["toggle_skills", skill_panel], ["toggle_help", help_panel]]:
 		if event.is_action_pressed(pair[0]):
 			var target = pair[1]
 			for panel in _panels():
@@ -246,7 +250,7 @@ func _input(event: InputEvent) -> void:
 
 
 func _panels() -> Array:
-	return [map_panel, inventory_panel, talent_panel, world_panel, shop_panel, job2_panel, skill_panel]
+	return [map_panel, inventory_panel, talent_panel, world_panel, shop_panel, job2_panel, skill_panel, help_panel]
 
 
 func _any_panel_open() -> bool:
@@ -478,6 +482,8 @@ func _start_world(p: Profile) -> void:
 	_ui.add_child(talent_panel)
 	skill_panel = SkillPanel.new()
 	_ui.add_child(skill_panel)
+	help_panel = HelpPanel.new()
+	_ui.add_child(help_panel)
 	world_panel = WorldMapPanel.new()
 	_ui.add_child(world_panel)
 	shop_panel = ShopPanel.new()
@@ -490,13 +496,15 @@ func _start_world(p: Profile) -> void:
 	# Thoại phát lúc tạo thế giới (bước nhiệm vụ đầu) nằm trong hàng sự kiện, _process sẽ xử lý.
 	_fit_camera()
 	map_panel.nest_started.connect(func(): hud.log_message("Thủ lĩnh ổ quái đã xuất hiện trước mặt bạn!", "bad"))
+	# UI-17: gợi ý một lần mỗi phiên (phím tắt không còn ghi trong khung nhiệm vụ).
+	hud.log_message("Nhấn F1 để xem phím tắt và mẹo chơi.", "info")
 	_camera.position = world.player.pos
 	_camera.reset_smoothing()
 
 
 func _end_session() -> void:
 	_close_victory()
-	for n in [hud, map_panel, inventory_panel, talent_panel, world_panel, dialog, shop_panel, job2_panel, skill_panel]:
+	for n in [hud, map_panel, inventory_panel, talent_panel, world_panel, dialog, shop_panel, job2_panel, skill_panel, help_panel]:
 		if n != null:
 			n.queue_free()
 	hud = null
@@ -504,6 +512,7 @@ func _end_session() -> void:
 	inventory_panel = null
 	talent_panel = null
 	skill_panel = null
+	help_panel = null
 	world_panel = null
 	dialog = null
 	shop_panel = null
@@ -642,6 +651,10 @@ func _run_smoke(dir: String) -> void:
 	await _wait(0.3)
 	await _shot(dir, "05-stats")
 	inventory_panel.close()
+	help_panel.open(world)
+	await _wait(0.3)
+	await _shot(dir, "05a-help")
+	help_panel.close()
 
 	# Túi đồ: thêm vài món mẫu (gồm đồ bộ và Nanh Sói Chúa) để chụp giao diện.
 	var rng := RngUtil.make(99)
@@ -943,6 +956,10 @@ func _open_pause(settings_only := false) -> void:
 	_pause.settings_only = settings_only
 	_pause.resume.connect(_close_pause)
 	_pause.font_scale_changed.connect(func(k: float): _ui.theme = UiTheme.set_font_scale(k))
+	_pause.help.connect(func():
+		_close_pause()
+		if help_panel != null and world != null:
+			help_panel.open(world))
 	_pause.quit_to_title.connect(func():
 		_close_pause()
 		_go_title())

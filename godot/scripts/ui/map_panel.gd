@@ -65,7 +65,15 @@ func _render(content: VBoxContainer) -> void:
 ## TL-22: mục Công trình — Thôn, Đền Thiên Phú, Long Mạch Đàn.
 func _buildings(info: VBoxContainer, p) -> void:
 	info.add_child(UiTheme.label("CÔNG TRÌNH", "Eyebrow"))
-	var kinds := [["camp2", "+20% sản lượng"], ["temple", "luyện cấp Thiên phú (phím T)"],
+	# C7-02 / C7-04: trung tâm lãnh địa hiện cấp; chỉ liệt kê bậc nâng kế tiếp + Cảng Khí Cầu khi đã Hoàng Thành.
+	info.add_child(UiTheme.label("Trung tâm: %s · %d ô đã chiếm" % [Explore.camp_name(p), Explore.total_owned(p)], "Small", 320))
+	var kinds := []
+	var next_camp := "camp%d" % (int(p.camp_level) + 1)
+	if Explore.BUILDINGS.has(next_camp):
+		kinds.append([next_camp, "+%d%% sản lượng" % roundi(Explore.CAMP_BONUS[int(p.camp_level) + 1] * 100.0)])
+	elif int(p.camp_level) >= 5:
+		kinds.append(["port", "mở Bến Khí Cầu tới Quần Đảo Thiên Không"])
+	kinds += [["temple", "luyện cấp Thiên phú (phím T)"],
 		["forge", "chế trang bị (phím E ở làng)"], ["garden", "1 thảo dược mỗi 3 phút, cả khi offline"]]
 	if p.talent == "long-mach":
 		kinds.append(["dragon", "+10% Tấn công và HP cho nhân vật, đồng minh"])
@@ -79,14 +87,17 @@ func _buildings(info: VBoxContainer, p) -> void:
 		elif Explore.is_started(p, kind):
 			text = "%s — đang xây, còn %d giây" % [def.name, ceili(Explore.remaining(p, kind))]
 		else:
-			text = "%s — %s. %d vàng + %d gỗ, %d giây" % [def.name, k[1], def.gold, def.wood, roundi(Explore.build_time(p, kind))]
+			text = "%s — %s. %s, %d giây" % [def.name, k[1], Explore.cost_text(kind), roundi(Explore.build_time(p, kind))]
+			if int(def.get("tiles", 0)) > 0:
+				text += " · cần %d ô" % int(def.tiles)
 		var l := UiTheme.label(text, "Small", 250)
 		if Explore.is_built(p, kind):
 			l.add_theme_color_override("font_color", UiTheme.GOOD)
 		row.add_child(l)
 		if not Explore.is_started(p, kind):
 			var b := UiTheme.button("Xây")
-			b.disabled = p.gold < def.gold or p.wood < def.wood
+			b.disabled = Explore.build_blocker(p, kind) != ""
+			b.tooltip_text = Explore.build_blocker(p, kind)
 			b.pressed.connect(func():
 				world.build(kind)
 				refresh())

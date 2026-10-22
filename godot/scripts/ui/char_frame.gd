@@ -169,9 +169,6 @@ func _draw_talent(c: Vector2) -> void:
 	var tex: Texture2D = data.talent_icon
 	if tex != null:
 		draw_texture_rect(tex, Rect2(c + Vector2(-11, -9), Vector2(22, 22)), false)
-	# UI-13: hệ ngũ hành đang dùng (Ngũ Hành Linh Căn) — biểu tượng góc dưới phải hoa sen
-	if str(data.element) != "":
-		ElementIcon.draw(self, c + Vector2(20, 12), str(data.element), 10.0)
 	# đế vàng uốn cong
 	draw_arc(c + Vector2(0, -6), 26.0, PI * 0.2, PI * 0.8, 16, GOLD, 2.0, true)
 	for side in [-1.0, 1.0]:
@@ -179,6 +176,11 @@ func _draw_talent(c: Vector2) -> void:
 	# tên Thiên phú bên phải hoa sen, gạch vàng + ngọc bên dưới
 	var x0 := c.x + 32.0
 	var tw := W - 8.0 - x0
+	# UI-13 / Spec_Notes đợt 7 ("hệ Thổ với Thiên phú đè lên nhau"): biểu tượng hệ có ô riêng ở cuối hàng,
+	# tên Thiên phú co lại nhường chỗ — không chồng lên hoa sen hay chữ.
+	if str(data.element) != "":
+		tw -= 30.0
+		ElementIcon.draw(self, Vector2(W - 20.0, c.y), str(data.element), 12.0)
 	# Spec_Notes đợt 6: tên Thiên phú một dòng (tự thu chữ cho vừa), không xuống dòng
 	_text(str(data.talent_name), Vector2(x0, c.y), tw, 15, GOLD_LIGHT, true)
 	draw_line(Vector2(x0 + 10.0, c.y + 22.0), Vector2(x0 + tw - 10.0, c.y + 22.0), GOLD, 1.5, true)

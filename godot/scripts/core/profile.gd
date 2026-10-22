@@ -17,7 +17,9 @@ const Explore = preload("res://scripts/core/explore.gd")
 ## v14: SK2 — biến thể kỹ năng {id: [tầng I, II, III]} (docs/13).
 ## v15: hang phụ — caves {map cha: giây chơi khi hang mở lại} (docs/15).
 ## v16: SK3 — Bí Kíp {id kỹ năng: [tầng I, II, III]}, Mảnh Bí Kíp (docs/13).
-const VERSION := 16
+## v17: M10 chương 7 — feathers (Lông Vũ Gió), anchor_stones {map: [chỉ số Đá Neo đã chạm]}, quest.ch7/kills7/pillars7/anchors7,
+## camp3–5 + port trong buildings (docs/16 mục 7).
+const VERSION := 17
 
 var talent := ""
 var level := 1
@@ -125,6 +127,9 @@ var raid_play := 0.0
 var raid_penalty_until := 0.0
 ## M9: Than Hồng (phím Q xoá băng giá).
 var embers := 0
+## C7-15: Lông Vũ Gió · C7-12: Đá Neo đã chạm theo map.
+var feathers := 0
+var anchor_stones := {}
 var evo_essence := 0
 ## Vườn Thảo Dược: giây tích luỹ tới thảo dược kế tiếp.
 var herb_timer := 0.0
@@ -218,6 +223,8 @@ func to_dict() -> Dictionary:
 		"raid_play": raid_play,
 		"raid_penalty_until": raid_penalty_until,
 		"embers": embers,
+		"feathers": feathers,
+		"anchor_stones": anchor_stones,
 		"evo_essence": evo_essence,
 		"herb_timer": herb_timer,
 		"merchant": merchant,
@@ -377,6 +384,14 @@ func load_dict(d: Dictionary) -> bool:
 	raid_penalty_until = float(d.get("raid_penalty_until", 0.0))
 	# v12 — save v11 trở xuống: chưa tới vùng 6.
 	embers = int(d.get("embers", 0))
+	feathers = int(d.get("feathers", 0))
+	anchor_stones = {}
+	var an: Dictionary = d.get("anchor_stones", {})
+	for k in an:
+		var arr: Array = []
+		for x in an[k]:
+			arr.append(int(x))
+		anchor_stones[str(k)] = arr
 	job = str(d.get("job", ""))
 	heat_free_until = float(d.get("heat_free_until", 0.0))
 	active_copy = str(d.get("active_copy", ""))

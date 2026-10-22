@@ -133,6 +133,9 @@ Main (Node, main.gd)
 | `scripts/ui/stats_page.gd` | UI-11: trang Chỉ số (cộng điểm, tẩy điểm, tự cộng) — `StatsPage.build(vbox, world, refresh)`, dùng làm tab "Chỉ số" của Túi đồ (thay `stats_panel.gd` đã xoá). Phím C → `inventory_panel.toggle_tab(world, "stats")` |
 | `scripts/core/caves.gd` | Hang phụ ([15](15-hang-phu.md)): bản đồ `cave-<map cha>` sinh từ map cha (`build_map`, `Maps.get_map` nạp muộn để tránh preload vòng), cửa hang (`entrance`), `blocker` (đang đóng), `populate` (3 khu: 5+1, 6+1 tinh anh, Chúa Hang HP ×5 + 2 quái), `on_kill` (Chúa Hang → món ≥ Xanh dương, vàng, Đá, cổng ra, đóng `COOLDOWN` 1200 giây chơi). `GameWorld.in_cave()`; trong hang không sinh quái ngoài đồng, không lưu sương / thưởng khai phá, không thêm `unlocked_maps`; logic chương không áp (hang không thuộc `MAPS` của module chương) |
 | `scripts/ui/element_icon.gd` | UI-13: `ElementIcon.draw(ci, tâm, hệ, bán kính, alpha)` — biểu tượng ngũ hành vẽ bằng code (thay chữ "Mộc"…) cho quái, cột đá, khung nhân vật |
+| `scripts/ui/log_box.gd` | UI-20: StyleBox một dòng nhật ký (dải mờ dần, vạch + huy hiệu màu theo loại). `hud.log_message` dùng `RichTextLabel` BBCode: `_log_bbcode` tô đậm số, `_group_thousands` thêm dấu chấm |
+| `scripts/ui/quest_box.gd` | UI-16b: StyleBox nền khung nhiệm vụ (tím mờ, viền vàng, ngọc góc) + lớp con `Divider` (đường kẻ có ngọc dưới tiêu đề) |
+| `scripts/ui/help_panel.gd` | UI-17: bảng Trợ giúp (modal) — phím F1/H (`toggle_help`), nút trong `pause_menu` (tín hiệu `help`); phím lấy từ `Screens.CONTROLS` |
 | `scripts/ui/auto_button.gd` | UI-12: nút tròn bật/tắt Tự đánh cạnh thanh kỹ năng; HUD phát `auto_toggled` → main gọi `world.toggle_auto()` |
 | `scripts/ui/map_panel.gd`, `hex_map.gd` | Bản đồ khai phá |
 | `scripts/ui/inventory_panel.gd` | Túi đồ: đang mặc, túi 30 ô, chi tiết, so sánh, cường hoá (M1); khung Phân rã nhanh, chấm đỏ ở món khớp lọc (SN-11) |

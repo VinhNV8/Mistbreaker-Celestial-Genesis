@@ -1,11 +1,13 @@
 extends ColorRect
-## C1-42 (KT-07): menu tạm dừng (Esc) — Tiếp tục · Cài đặt · Về màn hình chính. Cài đặt: âm lượng, toàn màn hình, cỡ chữ (M5-05).
+## C1-42 (KT-07): menu tạm dừng (Esc) — Tiếp tục · Cài đặt · Trợ giúp (UI-17) · Về màn hình chính. Cài đặt: âm lượng, toàn màn hình, cỡ chữ (M5-05).
 
 const UiTheme = preload("res://scripts/ui/ui_theme.gd")
 const Settings = preload("res://scripts/core/settings.gd")
 
 signal resume
 signal quit_to_title
+## UI-17: mở bảng Trợ giúp.
+signal help
 ## M5-05: người chơi đổi cỡ chữ — main.gd dựng lại theme.
 signal font_scale_changed(k: float)
 
@@ -42,7 +44,7 @@ func show_menu() -> void:
 	var h := UiTheme.label("Tạm dừng", "Heading")
 	h.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_box.add_child(h)
-	for pair in [["Tiếp tục (Esc)", func(): resume.emit(), "ResumeButton"], ["Cài đặt", show_settings, "SettingsButton"],
+	for pair in [["Tiếp tục (Esc)", func(): resume.emit(), "ResumeButton"], ["Cài đặt", show_settings, "SettingsButton"], ["Trợ giúp (F1)", func(): help.emit(), "HelpButton"],
 			["Về màn hình chính", func(): quit_to_title.emit(), "TitleButton"]]:
 		var b := UiTheme.button(pair[0], pair[2] == "ResumeButton")
 		b.name = pair[2]

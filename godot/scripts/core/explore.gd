@@ -67,7 +67,18 @@ const BUILDINGS := {
 	"mine": {"name": "Mỏ", "time": 90.0, "gold": 40, "wood": 40},
 	"fishery": {"name": "Bến Cá", "time": 60.0, "gold": 30, "wood": 30},
 	"garden": {"name": "Vườn Thảo Dược", "time": 90.0, "gold": 60, "wood": 60},
+	# C7-02 (docs/16): nâng trung tâm lãnh địa Trấn → Thành → Hoàng Thành — cần số ô đã chiếm (mọi vùng) + tài nguyên.
+	"camp3": {"name": "Nâng Thôn thành Trấn", "time": 600.0, "gold": 2000, "wood": 400, "ore": 300, "iron": 150, "tiles": 40, "needs": "camp2"},
+	"camp4": {"name": "Nâng Trấn thành Thành", "time": 1200.0, "gold": 6000, "wood": 800, "ore": 600, "iron": 400, "crystal": 40, "tiles": 80, "needs": "camp3"},
+	"camp5": {"name": "Nâng Thành thành Hoàng Thành", "time": 2400.0, "gold": 15000, "wood": 1200, "ore": 1000, "iron": 700, "crystal": 100, "tiles": 120, "needs": "camp4"},
+	# C7-04: Cảng Khí Cầu (KP-18) — chỉ xây khi trung tâm cấp 5; mở Bến Khí Cầu 6-3 → 7-1.
+	"port": {"name": "Cảng Khí Cầu", "time": 1200.0, "gold": 5000, "wood": 400, "iron": 300, "crystal": 60, "needs": "camp5"},
 }
+## C7-02: tên trung tâm theo cấp và % sản lượng cộng thêm.
+const CAMP_NAMES := ["", "Trại Khai Giới", "Thôn", "Trấn", "Thành", "Hoàng Thành"]
+const CAMP_BONUS := [0.0, 0.0, 0.2, 0.3, 0.4, 0.5]
+## Thứ tự khoá tài nguyên khi hiện / trừ giá.
+const COST_KEYS := [["gold", "vàng"], ["wood", "Gỗ"], ["ore", "Đá"], ["iron", "Sắt"], ["crystal", "Tinh Thạch"]]
 ## C1-31: Vườn Thảo Dược sinh 1 thảo dược mỗi 3 phút.
 const GARDEN_PERIOD := 180.0
 const HERB_CAP := 99
@@ -417,9 +428,52 @@ static func tick_build_clock(p, seconds: float) -> Array:
 	for key in before:
 		if is_built(p, key):
 			done.append(key)
-	if is_built(p, "camp2"):
-		p.camp_level = 2
+	_sync_camp(p)
 	return done
+
+
+## C7-02: cấp trung tâm = cấp nâng cao nhất đã xây xong.
+static func _sync_camp(p) -> void:
+	var lv := 1
+	for k in range(2, 6):
+		if is_built(p, "camp%d" % k):
+			lv = k
+	p.camp_level = maxi(int(p.camp_level), lv)
+
+
+static func camp_name(p) -> String:
+	return "%s · cấp %d" % [CAMP_NAMES[clampi(int(p.camp_level), 1, 5)], int(p.camp_level)]
+
+
+## Tổng ô đã chiếm mọi vùng (không tính Trại).
+static func total_owned(p) -> int:
+	var n := 0
+	for rg in region_grids(p):
+		n += owned_count(rg[1])
+	return n
+
+
+## "2000 vàng · 400 Gỗ · …" theo giá công trình.
+static func cost_text(kind: String) -> String:
+	var def: Dictionary = BUILDINGS[kind]
+	var parts: Array = []
+	for ck in COST_KEYS:
+		if int(def.get(ck[0], 0)) > 0:
+			parts.append("%d %s" % [int(def[ck[0]]), ck[1]])
+	return " · ".join(parts)
+
+
+## Lý do chưa xây được (thiếu cấp trước / ô / tài nguyên); "" nếu được.
+static func build_blocker(p, kind: String) -> String:
+	var def: Dictionary = BUILDINGS[kind]
+	if def.has("needs") and not is_built(p, str(def.needs)):
+		return "Cần xây xong %s trước." % BUILDINGS[str(def.needs)].name
+	if int(def.get("tiles", 0)) > total_owned(p):
+		return "Cần chiếm %d ô (đang %d)." % [int(def.tiles), total_owned(p)]
+	for ck in COST_KEYS:
+		if float(p.get(ck[0])) < float(def.get(ck[0], 0)):
+			return "Cần " + cost_text(kind) + "."
+	return ""
 
 
 static func building_name(key: String) -> String:
@@ -437,8 +491,7 @@ static func finish_now(p) -> String:
 			best = key
 	if best != "":
 		p.buildings[best] = p.build_clock
-		if best == "camp2":
-			p.camp_level = 2
+		_sync_camp(p)
 	return best
 
 
@@ -449,10 +502,13 @@ static func build(p, kind: String) -> Dictionary:
 	if kind == "dragon" and p.talent != "long-mach":
 		return _result(false, "Chỉ người mang Thiên phú Long Mạch mới xây được Long Mạch Đàn.")
 	var def: Dictionary = BUILDINGS[kind]
-	if p.gold < def.gold or p.wood < def.wood:
-		return _result(false, "Cần %d vàng và %d gỗ." % [def.gold, def.wood])
-	p.gold -= def.gold
-	p.wood -= def.wood
+	var block := build_blocker(p, kind)
+	if block != "":
+		return _result(false, block)
+	for ck in COST_KEYS:
+		var cost := float(def.get(ck[0], 0))
+		if cost > 0.0:
+			p.set(ck[0], float(p.get(ck[0])) - cost)
 	start_building(p, kind)
 	return _result(true, "Bắt đầu xây %s (%d giây)." % [def.name, roundi(build_time(p, kind))])
 
@@ -471,7 +527,7 @@ static func production_per_minute(p) -> Dictionary:
 	# M8 (C5-03), M9 (C6-03): Mỏ vùng 5–6 là Mỏ Tinh Thạch (+1/phút), không cho Đá/Sắt; đột kích thua thì ngừng 30 phút.
 	var crystal_mines := 0
 	for key in p.buildings:
-		if (str(key).begins_with("mine_r5_") or str(key).begins_with("mine_r6_")) and is_built(p, str(key)):
+		if (str(key).begins_with("mine_r5_") or str(key).begins_with("mine_r6_") or str(key).begins_with("mine_r7_")) and is_built(p, str(key)):
 			crystal_mines += 1
 	mines -= crystal_mines
 	if float(p.get("build_clock")) < float(p.get("raid_penalty_until")):
@@ -479,7 +535,8 @@ static func production_per_minute(p) -> Dictionary:
 	var survivors := 0
 	for rg in region_grids(p):
 		survivors += count_owned(rg[1], "survivor")
-	var mult := 1.0 + 0.1 * survivors + (0.2 if is_built(p, "camp2") else 0.0)
+	# C7-02: Thôn +20%, Trấn +30%, Thành +40%, Hoàng Thành +50%.
+	var mult := 1.0 + 0.1 * survivors + CAMP_BONUS[clampi(int(p.camp_level), 1, 5)]
 	if p.talent == "thien-menh":
 		mult += Talents.lv_value(0.2, 0.3, p.talent_level)
 	if Talents.has_sub(p.talent, p.talent_level, "territory", 1):

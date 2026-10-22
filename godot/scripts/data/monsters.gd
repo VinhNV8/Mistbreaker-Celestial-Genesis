@@ -316,6 +316,41 @@ const DEFS := {
 		"element": "thuy", "name": "Long Băng Bắc Cực", "arch": "li", "speed": 110.0, "radius": 40.0, "range": 60.0,
 		"windup": 0.6, "recover": 0.9, "attack": "icebite", "color": "#9ad8ff", "steal": {"vit": 50, "int": 50},
 	},
+	## ---------------------------------------------------------------- M10 chương 7 (docs/16 C7-20…25, C7-30, C7-33)
+	## C7-20: Quạt cánh — nón 60° 6 m ×0,8 + đẩy lùi 5 m (có thể đẩy rơi khỏi mép). Tinh anh: Rồng Mây (bay vòng + Lao mây).
+	"dai-bang-may": {
+		"element": "kim", "name": "Đại Bàng Mây", "arch": "nhanh", "speed": 160.0, "radius": 15.0, "range": 60.0,
+		"windup": 0.6, "recover": 1.0, "attack": "gust", "color": "#e8eef8", "steal": {"agi": 70, "luk": 30},
+		"elite_name": "Rồng Mây", "elite_arch": "nhanh", "elite_min_level": 78, "elite_skill": "clouddash", "elite_sprite": "rong-may",
+		"elite_element": "moc",
+	},
+	## C7-21: Rễ quật — vòng 5 m quanh mình ×1,3. Tinh anh: Thủ Hộ Đảo (Khiên trời: đồng bọn bất tử 4 giây).
+	"nguoi-go-dao": {
+		"element": "moc", "name": "Người Gỗ Đảo Bay", "arch": "giap", "speed": 70.0, "radius": 20.0, "range": 40.0,
+		"windup": 1.0, "recover": 1.4, "attack": "rootlash", "color": "#86d47a", "steal": {"vit": 60, "str": 40},
+		"elite_name": "Thủ Hộ Đảo", "elite_arch": "giap", "elite_min_level": 75, "elite_skill": "skyshield", "elite_sprite": "thu-ho-dao",
+		"elite_element": "kim",
+	},
+	## C7-22: đánh xa 18 m; Hồi phục 5% HP cho đồng bọn trong 10 m mỗi 2 giây (chapter7.tick).
+	"tien-gio": {
+		"element": "moc", "name": "Tiên Gió", "arch": "phep", "speed": 110.0, "radius": 15.0, "range": 180.0,
+		"windup": 0.8, "recover": 1.2, "attack": "windbolt", "color": "#a8f0c0", "steal": {"int": 60, "luk": 40},
+	},
+	## C7-23: Thương phá — đâm xuyên thẳng 15 m rộng 1,5 m ×1,6.
+	"hiep-si-thien-khong": {
+		"element": "kim", "name": "Hiệp Sĩ Thiên Không", "arch": "li", "speed": 80.0, "radius": 17.0, "range": 140.0,
+		"windup": 0.8, "recover": 1.3, "attack": "lance", "color": "#c8d8ec", "steal": {"str": 60, "vit": 40},
+	},
+	## C7-30: boss chương 7 (đấu trường đảo tròn 30 m, 3 giai đoạn — chapter7).
+	"cu-than": {
+		"element": "kim", "name": "Thiên Không Cự Thần", "arch": "boss", "speed": 90.0, "radius": 40.0, "range": 60.0,
+		"windup": 0.7, "recover": 1.0, "attack": "melee", "color": "#7a8498", "steal": {"str": 50, "vit": 50},
+	},
+	## C7-33: boss hiếm 7-3 — chạy vòng (miss), dừng tới khi mất 12% HP hoặc 6 giây.
+	"ky-lan-may": {
+		"element": "moc", "name": "Kỳ Lân Mây", "arch": "nhanh", "speed": 160.0, "radius": 34.0, "range": 50.0,
+		"windup": 0.5, "recover": 0.8, "attack": "melee", "color": "#86d47a", "steal": {"agi": 50, "luk": 50},
+	},
 	## C4-30: boss chương 4
 	"nu-vuong": {
 		"element": "thuy", "name": "Nữ Vương Phệ Mộng", "arch": "boss", "speed": 110.0, "radius": 30.0, "range": 50.0,

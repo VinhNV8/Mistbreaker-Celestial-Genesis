@@ -9,18 +9,24 @@ const UiTheme = preload("res://scripts/ui/ui_theme.gd")
 const Classes = preload("res://scripts/data/classes.gd")
 const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
 
+## UI-17: bảng phím đầy đủ — dùng ở màn hình tiêu đề và bảng Trợ giúp (F1).
 const CONTROLS := [
 	["W A S D", "Di chuyển"],
 	["Chuột", "Ngắm hướng đánh"],
 	["Chuột trái / J", "Đánh thường (giữ để đánh liên tục)"],
-	["1 · 2 · 3 · 4", "4 kỹ năng của lớp (tốn MP); K / chuột phải = kỹ năng 1"],
+	["1 · 2 · 3 · 4", "4 kỹ năng đang lắp (tốn MP); K / chuột phải = kỹ năng 1"],
 	["Space", "Né lăn — bất tử 0,3 giây"],
 	["L", "Kỹ năng Thiên phú (nếu có)"],
 	["Q", "Uống bình máu"],
-	["M · N · I · C · T", "Khai phá · Lục địa · Túi đồ · Chỉ số · Thiên phú"],
-	["E · Z", "Cửa hàng (ở làng) · Tự đánh"],
+	["Z", "Bật / tắt Tự đánh (hoặc bấm nút cạnh thanh kỹ năng)"],
+	["C · I", "Nhân vật: tab Chỉ số · tab Túi đồ"],
+	["U · T", "Kỹ năng · Thiên phú"],
+	["M · N", "Khai phá (lưới ô) · Bản đồ lục địa (chỉ xem)"],
+	["V", "Phóng to / thu nhỏ bản đồ nhỏ (bấm bản đồ nhỏ để tự chạy tới)"],
+	["E", "Nói chuyện / cửa hàng (đứng cạnh NPC trong làng)"],
+	["F1 · H", "Trợ giúp"],
+	["Esc", "Đóng bảng · Tạm dừng"],
 ]
-
 
 ## C1-13: lục địa Huyền Thổ vỡ 9 mảnh quanh lõi Hư Vô; vùng 1 đã sáng, vùng 2 nhấp nháy.
 class Continent:
@@ -393,7 +399,10 @@ const VICTORY := {
 		"Gặp Liệt Diễm ở Trại Tro Hồng để chuyển chức lần 2 (cấp 60, 30 Tinh Thạch). Băng Nguyên Bắc Cực mở sau chuyển chức 2."],
 	"ban-nga": [6, "Bản Ngã Bóng Tối đã tan",
 		"Gương Băng vỡ vụn. Cái bóng không mặt tan thành khói đen và chui vào ngực %s — lạnh buốt, rồi im lặng. Tuyết Nga đang chờ ở Trạm Tuyết Bạc với sự thật về thân phận.",
-		"Về Trạm Tuyết Bạc nói với Tuyết Nga. Quần Đảo Thiên Không (chương 7) sẽ mở ở bản sau."],
+		"Về Trạm Tuyết Bạc nói với Tuyết Nga. Quần Đảo Thiên Không mở khi lãnh địa thành Hoàng Thành và xây Cảng Khí Cầu."],
+	"cu-than": [7, "Thiên Không Cự Thần đã quỳ xuống",
+		"Ấn Hư Vô trên trán Cự Thần vỡ vụn. Người khổng lồ tỉnh lại, quỳ trước Bia Đá gốc rồi hoá đá. Bia Đá gốc rung lên khi %s bước tới gần…",
+		"Chạm Bia Đá gốc ở Đài Cự Thần (E) để làm nghi thức Nghịch Thiên Cải Mệnh — tiến hoá Thiên phú lần 2."],
 }
 
 

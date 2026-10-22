@@ -112,6 +112,16 @@ const SETS := {
 			{"count": 6, "text": "Đòn chí mạng làm chậm quái 40% trong 2 giây", "bonus": {}},
 		],
 	},
+	## C7-35 (M10): bộ vùng 7 — xử lý trong core/chapter7.gd (2: miễn đẩy lùi · 4: +10% tốc đánh · 6: rơi không mất HP, hồi 60 giây).
+	"thien_phong": {
+		"name": "Bộ Thiên Phong",
+		"suffix": "Thiên Phong",
+		"tiers": [
+			{"count": 2, "text": "Không bị đẩy lùi", "bonus": {}},
+			{"count": 4, "text": "+10% tốc đánh", "bonus": {}},
+			{"count": 6, "text": "Rơi khỏi mép đảo không mất HP (hồi 60 giây)", "bonus": {}},
+		],
+	},
 	## C3-35 (M6): bộ vùng 3.
 	"sa_hanh": {
 		"name": "Bộ Sa Hành Giả",
@@ -127,9 +137,9 @@ const SETS := {
 const SA_HANH := "sa_hanh"
 const REGION_SET := "frost_hunter"
 ## Đồ Tím rơi ở vùng nào thì thuộc bộ của vùng đó (M4.2).
-const REGION_SETS := {1: "frost_hunter", 2: "phong_hanh", 3: "sa_hanh", 4: "u_minh", 5: "hoa_nguc", 6: "cuc_quang"}
+const REGION_SETS := {1: "frost_hunter", 2: "phong_hanh", 3: "sa_hanh", 4: "u_minh", 5: "hoa_nguc", 6: "cuc_quang", 7: "thien_phong"}
 ## Đồ Cam của từng boss chương.
-const BOSS_UNIQUES := {"boss": "wolf_fang", "huyen-anh": "huyen_anh_mask", "sa-hoang": "sa_hoang_tail", "nu-vuong": "goi_mong", "vien-long": "long_tam", "ban-nga": "guong_ban_nga"}
+const BOSS_UNIQUES := {"boss": "wolf_fang", "huyen-anh": "huyen_anh_mask", "sa-hoang": "sa_hoang_tail", "nu-vuong": "goi_mong", "vien-long": "long_tam", "ban-nga": "guong_ban_nga", "cu-than": "bua_cu_than"}
 
 ## EQ-16: đồ Cam có hiệu ứng riêng.
 const UNIQUES := {
@@ -167,6 +177,18 @@ const UNIQUES := {
 		"name": "Gương Bản Ngã",
 		"slot": "amulet",
 		"text": "Khi bị đánh trúng, 10% phản 50% sát thương nhận lên quái gần nhất trong 6 m.",
+	},
+	## C7-31 (M10): rơi từ Thiên Không Cự Thần (15%).
+	"bua_cu_than": {
+		"name": "Búa Cự Thần",
+		"slot": "weapon",
+		"text": "Đòn thứ 3 (với cung / phép: phát bắn thứ 3) tạo sóng chấn vòng 6 m, 80% sát thương.",
+	},
+	## C7-34 (M10): rơi từ boss hiếm Kỳ Lân Mây.
+	"sung_ky_lan": {
+		"name": "Sừng Kỳ Lân",
+		"slot": "necklace",
+		"text": "+20% hiệu lực hồi máu; mỗi 10 giây hồi 5% HP.",
 	},
 	## C6-34 (M9): rơi từ boss hiếm Long Băng Bắc Cực.
 	"vay_long_bang": {

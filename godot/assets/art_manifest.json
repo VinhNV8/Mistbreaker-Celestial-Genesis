@@ -4602,6 +4602,350 @@
    },
    "name": "Thợ săn Lão Hàn",
    "size_mul": 1.0
+  },
+  "dai-bang-may": {
+   "path": "res://assets/sprites/dai-bang-may.png",
+   "w": 24,
+   "h": 24,
+   "origin": [
+    12,
+    22
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Đại Bàng Mây",
+   "size_mul": 1.25
+  },
+  "nguoi-go-dao": {
+   "path": "res://assets/sprites/nguoi-go-dao.png",
+   "w": 24,
+   "h": 24,
+   "origin": [
+    12,
+    22
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Người Gỗ Đảo Bay",
+   "size_mul": 1.45
+  },
+  "tien-gio": {
+   "path": "res://assets/sprites/tien-gio.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Tiên Gió",
+   "size_mul": 1.0
+  },
+  "hiep-si-thien-khong": {
+   "path": "res://assets/sprites/hiep-si-thien-khong.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Hiệp Sĩ Thiên Không",
+   "size_mul": 1.0
+  },
+  "thu-ho-dao": {
+   "path": "res://assets/sprites/thu-ho-dao.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    30
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Thủ Hộ Đảo",
+   "size_mul": 1.45
+  },
+  "rong-may": {
+   "path": "res://assets/sprites/rong-may.png",
+   "w": 48,
+   "h": 48,
+   "origin": [
+    24,
+    44
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Rồng Mây",
+   "size_mul": 1.0
+  },
+  "cu-than": {
+   "path": "res://assets/sprites/cu-than.png",
+   "w": 48,
+   "h": 48,
+   "origin": [
+    24,
+    44
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Thiên Không Cự Thần",
+   "size_mul": 2.3
+  },
+  "ky-lan-may": {
+   "path": "res://assets/sprites/ky-lan-may.png",
+   "w": 48,
+   "h": 48,
+   "origin": [
+    24,
+    44
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 2,
+     "fps": 3,
+     "loop": true
+    },
+    "run": {
+     "row": 1,
+     "frames": 4,
+     "fps": 9,
+     "loop": true
+    },
+    "attack": {
+     "row": 2,
+     "frames": 3,
+     "fps": 10,
+     "loop": false
+    },
+    "hurt": {
+     "row": 3,
+     "frames": 1,
+     "fps": 8,
+     "loop": false
+    },
+    "death": {
+     "row": 4,
+     "frames": 3,
+     "fps": 6,
+     "loop": false
+    }
+   },
+   "name": "Kỳ Lân Mây",
+   "size_mul": 1.25
   }
  },
  "icons": {
@@ -4625,6 +4969,8 @@
   "item-vay_that_dau": "res://assets/icons/item-vay_that_dau.png",
   "item-guong_ban_nga": "res://assets/icons/item-guong_ban_nga.png",
   "item-vay_long_bang": "res://assets/icons/item-vay_long_bang.png",
+  "item-bua_cu_than": "res://assets/icons/item-bua_cu_than.png",
+  "item-sung_ky_lan": "res://assets/icons/item-sung_ky_lan.png",
   "res-gold": "res://assets/icons/res-gold.png",
   "res-wood": "res://assets/icons/res-wood.png",
   "res-stone": "res://assets/icons/res-stone.png",
@@ -5379,6 +5725,96 @@
    "origin": [
     16,
     29
+   ]
+  },
+  "tile-sky-grass": {
+   "path": "res://assets/env/tile-sky-grass.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    0,
+    0
+   ]
+  },
+  "tile-marble": {
+   "path": "res://assets/env/tile-marble.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    0,
+    0
+   ]
+  },
+  "tile-wind-bridge": {
+   "path": "res://assets/env/tile-wind-bridge.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    0,
+    0
+   ]
+  },
+  "cloud-puff-0": {
+   "path": "res://assets/env/cloud-puff-0.png",
+   "w": 40,
+   "h": 22,
+   "origin": [
+    20,
+    14
+   ]
+  },
+  "tree-hanging-0": {
+   "path": "res://assets/env/tree-hanging-0.png",
+   "w": 34,
+   "h": 48,
+   "origin": [
+    17,
+    45
+   ]
+  },
+  "sky-pillar-0": {
+   "path": "res://assets/env/sky-pillar-0.png",
+   "w": 22,
+   "h": 50,
+   "origin": [
+    11,
+    47
+   ]
+  },
+  "cloud-puff-1": {
+   "path": "res://assets/env/cloud-puff-1.png",
+   "w": 40,
+   "h": 22,
+   "origin": [
+    20,
+    14
+   ]
+  },
+  "tree-hanging-1": {
+   "path": "res://assets/env/tree-hanging-1.png",
+   "w": 34,
+   "h": 48,
+   "origin": [
+    17,
+    45
+   ]
+  },
+  "sky-pillar-1": {
+   "path": "res://assets/env/sky-pillar-1.png",
+   "w": 22,
+   "h": 50,
+   "origin": [
+    11,
+    47
+   ]
+  },
+  "airship-dock": {
+   "path": "res://assets/env/airship-dock.png",
+   "w": 48,
+   "h": 56,
+   "origin": [
+    24,
+    52
    ]
   }
  }
