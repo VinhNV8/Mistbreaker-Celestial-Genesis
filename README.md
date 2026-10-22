@@ -24,6 +24,9 @@ Trạng thái: Chương 1 chơi được trên Godot 4.7.2. Đang làm **MVP**: 
 | [docs/07-do-hoa-ke-hoach.md](docs/07-do-hoa-ke-hoach.md) | Đồ hoạ | Nghiên cứu, phong cách pixel art đã chốt, hạng mục AR-xx, kết quả G1. Sinh hình: `python tools/art/build_all.py` (skill `game-art`) |
 | [docs/08-chuong-1-hoan-chinh.md](docs/08-chuong-1-hoan-chinh.md) | Kế hoạch | Đợt C1: hoàn chỉnh Chương 1, kết hợp ghi chú Spec_Notes (N1–N7), hạng mục C1-xx |
 | [docs/15-hang-phu.md](docs/15-hang-phu.md) | Thiết kế nội dung | Hang phụ trong từng map (Spec_Notes đợt 6): cửa hang, 3 khu quái, Chúa Hang, thưởng, đóng 20 phút, save v15 |
+| [docs/16-chuong-7.md](docs/16-chuong-7.md) | Review trước khi code | Đợt M10 — Chương 7 Thiên Không Đảo: lãnh địa cấp 3–5 + Cảng Khí Cầu, đảo bay, Thiên Không Cự Thần, Kỳ Lân Mây, tiến hoá Thiên phú lần 2 (chờ duyệt Q76–Q82) |
+| [docs/17-chuong-8.md](docs/17-chuong-8.md) | Review trước khi code | Đợt M11 — Chương 8 Vực Hư Vô: Suy Thiên, Đèn Tinh Quang, Giáo Chủ Hư Vô (Hút Thiên phú), Tổng tấn công, chuyển chức 3 + Thần Kỹ (chờ duyệt Q83–Q89) |
+| [docs/18-chuong-9.md](docs/18-chuong-9.md) | Review trước khi code | Đợt M12 — Chương 9 Thiên Đạo Chi Môn: 9 tầng theo hệ, Ma Tôn Vô Diện, hai kết thúc Hợp nhất / Hiến tế, endgame tối thiểu (cấp sau 100, Thần Vực, Tái Thiết Lục Địa) (chờ duyệt Q90–Q98) |
 | [docs/04-ke-hoach-tien-do.md](docs/04-ke-hoach-tien-do.md) | **Theo dõi tiến độ** | 173 hạng mục của kịch bản: đã làm / một phần / chưa làm, đợt sẽ làm, việc cần làm từng đợt, quyết định đang chờ |
 
 ## Chạy nhanh
