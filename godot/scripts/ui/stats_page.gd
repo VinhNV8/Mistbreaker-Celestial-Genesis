@@ -21,7 +21,6 @@ const ROWS := [
 
 static func build(content: VBoxContainer, world, refresh: Callable) -> void:
 	var p = world.profile
-	var s: Dictionary = world.stats
 	var t: Dictionary = world.talent()
 	content.custom_minimum_size.x = 520
 
@@ -39,24 +38,42 @@ static func build(content: VBoxContainer, world, refresh: Callable) -> void:
 	card.add_child(ch)
 	content.add_child(card)
 
-	content.add_child(UiTheme.label("Điểm tiềm năng còn lại: %d" % p.unspent, "Muted"))
+	# UI-19: mỗi chỉ số = mặc định của lớp + điểm tiềm năng đã cộng.
+	content.add_child(UiTheme.label("Điểm tiềm năng còn lại: %d   ·   chỉ số = mặc định của lớp + điểm cộng" % p.unspent, "Muted", 520))
+	var base: Dictionary = Stats.base_stats(str(p.class_id))
 	var col: int = {"tho-san": 3, "phap-su": 4}.get(p.class_id, 2)
 	var stolen := Stats.total_points({}, p.stolen)
 	for r in ROWS:
 		var row := UiTheme.hbox(10)
+		row.tooltip_text = "Mỗi điểm: " + (r[col] if r[col] != "" else r[2])
 		var left := UiTheme.vbox(0)
 		left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		left.mouse_filter = Control.MOUSE_FILTER_PASS
 		left.add_child(UiTheme.label(r[1]))
-		left.add_child(UiTheme.label(r[col] if r[col] != "" else r[2], "Small"))
+		# Đã có điểm: ghi điểm đang cho bao nhiêu; chưa có: ghi tác dụng mỗi điểm.
+		var gives := contribution(p, r[0])
+		var sub := UiTheme.label(("Đang cho: " + gives) if gives != "" else ("Mỗi điểm: " + (r[col] if r[col] != "" else r[2])), "Small")
+		if gives != "":
+			sub.add_theme_color_override("font_color", Color("#ffd877"))
+		left.add_child(sub)
 		row.add_child(left)
+		# "mặc định + điểm cộng" (+ điểm Đạo Tặc cướp, đỏ)
 		var extra: int = stolen[r[0]]
-		var val := UiTheme.label(str(int(p.points.get(r[0], 0))) + (" +%d" % extra if extra > 0 else ""), "Heading")
+		var vals := UiTheme.hbox(4)
+		vals.custom_minimum_size.x = 120
+		vals.alignment = BoxContainer.ALIGNMENT_END
+		vals.tooltip_text = "Mặc định của lớp %d + điểm cộng %d%s" % [int(base.get(r[0], 0)), int(p.points.get(r[0], 0)),
+			(" + Đạo Tặc cướp %d" % extra) if extra > 0 else ""]
+		var bl := UiTheme.label(str(int(base.get(r[0], 0))), "Heading")
+		bl.add_theme_color_override("font_color", UiTheme.MUTED)
+		vals.add_child(bl)
+		vals.add_child(UiTheme.label("+", "Muted"))
+		vals.add_child(UiTheme.label(str(int(p.points.get(r[0], 0))), "Heading"))
 		if extra > 0:
-			val.add_theme_color_override("font_color", Color("#ff5470"))
-			val.tooltip_text = "Đạo Tặc cướp được %d điểm" % extra
-		val.custom_minimum_size.x = 64
-		val.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		row.add_child(val)
+			var el := UiTheme.label("+%d" % extra, "Heading")
+			el.add_theme_color_override("font_color", Color("#ff5470"))
+			vals.add_child(el)
+		row.add_child(vals)
 		var plus := UiTheme.button("+")
 		plus.custom_minimum_size.x = 44
 		plus.disabled = p.unspent <= 0
@@ -69,12 +86,7 @@ static func build(content: VBoxContainer, world, refresh: Callable) -> void:
 
 	if not p.stolen.is_empty():
 		content.add_child(UiTheme.label("Đạo Tặc: %d/%d điểm cướp được (màu đỏ) — không bị tẩy điểm." % [p.stolen.size(), p.level], "Small"))
-	var derived := "Lực chiến %d\nHP %d   ·   MP %d   ·   Tấn công %d   ·   Phòng thủ %.1f\nTốc đánh %d%%   ·   Chí mạng %.1f%%   ·   Sát thương chí mạng ×%.2f   ·   Né tránh %.1f%%" % [
-		world.combat_power(), s.max_hp, s.max_mp, int(s.atk), s.def, roundi(s.atk_speed * 100.0), s.crit * 100.0, 1.0 + s.crit_dmg, s.evasion * 100.0
-	]
-	var dl := UiTheme.label(derived, "Muted")
-	dl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	content.add_child(dl)
+	# Chỉ số dẫn xuất (HP, Tấn công, chí mạng…) chỉ hiện ở cột nhân vật bên trái (inventory_panel._character_column) — không lặp lại ở đây.
 
 	var used := 0
 	for k in Stats.STATS:
@@ -84,12 +96,48 @@ static func build(content: VBoxContainer, world, refresh: Callable) -> void:
 	respec.pressed.connect(func():
 		world.respec()
 		refresh.call())
-	content.add_child(respec)
+	var buttons := UiTheme.hbox(8)
+	respec.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	buttons.add_child(respec)
 	# C1-34: tự cộng điểm theo lớp
 	var auto := UiTheme.button("Tự cộng điểm (%s)" % {"tho-san": "3 AGI : 1 VIT : 1 LUK", "phap-su": "3 INT : 2 VIT"}.get(p.class_id, "3 STR : 2 VIT"), true)
 	auto.name = "AutoAllocate"
 	auto.disabled = p.unspent <= 0
+	auto.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	auto.pressed.connect(func():
 		world.auto_allocate()
 		refresh.call())
-	content.add_child(auto)
+	buttons.add_child(auto)
+	content.add_child(buttons)
+
+
+## Chỉ số chỉ tính chỉ số mặc định + điểm tiềm năng (kể cả điểm Đạo Tặc cướp) — không Thiên phú, không trang bị.
+## skip: bỏ hẳn chỉ số đó (cả mặc định lẫn điểm cộng) để biết nó đang cho bao nhiêu.
+static func _bare(p, skip := "") -> Dictionary:
+	var pts := {}
+	var stolen: Array = []
+	var base: Dictionary = Stats.base_stats(str(p.class_id)).duplicate()
+	for k in Stats.STATS:
+		if k != skip:
+			pts[k] = int(p.points.get(k, 0))
+		else:
+			base[k] = 0
+	for k in p.stolen:
+		if str(k) != skip:
+			stolen.append(k)
+	return Stats.derive(int(p.level), pts, "", {}, 1, str(p.class_id), stolen, base)
+
+
+## UI-19: chỉ số key (mặc định + điểm cộng) đang cho bao nhiêu ("+24 Tấn công, +6% chí mạng"); "" nếu bằng 0.
+static func contribution(p, key: String) -> String:
+	var a := _bare(p)
+	var b := _bare(p, key)
+	var parts := PackedStringArray()
+	for f in [["atk", "Tấn công", 1.0, "%d"], ["max_hp", "HP", 1.0, "%d"], ["def", "Phòng thủ", 1.0, "%.1f"], ["max_mp", "MP", 1.0, "%d"],
+			["mp_regen", "MP/giây", 1.0, "%.2f"], ["atk_speed", "% tốc đánh", 100.0, "%.1f"], ["crit", "% chí mạng", 100.0, "%.1f"],
+			["evasion", "% né tránh", 100.0, "%.1f"], ["skill_mul", "% sát thương kỹ năng", 100.0, "%.1f"], ["drop_bonus", "% rơi đồ", 100.0, "%.1f"]]:
+		var d: float = (float(a[f[0]]) - float(b[f[0]])) * float(f[2])
+		if d > 0.001:
+			var num: String = (str(f[3]) % d).trim_suffix(".0")
+			parts.append("+" + num + ("" if str(f[1]).begins_with("%") else " ") + str(f[1]))
+	return ", ".join(parts)

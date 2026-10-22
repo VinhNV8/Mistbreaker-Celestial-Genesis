@@ -144,8 +144,9 @@ func _character_column(p) -> VBoxContainer:
 	grid.columns = 2
 	grid.add_theme_constant_override("h_separation", 16)
 	for pair in [
-		["Lực chiến", str(world.combat_power())], ["HP", str(s.max_hp)], ["MP", str(s.max_mp)],
-		["Tấn công", str(int(s.atk))], ["Phòng thủ", "%.1f" % s.def], ["Chí mạng", "%.1f%%" % (s.crit * 100.0)],
+		# Lực chiến đã ở tiêu đề bảng; đây là nơi duy nhất hiện chỉ số dẫn xuất (trang Chỉ số không lặp lại).
+		["HP", str(s.max_hp)], ["MP", str(s.max_mp)], ["Tấn công", str(int(s.atk))], ["Phòng thủ", "%.1f" % s.def],
+		["Chí mạng", "%.1f%%" % (s.crit * 100.0)], ["ST chí mạng", "×%.2f" % (1.0 + s.crit_dmg)],
 		["Tốc đánh", "%d%%" % roundi(s.atk_speed * 100.0)], ["Né tránh", "%.1f%%" % (s.evasion * 100.0)],
 	]:
 		grid.add_child(UiTheme.label(pair[0], "Small"))

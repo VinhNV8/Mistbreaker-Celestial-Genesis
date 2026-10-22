@@ -21,6 +21,18 @@ const HUNTER_AGI_CRIT := 0.0025
 ## SN-02: Pháp Sư.
 const MAGE_MP := 30
 const MAGE_MP_REGEN := 1.0
+## UI-19: chỉ số mặc định theo lớp (tổng 17) — hiện ở trang Chỉ số dạng "mặc định + điểm cộng". Tính như điểm thường;
+## phần nền theo lớp + cấp đã trừ đúng phần chỉ số mặc định đóng góp, nên chỉ số cuối cùng giữ nguyên như trước khi có mặc định
+## (không lệch cân bằng TL-B…). Trần (tốc đánh Thợ Săn, né, rơi đồ) vẫn áp lên phần trên mặc định như cũ.
+const BASE_STATS := {
+	"kiem-khach": {"str": 5, "agi": 3, "int": 2, "vit": 5, "luk": 2},
+	"tho-san": {"str": 3, "agi": 5, "int": 2, "vit": 4, "luk": 3},
+	"phap-su": {"str": 2, "agi": 3, "int": 5, "vit": 4, "luk": 3},
+}
+
+
+static func base_stats(class_id: String) -> Dictionary:
+	return BASE_STATS.get(class_id, BASE_STATS["kiem-khach"])
 
 
 ## Đọc điểm an toàn với save/test cũ chỉ có str/agi/vit.
@@ -40,15 +52,27 @@ static func total_points(pts: Dictionary, stolen: Array = []) -> Dictionary:
 
 ## bonus: kết quả Items.equipment_bonus() — {flat: {stat: value}, max_hp_pct, atk_pct, spin_cd, uniques},
 ## cộng thêm "dragon": true khi Long Mạch Đàn đã xây xong.
+## base: chỉ số mặc định dùng thay cho BASE_STATS của lớp (trang Chỉ số dùng để tính "mỗi chỉ số đang cho bao nhiêu").
 static func derive(level: int, pts: Dictionary, talent: String, bonus := {}, talent_level := 1,
-		class_id := "kiem-khach", stolen: Array = []) -> Dictionary:
+		class_id := "kiem-khach", stolen: Array = [], base = null) -> Dictionary:
 	var lv := level - 1
 	var t := total_points(pts, stolen)
+	var b0: Dictionary = base_stats(class_id)
+	var bs: Dictionary = b0 if base == null else base
+	# chỉ số = mặc định + điểm cộng (+ điểm Đạo Tặc cướp)
+	for k in STATS:
+		t[k] = int(t[k]) + int(bs.get(k, 0))
 	var str_pts: int = t.str
 	var agi_pts: int = t.agi
 	var int_pts: int = t.int
 	var vit_pts: int = t.vit
 	var luk_pts: int = t.luk
+	# phần nền đã trừ đúng phần mặc định của lớp đóng góp (b0) — chỉ số cuối cùng như khi chưa có mặc định
+	var b_str: int = int(b0.str)
+	var b_agi: int = int(b0.agi)
+	var b_int: int = int(b0.int)
+	var b_vit: int = int(b0.vit)
+	var b_luk: int = int(b0.luk)
 	var hunter := class_id == "tho-san"
 	var mage := class_id == "phap-su"
 	var flat: Dictionary = bonus.get("flat", {})
@@ -63,14 +87,18 @@ static func derive(level: int, pts: Dictionary, talent: String, bonus := {}, tal
 	var crit_dmg_bonus := 0.15 if Talents.has_sub(talent, talent_level, "combat", 2) else 0.0
 	# CL: Kiếm Khách lấy Tấn công từ STR; Thợ Săn từ AGI (STR phụ), máu mỏng hơn, né gốc 5%.
 	# SN-02: Pháp Sư lấy Tấn công từ INT, máu mỏng nhất, MP gốc +30, hồi MP +1/giây.
-	var atk_from_pts: float = str_pts * 2
+	var atk_from_pts: float = (str_pts - b_str) * 2
 	var base_hp := 100 + lv * 15
 	if hunter:
-		atk_from_pts = agi_pts * 2 + str_pts
+		atk_from_pts = (agi_pts - b_agi) * 2 + (str_pts - b_str)
 		base_hp = 90 + lv * 13
 	elif mage:
-		atk_from_pts = int_pts * 2
+		atk_from_pts = (int_pts - b_int) * 2
 		base_hp = 85 + lv * 12
+	vit_pts -= b_vit
+	int_pts -= b_int
+	luk_pts -= b_luk
+	agi_pts -= b_agi
 	return {
 		"class": class_id,
 		"max_hp": int(round((base_hp + vit_pts * 12 + flat.get("max_hp", 0.0)) * (1.0 + hp_pct))),

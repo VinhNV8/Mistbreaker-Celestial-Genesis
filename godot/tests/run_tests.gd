@@ -194,6 +194,7 @@ func _init() -> void:
 	for c in Classes.ORDER:
 		_run("PACE-T2 %s cấp 10 → 20 vùng 2" % c, _test_pace_r2.bind(c))
 
+	_run("UI-19 trang Chỉ số: mặc định của lớp + điểm cộng, chỉ số đang cho bao nhiêu", _test_ui19_stat_sources)
 	print("")
 	if _failed.is_empty():
 		print("TẤT CẢ %d TEST QUA" % _total)
@@ -5259,6 +5260,53 @@ func _sk2_fight(class_id: String, loadout: Array, seed_value: int) -> Array:
 		w.update(1.0 / 60.0, _bot(w))
 		seconds += 1.0 / 60.0
 	return [seconds, deaths, p.bosses.get("huyen-anh", false)]
+
+
+## UI-19: chỉ số = mặc định của lớp + điểm cộng; dòng phụ ghi chỉ số đó đang cho bao nhiêu; không lặp tổng chỉ số.
+func _test_ui19_stat_sources() -> void:
+	var StatsPage = load("res://scripts/ui/stats_page.gd")
+	for c in Classes.ORDER:
+		var bs: Dictionary = Stats.base_stats(c)
+		var total := 0
+		for k in Stats.STATS:
+			total += int(bs[k])
+		_check(total == 17, "%s: 5 chỉ số mặc định, tổng 17 (%d)" % [c, total])
+	# Mặc định không làm lệch cân bằng: chỉ số cuối như công thức cũ (không mặc định, chỉ điểm cộng).
+	var zero := {"str": 0, "agi": 0, "int": 0, "vit": 0, "luk": 0}
+	var pts := {"str": 7, "agi": 30, "int": 11, "vit": 9, "luk": 4}
+	for c in Classes.ORDER:
+		var now: Dictionary = Stats.derive(40, pts, "tay-nhanh", {}, 5, c)
+		var old_hp: int = int(Stats.derive(40, pts, "tay-nhanh", {}, 5, c, [], Stats.base_stats(c)).max_hp)
+		_check(now.max_hp == old_hp, "%s: derive mặc định = derive có base lớp" % c)
+		var nob: Dictionary = Stats.derive(40, zero, "", {}, 1, c)
+		var b0: Dictionary = Stats.derive(40, zero, "", {}, 1, c, [], zero)
+		_check(nob.max_hp > b0.max_hp and nob.atk >= b0.atk, "%s: chỉ số mặc định có đóng góp thật" % c)
+	var w := _world("tay-nhanh")
+	var p = w.profile
+	p.level = 10
+	p.points = {"str": 12, "agi": 0, "int": 0, "vit": 4, "luk": 0}
+	w._refresh_stats()
+	_check(StatsPage.contribution(p, "str") == "+34 Tấn công", "Kiếm Khách 5 + 12 STR: +34 Tấn công (%s)" % StatsPage.contribution(p, "str"))
+	_check(StatsPage.contribution(p, "vit").contains("+108 HP") and StatsPage.contribution(p, "vit").contains("Phòng thủ"), "5 + 4 VIT: +108 HP (%s)" % StatsPage.contribution(p, "vit"))
+	p.class_id = "tho-san"
+	p.points = {"str": 0, "agi": 10, "int": 0, "vit": 0, "luk": 0}
+	w._refresh_stats()
+	var agi: String = StatsPage.contribution(p, "agi")
+	_check(agi.contains("+30 Tấn công") and agi.contains("% tốc đánh") and agi.contains("% chí mạng") and agi.contains("% né tránh"), "Thợ Săn 5 + 10 AGI (%s)" % agi)
+	var box: VBoxContainer = VBoxContainer.new()
+	StatsPage.build(box, w, func(): pass)
+	var texts := []
+	_collect_labels(box, texts)
+	_check(box.find_child("StatSources", true, false) == null and not texts.any(func(t): return str(t).begins_with("Lực chiến")), "không lặp tổng chỉ số")
+	_check(texts.has("5") and texts.has("10"), "cột số: mặc định 5 + điểm cộng 10")
+	box.free()
+
+
+func _collect_labels(n: Node, out: Array) -> void:
+	if n is Label:
+		out.append(n.text)
+	for c in n.get_children():
+		_collect_labels(c, out)
 
 
 # ------------------------------------------------------------------ SK3 — tối thượng, kỹ năng nhánh chuyển chức 2, Bí Kíp (docs/13)

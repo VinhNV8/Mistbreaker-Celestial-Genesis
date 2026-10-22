@@ -395,6 +395,8 @@ Mỗi đợt theo quy trình: **viết spec → duyệt → code → test → c�
 - [x] UI-14: cổng vẽ lại (vòng phù văn mặt đất, trụ pha lê, bảng tên), không che nhân vật, tự tránh nhà / cây
 - [x] CB-30: quái áp sát nhanh hơn (đuổi ×1,25, tối thiểu 165, Truy kích khi bị đánh từ xa, tầm phát hiện 330)
 - [x] UI-15: bảng tên quái (loại · tên · cấp, màu theo chênh cấp); UI-11b: tab Chỉ số | Túi đồ | Tài nguyên
+- [x] UI-19: chỉ số mặc định theo lớp (tổng 17), trang Chỉ số hiện "mặc định + điểm cộng" và chỉ số đó đang cho bao nhiêu — chỉ số cuối không đổi
+- [x] UI-18: bỏ trùng chỉ số ở tab Chỉ số (khung tổng kết lặp cột nhân vật; Lực chiến chỉ ở tiêu đề, cột trái thêm ST chí mạng)
 - [x] HP-01…10: hang phụ trong từng map (cửa hang, 3 khu, Chúa Hang, thưởng, đóng 20 phút, save v15) — [15](15-hang-phu.md)
 
 ### G — Đồ hoạ và âm thanh
