@@ -603,6 +603,11 @@ func _load_map(id: String) -> void:
 	move_target = Vector2.INF
 	map_id = id
 	map = Maps.get_map(id)
+	# Map khai báo thiếu khoá "arena" (ví dụ map mới đang viết dở) thì coi như không có hang boss —
+	# mọi chỗ đọc map.arena (world_view._draw, …) không sập.
+	if not map.has("arena"):
+		map = map.duplicate()
+		map["arena"] = null
 	var cave := Caves.is_cave(id)
 	profile.map_id = Caves.parent(id)
 	# M4.3 (KP-01): mỗi vùng một lưới khai phá; `tiles` luôn là lưới của vùng đang đứng.
