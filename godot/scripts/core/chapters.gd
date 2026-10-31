@@ -23,12 +23,20 @@ extends RefCounted
 ##   trap_triggered(w, pos, mul) (bẫy vừa nổ) · meteor_extra(w, pos, mul) -> Array[[pos, mul]] (Thiên Thạch thêm)
 ##   npc_visible(w, npc_id) -> bool (chỉ gọi chương có npc_id trong NPCS; mặc định true)
 ##   M9 (D42): input_filter(w, input) -> Dictionary (thay cả phím của khung hình — mất kiểm soát chương 6)
+##   M11 (D70): talent_mult(w) -> float (hiệu lực Thiên phú, nhân dồn — Suy Thiên, Hút Thiên phú) ·
+##   talent_cd_mult(w) -> float (nhân hồi chiêu phím L)
 
 const Ch3 = preload("res://scripts/core/chapter3.gd")
 const Ch4 = preload("res://scripts/core/chapter4.gd")
 const Ch5 = preload("res://scripts/core/chapter5.gd")
 const Ch6 = preload("res://scripts/core/chapter6.gd")
-const MODULES := [Ch3, Ch4, Ch5, Ch6]
+const Ch7 = preload("res://scripts/core/chapter7.gd")
+const Ch8 = preload("res://scripts/core/chapter8.gd")
+## J3 (docs/23): chuyển chức 3 dùng chung khung hook (không có map / NPC riêng).
+const Job3 = preload("res://scripts/core/job3.gd")
+## PV (docs/27): kỹ năng bị động cũng dùng khung hook.
+const Passives = preload("res://scripts/core/passives.gd")
+const MODULES := [Ch3, Ch4, Ch5, Ch6, Ch7, Ch8, Job3, Passives]
 
 
 ## Danh sách chương có hook, tính 1 lần rồi giữ lại (hook được gọi nhiều lần mỗi khung hình cho từng quái).
@@ -265,6 +273,14 @@ static func shot_mult(w) -> float:
 
 static func move_mult(w) -> float:
 	return _product("move_mult", w)
+
+
+static func talent_mult(w) -> float:
+	return _product("talent_mult", w)
+
+
+static func talent_cd_mult(w) -> float:
+	return _product("talent_cd_mult", w)
 
 
 static func fireball_mult(w) -> float:

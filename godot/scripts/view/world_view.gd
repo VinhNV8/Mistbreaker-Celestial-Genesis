@@ -19,7 +19,13 @@ const Ch3 = preload("res://scripts/core/chapter3.gd")
 const Ch4 = preload("res://scripts/core/chapter4.gd")
 const R5View = preload("res://scripts/view/region5_view.gd")
 const SK2View = preload("res://scripts/view/skills2_view.gd")
+const ClassFx = preload("res://scripts/view/class_fx.gd")
+const CL2View = preload("res://scripts/view/classes2_view.gd")
+const J3View = preload("res://scripts/view/job3_view.gd")
 const R6View = preload("res://scripts/view/region6_view.gd")
+const R7View = preload("res://scripts/view/region7_view.gd")
+const R8View = preload("res://scripts/view/region8_view.gd")
+const Ch7 = preload("res://scripts/core/chapter7.gd")
 const HIT_FX_TIME := 0.25
 
 var world: GameWorld
@@ -118,6 +124,9 @@ func _build_decor() -> void:
 			continue
 		if _near_portal(pos):
 			continue
+		# M10: cây cảnh vùng 7 chỉ mọc trên đảo
+		if world.map.has("islands") and not Ch7.on_land_static(world.map, pos):
+			continue
 		_trees.append({"pos": pos, "r": 16.0 + rng.randf() * 22.0, "shade": rng.randf(), "variant": rng.randi() % 4})
 	_desert = []
 	if bool(world.map.get("desert", false)):
@@ -193,6 +202,8 @@ func _draw() -> void:
 	if world.map.arena != null:
 		_draw_arena()
 		R5View.draw_arena(self, world, _art)
+		R7View.draw_arena(self, world, _art)
+		R8View.draw_arena(self, world, _art)
 	_draw_portals()
 	if _art:
 		_draw_sorted(view)
@@ -239,7 +250,13 @@ func _draw() -> void:
 	_draw_desert_overlay(view)
 	R5View.draw_over(self, world, view, _art)
 	SK2View.draw(self, world)
+	if _art:
+		ClassFx.draw_over(self, world)
+	CL2View.draw(self, world)
+	J3View.draw(self, world)
 	R6View.draw_over(self, world, view, _art)
+	R7View.draw_over(self, world, view, _art)
+	R8View.draw_over(self, world, view, _art)
 	_draw_texts()
 	_update_tracking()
 
@@ -350,6 +367,10 @@ func _draw_ground(view: Rect2) -> void:
 	R5View.draw_ground(self, world, view, _art)
 	# M9: lửa trại, Đèn Cực Quang, mặt băng, bão tuyết (region6_view.gd)
 	R6View.draw_ground(self, world, view, _art)
+	# M10: trời mây, đảo bay, cầu gió, Đá Neo, Trụ Gió (region7_view.gd)
+	R7View.draw_ground(self, world, view, _art)
+	# M11: Cột Đá Hư Vô, Đèn Tinh Quang (region8_view.gd)
+	R8View.draw_ground(self, world, view, _art)
 	# M6: ốc đảo (C3-13) và bóng râm dưới tảng đá (C3-11)
 	for o in Ch3.oases(world):
 		var oc: Vector2 = o[0]
@@ -410,7 +431,7 @@ func _draw_village() -> void:
 	var c: Vector2 = world.safe_pos
 	for b in _safe_buildings():
 		var t: Vector2 = c + b[0]
-		draw_colored_polygon(PackedVector2Array([t + Vector2(0, -26), t + Vector2(-24, 16), t + Vector2(24, 16)]), Color("#b08d57"))
+		SpriteLib.poly(self, PackedVector2Array([t + Vector2(0, -26), t + Vector2(-24, 16), t + Vector2(24, 16)]), Color("#b08d57"))
 	_draw_stele_fallback()
 
 
@@ -542,6 +563,14 @@ func _draw_tree_sprite(t: Dictionary) -> void:
 	# M8: núi lửa — đá dung nham, cây cháy, miệng phun.
 	if str(world.map.get("decor", "forest")) == "volcano":
 		SpriteLib.draw_env(self, R5View.decor_id(t.variant), base, Color.WHITE, 1.0 if t.r < 28.0 else 1.4, t.shade > 0.5)
+		return
+	# M10: đảo bay — rừng treo, mây / cột Thiên Cung.
+	if str(world.map.get("decor", "forest")) in ["sky", "sky_ruins"]:
+		SpriteLib.draw_env(self, R7View.decor_id(t.variant, str(world.map.decor) == "sky_ruins"), base, Color.WHITE, 1.0 if t.r < 28.0 else 1.4, t.shade > 0.5)
+		return
+	# M11: vực Hư Vô — cây chết, đá vụn.
+	if str(world.map.get("decor", "forest")) == "void":
+		SpriteLib.draw_env(self, R8View.decor_id(t.variant), base, Color(0.7, 0.6, 0.85), 1.0 if t.r < 28.0 else 1.3, t.shade > 0.5)
 		return
 	# M9: băng nguyên — thông phủ tuyết, đá băng, gò tuyết.
 	if str(world.map.get("decor", "forest")) == "tundra":
@@ -706,15 +735,20 @@ func _draw_ally_sprite(a) -> void:
 	var frame := SpriteLib.frame_at(a.monster, anim, world.time)
 	var shadow: bool = a.kind == "shadow"
 	var mod := Color(0.55, 0.35, 0.95, 0.8) if shadow else Color.WHITE
-	_ground_ring(_feet(a.pos, a.radius), a.radius + 3.0, Color("#b36bff") if shadow else Color("#5bd16a"))
+	# LH2: linh thú Triệu Hồi Sư — vòng chân theo màu linh thú, hơi trong suốt khi sắp hết giờ
+	if a.kind == "summon":
+		mod = Color(1, 1, 1, 0.5 if a.ttl > 0.0 and a.ttl < 1.5 else 0.92)
+		_ground_ring(_feet(a.pos, a.radius), a.radius + 3.0, a.color)
+	else:
+		_ground_ring(_feet(a.pos, a.radius), a.radius + 3.0, Color("#b36bff") if shadow else Color("#5bd16a"))
 	SpriteLib.draw_frame(self, a.monster, anim, frame, _feet(a.pos, a.radius), _facing_left(key, a.pos, false), mod, clampf(a.radius / 16.0, 0.75, 1.25))
 
 
 ## Sprite để tính số frame (thân theo ngoại hình; thiếu thì hình mặc định của lớp).
 func _hero() -> String:
-	var base: String = Looks.base_sprite(world.profile.class_id, world.profile.look)
-	if SpriteLib.has_sprite(base):
-		return base
+	var hs := SpriteLib.hero_sprite(world.profile.class_id, world.profile.look)
+	if SpriteLib.has_sprite(hs):
+		return hs
 	var id: String = Classes.get_class_def(world.profile.class_id).sprite
 	return id if SpriteLib.has_sprite(id) else HERO_SPRITE
 
@@ -729,7 +763,7 @@ func _draw_player_sprite() -> void:
 		frame = SpriteLib.frame_at(hs, anim, GameWorld.RESPAWN_TIME - p.dead_timer)
 	elif p.swing > 0.0 and p.swing_kind in ["slash", "shot", "dash", "cast"]:
 		anim = "attack"
-		frame = SpriteLib.frame_progress(hs, anim, 1.0 - clampf(p.swing / (0.25 if p.swing_kind == "cast" else 0.16), 0.0, 1.0))
+		frame = SpriteLib.frame_progress(hs, anim, 1.0 - clampf(p.swing / _swing_len(p, 0.25 if p.swing_kind == "cast" else 0.16), 0.0, 1.0))
 	elif p.hurt > 0.0:
 		anim = "hurt"
 	else:
@@ -739,6 +773,7 @@ func _draw_player_sprite() -> void:
 	var alpha := 0.55 if p.dodge_time > 0.0 or p.dash_time > 0.0 else 1.0
 	var rank_color := Talents.rank_color(world.talent().rank)
 	_ground_ring(_feet(p.pos, GameWorld.PLAYER_RADIUS), GameWorld.PLAYER_RADIUS + 6.0, Color(rank_color, 0.7 * alpha))
+	J3View.draw_under(self, world)
 	var mod := Color(1, 1, 1, alpha)
 	if p.swing > 0.0 and p.swing_kind == "spin":
 		# Xoáy Kiếm: xoay nhanh, nháy sáng
@@ -770,7 +805,10 @@ func _draw_player_sprite() -> void:
 	SpriteLib.draw_hero(self, world.profile.class_id, world.profile.look, anim, frame, _feet(p.pos, GameWorld.PLAYER_RADIUS), left, mod)
 	# C1-02: tên trên đầu
 	if p.dead_timer <= 0.0:
-		_label(str(world.profile.name), p.pos + Vector2(0, -GameWorld.PLAYER_RADIUS - 46.0), Color(1, 1, 1, 0.85), 12)
+		# SN9-01: tên + dòng nhỏ chức nghiệp hiện tại (màu tím nhạt)
+		var pf = world.profile
+		_label(str(pf.name), p.pos + Vector2(0, -GameWorld.PLAYER_RADIUS - 56.0), Color(1, 1, 1, 0.9), 12, true)
+		_label(Classes.title(str(pf.class_id), str(pf.job), str(pf.job2), str(pf.job3)), p.pos + Vector2(0, -GameWorld.PLAYER_RADIUS - 44.0), Color(0.85, 0.77, 1.0, 0.85), 10)
 	# SN-04 Pháp Thuẫn: vòng tím, dày theo lượng khiên còn lại
 	if p.shield > 0.0:
 		var k := clampf(p.shield / maxf(1.0, float(world.stats.max_hp) * GameWorld.BARRIER_PCT), 0.0, 1.0)
@@ -826,6 +864,8 @@ func _draw_player_skills() -> void:
 			var at: Vector2 = z.pos + Vector2(cos(ang), sin(ang * 1.3)) * z.radius * 0.6
 			var fall := fposmod(world.time * 4.0 + i * 0.37, 1.0)
 			var from := at + Vector2(-12, -60) * (1.0 - fall)
+			if _art and ClassFx.draw_rain_drop(self, z, at, fall):
+				continue
 			if _art:
 				SpriteLib.draw_env(self, "fx-arrow", from, Color(1, 1, 1, 0.9), 1.0, false, Vector2(12, 60).angle())
 			else:
@@ -837,6 +877,8 @@ func _draw_player_skills() -> void:
 		draw_arc(m.pos, m.radius, 0.0, TAU, 40, Color(1, 0.6, 0.25, 0.8), 2.0, true)
 		draw_arc(m.pos, m.radius * k, 0.0, TAU, 40, Color(1, 0.8, 0.4, 0.9), 2.0, true)
 		var rock: Vector2 = m.pos + Vector2(-140, -260) * (1.0 - k)
+		if _art and ClassFx.draw_meteor_rock(self, rock):
+			continue
 		draw_line(rock, rock + Vector2(-50, -90), Color(1, 0.55, 0.2, 0.5), 8.0, true)
 		draw_circle(rock, 16.0, Color(1, 0.5, 0.15, 0.45))
 		draw_circle(rock, 10.0, Color("#6a4a3a"))
@@ -856,6 +898,20 @@ func _draw_player_skills() -> void:
 			draw_polyline(pts, Color(1, 1, 1, a), 2.0, true)
 			draw_circle(p1, 10.0, Color(0.7, 0.85, 1.0, 0.4 * a))
 	for s in world.shots:
+		# LH2: Linh Cầu / Linh Tiễn (linh hồn ngọc lam), Hoả Điểu (chim lửa)
+		if s.kind == "spirit":
+			draw_circle(s.pos - s.vel.normalized() * 9.0, 7.0, Color(0.5, 0.85, 0.95, 0.3))
+			draw_circle(s.pos, 8.0, Color(0.55, 0.9, 1.0, 0.45))
+			draw_circle(s.pos, 5.0, Color("#c4f4ff"))
+			continue
+		if s.kind == "firebird":
+			var dv: Vector2 = s.vel.normalized()
+			SpriteLib.poly(self, PackedVector2Array([s.pos + dv * 14.0, s.pos - dv * 8.0 + dv.orthogonal() * 14.0, s.pos - dv * 2.0,
+				s.pos - dv * 8.0 - dv.orthogonal() * 14.0]), Color(1, 0.55, 0.15, 0.85))
+			draw_circle(s.pos, 6.0, Color("#ffe08a"))
+			draw_line(s.pos - dv * 4.0, s.pos - dv * 26.0, Color(1, 0.45, 0.1, 0.5), 6.0, true)
+		if _art and ClassFx.draw_shot(self, s):
+			continue
 		if s.kind == "fireball":
 			draw_circle(s.pos - s.vel.normalized() * 10.0, 9.0, Color(1, 0.45, 0.1, 0.35))
 			draw_circle(s.pos, 11.0, Color(1, 0.5, 0.15, 0.5))
@@ -863,14 +919,26 @@ func _draw_player_skills() -> void:
 			draw_circle(s.pos + Vector2(1.5, -1.5), 3.5, Color("#ffe08a"))
 			continue
 		var id: String = {"arrow": "fx-arrow", "wave": "fx-wave", "pierce": "fx-pierce"}.get(s.kind, "fx-arrow")
+		# CL1: kiếm khí Kiếm Khách (Trảm Phong…) màu đỏ; Băng Lao xanh băng.
+		var tint := Color.WHITE
+		if s.kind == "wave" and world.profile.class_id == "kiem-khach":
+			tint = Color(1.0, 0.45, 0.4)
+		elif s.skill == "banglao":
+			tint = Color(0.6, 0.9, 1.0)
+			draw_circle(s.pos, 9.0, Color(0.6, 0.9, 1.0, 0.35))
 		if _art and SpriteLib.has_env(id):
-			SpriteLib.draw_env(self, id, s.pos, Color.WHITE, 1.0, false, s.vel.angle())
+			SpriteLib.draw_env(self, id, s.pos, tint, 1.0, false, s.vel.angle())
 		else:
 			draw_circle(s.pos, s.radius, Color("#c8e6ff"))
 	for b in world.blasts:
 		var k: float = 1.0 - b.ttl / 0.35
 		draw_circle(b.pos, b.radius * (0.6 + 0.4 * k), Color(b.color, 0.35 * (1.0 - k)))
 		draw_arc(b.pos, b.radius * (0.6 + 0.4 * k), 0.0, TAU, 40, Color(b.color, 0.9 * (1.0 - k)), 3.0, true)
+
+
+## Độ dài hoạt ảnh: đánh thường theo tốc đánh (swing_len); kỹ năng đặt swing dài hơn thì dùng mặc định.
+func _swing_len(p, fallback: float) -> float:
+	return p.swing_len if p.swing_len > 0.0 and p.swing <= p.swing_len + 0.0001 else fallback
 
 
 ## Hiệu ứng chém/Xoáy Kiếm (vector) vẽ trên cùng.
@@ -889,7 +957,9 @@ func _draw_player_fx() -> void:
 		for i in 13:
 			var a := p.facing - GameWorld.SLASH_ARC + (2.0 * GameWorld.SLASH_ARC) * i / 12.0
 			pts.append(p.pos + Vector2.from_angle(a) * GameWorld.SLASH_RANGE)
-		draw_colored_polygon(pts, Color(1, 1, 1, 0.25 * minf(1.0, p.swing / 0.16)))
+		# CL1: vệt chém Kiếm Khách màu đỏ (charactors.md: "kiếm khí màu đỏ").
+		var sc := Color(1, 0.3, 0.25) if world.profile.class_id == "kiem-khach" else Color(1, 1, 1)
+		SpriteLib.poly(self, pts, Color(sc, 0.3 * minf(1.0, p.swing / _swing_len(p, 0.16))))
 	else:
 		var r := GameWorld.SPIN_RANGE * (1.0 - p.swing / 0.6)
 		draw_arc(p.pos, r, 0.0, TAU, 48, Color(0.78, 0.9, 1.0, 0.7 * minf(1.0, p.swing / 0.3)), 10.0, true)
@@ -907,6 +977,13 @@ func _draw_enemy_overlay(e) -> void:
 		_hit_fx.append({"pos": e.pos + Vector2(randf_range(-6, 6), -e.radius + randf_range(-6, 6)), "t": 0.0})
 	if e.role == "boss" or hidden:
 		return
+	# SN9-09: vòng vàng dưới chân quái đang là mục tiêu (khung mục tiêu ở HUD)
+	if e == world.focus:
+		var pulse := 0.75 + 0.25 * sin(world.time * 6.0)
+		draw_set_transform(e.pos + Vector2(0, e.radius * 0.7), 0.0, Vector2(1.0, 0.45))
+		draw_arc(Vector2.ZERO, e.radius + 10.0, 0.0, TAU, 32, Color(1.0, 0.82, 0.35, 0.85 * pulse), 2.5, true)
+		draw_arc(Vector2.ZERO, e.radius + 15.0, 0.0, TAU, 32, Color(1.0, 0.82, 0.35, 0.3 * pulse), 1.5, true)
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	if e.hp < e.max_hp or e.elite:
 		var w: float = e.radius * 2.0
 		var top := Vector2(e.pos.x - w / 2.0, top_y)
@@ -1015,7 +1092,7 @@ func _draw_pickups() -> void:
 					draw_arc(at, 17.0, 0.0, TAU, 32, Color(c, 0.8), 2.0, true)
 					draw_texture_rect(tex, Rect2(at - Vector2(16, 16), Vector2(32, 32)), false)
 				else:
-					draw_colored_polygon(PackedVector2Array([at + Vector2(0, -10), at + Vector2(8, 0), at + Vector2(0, 10), at + Vector2(-8, 0)]), c)
+					SpriteLib.poly(self, PackedVector2Array([at + Vector2(0, -10), at + Vector2(8, 0), at + Vector2(0, 10), at + Vector2(-8, 0)]), c)
 			_:
 				if _art:
 					SpriteLib.draw_env(self, "pickup-orb", at)
@@ -1042,6 +1119,9 @@ func _portal_style(pt: Dictionary) -> Dictionary:
 	var m: Dictionary = Maps.get_map(str(pt.to))
 	var block: String = world.travel_blocker(str(pt.to))
 	var st := {"title": ("Tới " if pt.kind == "next" else "Về ") + str(m.name), "sub": "Cấp %d–%d" % [int(m.levels[0]), int(m.levels[1])], "open": block == ""}
+	# C7-01 / MP-09: cổng 6-3 → 7-1 là Bến Khí Cầu
+	if str(pt.to) == "7-1" and pt.kind == "next":
+		st.title = "Bến Khí Cầu → " + str(m.name)
 	if block != "":
 		st.col = Color(0.62, 0.58, 0.66)
 		st.sub = block
@@ -1106,9 +1186,9 @@ func _draw_portals() -> void:
 			var gem := base + Vector2(0, -72)
 			var gs := 7.0 + (1.0 if on else 0.0) * sin(t * 3.0 + side)
 			draw_circle(gem, gs + 6.0, Color(col, 0.18 * (glow if on else 0.4)))
-			draw_colored_polygon(PackedVector2Array([gem + Vector2(0, -gs - 3), gem + Vector2(gs * 0.7, 0), gem + Vector2(0, gs), gem + Vector2(-gs * 0.7, 0)]),
+			SpriteLib.poly(self, PackedVector2Array([gem + Vector2(0, -gs - 3), gem + Vector2(gs * 0.7, 0), gem + Vector2(0, gs), gem + Vector2(-gs * 0.7, 0)]),
 				col if on else col.darkened(0.3))
-			draw_colored_polygon(PackedVector2Array([gem + Vector2(0, -gs - 3), gem + Vector2(gs * 0.7, 0), gem]), Color(1, 1, 1, 0.45))
+			SpriteLib.poly(self, PackedVector2Array([gem + Vector2(0, -gs - 3), gem + Vector2(gs * 0.7, 0), gem]), Color(1, 1, 1, 0.45))
 
 
 ## Bảng tên cổng (vẽ sau cùng lớp thế giới để không bị cây che).
@@ -1137,7 +1217,7 @@ func _draw_portal_labels() -> void:
 
 
 func _diamond_at(p: Vector2, s: float, col: Color) -> void:
-	draw_colored_polygon(PackedVector2Array([p + Vector2(0, -s), p + Vector2(s, 0), p + Vector2(0, s), p + Vector2(-s, 0)]), col)
+	SpriteLib.poly(self, PackedVector2Array([p + Vector2(0, -s), p + Vector2(s, 0), p + Vector2(0, s), p + Vector2(-s, 0)]), col)
 
 
 func _draw_herbs_chests() -> void:
@@ -1207,7 +1287,7 @@ func _draw_telegraph(e: GameWorld.Enemy) -> void:
 			var pts := PackedVector2Array([e.pos])
 			for i in 9:
 				pts.append(e.pos + Vector2.from_angle(dir - GameWorld.LEAF_ARC + 2.0 * GameWorld.LEAF_ARC * i / 8.0) * (GameWorld.LEAF_RANGE + e.radius))
-			draw_colored_polygon(pts, Color(0.4, 0.85, 0.45, 0.12 + progress * 0.25))
+			SpriteLib.poly(self, pts, Color(0.4, 0.85, 0.45, 0.12 + progress * 0.25))
 		"dash":
 			draw_line(e.pos, e.pos + (e.target - e.pos).limit_length(150.0), Color(0.6, 0.9, 1.0, 0.2 + progress * 0.5), 6.0, true)
 		"stomp", "explode":
@@ -1229,7 +1309,7 @@ func _draw_telegraph(e: GameWorld.Enemy) -> void:
 			var gp := PackedVector2Array([e.pos])
 			for i in 9:
 				gp.append(e.pos + Vector2.from_angle(gd - Ch3.GAZE_HALF + 2.0 * Ch3.GAZE_HALF * i / 8.0) * (Ch3.GAZE_R + e.radius))
-			draw_colored_polygon(gp, Color(0.3, 0.75, 1.0, 0.12 + progress * 0.25))
+			SpriteLib.poly(self, gp, Color(0.3, 0.75, 1.0, 0.12 + progress * 0.25))
 		_:
 			draw_arc(e.pos, e.radius + e.attack_range * progress, 0.0, TAU, 40, Color(1, 0.24, 0.31, 0.2 + progress * 0.6), 3.0, true)
 
@@ -1288,7 +1368,7 @@ func _draw_texts() -> void:
 		var k := 0.5 + 0.5 * sin(world.time * 6.0)
 		draw_arc(tp, 14.0 + 4.0 * k, 0.0, TAU, 24, Color(1, 0.85, 0.3, 0.8), 2.0, true)
 		draw_line(tp, tp + Vector2(0, -26), Color("#ffc940"), 2.0)
-		draw_colored_polygon(PackedVector2Array([tp + Vector2(0, -26), tp + Vector2(14, -21), tp + Vector2(0, -16)]), Color("#ffc940"))
+		SpriteLib.poly(self, PackedVector2Array([tp + Vector2(0, -26), tp + Vector2(14, -21), tp + Vector2(0, -16)]), Color("#ffc940"))
 	for t in world.texts:
 		var size := 19 if t.big else 15
 		var c: Color = t.color

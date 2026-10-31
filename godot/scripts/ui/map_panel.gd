@@ -6,6 +6,7 @@ signal nest_started
 const Config = preload("res://scripts/core/config.gd")
 const Explore = preload("res://scripts/core/explore.gd")
 const HexMap = preload("res://scripts/ui/hex_map.gd")
+const Maps = preload("res://scripts/data/maps.gd")
 
 const CLAIM_LABEL := {
 	"resource": "Xây Xưởng Gỗ (%d vàng)",
@@ -16,6 +17,7 @@ const CLAIM_LABEL := {
 	"merchant": "Mời thương nhân về làng",
 	"mine": "Xây Mỏ (40 vàng, 40 gỗ)",
 	"fishery": "Xây Bến Cá (30 vàng, 30 gỗ)",
+	"vein": "Khai thác Mạch Tinh Thạch (+10 Tinh Thạch)",
 }
 
 var _selected := 0
@@ -25,7 +27,9 @@ func _render(content: VBoxContainer) -> void:
 	var p = world.profile
 	content.custom_minimum_size.x = 820
 	var region := int(p.tiles_region)
-	_header(content, "Bản đồ khai phá · %s" % ("Đồng Bằng Gió Hú" if region == 2 else "Rừng Sương"), "Đóng (M)")
+	var reg_info: Dictionary = Maps.region(region)
+	var reg_title: String = str(reg_info.get("name", "Vùng %d" % region))
+	_header(content, "Bản đồ khai phá · %s" % reg_title, "Đóng (M)")
 
 	var owned := Explore.owned_count(p.tiles)
 	var total := Explore.explore_total(p.tiles)
@@ -36,13 +40,16 @@ func _render(content: VBoxContainer) -> void:
 	]
 	if region == 1:
 		summary += " · Mở hang Sói Chúa: cấp %d + chiếm %d ô" % [Config.BOSS_LEVEL_REQ, Config.BOSS_TILES_REQ]
-	else:
+	elif region == 2:
 		summary += " · Hạng Liên minh: %s · Bến Cá +%d%% HP" % [world.alliance_rank(), roundi(Explore.fishery_hp_pct(p) * 100)]
 	content.add_child(UiTheme.label(summary, "Muted", 790))
 	var zones := PackedStringArray()
 	for z in [1, 2, 3]:
 		var n: int = p.tiles.filter(func(t): return t.event != "camp" and Explore.zone_of(t) == z).size()
-		zones.append("%s %d/%d%s" % [Explore.zone_name(region, z), Explore.zone_owned(p.tiles, z), n,
+		var zname: String = Explore.zone_name(region, z)
+		if zname == "":
+			zname = "Khu %d" % z
+		zones.append("%s %d/%d%s" % [zname, Explore.zone_owned(p.tiles, z), n,
 			" (khoá — hạ Sói Chúa)" if region == 1 and z == 3 and not p.boss_defeated else ""])
 	content.add_child(UiTheme.label("   ·   ".join(zones), "Small", 790))
 
@@ -111,9 +118,18 @@ func _on_tile(id: int) -> void:
 
 
 func _tile_info(info: VBoxContainer, t: Dictionary) -> void:
+	if t.is_empty():
+		info.add_child(UiTheme.label("Chưa chọn ô đất", "Heading"))
+		info.add_child(UiTheme.label("Bấm vào một ô trên bản đồ bên trái để xem chi tiết.", "Muted", 330))
+		return
 	var p = world.profile
-	var ev: Dictionary = Explore.EVENT_INFO[t.event]
-	info.add_child(UiTheme.label(Explore.zone_name(int(p.tiles_region), Explore.zone_of(t)).to_upper(), "Eyebrow"))
+	var ev: Dictionary = Explore.EVENT_INFO.get(t.event, {})
+	if ev.is_empty():
+		info.add_child(UiTheme.label("Ô đất không xác định", "Heading"))
+		return
+	var zname: String = Explore.zone_name(int(p.tiles_region), Explore.zone_of(t))
+	if zname != "":
+		info.add_child(UiTheme.label(zname.to_upper(), "Eyebrow"))
 	if t.status == "fog":
 		info.add_child(UiTheme.label("Ô đất bị sương mù che", "Heading"))
 		if Explore.is_event_visible(p.tiles, t, p.talent):
@@ -125,8 +141,11 @@ func _tile_info(info: VBoxContainer, t: Dictionary) -> void:
 		var b := UiTheme.button("Dùng Đuốc (còn %d)" % p.torches, true)
 		b.size_flags_horizontal = SIZE_SHRINK_BEGIN
 		b.disabled = blocker != ""
+		if blocker != "":
+			b.tooltip_text = blocker
+		var tid: int = int(t.id)
 		b.pressed.connect(func():
-			world.reveal_tile(_selected)
+			world.reveal_tile(tid)
 			refresh())
 		info.add_child(b)
 		if blocker != "":
@@ -138,27 +157,63 @@ func _tile_info(info: VBoxContainer, t: Dictionary) -> void:
 	if t.status == "owned":
 		tag.add_theme_color_override("font_color", UiTheme.GOOD)
 	info.add_child(tag)
-	info.add_child(UiTheme.label(ev.desc, "", 330))
+
+	var desc_text: String = ev.desc
+	if t.status == "owned":
+		if t.event == "nest":
+			desc_text = "Đã tiêu diệt quái tinh anh canh giữ. Ô đất đã thuộc về lãnh địa của bạn."
+		elif t.event == "relic":
+			desc_text = "Rương di tích đã được mở và thu thập báu vật."
+	info.add_child(UiTheme.label(desc_text, "", 330))
+
 	var bkind: String = {"resource": "lumber", "mine": "mine", "fishery": "fishery"}.get(t.event, "")
 	if bkind != "" and t.status == "owned":
 		var key := Explore.tile_key(bkind, t, int(p.tiles_region))
 		var bname: String = Explore.BUILDINGS[bkind].name
-		var state := ("%s đang hoạt động." % bname) if Explore.is_built(p, key) else ("%s đang xây, còn %d giây." % [bname, ceili(Explore.remaining(p, key))])
+		var state: String
+		if Explore.is_built(p, key):
+			state = "%s đang hoạt động." % bname
+		elif Explore.is_started(p, key):
+			state = "%s đang xây, còn %d giây." % [bname, ceili(Explore.remaining(p, key))]
+		else:
+			state = "%s chưa được xây dựng." % bname
 		info.add_child(UiTheme.label(state, "Muted", 330))
+
 	if t.status != "revealed":
 		return
+
 	if world.nest_active(int(t.id)):
-		info.add_child(_warn("Quái tinh anh đang chờ bạn ngoài Rừng Sương."))
+		var map_name: String = str(world.map.get("name", "chiến trường"))
+		info.add_child(_warn("Quái tinh anh đang chờ bạn ngoài %s." % map_name))
 		return
+
 	if t.event == "relic":
 		_relic_ui(info, int(t.id))
+		var rlock: float = world.relic_locked(int(t.id))
+		var bypass_b := UiTheme.button("Bỏ qua câu đố: Phá khoá rương (thưởng thường)", false)
+		bypass_b.size_flags_horizontal = SIZE_SHRINK_BEGIN
+		bypass_b.disabled = rlock > 0.0
+		if rlock > 0.0:
+			bypass_b.tooltip_text = "Cơ quan rương đang khoá, không thể phá khoá lúc này."
+		else:
+			bypass_b.tooltip_text = "Mở rương ngay mà không cần giải câu đố (chỉ nhận vàng thông thường, không có Đá Cường Hoá và thưởng EXP ×2)."
+		bypass_b.pressed.connect(_on_claim)
+		info.add_child(bypass_b)
+		return
+
+	var blocker := Explore.claim_blocker(p, t)
 	var label: String = CLAIM_LABEL.get(t.event, "Chiếm")
 	if t.event == "resource":
 		label = label % Config.LUMBER_COST_GOLD
 	var claim := UiTheme.button(label, true)
 	claim.size_flags_horizontal = SIZE_SHRINK_BEGIN
+	claim.disabled = blocker != ""
+	if blocker != "":
+		claim.tooltip_text = blocker
 	claim.pressed.connect(_on_claim)
 	info.add_child(claim)
+	if blocker != "":
+		info.add_child(_warn(blocker))
 
 
 ## M5-04 (KP-04): câu đố mở rương Di tích — giải được thì thưởng gấp đôi + 1 Đá Cường Hoá.

@@ -76,8 +76,18 @@ const M_HASTE_TIME := 5.0
 const HASTE_RECOVER := 0.3
 ## kỹ năng người chơi → bản bóng tối (C6-30a); id lạ = Tia bóng.
 const MIRROR_OF := {"spin": "m_spin", "nova": "m_spin", "dash": "m_dash", "wave": "m_bolt", "pierce": "m_bolt", "chain": "m_bolt",
-	"fireball": "m_bolt", "rain": "m_rain", "meteor": "m_meteor", "trap": "m_trap", "guard": "m_shield", "barrier": "m_shield",
-	"eagle": "m_haste"}
+	"fireball": "m_bolt", "rain": "m_rain", "meteor": "m_meteor", "trap": "m_trap", "guard": "m_shield", "barrier": "m_shield", "kiemy": "m_spin", "banglao": "m_bolt", "lanban": "m_dash",
+		"eagle": "m_haste",
+	# LH1 (docs/19 mục 4): Hộ Vệ
+	"khienchan": "m_spin", "khieukhich": "m_spin", "laokhien": "m_dash", "khienthep": "m_shield", "chandia": "m_meteor",
+	"phanthuan": "m_bolt", "phanquyet": "m_meteor", "xungphong": "m_dash", "thanhbatdiet": "m_shield", "thanhquang": "m_spin",
+	"thanhvuc": "m_spin", "thietchuy": "m_meteor", "thanhdong": "m_shield",
+	# LH2: Triệu Hồi Sư
+	"soibong": "m_bolt", "linhtien": "m_bolt", "tieuquy": "m_bolt", "lienket": "m_shield", "thachquy": "m_bolt", "hoadieu": "m_bolt",
+	"linhtran": "m_rain", "linhung": "m_bolt", "quandoan": "m_rain", "aulong": "m_bolt", "longhong": "m_spin", "loidodang": "m_meteor",
+	"phongdodang": "m_rain",
+	# J3 (docs/23 Q145): Thần Kỹ chuyển chức 3
+	"nhatkiem": "m_bolt", "tinhvu": "m_rain", "nguhanh": "m_spin", "thienthuan": "m_meteor", "kylan": "m_rain"}
 const MIRRORS := 4
 const MIRROR_RING := 0.6
 const MIRROR_BOLT_CD := 2.5
@@ -988,7 +998,7 @@ static func input_filter(w, input: Dictionary) -> Dictionary:
 	if best != null:
 		out.aim = best.pos
 		out.attack = true
-		var reach: float = 70.0 if not (w.is_mage() or w.is_hunter()) else 250.0
+		var reach: float = 70.0 if not w.is_ranged() else 250.0
 		if bd > reach + best.radius:
 			out.move = (best.pos - p.pos).normalized()
 	return out

@@ -9,6 +9,9 @@ const SECRET := "ThienPhuKhaiGioi::gift::2026-C1"
 const ALPHABET := "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
 const SERIAL_LEN := 8
 const CHECK_LEN := 4
+## GC-09: seri bắt đầu bằng tiền tố này thì lượt gift code ra đúng Thiên phú đó (không quay ngẫu nhiên).
+## Mã thường không bao giờ mang các tiền tố này (tools/giftcode.py tránh khi sinh).
+const SERIAL_TALENTS := {"DT": "dao-tac"}
 ## Nơi lưu mã đã dùng trên máy (không nằm trong save, xoá save không dùng lại được). Test đổi đường dẫn này.
 static var store_path := "user://redeemed_codes.cfg"
 
@@ -61,7 +64,15 @@ static func mark_redeemed(serial: String) -> void:
 	cf.save(store_path)
 
 
-## Kiểm mã. Trả về {ok, message, serial}.
+## GC-09: id Thiên phú cố định theo tiền tố seri ("" = quay ngẫu nhiên hạng A trở lên).
+static func talent_of(serial: String) -> String:
+	for prefix in SERIAL_TALENTS:
+		if serial.begins_with(prefix):
+			return SERIAL_TALENTS[prefix]
+	return ""
+
+
+## Kiểm mã. Trả về {ok, message, serial, talent}.
 static func validate(raw: String) -> Dictionary:
 	var s := normalize(raw)
 	if s.is_empty():
@@ -73,4 +84,4 @@ static func validate(raw: String) -> Dictionary:
 		return {"ok": false, "message": "Mã không tồn tại. Kiểm tra lại từng ký tự.", "serial": ""}
 	if is_redeemed(serial):
 		return {"ok": false, "message": "Mã này đã được dùng trên máy này.", "serial": serial}
-	return {"ok": true, "message": "Mã hợp lệ!", "serial": serial}
+	return {"ok": true, "message": "Mã hợp lệ!", "serial": serial, "talent": talent_of(serial)}

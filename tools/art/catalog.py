@@ -17,6 +17,12 @@ CLASS_LOOK = {
     "tho-san": {"cloth": "cloth_green", "pants": "leather", "weapon": "bow", "trim": "leather", "collar": "leaf"},
     # SN-06: Pháp Sư — áo choàng tím dài, cổ vàng, trượng ngọc tím
     "phap-su": {"cloth": "purple", "pants": "leather", "weapon": "staff", "trim": "gold", "robe": True, "orb": "crystal"},
+    # LH1 (docs/19): Hộ Vệ — giáp sắt, áo choàng lam, khiên viền vàng, chùy
+    "ho-ve": {"cloth": "steel", "pants": "leather", "cape": "cloth_blue", "weapon": "mace", "trim": "gold", "shield": True,
+              "collar": "steel"},
+    # LH2: Triệu Hồi Sư — áo choàng ngọc lam dài, cổ bạc, quả cầu linh hồn
+    "trieu-hoi-su": {"cloth": "wisp", "pants": "leather", "weapon": "orb", "trim": "white", "robe": True, "orb": "wisp",
+                     "collar": "white"},
 }
 HAIR_STYLES = ["ngan", "dai", "bui", "duoi"]
 
@@ -41,6 +47,25 @@ SPRITES = {
     "hero-phap-su": {"builder": "humanoid", "name": "Pháp Sư",
                      "spec": {"hair": "hair_dark", "cloth": "purple", "pants": "leather", "weapon": "staff", "trim": "gold",
                               "robe": True, "orb": "crystal"}},
+    "hero-ho-ve": {"builder": "humanoid", "name": "Hộ Vệ",
+                   "spec": {"hair": "hair_brown", "cloth": "steel", "pants": "leather", "cape": "cloth_blue", "weapon": "mace",
+                            "trim": "gold", "shield": True, "collar": "steel"}},
+    "hero-trieu-hoi-su": {"builder": "humanoid", "name": "Triệu Hồi Sư",
+                          "spec": {"hair": "hair_dark", "cloth": "wisp", "pants": "leather", "weapon": "orb", "trim": "white",
+                                   "robe": True, "orb": "wisp", "collar": "white"}},
+    # LH2: linh thú của Triệu Hồi Sư (core/classes2.gd SUMMONS)
+    "linh-ho": {"builder": "quadruped", "name": "Linh Hồ", "size_mul": 0.7, "spec": {"size": 20, "fur": "wisp", "eye": "#ffffff"}},
+    "hoa-ho": {"builder": "quadruped", "name": "Hoả Hồ", "size_mul": 0.7, "spec": {"size": 20, "fur": "fire", "eye": "#ffffff"}},
+    "soi-bong": {"builder": "quadruped", "name": "Sói Bóng", "spec": {"fur": "fur_void", "eye": "#e080ff"}},
+    "tieu-quy": {"builder": "wisp", "name": "Tiểu Quỷ", "size_mul": 0.75, "spec": {"body": "purple", "glow": "#e080ff"}},
+    "thach-quy": {"builder": "humanoid", "name": "Thạch Quỷ", "size_mul": 1.3,
+                  "spec": {"skin": "stone", "cloth": "stone", "pants": "stone", "boots": "stone", "hair_style": "none",
+                           "trim": "crystal", "weapon": "none", "collar": "stone"}},
+    "linh-ung": {"builder": "bird", "name": "Linh Ưng", "spec": {"body": "wisp", "wing": "crystal", "eye": "#ffffff", "beak": "#c4e4ff"}},
+    "linh-hon": {"builder": "wisp", "name": "Linh Hồn", "size_mul": 0.65, "spec": {"body": "wisp", "glow": "#86d8e4"}},
+    "au-long": {"builder": "quadruped", "name": "Ấu Long", "spec": {"size": 26, "fur": "fire", "mane": "gold", "eye": "#ffd23c"}},
+    # J3 (docs/23): Kỳ Lân Thần Thú — Thần Kỹ Vạn Linh Chi Chủ
+    "ky-lan": {"builder": "quadruped", "name": "Kỳ Lân", "spec": {"size": 28, "fur": "white", "mane": "gold", "eye": "#4a9df8"}},
     "hero-tho-san": {"builder": "humanoid", "name": "Thợ Săn",
                      "spec": {"hair": "hair_brown", "cloth": "cloth_green", "pants": "leather", "weapon": "bow", "hood": True, "trim": "leather"}},
     # ------------------------------------------------ quái vùng 1 (06-ban-do-quai-boss.md)
@@ -137,3 +162,6 @@ _region6.register_sprites(SPRITES)
 # M10 (chương 7): vùng 7 Quần Đảo Thiên Không — region7.py
 import region7 as _region7  # noqa: E402
 _region7.register_sprites(SPRITES)
+# M11 (chương 8): vùng 8 Vực Hư Vô — region8.py
+import region8 as _region8  # noqa: E402
+_region8.register_sprites(SPRITES)

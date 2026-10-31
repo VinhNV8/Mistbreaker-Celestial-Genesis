@@ -19,7 +19,7 @@ const BOSS_HP := 5.0
 const BOSS_ATK := 1.3
 const BOSS_SIZE := 1.4
 const PURPLE_CHANCE := 0.25
-const NAMES := {1: "Hang Sương Mù", 2: "Hang Gió Lốc", 3: "Hầm Cát Cổ", 4: "Hang Bùn Lầy", 5: "Hang Dung Nham", 6: "Hang Băng Vĩnh Cửu"}
+const NAMES := {1: "Hang Sương Mù", 2: "Hang Gió Lốc", 3: "Hầm Cát Cổ", 4: "Hang Bùn Lầy", 5: "Hang Dung Nham", 6: "Hang Băng Vĩnh Cửu", 7: "Hang Mây Ẩn"}
 
 static var _cache := {}
 
@@ -42,8 +42,20 @@ static func name_of(parent_id: String) -> String:
 
 ## Cửa hang trên map cha (giữa phía dưới).
 static func entrance(parent_id: String) -> Vector2:
-	var size: Vector2 = Maps.MAPS[parent_id].size
-	return Vector2(size.x * 0.5, size.y * 0.82)
+	var m: Dictionary = Maps.get_map(parent_id)
+	var size: Vector2 = m.size
+	var pos := Vector2(size.x * 0.5, size.y * 0.82)
+	# C7-07: map đảo bay — cửa hang dời về điểm đất gần nhất (trên đảo, cách mép 80).
+	var best_d := INF
+	var best := pos
+	for it in m.get("islands", []):
+		var c: Vector2 = it[0]
+		var r: float = float(it[1]) - 80.0
+		var d := maxf(0.0, pos.distance_to(c) - r)
+		if d < best_d:
+			best_d = d
+			best = pos if pos.distance_to(c) <= r else c + (pos - c).normalized() * r
+	return best
 
 
 ## Dữ liệu bản đồ hang (cùng khoá với map thường để GameWorld/world_view dùng như mọi map).

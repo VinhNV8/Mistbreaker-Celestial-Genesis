@@ -196,3 +196,38 @@ static func spacer() -> Control:
 ## Khung viền màu theo hạng Thiên phú.
 static func rank_box(color: Color) -> StyleBoxFlat:
 	return box(Color(color, 0.1), 10, 2, color, 12)
+
+
+## UI-21: khung lõm trong bảng gỗ (ô chỉ số, khung túi đồ, chi tiết món đồ).
+static func inset(bg := Color("#170f09"), border := Color("#5a4220"), margin := 10, radius := 8) -> StyleBoxFlat:
+	var sb := box(bg, radius, 1, border, margin)
+	sb.shadow_color = Color(0, 0, 0, 0.25)
+	sb.shadow_size = 2
+	return sb
+
+
+static func panel(style: StyleBox) -> PanelContainer:
+	var p := PanelContainer.new()
+	p.add_theme_stylebox_override("panel", style)
+	return p
+
+
+## Icon pixel art vuông px × px (lọc Nearest, giữ tỉ lệ).
+static func icon_rect(tex: Texture2D, px: float) -> TextureRect:
+	var r := TextureRect.new()
+	r.texture = tex
+	r.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	r.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	r.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	r.custom_minimum_size = Vector2(px, px)
+	r.mouse_filter = Control.MOUSE_FILTER_PASS
+	return r
+
+
+## Nhãn đậm cỡ tuỳ chọn (đã nhân hệ số cỡ chữ KT-07).
+static func strong(text: String, size := 15, color := TEXT) -> Label:
+	var l := label(text)
+	l.add_theme_font_override("font", bold_font())
+	l.add_theme_font_size_override("font_size", fs(size))
+	l.add_theme_color_override("font_color", color)
+	return l

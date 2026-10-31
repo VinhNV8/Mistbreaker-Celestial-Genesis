@@ -18,12 +18,14 @@ const CONTROLS := [
 	["Space", "Né lăn — bất tử 0,3 giây"],
 	["L", "Kỹ năng Thiên phú (nếu có)"],
 	["Q", "Uống bình máu"],
+	["F", "Uống bình MP"],
 	["Z", "Bật / tắt Tự đánh (hoặc bấm nút cạnh thanh kỹ năng)"],
 	["C · I", "Nhân vật: tab Chỉ số · tab Túi đồ"],
 	["U · T", "Kỹ năng · Thiên phú"],
 	["M · N", "Khai phá (lưới ô) · Bản đồ lục địa (chỉ xem)"],
 	["V", "Phóng to / thu nhỏ bản đồ nhỏ (bấm bản đồ nhỏ để tự chạy tới)"],
 	["E", "Nói chuyện / cửa hàng (đứng cạnh NPC trong làng)"],
+	["R", "Lò Rèn: cường hoá, chế tạo, luyện nguyên liệu, phân rã"],
 	["F1 · H", "Trợ giúp"],
 	["Esc", "Đóng bảng · Tạm dừng"],
 ]
@@ -124,7 +126,8 @@ static func title(has_save: bool, on_new: Callable, on_continue: Callable, on_se
 	col.add_child(_centered("Thiên Phú Khai Giới", "Title"))
 	col.add_child(_centered("Nhận Thiên phú từ Bia Đá, đánh quái lên cấp, xua tan sương mù Hư Vô và hạ Sói Chúa.", "Muted", 560))
 	var row := _buttons(col)
-	var b_new := UiTheme.button("Hành trình mới", true)
+	# SN9-02: có nhân vật rồi thì nút chính mở màn Chọn nhân vật (tối đa 5)
+	var b_new := UiTheme.button("Chọn nhân vật" if has_save else "Hành trình mới", true)
 	b_new.name = "NewButton"
 	b_new.pressed.connect(on_new)
 	row.add_child(b_new)
@@ -149,6 +152,66 @@ static func title(has_save: bool, on_new: Callable, on_continue: Callable, on_se
 		grid.add_child(k)
 		grid.add_child(UiTheme.label(c[1], "Muted"))
 	col.add_child(grid)
+	return page[0]
+
+
+## SN9-02 (Spec_Notes đợt 9): màn Chọn nhân vật — 5 thẻ (slots = SaveSystem.list_slots()).
+## on_play(n), on_delete(n), on_new(), on_back().
+static func slots(slots_info: Array, on_play: Callable, on_delete: Callable, on_new: Callable, on_back: Callable) -> Control:
+	var page := _page(1.0, 1240.0)
+	var col: VBoxContainer = page[1]
+	col.add_child(_centered("CHỌN NHÂN VẬT", "Eyebrow"))
+	var used := slots_info.filter(func(s): return not s.is_empty()).size()
+	col.add_child(_centered("%d / %d nhân vật" % [used, slots_info.size()], "Muted"))
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 14)
+	col.add_child(row)
+	for i in slots_info.size():
+		var s: Dictionary = slots_info[i]
+		var n := i + 1
+		var card := UiTheme.panel(UiTheme.box(Color("#15111c"), 8, 2, UiTheme.GOLD_DARK if not s.is_empty() else Color(0.3, 0.3, 0.35), 10))
+		card.name = "Slot_%d" % n
+		card.custom_minimum_size = Vector2(220, 330)
+		var v := UiTheme.vbox(8)
+		v.alignment = BoxContainer.ALIGNMENT_CENTER
+		card.add_child(v)
+		v.add_child(_centered("Ô %d" % n, "Small"))
+		if s.is_empty():
+			var plus := _centered("+", "Title")
+			plus.add_theme_color_override("font_color", Color(0.5, 0.5, 0.55))
+			v.add_child(plus)
+			var bn := UiTheme.button("Tạo nhân vật mới", true)
+			bn.name = "New_%d" % n
+			bn.pressed.connect(on_new)
+			v.add_child(bn)
+		else:
+			var ic := UiTheme.icon_rect(SpriteLib.icon("portrait-" + str(s.class_id)), 96)
+			ic.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+			v.add_child(ic)
+			var nm := _centered(str(s.name), "Heading", 196)
+			nm.add_theme_font_size_override("font_size", 20)
+			v.add_child(nm)
+			v.add_child(_centered("Lv %d · %s" % [int(s.level), Classes.title(str(s.class_id), str(s.job), str(s.job2), str(s.job3))], "", 196))
+			var t: Dictionary = Talents.get_talent(str(s.talent))
+			if not t.is_empty():
+				v.add_child(_centered("Thiên phú %s · %s" % [t.rank, t.name], "Small", 196))
+			var mins := roundi(float(s.play_seconds) / 60.0)
+			v.add_child(_centered("Đã chơi %d giờ %02d phút" % [mins / 60, mins % 60], "Small", 196))
+			var bp := UiTheme.button("Vào game", true)
+			bp.name = "Play_%d" % n
+			bp.pressed.connect(func(): on_play.call(n))
+			v.add_child(bp)
+			var bd := UiTheme.button("Xoá")
+			bd.name = "Delete_%d" % n
+			bd.pressed.connect(func(): on_delete.call(n))
+			v.add_child(bd)
+		row.add_child(card)
+	var brow := _buttons(col)
+	var back := UiTheme.button("Quay lại")
+	back.name = "BackButton"
+	back.pressed.connect(on_back)
+	brow.add_child(back)
 	return page[0]
 
 
@@ -261,7 +324,7 @@ static func awakening(rng: Callable, on_accept: Callable, player_name := "") -> 
 			render.call()
 			await screen.get_tree().create_timer(0.08).timeout
 		state.rolling = null
-		var t: Dictionary = aw.gift_roll(res.serial)
+		var t: Dictionary = aw.gift_roll(res.serial, str(res.get("talent", "")))
 		state.selected = aw.gift_index
 		gift_note.text = "Gift code: nhận %s · %s. Vẫn có thể chọn lượt quay khác." % [t.rank, t.name]
 		render.call()
@@ -407,7 +470,8 @@ const VICTORY := {
 
 
 static func victory(world, on_continue: Callable, on_title: Callable, boss_id := "boss") -> Control:
-	var page := _page(0.82)
+	# R1 (docs/19 RS-UI05): nền gần kín (0,82 → 0,95) — chữ "Lên cấp", Bí Kíp, số sát thương phía sau không lộ qua.
+	var page := _page(0.95)
 	var col: VBoxContainer = page[1]
 	var p = world.profile
 	var t: Dictionary = world.talent()

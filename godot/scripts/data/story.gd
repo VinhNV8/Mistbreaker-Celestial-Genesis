@@ -282,6 +282,48 @@ const DIALOGS := {
 	"lam6_idle": [[LAM, "Ta ở đây. Nếu bóng tối trong ngươi trỗi dậy, ta sẽ gọi tên ngươi."]],
 	"rare_long_bang": [["Long Băng Bắc Cực", "Hơi thở của ta đã đóng băng biển phương bắc. Ngươi chỉ là một đốm lửa nhỏ."]],
 	"rare_long_bang_down": [["{name}", "(Con rồng băng vỡ tan như một khối pha lê khổng lồ. Giữa đống băng vụn, một mảnh vảy vẫn còn lạnh buốt.)"]],
+	# ---------------------------------------------------------------- chương 8 (docs/17 C8-40…44)
+	"liet_job3_ch8": [[LIET, "Chức thứ ba không ai dạy được ở đây. Tổ Sư của các lớp bị Hư Vô Giáo giam dưới Vực — hạ Giáo Chủ, mang 3 Lõi Hư Vô tới Cổng Phá Vây."]],
+	"r8_arrive": [
+		["{name}", "Dưới tầng mây… là một vực tối không đáy. Thiên phú trong người cứ nhạt dần."],
+		["{name}", "(Suy Thiên: ở ngoài vùng an toàn, Thiên phú yếu đi 10% mỗi phút, tối đa 50%. Đứng trong vòng Đèn Tinh Quang 5 giây để hồi lại.)"],
+	],
+	"lac8_meet": [
+		[LAC, "Lại gặp nhau rồi, {name}. Liên minh Khai Giới đã dựng tiền đồn này để công Sào Huyệt Hư Vô."],
+		[LAC, "Bọn giáo đồ nuốt Thiên phú của người ta để thành thần. Lam Nhi năm xưa cũng bị chúng hút như thế."],
+		[NGA, "Đèn Tinh Quang là thứ duy nhất giữ được Thiên phú dưới này. Đừng đi quá xa ánh đèn."],
+	],
+	"lac8_kills": [[LAC, "Mở đường xuống Đáy Vực trước đã. Cẩn thận Bóng Hư Vô — đứng yên là chúng tàng hình, và chúng thích đâm sau lưng."]],
+	"nga8_lamps": [[NGA, "Ở Đáy Vực có 4 Đèn Tinh Quang đã tắt. Đứng cạnh mỗi đèn 3 giây để thắp lại — bóng tối sẽ kéo tới, chuẩn bị đi."]],
+	"lamp8_lit": [["{name}", "(Đèn Tinh Quang bừng sáng. Từ trong bóng tối, những cái bóng lặng lẽ trườn tới.)"]],
+	"lac8_cages": [[LAC, "Thám báo thấy 3 Lồng Hư Vô ở Đáy Vực — chúng nhốt người làm vật tế. Phá lồng, cứu người!"]],
+	"cage8_broken": [["{name}", "(Lồng Hư Vô vỡ. Người bên trong ngã xuống, thở hổn hển.)"]],
+	"mac8_rescued": [
+		[MAC, "…Là ngươi? Ha… Giáo phái hứa cho ta Thiên phú, rồi nhốt ta làm vật tế."],
+		[LAC, "Mạc Tam. Ngươi lừa cả đội ta ở Biên Đài."],
+		[MAC, "Ta biết đường vào Sào Huyệt. 3 Trụ Phong Ấn giữ cổng — phá được thì cả Liên minh tràn vào."],
+		[LAC, "…Được. Lần này ta tin ngươi một lần. {name}, chuẩn bị Tổng tấn công."],
+	],
+	"assault8_start": [[LAC, "Quân ta theo ngươi! Phá 3 Trụ Phong Ấn — mỗi trụ đổ, bọn chúng sẽ phản công."]],
+	"assault8_lost": [[LAC, "Rút! Trụ đã phá vẫn đổ — gặp ta ở Cổng Phá Vây (E) để công lại."]],
+	"assault8_done": [[LAC, "Cổng Sào Huyệt đã mở! Điện Giáo Chủ ở phía đông. Ta giữ Cổng Phá Vây cho ngươi."]],
+	"giao_chu_gate": [[GIAOCHU, "Khai Giới Giả. Thiên phú của ngươi thơm như mùi trái chín. Vào đây."]],
+	"ch8_end": [
+		["{name}", "(Mặt nạ bạc vỡ đôi. Hàng ngàn đốm sáng Thiên phú bay khỏi áo choàng, toả đi khắp lục địa.)"],
+		[GIAOCHU, "Trả về chủ cũ… vô ích. Ma Tôn đã dùng mảnh Bia mở Cổng Thiên Đạo. Hắn đang gọi — cái thứ trong ngực ngươi đáp lời rồi đấy."],
+		["{name}", "(Mảnh thứ hai nhói lên. Một giọng nói lạnh lẽo gọi đúng tên mình.)"],
+		["Tổ Sư", "Chúng ta là Khai Giới Giả đời đầu, bị giam ở đây ba trăm năm. Mang Lõi Hư Vô tới Cổng Phá Vây — ta sẽ truyền chức thứ ba."],
+	],
+	"lam8_letter": [[LAM, "(Thư Lam Nhi) Sáng nay mình thấy một đốm sáng bay về… Thiên phú của mình! Cảm ơn cậu."]],
+	"to_su_wrong": [["Tổ Sư", "Ta không truyền đạo cho lớp của ngươi. Tìm Tổ Sư của ngươi."]],
+	"to_su_wait": [["Tổ Sư", "Cấp 90, chức thứ hai, 3 Lõi Hư Vô và 50 Tinh Thạch. Đủ rồi hãy tới."]],
+	"ch8_done": [[LAC, "Sào Huyệt đã sụp. Cổng Thiên Đạo ở phía trên — chương sau ngươi phải lên đó."]],
+	"lac8_idle": [[LAC, "Giữ ánh đèn bên mình. Dưới này, mất Thiên phú là mất mạng."]],
+	"nga8_shop": [[NGA, "Đèn Lồng Tinh Quang — bấm Q để xoá Suy Thiên và giữ Thiên phú 45 giây. Bình máu, bình MP cũng có."]],
+	"mac8_idle": [[MAC, "Lối tắt qua Sào Huyệt ta đều biết. Lần này ta đứng về phía các ngươi."]],
+	"raid8_warn": [[LAC, "Hư Vô Giáo phản công một Đèn Tinh Quang! Giữ đèn trong 60 giây tới!"]],
+	"rare_hu_vo_thu": [["Hư Vô Thú", "(Một tiếng gầm không âm thanh. Ánh đèn quanh ổ run lên rồi mờ dần.)"]],
+	"rare_hu_vo_thu_down": [["{name}", "(Con thú tan thành sương đen. Một chiếc nanh tím vẫn còn lại trên nền đá.)"]],
 }
 
 
@@ -346,6 +388,24 @@ const DONE6 := 8
 
 static func quest6(step: int) -> Dictionary:
 	return QUESTS6[step - 1] if step >= 1 and step <= QUESTS6.size() else {}
+
+
+## M11 (docs/17 C8-41): nhiệm vụ chính chương 8. Bước lưu ở profile.quest.ch8: 0 = chưa xong chương 7, 1…7 = bước 1…7, 8 = xong.
+## Thưởng EXP ≈ 25% EXP cấp 84 → 95 ≈ 6,19 triệu, tăng dần theo bước.
+const QUESTS8 := [
+	{"title": "Xuống vực", "hint": "Tới Tiền Đồn Tinh Quang, gặp Lạc Phong", "type": "talk_lac8", "need": 1, "reward": {"exp": 300000, "lanterns": 2}},
+	{"title": "Mở đường", "hint": "Hạ 30 quái vùng 8", "type": "kills8", "need": 30, "reward": {"exp": 600000}},
+	{"title": "Thắp đèn", "hint": "Thắp 4 Đèn Tinh Quang ở Đáy Vực", "type": "lamps8", "need": 4, "reward": {"exp": 800000, "stones": 10}},
+	{"title": "Lồng Hư Vô", "hint": "Phá 3 Lồng Hư Vô ở Đáy Vực", "type": "cages8", "need": 3, "reward": {"exp": 900000, "crystal": 10}},
+	{"title": "Tổng tấn công", "hint": "Phá 3 Trụ Phong Ấn ở Sào Huyệt", "type": "assault8", "need": 3, "reward": {"exp": 1000000, "gold": 6000}},
+	{"title": "Giáo Chủ Hư Vô", "hint": "Hạ Giáo Chủ ở Điện Giáo Chủ", "type": "boss8", "need": 1, "reward": {"exp": 1200000, "crystal": 15}},
+	{"title": "Chuyển chức lần 3", "hint": "Gặp Tổ Sư ở Cổng Phá Vây", "type": "job3", "need": 1, "reward": {"exp": 1390000, "gold": 8000}},
+]
+const DONE8 := 8
+
+
+static func quest8(step: int) -> Dictionary:
+	return QUESTS8[step - 1] if step >= 1 and step <= QUESTS8.size() else {}
 
 
 ## M10 (docs/16 C7-41): nhiệm vụ chính chương 7. Bước lưu ở profile.quest.ch7: 0 = chưa xong chương 6, 1 = Dựng Cảng Khí Cầu
@@ -418,7 +478,7 @@ static func quest(step: int) -> Dictionary:
 static func reward_text(r: Dictionary) -> String:
 	var parts := PackedStringArray()
 	for pair in [["exp", "%d EXP"], ["gold", "%d vàng"], ["potions", "%d bình máu"], ["torches", "%d Đuốc"], ["stones", "%d Đá Cường Hoá"],
-			["crystal", "%d Tinh Thạch"], ["holy_water", "%d Bình Nước Thánh"], ["embers", "%d Than Hồng"], ["feathers", "%d Lông Vũ Gió"]]:
+			["crystal", "%d Tinh Thạch"], ["holy_water", "%d Bình Nước Thánh"], ["embers", "%d Than Hồng"], ["feathers", "%d Lông Vũ Gió"], ["lanterns", "%d Đèn Lồng Tinh Quang"]]:
 		if r.has(pair[0]):
 			parts.append(pair[1] % int(r[pair[0]]))
 	return ", ".join(parts)

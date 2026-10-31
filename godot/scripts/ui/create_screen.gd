@@ -6,6 +6,7 @@ const UiTheme = preload("res://scripts/ui/ui_theme.gd")
 const Looks = preload("res://scripts/data/looks.gd")
 const Classes = preload("res://scripts/data/classes.gd")
 const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
+const ClassSelect = preload("res://scripts/ui/class_select.gd")
 
 
 ## Ô xem trước: vẽ nhân vật lần lượt đứng → chạy → đánh.
@@ -27,8 +28,7 @@ class Preview:
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 		var phase := int(t / 2.5) % 3
 		var anim: String = ["idle", "run", "attack"][phase]
-		var hs := Looks.base_sprite(class_id, look)
-		var id := hs if SpriteLib.has_sprite(hs) else "hero-" + class_id
+		var id := SpriteLib.hero_sprite(class_id, look)
 		if not SpriteLib.has_sprite(id):
 			return
 		var frame := SpriteLib.frame_at(id, anim, fmod(t, 2.5))
@@ -43,6 +43,10 @@ var _preview: Preview
 var _ok: Button
 var _hint: Label
 var _rows := {}
+var _picker: Control
+var _class_icon: TextureRect
+var _class_name: Label
+var _class_role: Label
 
 
 func _init(done: Callable) -> void:
@@ -88,54 +92,44 @@ func _ready() -> void:
 	_name_edit.text_changed.connect(func(_t): _validate())
 	form.add_child(_name_edit)
 
+	_choice_row(form, "style", "Kiểu hình", Looks.STYLES.map(func(s): return Looks.STYLE_NAMES[s]), func(i):
+		_look.style = Looks.STYLES[i])
 	_choice_row(form, "gender", "Giới tính", Looks.GENDERS.map(func(g): return Looks.GENDER_NAMES[g]), func(i):
 		var g: String = Looks.GENDERS[i]
 		if g != _look.gender:
 			var keep_color: int = _look.hair_color
 			var keep_skin: int = _look.skin
+			var keep_style := str(_look.get("style", "sheet"))
 			_look = Looks.default_look(g)
 			_look.hair_color = keep_color
-			_look.skin = keep_skin)
+			_look.skin = keep_skin
+			_look.style = keep_style)
 	_choice_row(form, "skin", "Màu da", Looks.SKIN_NAMES, func(i): _look.skin = i)
 	_choice_row(form, "hair_style", "Kiểu tóc", Looks.HAIR_STYLES.map(func(s): return Looks.HAIR_STYLE_NAMES[s]), func(i):
 		_look.hair_style = Looks.HAIR_STYLES[i])
 	_choice_row(form, "hair_color", "Màu tóc", Looks.HAIR_COLORS.map(func(c): return c[0]), func(i): _look.hair_color = i)
 
+	# UI-22: lớp chọn ở màn thẻ ClassSelect (bước 1); ở đây chỉ hiện lớp đã chọn + nút "Đổi lớp".
 	form.add_child(UiTheme.label("Lớp nhân vật", "Small"))
-	var crow := UiTheme.hbox(10)
+	var crow := UiTheme.panel(UiTheme.box(Color("#150f0a"), 8, 1, UiTheme.GOLD_DARK, 8))
+	var ch := UiTheme.hbox(12)
+	crow.add_child(ch)
+	_class_icon = UiTheme.icon_rect(null, 56)
+	ch.add_child(_class_icon)
+	var cv := UiTheme.vbox(2)
+	cv.size_flags_horizontal = SIZE_EXPAND_FILL
+	cv.size_flags_vertical = SIZE_SHRINK_CENTER
+	_class_name = UiTheme.strong("", 20)
+	cv.add_child(_class_name)
+	_class_role = UiTheme.label("", "Small")
+	cv.add_child(_class_role)
+	ch.add_child(cv)
+	var change := UiTheme.button("Đổi lớp")
+	change.name = "ChangeClass"
+	change.size_flags_vertical = SIZE_SHRINK_CENTER
+	change.pressed.connect(_show_classes)
+	ch.add_child(change)
 	form.add_child(crow)
-	_rows["class"] = []
-	for cid in Classes.ORDER:
-		var c: Dictionary = Classes.DEFS[cid]
-		var b := UiTheme.button("")
-		b.name = "Class_" + cid
-		b.custom_minimum_size = Vector2(275, 96)
-		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		var v := UiTheme.vbox(2)
-		v.mouse_filter = MOUSE_FILTER_IGNORE
-		v.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
-		v.offset_left = 12
-		v.offset_top = 8
-		v.add_child(UiTheme.label("%s · %s" % [c.name, c.main], "Heading"))
-		v.add_child(UiTheme.label(c.role, "Small"))
-		var icons := UiTheme.hbox(4)
-		for sk in c.skills:
-			var ic := TextureRect.new()
-			ic.texture = SpriteLib.icon("skill-" + str(sk.icon))
-			ic.custom_minimum_size = Vector2(28, 28)
-			ic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-			ic.tooltip_text = "%s — %s" % [sk.name, sk.text]
-			icons.add_child(ic)
-		v.add_child(icons)
-		for n in [v, icons]:
-			n.mouse_filter = MOUSE_FILTER_IGNORE
-		b.add_child(v)
-		var id: String = cid
-		b.pressed.connect(func():
-			_class = id
-			_refresh())
-		crow.add_child(b)
-		_rows["class"].append(b)
 	_hint = UiTheme.label("", "Small", 560)
 	form.add_child(_hint)
 
@@ -149,7 +143,21 @@ func _ready() -> void:
 	row.add_child(_ok)
 	form.add_child(row)
 	_refresh()
-	_name_edit.grab_focus()
+	# Bước 1: chọn lớp trên màn thẻ; chọn xong mới tới đặt tên + ngoại hình.
+	_picker = ClassSelect.new()
+	_picker.name = "ClassSelect"
+	_picker.look = _look
+	_picker.on_pick = func(id: String):
+		_class = id
+		_picker.visible = false
+		_refresh()
+		_name_edit.grab_focus()
+	add_child(_picker)
+
+
+func _show_classes() -> void:
+	_picker.look = _look
+	_picker.visible = true
 
 
 func _choice_row(parent: Control, key: String, title: String, labels: Array, on_pick: Callable) -> void:
@@ -175,11 +183,11 @@ func _choice_row(parent: Control, key: String, title: String, labels: Array, on_
 
 func _refresh() -> void:
 	var sel := {
+		"style": Looks.STYLES.find(str(_look.get("style", "sheet"))),
 		"gender": Looks.GENDERS.find(_look.gender),
 		"skin": int(_look.skin),
 		"hair_style": Looks.HAIR_STYLES.find(_look.hair_style),
 		"hair_color": int(_look.hair_color),
-		"class": Classes.ORDER.find(_class),
 	}
 	for key in _rows:
 		var arr: Array = _rows[key]
@@ -188,7 +196,15 @@ func _refresh() -> void:
 			var on: bool = i == int(sel[key])
 			var c := UiTheme.GOLD if on else UiTheme.LINE
 			b.add_theme_stylebox_override("normal", UiTheme.box(Color(c, 0.22 if on else 0.04), 8, 2 if on else 1, c, 6))
+			# AR-44: kiểu "Hình lớp" dùng hình cố định của lớp — giới tính/da/tóc không đổi hình nên làm mờ
+			b.modulate.a = 0.4 if key != "style" and Looks.uses_sheet(_look) and SpriteLib.has_sprite("pc-" + _class) else 1.0
 	_preview.class_id = _class
+	var cd: Dictionary = Classes.DEFS[_class]
+	var accent := Color(str(ClassSelect.accent_of(_class)))
+	_class_icon.texture = SpriteLib.icon("portrait-" + _class)
+	_class_name.text = str(cd.name)
+	_class_name.add_theme_color_override("font_color", accent.lightened(0.2))
+	_class_role.text = "%s · chỉ số chính %s" % [cd.role, cd.main]
 	_preview.look = _look
 	_validate()
 
@@ -204,6 +220,7 @@ func _randomize() -> void:
 	var names := ["Lâm Phong", "Tô Vân", "Mộc Lan", "Hàn Sơn", "Thanh Hà", "Vũ Minh", "Bạch Tuyết", "Diệp Thần"]
 	_name_edit.text = names[randi() % names.size()]
 	_look = {
+		"style": str(_look.get("style", "sheet")),
 		"gender": Looks.GENDERS[randi() % 2],
 		"skin": randi() % Looks.SKIN_NAMES.size(),
 		"hair_style": Looks.HAIR_STYLES[randi() % Looks.HAIR_STYLES.size()],

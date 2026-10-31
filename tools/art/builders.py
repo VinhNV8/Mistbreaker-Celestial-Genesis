@@ -67,6 +67,9 @@ def humanoid(spec):
     # SN-06: Pháp Sư — áo choàng dài (robe) và trượng có ngọc (weapon "staff").
     robe = spec.get("robe", False)
     orb = _ramp(spec, "orb", "purple")
+    # LH1 (docs/19): Hộ Vệ — khiên tròn ở tay sau, chùy (weapon "mace") ở tay trước.
+    shield = spec.get("shield", False)
+    shield_face = _ramp(spec, "shield_face", "cloth_blue")
 
     def draw_hair(cv, hy):
         if style == "none":
@@ -104,6 +107,20 @@ def humanoid(spec):
                 c.line(hx + math.cos(pw) * 2.2, hy2 + math.sin(pw) * 2.2,
                        hx - math.cos(pw) * 2.2, hy2 - math.sin(pw) * 2.2, trim[2], 1.4)
                 c.set(hx - math.cos(w) * 2, hy2 - math.sin(w) * 2, trim[1])
+            if weapon == "mace":
+                w = math.radians(wpn)
+                head = (hx + math.cos(w) * 9, hy2 + math.sin(w) * 9)
+                if smear:
+                    c.arc(sx, sy, 10, math.radians(-110), math.radians(30), (230, 240, 255, 110), 2.2)
+                c.line(hx, hy2, head[0], head[1], R["wood"][2], 1.6)
+                c.shade_ellipse(head[0], head[1], 2.4, 2.4, R["steel"])
+                c.set(head[0] - 0.6, head[1] - 1.0, R["steel"][3])
+            if weapon == "orb":
+                # LH2: Triệu Hồi Sư — quả cầu linh hồn lơ lửng trên lòng bàn tay
+                ox, oy = hx + 1.5, hy2 - 5.5
+                glow(c, ox, oy, 7 if smear else 5, orb[3], 170 if smear else 110)
+                c.shade_ellipse(ox, oy, 2.6 if smear else 2.2, 2.6 if smear else 2.2, orb)
+                c.set(ox - 0.7, oy - 1.0, (255, 255, 255, 255))
             if weapon == "staff":
                 ang = math.radians(wpn if wpn != -60 else -70)
                 bot = (hx - math.cos(ang) * 7, hy2 - math.sin(ang) * 7)
@@ -169,6 +186,10 @@ def humanoid(spec):
         if collar:
             cv.shade_poly([(11.5, 13.5 + b), (20.5, 13.5 + b), (19, 16.5 + b), (13, 16.5 + b)], collar)
         leg(17, nx, nl, pants, boots)
+        if shield:
+            cv.shade_ellipse(12.4, 19 + b, 4.4, 5.2, trim)
+            cv.shade_ellipse(12.4, 19 + b, 3.2, 4.0, shield_face)
+            cv.set(12.4, 19 + b, R["steel"][3])
         if robe:
             cv.shade_poly([(12.2, 20.5 + b), (19.8, 20.5 + b), (21.4, 27.4), (10.6, 27.4)], cloth)
             cv.rect(10.8, 26.4, 21.2, 27.4, trim[1])
@@ -192,10 +213,10 @@ def humanoid(spec):
     idle = [frame(0), frame(1)]
     run_legs = [((2, 0), (-2, 2)), ((0, 1), (0, 0)), ((-2, 2), (2, 0)), ((0, 0), (0, 1))]
     run = [frame(i % 2, run_legs[i], arm=50 + (i % 2) * 20) for i in range(4)]
-    if weapon == "staff":
+    if weapon in ("staff", "orb"):
         atk = [frame(0, arm=-30, wpn=-70), frame(0, ((1, 0), (2, 0)), arm=-10, wpn=-35, smear=True),
                frame(1, arm=20, wpn=-60, smear=True)]
-    elif weapon == "sword":
+    elif weapon in ("sword", "mace"):
         atk = [frame(0, arm=-100, wpn=-130), frame(0, ((1, 0), (2, 0)), arm=-15, wpn=-5, smear=True),
                frame(1, ((1, 0), (2, 0)), arm=45, wpn=55)]
     else:

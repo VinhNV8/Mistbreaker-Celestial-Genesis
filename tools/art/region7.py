@@ -88,9 +88,37 @@ def colossus(spec):
     ]
 
 
+# ====================================================================== builder: Neo Hư Vô
+def void_pylon(spec):
+    """Neo Hư Vô: cột pha lê tím cắm xuống đất, xích đen, nhịp sáng (đứng yên)."""
+    size = spec.get("size", 32)
+
+    def frame(pulse=0.0, crack=0, alpha=1.0):
+        cv = Canvas(size, size)
+        shadow(cv, 16, 29.5, 8, 1.8, 80)
+        glow(cv, 16, 14, 10 + pulse * 2, hexc("#9b6ee0"), 90)
+        cv.shade_poly([(12, 29), (13, 10), (16, 2), (19, 10), (20, 29)], R["purple"])
+        cv.shade_poly([(14, 26), (14.5, 11), (16, 5), (17.5, 11), (18, 26)], R["void"])
+        for y in (14, 21):
+            cv.line(9, y, 23, y + 2, R["colossus"][0], 1.2)
+        for k in range(crack):
+            cv.line(16, 12, 13 + k * 3, 24, (255, 255, 255, 180), 0.6)
+        cv.outline(OUTLINE)
+        return cv.fade(alpha) if alpha < 1.0 else cv
+
+    return [
+        ("idle", [frame(0.0), frame(1.0)]),
+        ("run", [frame(0.0), frame(0.5), frame(1.0), frame(0.5)]),
+        ("attack", [frame(1.0), frame(1.0), frame(0.0)]),
+        ("hurt", [frame(0.5, crack=2)]),
+        ("death", [frame(0.5, crack=3, alpha=0.8), frame(0, crack=3, alpha=0.5), frame(0, crack=3, alpha=0.25)]),
+    ]
+
+
 def register_builders():
     from builders import BUILDERS
     BUILDERS.setdefault("colossus", colossus)
+    BUILDERS.setdefault("void_pylon", void_pylon)
 
 
 # ====================================================================== sprite
@@ -113,6 +141,15 @@ SPRITES7 = {
     "rong-may": {"builder": "dragon", "name": "Rồng Mây", "size_mul": 1.0,
                  "spec": {"size": 48, "fur": "leaf_sky", "mane": "cloud", "eye": "#ffffff", "aura": "#c8f4a8", "wing": "cloud",
                           "wing_span": 1.0, "stripes": "#3a6ab4"}},
+    # Neo Hư Vô (nhiệm vụ bước 4)
+    "neo-hu-vo": {"builder": "void_pylon", "name": "Neo Hư Vô", "size_mul": 1.4, "spec": {"size": 32}},
+    # NPC Bến Mây (Tuyết Nga dùng lại npc-tuyet-nga vùng 6)
+    "npc-van-hac": {"builder": "humanoid", "name": "Lão đạo Vân Hạc",
+                    "spec": {"skin": "skin_light", "hair": "white", "hair_style": "bui", "cloth": "cloud", "pants": "sky",
+                             "trim": "sky_gold", "weapon": "staff", "robe": True, "orb": "sky_gold", "gender": "nam"}},
+    "npc-phong-linh": {"builder": "humanoid", "name": "Thuyền trưởng Phong Linh",
+                       "spec": {"skin": "skin", "hair": "hair_brown", "hair_style": "dai", "cloth": "cloth_red", "pants": "leather",
+                                "trim": "sky_gold", "weapon": "none", "cape": "sky", "gender": "nu"}},
     # boss chương 7
     "cu-than": {"builder": "colossus", "name": "Thiên Không Cự Thần", "size_mul": 2.3, "spec": {"size": 48}},
     # boss hiếm
@@ -155,12 +192,24 @@ def g_sung_ky_lan(cv):
     cv.line(22.5, 19, 25, 24, (200, 240, 255, 220), 1.0)
 
 
+def g_feather(cv):
+    """Lông Vũ Gió: chiếc lông trắng xanh, vệt gió."""
+    glow(cv, 16, 16, 13, hexc("#bcdcff"), 60)
+    cv.shade_poly([(8, 27), (11, 18), (16, 9), (23, 4), (21, 12), (16, 20), (10, 26)], R["cloud"])
+    cv.line(8, 27, 22, 6, R["sky"][1], 1.0)
+    for x in (5, 9):
+        cv.line(x, 12, x + 6, 10, (190, 230, 255, 170), 1.0)
+
+
 ITEMS7 = {"bua_cu_than": g_bua_cu_than, "sung_ky_lan": g_sung_ky_lan}
+RESOURCES7 = {"feather": g_feather}
 
 
 def register_icons(items, resources, skills):
     for k, v in ITEMS7.items():
         items.setdefault(k, v)
+    for k, v in RESOURCES7.items():
+        resources.setdefault(k, v)
 
 
 # ====================================================================== môi trường
@@ -251,6 +300,82 @@ def wind_bridge():
     return cv
 
 
+def anchor_stone(lit):
+    """Đá Neo: cột đá có dây xích, sáng xanh khi đã chạm."""
+    cv = Canvas(24, 44)
+    shadow(cv, 12, 41, 8, 2, 90)
+    if lit:
+        glow(cv, 12, 14, 11, hexc("#7ae0ff"), 110)
+    cv.shade_poly([(6, 41), (7, 12), (12, 6), (17, 12), (18, 41)], R["marble"])
+    for y in (18, 26, 34):
+        cv.line(4, y, 20, y + 2, R["colossus"][1], 1.2)
+    cv.shade_ellipse(12, 13, 2.6, 2.6, R["sky"] if lit else R["stone"])
+    cv.outline(OUTLINE)
+    return cv, [12, 41]
+
+
+def wind_pillar(lit):
+    """Trụ Gió: cột cẩm thạch, vòng gió xoáy quanh đỉnh khi đã kích."""
+    cv = Canvas(30, 56)
+    shadow(cv, 15, 53, 9, 2.2, 90)
+    cv.shade_poly([(9, 53), (10, 14), (20, 14), (21, 53)], R["marble"])
+    cv.rect(7, 10, 23, 15, R["sky_gold"][2])
+    if lit:
+        glow(cv, 15, 8, 13, hexc("#bcdcff"), 120)
+        for k in range(3):
+            cv.line(4 + k * 2, 8 - k * 2, 26 - k * 2, 4 + k * 2, (220, 245, 255, 200), 1.0)
+    else:
+        cv.shade_ellipse(15, 7, 3, 2.4, R["stone"])
+    cv.outline(OUTLINE)
+    return cv, [15, 53]
+
+
+def stele_root():
+    """Bia Đá gốc: bia đá lớn có hoa văn vàng, ánh sáng trắng."""
+    cv = Canvas(36, 56)
+    shadow(cv, 18, 53, 13, 2.6, 100)
+    glow(cv, 18, 22, 16, hexc("#fff0b0"), 90)
+    cv.shade_poly([(6, 53), (7, 12), (12, 5), (24, 5), (29, 12), (30, 53)], R["marble"])
+    for y in (16, 24, 32, 40):
+        cv.line(11, y, 25, y, R["sky_gold"][1], 1.0)
+    cv.shade_ellipse(18, 11, 3.2, 3.2, [hexc("#fff0b0")] * 4)
+    cv.rect(3, 49, 33, 54, R["marble"][1])
+    cv.outline(OUTLINE)
+    return cv, [18, 53]
+
+
+def camp_center(level):
+    """C7-03: trung tâm lãnh địa theo cấp — 1 lều · 2 nhà gỗ · 3 tường gỗ · 4 tường đá · 5 cung điện."""
+    cv = Canvas(56, 52)
+    shadow(cv, 28, 49, 22, 3, 100)
+    if level >= 3:
+        wall = R["wood"] if level == 3 else R["stone"]
+        cv.shade_poly([(2, 49), (2, 34), (54, 34), (54, 49)], wall)
+        for x in range(4, 54, 6):
+            cv.rect(x, 31, x + 3, 35, wall[2])
+    if level == 1:
+        cv.shade_poly([(14, 46), (28, 20), (42, 46)], R["cloth_red"])
+        cv.shade_poly([(25, 46), (28, 38), (31, 46)], R["leather"])
+    elif level == 2:
+        cv.shade_poly([(14, 46), (14, 30), (42, 30), (42, 46)], R["wood"])
+        cv.shade_poly([(10, 31), (28, 18), (46, 31)], R["bark"])
+        cv.rect(25, 38, 31, 46, R["leather"][0])
+    elif level in (3, 4):
+        cv.shade_poly([(16, 44), (16, 24), (40, 24), (40, 44)], R["wood"] if level == 3 else R["stone"])
+        cv.shade_poly([(12, 25), (28, 12), (44, 25)], R["cloth_red"])
+        cv.rect(25, 36, 31, 44, R["leather"][0])
+    else:
+        cv.shade_poly([(12, 44), (12, 22), (44, 22), (44, 44)], R["marble"])
+        cv.shade_poly([(8, 23), (28, 8), (48, 23)], R["sky_gold"])
+        for x in (8, 44):
+            cv.shade_poly([(x - 4, 44), (x - 4, 16), (x + 4, 16), (x + 4, 44)], R["marble"])
+            cv.shade_poly([(x - 6, 17), (x, 8), (x + 6, 17)], R["sky_gold"])
+        cv.rect(24, 34, 32, 44, R["sky"][0])
+        glow(cv, 28, 15, 5, hexc("#fff0b0"), 120)
+    cv.outline(OUTLINE)
+    return cv, [28, 49]
+
+
 def register_env(out):
     """Thêm môi trường vùng 7 vào dict env.build_all() (giá trị: (Canvas, origin))."""
     out.setdefault("tile-sky-grass", (cloud_grass_tile(770), [0, 0]))
@@ -261,3 +386,10 @@ def register_env(out):
         out.setdefault("tree-hanging-%d" % i, hanging_tree(790 + i))
         out.setdefault("sky-pillar-%d" % i, sky_pillar(795 + i))
     out.setdefault("airship-dock", airship_dock())
+    out.setdefault("anchor-stone", anchor_stone(False))
+    out.setdefault("anchor-stone-lit", anchor_stone(True))
+    out.setdefault("wind-pillar", wind_pillar(False))
+    out.setdefault("wind-pillar-lit", wind_pillar(True))
+    out.setdefault("stele-root", stele_root())
+    for lv in range(1, 6):
+        out.setdefault("camp-center-%d" % lv, camp_center(lv))

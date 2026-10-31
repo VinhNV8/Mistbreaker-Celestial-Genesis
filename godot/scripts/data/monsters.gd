@@ -341,15 +341,62 @@ const DEFS := {
 		"element": "kim", "name": "Hiệp Sĩ Thiên Không", "arch": "li", "speed": 80.0, "radius": 17.0, "range": 140.0,
 		"windup": 0.8, "recover": 1.3, "attack": "lance", "color": "#c8d8ec", "steal": {"str": 60, "vit": 40},
 	},
+	## C7-41 bước 4: Neo Hư Vô (vật thể đứng yên có thanh máu, không đánh — chapter7.vanish: không EXP/đồ).
+	"neo-hu-vo": {
+		"element": "", "name": "Neo Hư Vô", "arch": "li", "speed": 0.0, "radius": 26.0, "range": 0.0,
+		"windup": 1.0, "recover": 1.0, "attack": "none", "color": "#6a3aa8", "steal": {"int": 100},
+	},
 	## C7-30: boss chương 7 (đấu trường đảo tròn 30 m, 3 giai đoạn — chapter7).
 	"cu-than": {
-		"element": "kim", "name": "Thiên Không Cự Thần", "arch": "boss", "speed": 90.0, "radius": 40.0, "range": 60.0,
+		"element": "kim", "name": "Thiên Không Cự Thần", "arch": "boss", "speed": 90.0, "radius": 56.0, "range": 60.0,
 		"windup": 0.7, "recover": 1.0, "attack": "melee", "color": "#7a8498", "steal": {"str": 50, "vit": 50},
 	},
 	## C7-33: boss hiếm 7-3 — chạy vòng (miss), dừng tới khi mất 12% HP hoặc 6 giây.
 	"ky-lan-may": {
 		"element": "moc", "name": "Kỳ Lân Mây", "arch": "nhanh", "speed": 160.0, "radius": 34.0, "range": 50.0,
 		"windup": 0.5, "recover": 0.8, "attack": "melee", "color": "#86d47a", "steal": {"agi": 50, "luk": 50},
+	},
+	## ---------------------------------------------------------------- M11 chương 8 (docs/17 C8-20…35). Hệ "" = Hư Vô (không hệ, C8-12).
+	## C8-20: tàng hình khi đứng yên (chapter8.tick → meta "stealth"), Đâm lén ×1,8 sau lưng.
+	"bong-hu-vo": {
+		"element": "", "name": "Bóng Hư Vô", "arch": "nhanh", "speed": 165.0, "radius": 14.0, "range": 34.0,
+		"windup": 0.4, "recover": 0.8, "attack": "backstab", "color": "#4a3a6a", "steal": {"agi": 70, "luk": 30},
+	},
+	## C8-21: đạn 18 m xoá 1 hiệu ứng có lợi + Suy Thiên +5%. Tinh anh Tư Tế Hư Vô (C8-24): Tế lễ.
+	"ke-nuot": {
+		"element": "", "name": "Kẻ Nuốt Thiên Phú", "arch": "phep", "speed": 100.0, "radius": 15.0, "range": 180.0,
+		"windup": 0.7, "recover": 2.3, "attack": "voidbolt", "color": "#8a5ad0", "steal": {"int": 70, "luk": 30},
+		"elite_name": "Tư Tế Hư Vô", "elite_arch": "phep", "elite_min_level": 88, "elite_skill": "sacrifice", "elite_sprite": "tu-te-hu-vo",
+	},
+	## C8-22: Chém nặng nón 90° 5 m ×1,6 (hồi 6 giây, chapter8.chase). Tinh anh Quái Vật Không Mặt (C8-25): miễn nón trước.
+	"giap-si-hu-vo": {
+		"element": "", "name": "Giáp Sĩ Hư Vô", "arch": "giap", "speed": 80.0, "radius": 19.0, "range": 40.0,
+		"windup": 0.6, "recover": 1.2, "attack": "melee", "color": "#5a4a7a", "steal": {"str": 50, "vit": 50},
+		"elite_name": "Quái Vật Không Mặt", "elite_arch": "li", "elite_min_level": 90, "elite_skill": "none", "elite_sprite": "khong-mat",
+	},
+	## C8-23: Tia nhìn — khoá 1 giây rồi chiếu 3 giây, bị Cột Đá chặn; đứng yên (chapter8.update_enemy).
+	"mat-hu-vo": {
+		"element": "", "name": "Mắt Hư Vô", "arch": "xa", "speed": 0.0, "radius": 16.0, "range": 200.0,
+		"windup": 1.0, "recover": 1.0, "attack": "none", "color": "#c04ad0", "steal": {"int": 60, "agi": 40},
+	},
+	## C8-41 bước 4 / C8-42: Lồng Hư Vô, Trụ Phong Ấn (vật thể có thanh bền, không đánh — chapter8.vanish: không EXP/đồ).
+	"long-hu-vo": {
+		"element": "", "name": "Lồng Hư Vô", "arch": "li", "speed": 0.0, "radius": 26.0, "range": 0.0,
+		"windup": 1.0, "recover": 1.0, "attack": "none", "color": "#5a2a8a", "steal": {"int": 100},
+	},
+	"tru-phong-an": {
+		"element": "", "name": "Trụ Phong Ấn", "arch": "li", "speed": 0.0, "radius": 30.0, "range": 0.0,
+		"windup": 1.0, "recover": 1.0, "attack": "none", "color": "#7a3ab0", "steal": {"int": 100},
+	},
+	## C8-30: boss chương 8 (Điện Giáo Chủ, 3 giai đoạn, Hút Thiên phú — chapter8).
+	"giao-chu": {
+		"element": "", "name": "Giáo Chủ Hư Vô", "arch": "boss", "speed": 95.0, "radius": 30.0, "range": 55.0,
+		"windup": 0.6, "recover": 0.9, "attack": "melee", "color": "#2a1a3a", "steal": {"int": 60, "luk": 40},
+	},
+	## C8-33: boss hiếm 8-3 — Nuốt ánh sáng (tắt đèn), Hàm hư vô.
+	"hu-vo-thu": {
+		"element": "", "name": "Hư Vô Thú", "arch": "li", "speed": 120.0, "radius": 38.0, "range": 55.0,
+		"windup": 0.6, "recover": 0.9, "attack": "melee", "color": "#3a1a5a", "steal": {"str": 50, "vit": 50},
 	},
 	## C4-30: boss chương 4
 	"nu-vuong": {

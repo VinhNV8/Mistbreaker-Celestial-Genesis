@@ -360,7 +360,7 @@ static func update_enemy(w, e, dt: float) -> bool:
 		if e.venom_tick >= 1.0:
 			e.venom_tick -= 1.0
 			var dmg: int = maxi(1, roundi(Formulas.compute_damage(w.stats.atk, e.def, VENOM_MUL) * e.venom_stacks))
-			w._apply_damage(e, dmg, false, false)
+			w._apply_damage(e, dmg, false, false, "poison")
 			if e.dead:
 				return true
 		if e.venom_timer <= 0.0:
@@ -865,7 +865,7 @@ static func quest_hud(w) -> Dictionary:
 				[("Thưởng: " + rt) if rt != "" else "", "muted"]]}
 	if int(w.profile.quest.ch3) >= Story.DONE3:
 		return {"done": true, "title": "CHƯƠNG 3 · HOÀN THÀNH ✓",
-			"lines": [["Chức: %s" % Classes.title(str(w.profile.class_id), str(w.profile.job), str(w.profile.job2)), "text"],
+			"lines": [["Chức: %s" % Classes.title(str(w.profile.class_id), str(w.profile.job), str(w.profile.job2), str(w.profile.job3)), "text"],
 				["Săn boss hiếm Nhân Sư Đá ở Di Tích Khai Giới Giả — 2 lần mỗi ngày", "muted"],
 				["Chương 4: Đầm Lầy U Minh — đã chuyển chức + hạ Sa Hoàng (phím N)", "muted"]]}
 	return {}

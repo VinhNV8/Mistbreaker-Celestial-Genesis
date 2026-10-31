@@ -3,6 +3,7 @@ extends RefCounted
 
 const Config = preload("res://scripts/core/config.gd")
 const Explore = preload("res://scripts/core/explore.gd")
+const RngUtil = preload("res://scripts/core/rng_util.gd")
 
 ## v1: prototype Chương 1. v2: MVP M1 thêm trang bị (EQ-20). v3: MVP M2 thêm Thiên phú, công trình (mục 4.8).
 ## v4: MVP M3 thêm lớp nhân vật, INT/LUK, điểm Đạo Tặc cướp (mục 5.9).
@@ -19,13 +20,24 @@ const Explore = preload("res://scripts/core/explore.gd")
 ## v16: SK3 — Bí Kíp {id kỹ năng: [tầng I, II, III]}, Mảnh Bí Kíp (docs/13).
 ## v17: M10 chương 7 — feathers (Lông Vũ Gió), anchor_stones {map: [chỉ số Đá Neo đã chạm]}, quest.ch7/kills7/pillars7/anchors7,
 ## camp3–5 + port trong buildings (docs/16 mục 7).
-const VERSION := 17
+## v18: J3 — chuyển chức 3 (job3) (docs/23).
+## v19: CS (docs/26) — 7 thuộc tính (thêm wis, dex); save cũ được tẩy điểm miễn phí 1 lần (Q152).
+## v20: Đạo Tặc — Túi Tang Vật (steal_bag), Sổ Đạo Tặc {loài: điểm đã cướp} (steal_log) (03 CR-01.1 DT-16…19).
+## v21: PV — cấp kỹ năng bị động (passive_levels) (docs/27).
+## v22: SN10-02 — bình MP (mp_potions).
+## v23: SN11-03 — map ×3 diện tích: lưới sương mù đổi kích thước → save cũ phủ sương lại (giữ thưởng khai phá đã nhận).
+## v24: BK — Bí Kíp rơi = +1 Điểm Kỹ Năng; Mảnh Bí Kíp bỏ (save cũ: 5 Mảnh = 1 điểm, làm tròn lên); biến thể ✦ mở bằng điểm (docs/29).
+## v25: M11 chương 8 — void_cores (Lõi Hư Vô), lanterns (Đèn Lồng Tinh Quang), lamp_off_until {"map:đèn": giây chơi},
+## assault_play (giây chơi tới Phản công Hư Vô), quest.ch8/kills8/lamps8/cages8/pillars8 (docs/17 mục 6).
+const VERSION := 25
 
 var talent := ""
 var level := 1
 var xp := 0
-var points := {"str": 0, "agi": 0, "int": 0, "vit": 0, "luk": 0}
+var points := {"str": 0, "agi": 0, "vit": 0, "int": 0, "wis": 0, "dex": 0, "luk": 0}
 var unspent := 0
+## CS: vừa tẩy điểm miễn phí khi nạp save < v19 (chỉ trong phiên, không lưu) — GameWorld báo cho người chơi.
+var cs_refunded := 0
 var gold := 0.0
 var wood := 0.0
 var torches := Config.START_TORCHES
@@ -52,6 +64,8 @@ var talent_level := 1
 var essence := 0
 var tinh_kim := 0
 var potions := 2
+## SN10-02: bình MP (phím F).
+var mp_potions := 2
 var herbs := 0
 ## Thú cưng của Thuần Thú Sư: [{kind, level}]
 var pets: Array = []
@@ -67,6 +81,10 @@ var build_clock := 0.0
 var class_id := "kiem-khach"
 ## Thuộc tính Đạo Tặc cướp được, cũ → mới (DT-04: đầy thì bỏ phần tử đầu).
 var stolen: Array = []
+## v20 (DT-17): điểm cướp chờ khi giới hạn đã đầy (tối đa GameWorld.STEAL_BAG_MAX), tự cộng khi có chỗ.
+var steal_bag: Array = []
+## v20 (DT-19): Sổ Đạo Tặc — {loại quái: số điểm đã cướp từ loài đó (gồm cả điểm trong túi)}.
+var steal_log := {}
 
 # --- v5: nhiều bản đồ (M4)
 var map_id := "1-1"
@@ -112,15 +130,18 @@ var antidotes := 0
 var fire_torches := 0
 ## M8: chức 2 ("" = chưa), Tinh Thạch, Bình Nước Thánh, giây chơi ở vùng 5 từ lần đột kích trước, phạt ngừng sản xuất tới (giây chơi).
 var job2 := ""
+## J3 (docs/23): chức 3 — "" hoặc id trong Classes.JOBS3.
+var job3 := ""
 ## SK1: Điểm Kỹ Năng chưa dùng, {id kỹ năng: cấp 1–10}, id kỹ năng ở 4 ô (rỗng = mặc định theo lớp).
 var skill_points := 0
 var skill_levels := {}
+## PV (docs/27, v21): cấp kỹ năng bị động {id: 0–5}
+var passive_levels := {}
 var loadout: Array = []
 var variants := {}
 ## HP-07: hang đã dọn → mở lại khi play_seconds ≥ giá trị (docs/15).
 var caves := {}
 var secret_books := {}
-var book_shards := 0
 var crystal := 0.0
 var holy_water := 0
 var raid_play := 0.0
@@ -130,6 +151,11 @@ var embers := 0
 ## C7-15: Lông Vũ Gió · C7-12: Đá Neo đã chạm theo map.
 var feathers := 0
 var anchor_stones := {}
+## M11 (v25)
+var void_cores := 0
+var lanterns := 0
+var lamp_off_until := {}
+var assault_play := 0.0
 var evo_essence := 0
 ## Vườn Thảo Dược: giây tích luỹ tới thảo dược kế tiếp.
 var herb_timer := 0.0
@@ -181,6 +207,7 @@ func to_dict() -> Dictionary:
 		"essence": essence,
 		"tinh_kim": tinh_kim,
 		"potions": potions,
+		"mp_potions": mp_potions,
 		"herbs": herbs,
 		"pets": pets,
 		"copied_skills": copied_skills,
@@ -189,6 +216,8 @@ func to_dict() -> Dictionary:
 		"build_clock": build_clock,
 		"class_id": class_id,
 		"stolen": stolen,
+		"steal_bag": steal_bag,
+		"steal_log": steal_log,
 		"map_id": map_id,
 		"unlocked_maps": unlocked_maps,
 		"grids": grids,
@@ -211,13 +240,14 @@ func to_dict() -> Dictionary:
 		"antidotes": antidotes,
 		"fire_torches": fire_torches,
 		"job2": job2,
+		"job3": job3,
 		"skill_points": skill_points,
 		"skill_levels": skill_levels,
+		"passive_levels": passive_levels,
 		"loadout": loadout,
 		"variants": variants,
 		"caves": caves,
 		"secret_books": secret_books,
-		"book_shards": book_shards,
 		"crystal": crystal,
 		"holy_water": holy_water,
 		"raid_play": raid_play,
@@ -225,6 +255,10 @@ func to_dict() -> Dictionary:
 		"embers": embers,
 		"feathers": feathers,
 		"anchor_stones": anchor_stones,
+		"void_cores": void_cores,
+		"lanterns": lanterns,
+		"lamp_off_until": lamp_off_until,
+		"assault_play": assault_play,
 		"evo_essence": evo_essence,
 		"herb_timer": herb_timer,
 		"merchant": merchant,
@@ -243,11 +277,17 @@ func load_dict(d: Dictionary) -> bool:
 	talent = str(d.talent)
 	level = int(d.level)
 	xp = int(d.xp)
-	points = {
-		"str": int(d.points.str), "agi": int(d.points.agi), "int": int(d.points.get("int", 0)),
-		"vit": int(d.points.vit), "luk": int(d.points.get("luk", 0)),
-	}
+	points = {}
+	for k in ["str", "agi", "vit", "int", "wis", "dex", "luk"]:
+		points[k] = int(d.points.get(k, 0))
 	unspent = int(d.unspent)
+	# CS (v19): hệ số thuộc tính đổi hẳn → trả lại toàn bộ điểm đã cộng để người chơi phân bổ lại (điểm Đạo Tặc cướp giữ nguyên).
+	cs_refunded = 0
+	if version < 19:
+		for k in points:
+			cs_refunded += int(points[k])
+			points[k] = 0
+		unspent += cs_refunded
 	gold = float(d.gold)
 	wood = float(d.wood)
 	torches = int(d.torches)
@@ -278,6 +318,7 @@ func load_dict(d: Dictionary) -> bool:
 	essence = int(d.get("essence", 0))
 	tinh_kim = int(d.get("tinh_kim", 0))
 	potions = int(d.get("potions", 2))
+	mp_potions = int(d.get("mp_potions", 2))
 	herbs = int(d.get("herbs", 0))
 	pets = []
 	for pet in d.get("pets", []):
@@ -304,6 +345,15 @@ func load_dict(d: Dictionary) -> bool:
 	stolen = []
 	for k in d.get("stolen", []):
 		stolen.append(str(k))
+	# v20 — save cũ: túi rỗng, sổ trống (điểm đã cướp trước đó chỉ tính vào giới hạn tổng).
+	steal_bag = []
+	for k in d.get("steal_bag", []):
+		steal_bag.append(str(k))
+	steal_log = {}
+	var log_d = d.get("steal_log", {})
+	if log_d is Dictionary:
+		for k in log_d:
+			steal_log[str(k)] = int(log_d[k])
 
 	# v5 — save v4 trở xuống: đang ở Rừng Sương; Lõi Sương mở nếu đã hạ Sói Chúa.
 	map_id = str(d.get("map_id", "1-1"))
@@ -350,12 +400,18 @@ func load_dict(d: Dictionary) -> bool:
 	antidotes = int(d.get("antidotes", 0))
 	fire_torches = int(d.get("fire_torches", 0))
 	job2 = str(d.get("job2", ""))
+	job3 = str(d.get("job3", ""))
 	# SK1: save cũ chưa có Điểm Kỹ Năng → bù 1 điểm cho mỗi cấp đã lên.
 	skill_points = int(d.get("skill_points", maxi(0, level - 1)))
 	skill_levels = {}
 	var sl: Dictionary = d.get("skill_levels", {})
 	for k in sl:
 		skill_levels[str(k)] = int(sl[k])
+	# PV (v21): save cũ chưa có bị động → chưa học bị động nào.
+	passive_levels = {}
+	var pl: Dictionary = d.get("passive_levels", {})
+	for k in pl:
+		passive_levels[str(k)] = int(pl[k])
 	loadout = []
 	for k in d.get("loadout", []):
 		loadout.append(str(k))
@@ -377,7 +433,9 @@ func load_dict(d: Dictionary) -> bool:
 		for x in sb[k]:
 			arr2.append(bool(x))
 		secret_books[str(k)] = arr2
-	book_shards = int(d.get("book_shards", 0))
+	# BK (v24, docs/29): bỏ Mảnh Bí Kíp — 5 Mảnh = 1 Điểm Kỹ Năng (làm tròn lên). Biến thể ✦ đã có giữ nguyên.
+	if version < 24:
+		skill_points += ceili(int(d.get("book_shards", 0)) / 5.0)
 	crystal = float(d.get("crystal", 0.0))
 	holy_water = int(d.get("holy_water", 0))
 	raid_play = float(d.get("raid_play", 0.0))
@@ -392,6 +450,14 @@ func load_dict(d: Dictionary) -> bool:
 		for x in an[k]:
 			arr.append(int(x))
 		anchor_stones[str(k)] = arr
+	# v25 — save v24 trở xuống: chưa tới vùng 8.
+	void_cores = int(d.get("void_cores", 0))
+	lanterns = int(d.get("lanterns", 0))
+	assault_play = float(d.get("assault_play", 0.0))
+	lamp_off_until = {}
+	var lo: Dictionary = d.get("lamp_off_until", {})
+	for k in lo:
+		lamp_off_until[str(k)] = float(lo[k])
 	job = str(d.get("job", ""))
 	heat_free_until = float(d.get("heat_free_until", 0.0))
 	active_copy = str(d.get("active_copy", ""))
@@ -429,7 +495,7 @@ func load_dict(d: Dictionary) -> bool:
 		merchant = {"until": float(mc.until), "items": items}
 	# v7 — save v6 trở xuống: mọi map phủ sương, chưa nhận thưởng, bộ lọc mặc định.
 	fog = {}
-	var fd: Dictionary = d.get("fog", {})
+	var fd: Dictionary = d.get("fog", {}) if version >= 23 else {}
 	for k in fd:
 		fog[str(k)] = str(fd[k])
 	fog_rewards = {}
@@ -441,10 +507,14 @@ func load_dict(d: Dictionary) -> bool:
 		fog_rewards[str(k)] = arr
 	var bf = d.get("bulk_filter", {})
 	bulk_filter = bf.duplicate(true) if bf is Dictionary else {}
+	# Khôi phục lưới khai phá nếu bị rỗng do save cũ hoặc lỗi dữ liệu
+	if tiles.is_empty():
+		var seed_val := int(play_seconds) + int(level) * 31 + kills
+		tiles = Explore.create_region_tiles(tiles_region, RngUtil.make(seed_val), talent)
 	# C1-21: lưới vùng 1 cũ 10 ô → thêm 30 ô của Rừng Sâu và Lõi Sương.
 	var g1 := grid_of(1)
 	if Explore.needs_region1_upgrade(g1):
-		Explore.upgrade_region1(g1, talent, load("res://scripts/core/rng_util.gd").make(int(play_seconds) + 17))
+		Explore.upgrade_region1(g1, talent, RngUtil.make(int(play_seconds) + 17))
 	return true
 
 
@@ -466,10 +536,11 @@ func all_grids() -> Array:
 
 ## Đổi lưới hiện tại sang vùng khác (cất lưới cũ vào grids).
 func switch_grid(region_id: int, make_grid: Callable) -> void:
-	if region_id == tiles_region:
+	if region_id == tiles_region and not tiles.is_empty():
 		return
-	grids[str(tiles_region)] = tiles
-	if grids.has(str(region_id)):
+	if not tiles.is_empty():
+		grids[str(tiles_region)] = tiles
+	if grids.has(str(region_id)) and not grids[str(region_id)].is_empty():
 		tiles = grids[str(region_id)]
 		grids.erase(str(region_id))
 	else:

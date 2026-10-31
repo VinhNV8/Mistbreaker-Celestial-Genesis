@@ -93,9 +93,25 @@ static func draw_frame(ci: CanvasItem, id: String, anim: String, frame: int, pos
 	ci.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
+## AR-44: sprite thân nhân vật đang dùng (để tính số frame): pc-<lớp> cắt từ sprite sheet 5 lớp (tools/art/class_sheet.py)
+## nếu có và ngoại hình chọn kiểu "Hình lớp"; không thì thân theo ngoại hình (C1-02); không nữa thì hero-<lớp>.
+static func hero_sprite(class_id: String, look: Dictionary) -> String:
+	var Looks = load("res://scripts/data/looks.gd")
+	if Looks.uses_sheet(look) and has_sprite("pc-" + class_id):
+		return "pc-" + class_id
+	var base: String = Looks.base_sprite(class_id, look)
+	return base if has_sprite(base) else "hero-" + class_id
+
+
 ## C1-02: vẽ nhân vật theo ngoại hình (thân + tóc tô màu). Thiếu hình ghép thì dùng hero-<lớp>.
+## AR-44: kiểu "Hình lớp" + có pc-<lớp> thì vẽ hình đó (đã có tóc/trang phục riêng của lớp, không ghép tóc).
 static func draw_hero(ci: CanvasItem, class_id: String, look: Dictionary, anim: String, frame: int, pos: Vector2,
 		flip := false, modulate := Color.WHITE, size_mul := 1.0) -> void:
+	if hero_sprite(class_id, look) == "pc-" + class_id:
+		var pc: Dictionary = data().sprites["pc-" + class_id]
+		var n := int(pc.anims.get(anim, pc.anims.idle).frames)
+		draw_frame(ci, "pc-" + class_id, anim, clampi(frame, 0, n - 1), pos, flip, modulate, size_mul)
+		return
 	var Looks = load("res://scripts/data/looks.gd")
 	var base: String = Looks.base_sprite(class_id, look)
 	if not has_sprite(base):
@@ -140,3 +156,17 @@ static func fill_polygon(ci: CanvasItem, points: PackedVector2Array, tile_id: St
 		uvs.append(p / span)
 	ci.draw_colored_polygon(points, modulate, uvs, tex)
 	return true
+
+
+## SN11-03: đa giác màu vẽ quanh gốc rồi dời tới vị trí. Map ×√3 có toạ độ tới ~7000 px — Godot tam giác hoá theo
+## toạ độ tuyệt đối (float), hình nhỏ ở xa gốc báo "Invalid polygon data, triangulation failed".
+static func poly(ci: CanvasItem, pts: PackedVector2Array, col: Color) -> void:
+	if pts.size() < 3:
+		return
+	var o := pts[0]
+	var local := PackedVector2Array()
+	for p in pts:
+		local.append(p - o)
+	ci.draw_set_transform(o, 0.0, Vector2.ONE)
+	ci.draw_colored_polygon(local, col)
+	ci.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)

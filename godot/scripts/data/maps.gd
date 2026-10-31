@@ -15,7 +15,7 @@ const REGIONS := [
 	{"id": 5, "name": "Núi Viêm Long", "levels": [45, 60], "element": "hoa", "maps": ["5-1", "5-2", "5-3"], "unlock": "Hạ Nữ Vương · Thiên phú tiến hoá 1 lần · cấp 44"},
 	{"id": 6, "name": "Băng Nguyên Bắc Cực", "levels": [60, 72], "element": "thuy", "maps": ["6-1", "6-2", "6-3"], "unlock": "Chuyển chức 2 · hạ Viêm Long · cấp 59"},
 	{"id": 7, "name": "Quần Đảo Thiên Không", "levels": [72, 84], "element": "kim", "maps": ["7-1", "7-2", "7-3"], "unlock": "Hoàng Thành + Cảng Khí Cầu · hạ Bản Ngã · cấp 71"},
-	{"id": 8, "name": "Vực Hư Vô", "levels": [84, 95], "element": "", "maps": [], "unlock": "Thiên phú tiến hoá 2 lần (Beta)"},
+	{"id": 8, "name": "Vực Hư Vô", "levels": [84, 95], "element": "", "maps": ["8-1", "8-2", "8-3"], "unlock": "Thiên phú tiến hoá 2 lần · hạ Cự Thần · cấp 83"},
 	{"id": 9, "name": "Cổng Thiên Đạo", "levels": [95, 100], "element": "", "maps": [], "unlock": "Chuyển chức 3 (Beta)"},
 ]
 
@@ -441,7 +441,82 @@ const MAPS := {
 		"void_anchors": [Vector2(1150, 700), Vector2(2550, 1860), Vector2(3150, 1100)],
 		"crumble": [[Vector2(1520, 1000), 90.0], [Vector2(1520, 1560), 90.0], [Vector2(2230, 960), 80.0], [Vector2(2230, 1600), 80.0],
 			[Vector2(2850, 1000), 80.0], [Vector2(2850, 1560), 80.0]],
-	}
+	},
+	## ---------------------------------------------------------------- M11 chương 8 (docs/17 C8-02…13)
+	## lamps: Đèn Tinh Quang (vòng 6 m) · lamps_off: chỉ số đèn tắt chờ thắp ở bước 3 (8-2) · stones8: Cột Đá Hư Vô [tâm, bán kính]
+	## (chặn tia/đạn, bán kính giữ nguyên khi nhân map) · cages: Lồng Hư Vô (8-2) · seals: Trụ Phong Ấn (8-3).
+	"8-1": {
+		"region": 8,
+		"name": "Rìa Vực",
+		"size": Vector2(4480, 2560),
+		"levels": [84, 88],
+		"zone_x": [900.0, 800.0],
+		"safe": {"pos": Vector2(400, 1280), "r": 180.0, "name": "Tiền Đồn Tinh Quang", "kind": "camp"},
+		"npcs": [["lac-phong-8", "npc-lac-phong", Vector2(40, -40), "Lạc Phong · E"], ["tuyet-nga-8", "npc-tuyet-nga", Vector2(-80, 60), "Tuyết Nga · E"],
+			["mac-tam-8", "npc-mac-tam", Vector2(80, 80), "Mạc Tam · E"]],
+		"arena": null,
+		"gate": false,
+		"mobs": [["bong-hu-vo", 84, 40], ["ke-nuot", 84, 30], ["giap-si-hu-vo", 85, 30], ["mat-hu-vo", 86, 20]],
+		"ground": "tile-abyss",
+		"fog": 0.35,
+		"tint": Color(0.12, 0.08, 0.2),
+		"wind": 0.0,
+		"trees": 60,
+		"decor": "void",
+		"lamps": [Vector2(620, 1180), Vector2(1100, 700), Vector2(1100, 1900), Vector2(1600, 1280), Vector2(2000, 600), Vector2(2000, 2000),
+			Vector2(2500, 1280), Vector2(2900, 700), Vector2(2900, 1900), Vector2(3400, 1280), Vector2(3900, 700), Vector2(3900, 1900)],
+		"stones8": [[Vector2(1350, 1000), 30.0], [Vector2(1350, 1600), 30.0], [Vector2(1800, 950), 26.0], [Vector2(2250, 1500), 32.0],
+			[Vector2(2700, 1000), 28.0], [Vector2(3150, 1600), 30.0], [Vector2(3650, 1000), 28.0], [Vector2(3650, 1600), 26.0]],
+	},
+	"8-2": {
+		"region": 8,
+		"name": "Đáy Vực",
+		"size": Vector2(4480, 2560),
+		"levels": [88, 92],
+		"zone_x": [900.0, 750.0],
+		"safe": {"pos": Vector2(352, 1280), "r": 150.0, "name": "Hố Lửa Thánh", "kind": "camp"},
+		"arena": null,
+		"gate": false,
+		"mobs": [["bong-hu-vo", 88, 30], ["ke-nuot", 88, 25], ["giap-si-hu-vo", 88, 25], ["mat-hu-vo", 88, 20]],
+		"ground": "tile-abyss",
+		"fog": 0.4,
+		"tint": Color(0.1, 0.06, 0.18),
+		"wind": 0.0,
+		"trees": 50,
+		"decor": "void",
+		"lamps": [Vector2(560, 1180), Vector2(1300, 800), Vector2(1700, 1900), Vector2(2300, 1100), Vector2(2800, 2000), Vector2(3200, 700),
+			Vector2(3700, 1500), Vector2(4100, 900)],
+		"lamps_off": [2, 4, 5, 7],
+		"cages": [Vector2(1500, 1500), Vector2(2700, 900), Vector2(3800, 2000)],
+		"stones8": [[Vector2(1000, 1300), 30.0], [Vector2(1550, 1100), 28.0], [Vector2(2000, 1600), 32.0], [Vector2(2500, 1400), 28.0],
+			[Vector2(2900, 1500), 30.0], [Vector2(3350, 1150), 28.0], [Vector2(3500, 1800), 26.0], [Vector2(3950, 1300), 30.0],
+			[Vector2(4200, 1800), 28.0]],
+	},
+	"8-3": {
+		"region": 8,
+		"name": "Sào Huyệt Hư Vô",
+		"size": Vector2(4480, 2560),
+		"levels": [92, 95],
+		"zone_x": [900.0, 700.0],
+		"safe": {"pos": Vector2(352, 1280), "r": 150.0, "name": "Cổng Phá Vây", "kind": "camp"},
+		"npcs": [["lac-phong-8c", "npc-lac-phong", Vector2(40, -40), "Lạc Phong · E"],
+			["to-su-kiem", "npc-to-su", Vector2(-90, -60), "Kiếm Tổ Vô Danh · E"], ["to-su-tien", "npc-to-su", Vector2(-110, 10), "Tiễn Tổ Lạc Nhật · E"],
+			["to-su-phap", "npc-to-su", Vector2(-90, 80), "Pháp Tổ Huyền Cơ · E"], ["to-su-thuan", "npc-to-su", Vector2(0, 100), "Thuẫn Tổ Bàn Thạch · E"],
+			["to-su-linh", "npc-to-su", Vector2(80, 70), "Linh Tổ Vạn Hồn · E"]],
+		"arena": {"pos": Vector2(3872, 1280), "r": 280.0, "boss": "giao-chu", "level": 93, "chapter": 8, "name": "Điện Giáo Chủ"},
+		"gate": true,
+		"mobs": [["bong-hu-vo", 92, 25], ["ke-nuot", 92, 25], ["giap-si-hu-vo", 92, 25], ["mat-hu-vo", 92, 25]],
+		"ground": "tile-abyss",
+		"fog": 0.45,
+		"tint": Color(0.14, 0.05, 0.16),
+		"wind": 0.0,
+		"trees": 40,
+		"decor": "void",
+		"lamps": [Vector2(560, 1180), Vector2(1400, 1900), Vector2(2100, 700), Vector2(2700, 1900), Vector2(3200, 900)],
+		"seals": [Vector2(1500, 900), Vector2(2200, 1500), Vector2(2900, 1100)],
+		"stones8": [[Vector2(1100, 1300), 30.0], [Vector2(1700, 1300), 28.0], [Vector2(1900, 2000), 30.0], [Vector2(2500, 900), 28.0],
+			[Vector2(2600, 1600), 32.0], [Vector2(3100, 1500), 28.0], [Vector2(3300, 2000), 30.0], [Vector2(3400, 600), 26.0]],
+	},
 }
 
 ## Thứ tự để hiển thị và kiểm điều kiện "đã tới map trước".
@@ -463,11 +538,49 @@ static func safe_buildings(m: Dictionary) -> Array:
 	return [[Vector2(-90, -70), "hut"], [Vector2(-110, 40), "hut"], [Vector2(-30, 100), "hut"], [Vector2(60, -105), "hut"]]
 
 
+## SN11-03 (Spec_Notes đợt 11, chủ dự án 31/10: "bản đồ rộng gấp 3 lần"): diện tích ×3 → mỗi chiều ×√3.
+## Dữ liệu MAPS giữ toạ độ cũ; get_map trả bản đã nhân (vị trí, kích thước, zone_x, đảo, vùng nước) — mọi code đọc map
+## qua get_map / GameWorld.map. Bán kính vùng an toàn, hang boss, hồ dung nham, ốc đảo, chỗ đất sụt giữ nguyên;
+## đảo bay và vùng nước nhân theo (là địa hình). Số cây ×3 (mật độ giữ nguyên). Hang phụ không đổi.
+const MAP_SCALE := 1.7320508
+## Khoá là mảng điểm tuyệt đối trên map.
+const POINT_LISTS := ["anchors", "beacons", "fires", "pillars", "pods", "void_anchors", "lamps", "cages", "seals"]
+## Khoá là mảng [tâm, bán kính]; true = bán kính cũng nhân (địa hình), false = giữ bán kính.
+const CIRCLE_LISTS := {"islands": true, "crumble": false, "lava": false, "oases": false, "stones8": false}
+static var _scaled := {}
+
+
 static func get_map(map_id: String) -> Dictionary:
 	# HP (docs/15): bản đồ hang "cave-<map cha>" sinh từ map cha (nạp muộn để tránh preload vòng).
 	if map_id.begins_with("cave-"):
 		return load("res://scripts/core/caves.gd").build_map(map_id)
-	return MAPS.get(map_id, MAPS["1-1"])
+	var id := map_id if MAPS.has(map_id) else "1-1"
+	if not _scaled.has(id):
+		_scaled[id] = scaled(MAPS[id], MAP_SCALE)
+	return _scaled[id]
+
+
+## Bản sao map với toạ độ nhân k (xem MAP_SCALE).
+static func scaled(src: Dictionary, k: float) -> Dictionary:
+	var m: Dictionary = src.duplicate(true)
+	m.size = Vector2(src.size) * k
+	m.zone_x = [float(src.zone_x[0]) * k, float(src.zone_x[1]) * k]
+	m.trees = roundi(int(src.get("trees", 0)) * k * k)
+	m.safe.pos = Vector2(src.safe.pos) * k
+	if src.arena != null:
+		m.arena.pos = Vector2(src.arena.pos) * k
+	if src.has("stele3"):
+		m.stele3 = Vector2(src.stele3) * k
+	for key in POINT_LISTS:
+		if src.has(key):
+			m[key] = src[key].map(func(v): return Vector2(v) * k)
+	for key in CIRCLE_LISTS:
+		if src.has(key):
+			var rk: float = k if CIRCLE_LISTS[key] else 1.0
+			m[key] = src[key].map(func(c): return [Vector2(c[0]) * k, float(c[1]) * rk])
+	if src.has("water"):
+		m.water.zones = src.water.zones.map(func(c): return [Vector2(c[0]) * k, float(c[1]) * k])
+	return m
 
 
 static func region(region_id: int) -> Dictionary:

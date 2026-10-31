@@ -103,7 +103,7 @@ static func draw_over(ci: CanvasItem, world, view: Rect2, art: bool) -> void:
 		var pts := PackedVector2Array([origin])
 		for i in 9:
 			pts.append(origin + Vector2.from_angle(float(br.ang) - float(br.arc) + 2.0 * float(br.arc) * i / 8.0) * float(br.range))
-		ci.draw_colored_polygon(pts, Color(1.0, 0.45 + 0.15 * sin(t * 20.0), 0.1, 0.35))
+		SpriteLib.poly(ci, pts, Color(1.0, 0.45 + 0.15 * sin(t * 20.0), 0.1, 0.35))
 	# Cổng Trại + thanh bền
 	if st.siege:
 		var g: Vector2 = Ch5.gate_pos(world)

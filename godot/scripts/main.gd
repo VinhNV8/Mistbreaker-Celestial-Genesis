@@ -2,6 +2,7 @@ extends Node
 ## Điểm vào của game: dựng cây node, đọc điều khiển, điều phối màn hình, tự lưu.
 ## Chạy với `-- --smoke=<thư mục>` để tự chơi qua các màn hình và chụp ảnh (kiểm tra tự động).
 
+const Maps = preload("res://scripts/data/maps.gd")
 const GameWorld = preload("res://scripts/core/game_world.gd")
 const Profile = preload("res://scripts/core/profile.gd")
 const RngUtil = preload("res://scripts/core/rng_util.gd")
@@ -24,7 +25,9 @@ const CreateScreen = preload("res://scripts/ui/create_screen.gd")
 const DialogBox = preload("res://scripts/ui/dialog_box.gd")
 const GiftCode = preload("res://scripts/core/gift_code.gd")
 const ShopPanel = preload("res://scripts/ui/shop_panel.gd")
+const ForgePanel = preload("res://scripts/ui/forge_panel.gd")
 const Job2Panel = preload("res://scripts/ui/job2_panel.gd")
+const Job3Panel = preload("res://scripts/ui/job3_panel.gd")
 const PauseMenu = preload("res://scripts/ui/pause_menu.gd")
 const Settings = preload("res://scripts/core/settings.gd")
 const AudioManager = preload("res://scripts/audio/audio_manager.gd")
@@ -53,7 +56,9 @@ const KEY_ACTIONS := {
 	"auto_fight": [KEY_Z],
 	"toggle_minimap": [KEY_V],
 	"toggle_help": [KEY_F1, KEY_H],
+	"toggle_forge": [KEY_R],
 	"potion": [KEY_Q],
+	"mp_potion": [KEY_F],
 	"close_panel": [KEY_ESCAPE],
 }
 const MOUSE_ACTIONS := {"attack": MOUSE_BUTTON_LEFT, "skill": MOUSE_BUTTON_RIGHT}
@@ -80,7 +85,9 @@ var _screen: Control
 var _victory: Control
 var dialog: DialogBox
 var shop_panel: ShopPanel
+var forge_panel: ForgePanel
 var job2_panel: Job2Panel
+var job3_panel: Job3Panel
 var audio: AudioManager
 var _pause: PauseMenu
 ## Sau khi đóng thoại, bỏ qua phím 0,2 giây (Space vừa dùng để tắt thoại không thành né lăn).
@@ -204,18 +211,28 @@ func _input(event: InputEvent) -> void:
 		var act := ""
 		if shop_panel.is_open():
 			shop_panel.close()
+		elif forge_panel.is_open():
+			forge_panel.close()
 		elif job2_panel.is_open():
 			job2_panel.close()
+		elif job3_panel.is_open():
+			job3_panel.close()
 		else:
 			act = world.talk(str(npc.id)) if not npc.is_empty() else ""
 			if act == "shop" or (npc.is_empty() and world.in_village()):
 				for panel in _panels():
 					panel.close()
 				shop_panel.open(world)
+			elif act == "forge":
+				_open_forge("refine")
 			elif act == "job2":
 				for panel in _panels():
 					panel.close()
 				job2_panel.open(world)
+			elif act == "job3":
+				for panel in _panels():
+					panel.close()
+				job3_panel.open(world)
 			elif npc.is_empty():
 				hud.log_message("Cửa hàng ở Làng Thanh Thạch — đứng trong làng rồi bấm E.", "info")
 		get_viewport().set_input_as_handled()
@@ -229,7 +246,7 @@ func _input(event: InputEvent) -> void:
 			inventory_panel.toggle_tab(world, pair[1])
 			get_viewport().set_input_as_handled()
 			return
-	for pair in [["toggle_map", map_panel], ["toggle_talent", talent_panel], ["toggle_world", world_panel], ["toggle_skills", skill_panel], ["toggle_help", help_panel]]:
+	for pair in [["toggle_map", map_panel], ["toggle_talent", talent_panel], ["toggle_world", world_panel], ["toggle_skills", skill_panel], ["toggle_help", help_panel], ["toggle_forge", forge_panel]]:
 		if event.is_action_pressed(pair[0]):
 			var target = pair[1]
 			for panel in _panels():
@@ -249,8 +266,31 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
+## UI-25: Lò Rèn (phím R, nút ở Cửa hàng, Thợ rèn Thiết Ngưu).
+## UI-28b: chuyển giữa các tab của nhóm Nhân vật — stats / bag / res là tab Túi đồ, skills / talent là bảng riêng.
+func _open_char_tab(id: String) -> void:
+	for panel in [inventory_panel, skill_panel, talent_panel]:
+		panel.close()
+	match id:
+		"skills":
+			skill_panel.open(world)
+		"talent":
+			talent_panel.open(world)
+		_:
+			inventory_panel._tab = id
+			inventory_panel.open(world)
+
+
+func _open_forge(tab := "") -> void:
+	for panel in _panels():
+		panel.close()
+	if tab != "":
+		forge_panel.tab = tab
+	forge_panel.open(world)
+
+
 func _panels() -> Array:
-	return [map_panel, inventory_panel, talent_panel, world_panel, shop_panel, job2_panel, skill_panel, help_panel]
+	return [map_panel, inventory_panel, talent_panel, world_panel, shop_panel, forge_panel, job2_panel, job3_panel, skill_panel, help_panel]
 
 
 func _any_panel_open() -> bool:
@@ -297,6 +337,8 @@ func _read_input() -> Dictionary:
 	# C1-01: chuột không di chuyển trong 1,5 giây = chơi bàn phím → đánh theo hướng di chuyển cuối cùng,
 	# kể cả khi đã dừng (trước đây dừng lại thì hướng nhảy về chỗ con trỏ chuột).
 	var kb_aim := Time.get_ticks_msec() - _last_mouse_move > 1500
+	# SN9-09: quái dưới con trỏ chuột thành mục tiêu của khung mục tiêu
+	world.hover_pos = Vector2.INF if kb_aim else aim
 	if kb_aim:
 		aim = world.player.pos + _kb_dir * 100.0
 	# SN5-01: chuột đang ở trên giao diện nhận chuột (bản đồ nhỏ…) thì nút chuột không đánh / không dùng kỹ năng.
@@ -316,6 +358,7 @@ func _read_input() -> Dictionary:
 		"talent": Input.is_action_just_pressed("talent"),
 		"dodge": Input.is_action_just_pressed("dodge"),
 		"potion": Input.is_action_just_pressed("potion"),
+		"mp_potion": Input.is_action_just_pressed("mp_potion"),
 	}
 
 
@@ -324,7 +367,7 @@ func _handle_event(ev: Dictionary) -> void:
 		"message":
 			hud.log_message(ev.text, ev.tone)
 		"levelup":
-			hud.banner("Lên cấp %d!" % ev.level)
+			hud.banner("Lên cấp %d!" % ev.level, str(ev.get("growth", "")))
 			_persist()
 		"tile":
 			_persist()
@@ -398,25 +441,74 @@ func _set_screen(c: Control) -> void:
 func _go_title() -> void:
 	_persist()
 	_end_session()
-	_set_screen(Screens.title(SaveSystem.has_save(), _on_new_game, _on_continue, _open_settings))
+	var any := SaveSystem.any_save()
+	_set_screen(Screens.title(any, _open_slots if any else _on_new_game, _continue_last, _open_settings))
 	audio.music("village")
 
 
-func _on_new_game() -> void:
-	if not SaveSystem.has_save():
-		_start_awakening()
+## SN9-02: nút "Tiếp tục" ở màn tiêu đề — vào ngay nhân vật chơi gần nhất.
+func _continue_last() -> void:
+	var last := SaveSystem.last_slot()
+	if last == 0:
+		return
+	SaveSystem.select_slot(last)
+	_on_continue()
+
+
+## SN9-02 (Spec_Notes đợt 9): màn Chọn nhân vật — 5 ô.
+func _open_slots() -> void:
+	_set_screen(Screens.slots(SaveSystem.list_slots(), _play_slot, _ask_delete_slot, _on_new_game, _go_title))
+
+
+func _play_slot(n: int) -> void:
+	SaveSystem.select_slot(n)
+	SaveSystem.remember_slot(n)
+	_on_continue()
+
+
+## Q154: xoá nhân vật phải gõ lại đúng tên.
+func _ask_delete_slot(n: int) -> void:
+	var s := SaveSystem.slot_summary(n)
+	if s.is_empty():
 		return
 	var dlg := ConfirmationDialog.new()
-	dlg.title = "Hành trình mới"
-	dlg.dialog_text = "Hành trình mới sẽ xoá tiến trình đang lưu. Tiếp tục?"
-	dlg.ok_button_text = "Xoá và bắt đầu"
+	dlg.title = "Xoá nhân vật"
+	dlg.dialog_text = "Xoá vĩnh viễn \"%s\" (Lv %d)? Không khôi phục được.\nGõ lại tên nhân vật để xác nhận:" % [s.name, int(s.level)]
+	dlg.ok_button_text = "Xoá"
 	dlg.cancel_button_text = "Huỷ"
-	dlg.confirmed.connect(_start_awakening)
+	var edit := LineEdit.new()
+	edit.name = "ConfirmName"
+	edit.placeholder_text = str(s.name)
+	dlg.add_child(edit)
+	dlg.register_text_enter(edit)
+	dlg.confirmed.connect(func():
+		if edit.text.strip_edges() == str(s.name).strip_edges():
+			SaveSystem.delete_slot(n)
+			_open_slots())
 	dlg.visibility_changed.connect(func():
 		if not dlg.visible:
 			dlg.queue_free())
 	_ui.add_child(dlg)
-	dlg.popup_centered()
+	dlg.popup_centered(Vector2i(460, 0))
+	edit.grab_focus()
+
+
+## Tạo nhân vật mới ở ô trống đầu tiên; đủ 5 nhân vật thì báo và mở màn Chọn nhân vật.
+func _on_new_game() -> void:
+	var n := SaveSystem.first_empty()
+	if n == 0:
+		_open_slots()
+		var dlg := AcceptDialog.new()
+		dlg.title = "Đã đủ %d nhân vật" % SaveSystem.MAX_SLOTS
+		dlg.dialog_text = "Xoá bớt một nhân vật để tạo nhân vật mới."
+		dlg.visibility_changed.connect(func():
+			if not dlg.visible:
+				dlg.queue_free())
+		_ui.add_child(dlg)
+		dlg.popup_centered()
+		return
+	SaveSystem.select_slot(n)
+	_start_awakening()
 
 
 ## Kịch bản mục 9: Mở đầu (C1-10) → Tạo nhân vật (C1-02) → Lễ Thức Tỉnh.
@@ -433,6 +525,17 @@ func _on_intro_done() -> void:
 
 
 func _on_hero_created(hero: Dictionary) -> void:
+	# Q153: tên không trùng giữa các ô nhân vật — ở lại màn tạo nhân vật để đổi tên.
+	if SaveSystem.name_taken(str(hero.get("name", "")), SaveSystem.slot):
+		var dlg := AcceptDialog.new()
+		dlg.title = "Tên đã được dùng"
+		dlg.dialog_text = "Đã có nhân vật tên \"%s\". Hãy chọn tên khác." % str(hero.get("name", ""))
+		dlg.visibility_changed.connect(func():
+			if not dlg.visible:
+				dlg.queue_free())
+		_ui.add_child(dlg)
+		dlg.popup_centered()
+		return
 	_pending_hero = hero
 	_set_screen(Screens.awakening(RngUtil.make(randi()), _on_talent_chosen, str(hero.name)))
 
@@ -446,10 +549,12 @@ func _on_talent_chosen(talent_id: String, gift_serial := "") -> void:
 		p.look = hero.look
 	p.gift_code = gift_serial
 	SaveSystem.save_profile(p)
+	SaveSystem.remember_slot(SaveSystem.slot)
 	_start_world(p)
 
 
 func _on_continue() -> void:
+	# SN9-02: ô đã được chọn trước (_continue_last / _play_slot).
 	var p := SaveSystem.load_profile()
 	if p == null:
 		return
@@ -488,8 +593,19 @@ func _start_world(p: Profile) -> void:
 	_ui.add_child(world_panel)
 	shop_panel = ShopPanel.new()
 	_ui.add_child(shop_panel)
+	forge_panel = ForgePanel.new()
+	_ui.add_child(forge_panel)
+	shop_panel.open_forge.connect(_open_forge)
+	inventory_panel.open_forge.connect(func():
+		forge_panel.select_item(inventory_panel._selected_id)
+		_open_forge("enhance"))
+	# UI-28b: 3 bảng nhóm Nhân vật (Túi đồ, Kỹ năng, Thiên phú) dùng chung thanh tab — bấm tab nào cũng chuyển được
+	for panel in [inventory_panel, skill_panel, talent_panel]:
+		panel.open_panel.connect(_open_char_tab)
 	job2_panel = Job2Panel.new()
 	_ui.add_child(job2_panel)
+	job3_panel = Job3Panel.new()
+	_ui.add_child(job3_panel)
 	dialog = DialogBox.new()
 	_ui.add_child(dialog)
 	dialog.setup(p.name, p.class_id, p.look)
@@ -504,7 +620,7 @@ func _start_world(p: Profile) -> void:
 
 func _end_session() -> void:
 	_close_victory()
-	for n in [hud, map_panel, inventory_panel, talent_panel, world_panel, dialog, shop_panel, job2_panel, skill_panel, help_panel]:
+	for n in [hud, map_panel, inventory_panel, talent_panel, world_panel, dialog, shop_panel, forge_panel, job2_panel, job3_panel, skill_panel, help_panel]:
 		if n != null:
 			n.queue_free()
 	hud = null
@@ -516,7 +632,9 @@ func _end_session() -> void:
 	world_panel = null
 	dialog = null
 	shop_panel = null
+	forge_panel = null
 	job2_panel = null
+	job3_panel = null
 	world = null
 	_view.world = null
 	_view.visible = false
@@ -537,6 +655,14 @@ func _shot(dir: String, file: String) -> void:
 	await RenderingServer.frame_post_draw
 	get_viewport().get_texture().get_image().save_png(dir.path_join(file + ".png"))
 	print("SMOKE shot ", file)
+
+
+## Smoke: đóng hết thoại đang chờ (ảnh chụp không bị hộp thoại che).
+func _skip_dialog() -> void:
+	for i in 60:
+		if not dialog.is_open():
+			return
+		dialog.advance()
 
 
 func _wait(seconds: float) -> void:
@@ -582,7 +708,12 @@ func _smoke_bot(w: GameWorld) -> Dictionary:
 
 func _run_smoke(dir: String) -> void:
 	DirAccess.make_dir_recursive_absolute(dir)
-	SaveSystem.save_path = "user://smoke_save.json"
+	# SN9-02: ô nhân vật của smoke test là file riêng (smoke_save.json, smoke_save_2.json…)
+	SaveSystem.prefix = "user://smoke_save"
+	SaveSystem.slots_cfg = "user://smoke_slots.cfg"
+	for n in range(1, SaveSystem.MAX_SLOTS + 1):
+		SaveSystem.delete_slot(n)
+	SaveSystem.select_slot(1)
 	GiftCode.store_path = "user://smoke_redeemed_codes.cfg"
 	if FileAccess.file_exists(GiftCode.store_path):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(GiftCode.store_path))
@@ -636,6 +767,12 @@ func _run_smoke(dir: String) -> void:
 	world.player.mp = world.stats.max_mp
 	await _wait(4.0)
 	await _shot(dir, "03c-mage")
+	# LH1 (docs/19): chụp Hộ Vệ
+	world.profile.class_id = "ho-ve"
+	world._refresh_stats()
+	world.player.mp = world.stats.max_mp
+	await _wait(4.0)
+	await _shot(dir, "03d-guard")
 	world.profile.class_id = "kiem-khach"
 	world._refresh_stats()
 
@@ -678,10 +815,20 @@ func _run_smoke(dir: String) -> void:
 	world._refresh_stats()
 	inventory_panel._selected_id = int(fang.id)
 	inventory_panel.refresh()
-	inventory_panel._play_burst(true, 10)
+	inventory_panel._play_burst(true, 10, Items.display_name(Items.find_item(pp, int(fang.id)).item))
 	await _wait(0.25)
 	await _wait(0.3)
 	await _shot(dir, "05c-inventory-equipped")
+	# SN11: thẻ so sánh khi rê chuột lên món vũ khí trong túi (đặt cạnh ô túi đầu tiên).
+	var bag_weapon: Array = pp.inventory.filter(func(it): return str(it.slot) == "weapon")
+	if not bag_weapon.is_empty():
+		await _wait(1.6)
+		inventory_panel._show_tip(bag_weapon[0], true)
+		var cell = inventory_panel.find_child("Bag_0", true, false)
+		if cell != null:
+			inventory_panel._tip.place(cell.get_global_rect().get_center())
+		await _wait(0.2)
+		await _shot(dir, "05c2-item-compare")
 	inventory_panel.close()
 
 	# Bảng Thiên phú + bản đồ có mục Công trình (M2).
@@ -695,6 +842,19 @@ func _run_smoke(dir: String) -> void:
 	skill_panel.open(world)
 	await _wait(0.3)
 	await _shot(dir, "05g-skills")
+	# PV (docs/27): tab Bị động — tạm cấp 22, Thiết Cốt cấp 2 để chụp, xong trả lại.
+	var lv_before := int(pp.level)
+	pp.level = 22
+	pp.passive_levels = {"thietcot": 2}
+	skill_panel._tab = "passive"
+	skill_panel._sel = "thietcot"
+	skill_panel.refresh()
+	await _wait(0.3)
+	await _shot(dir, "05g2-skills-passive")
+	pp.level = lv_before
+	pp.passive_levels = {}
+	world._refresh_stats()
+	skill_panel._tab = "base"
 	skill_panel.close()
 	map_panel.open(world)
 	await _wait(0.3)
@@ -708,7 +868,23 @@ func _run_smoke(dir: String) -> void:
 	shop_panel.open(world)
 	await _wait(0.3)
 	await _shot(dir, "05f-shop")
+	shop_panel.tab = "sell"
+	shop_panel.refresh()
+	await _wait(0.2)
+	await _shot(dir, "05f2-shop-sell")
+	shop_panel.tab = "buy"
 	shop_panel.close()
+	# UI-25: Lò Rèn — cường hoá (chi phí cần/có + bảng mọi cấp) và chế tạo
+	pp.gold += 500
+	pp.stones += 6
+	_open_forge("enhance")
+	await _wait(0.3)
+	await _shot(dir, "05h-forge")
+	_open_forge("craft")
+	await _wait(0.2)
+	await _shot(dir, "05h2-forge-craft")
+	forge_panel.tab = "enhance"
+	forge_panel.close()
 
 	var p = world.profile
 	p.level = 5
@@ -756,7 +932,7 @@ func _run_smoke(dir: String) -> void:
 	await _shot(dir, "09a-portal")
 	# HP (docs/15): trong hang phụ — đi tới khu 1, quái + tinh anh; rồi về lại Cửa Gió.
 	world._load_map("cave-2-1")
-	world.player.pos = Vector2(700, 550)
+	world.player.pos = Vector2(700, 550) * Maps.MAP_SCALE
 	await _wait(1.2)
 	await _shot(dir, "09a2-cave")
 	world._load_map("2-1")
@@ -816,7 +992,7 @@ func _run_smoke(dir: String) -> void:
 	await _wait(1.0)
 	await _shot(dir, "12b-village4")
 	world._load_map("4-2")
-	world.player.pos = Vector2(1300, 900)
+	world.player.pos = Vector2(1300, 900) * Maps.MAP_SCALE
 	world.ch4.poison = 4
 	for k in ["ech-doc", "dia", "hon-ma", "ca-sau"]:
 		var ne = world.spawn_enemy(k, 37, world.player.pos + Vector2(200 + randf() * 200, randf() * 300 - 150))
@@ -853,7 +1029,7 @@ func _run_smoke(dir: String) -> void:
 	await _wait(1.0)
 	await _shot(dir, "13b-camp5")
 	world._load_map("5-2")
-	world.player.pos = Vector2(1300, 1280)
+	world.player.pos = Vector2(1300, 1280) * Maps.MAP_SCALE
 	world.player.shield = 1e9
 	world.player.shield_time = 999.0
 	for k in ["than-lan-lua", "nguoi-da", "linh-hon-lua", "phap-su-hoa-diem"]:
@@ -884,6 +1060,18 @@ func _run_smoke(dir: String) -> void:
 	await _wait(0.3)
 	await _shot(dir, "14b-job2")
 	job2_panel.close()
+	# J3 (docs/23): bảng chuyển chức 3 (cấp 90, sau chức 2) — trả lại trạng thái cho các ảnh sau
+	p.job2 = str(GameWorld.Classes.job2_defs(str(p.class_id))[0].id)
+	p.level = 90
+	p.crystal = 50.0
+	job3_panel.open(world)
+	await _wait(0.3)
+	await _shot(dir, "20b-job3")
+	job3_panel.close()
+	p.job2 = ""
+	p.level = 60
+	p.crystal = 30.0
+	world._refresh_stats()
 	# SK2: bảng Kỹ năng cấp 60 — 8 kỹ năng, biến thể
 	p.skill_levels["spin"] = 10
 	p.skill_levels["lientram"] = 7
@@ -908,7 +1096,7 @@ func _run_smoke(dir: String) -> void:
 	await _wait(1.0)
 	await _shot(dir, "15c-camp6")
 	world._load_map("6-2")
-	world.player.pos = Vector2(1300, 1280)
+	world.player.pos = Vector2(1300, 1280) * Maps.MAP_SCALE
 	world.player.shield = 1e9
 	world.player.shield_time = 999.0
 	for k in ["soi-bang", "nguoi-tuyet", "tinh-linh-bang", "cung-thu-bang"]:
@@ -929,6 +1117,119 @@ func _run_smoke(dir: String) -> void:
 	await _wait(1.2)
 	await _shot(dir, "15d-ban-nga")
 	world.player.shield = 0.0
+	# M10: chương 7 Thiên Không Đảo — lãnh địa Hoàng Thành, Bến Mây, đảo bay, Cự Thần, kết chương
+	for panel in _panels():
+		panel.close()
+	p.bosses["ban-nga"] = true
+	p.quest.ch6 = GameWorld.Story.DONE6
+	p.camp_level = 5
+	for k in ["camp2", "camp3", "camp4", "camp5", "port"]:
+		p.buildings[k] = 0.0
+	p.level = maxi(p.level, 76)
+	world._refresh_stats()
+	world._load_map("1-1")
+	map_panel.open(world)
+	await _wait(0.3)
+	_skip_dialog()
+	await _wait(0.3)
+	await _shot(dir, "17b-territory5")
+	map_panel.close()
+	world._load_map("7-1")
+	world.player.pos = world.safe_pos + Vector2(60, 40)
+	await _wait(1.0)
+	_skip_dialog()
+	await _wait(0.3)
+	await _shot(dir, "17c-camp7")
+	world.player.pos = Vector2(1500, 900) * Maps.MAP_SCALE
+	world.player.shield = 1e9
+	world.player.shield_time = 999.0
+	for k in ["dai-bang-may", "nguoi-go-dao", "tien-gio", "hiep-si-thien-khong"]:
+		world.spawn_with_hooks(k, 76, world.player.pos + Vector2(150 + randf() * 200, randf() * 200 - 100))
+	await _wait(1.6)
+	_skip_dialog()
+	await _wait(0.3)
+	await _shot(dir, "17-region7")
+	p.quest.ch7 = GameWorld.Ch7.S_BOSS
+	world._load_map("7-3")
+	world.player.pos = world.arena_pos - Vector2(120, 0)
+	await _wait(1.0)
+	var ct = world.boss()
+	if ct != null:
+		ct.hp = ct.max_hp * 0.5
+		world.ch7.broken[1] = true
+		world.ch7.sector_warn = 2
+		world.ch7.sector_warn_t = 3.0
+	await _wait(1.2)
+	_skip_dialog()
+	await _wait(0.3)
+	await _shot(dir, "17d-cu-than")
+	world.player.shield = 0.0
+	if ct != null:
+		ct.dead = true
+	world.enemies = []
+	p.bosses["cu-than"] = true
+	world.player.pos = world.arena_pos + Vector2(0, 90)
+	await _wait(0.8)
+	_skip_dialog()
+	await _wait(0.3)
+	await _shot(dir, "18-chapter7-end")
+	p.evo = 2
+	p.talent_level = 19
+	world._refresh_stats()
+	talent_panel.open(world)
+	await _wait(0.3)
+	await _shot(dir, "18b-talent-evo2")
+	talent_panel.close()
+	# M11: chương 8 Vực Hư Vô — Tiền Đồn Tinh Quang, Suy Thiên + đèn + Cột Đá, Giáo Chủ Hư Vô
+	p.quest.ch7 = GameWorld.Story.DONE7
+	p.level = maxi(p.level, 88)
+	world._refresh_stats()
+	world._load_map("8-1")
+	world.player.pos = world.safe_pos + Vector2(60, 40)
+	await _wait(1.0)
+	_skip_dialog()
+	await _wait(0.3)
+	await _shot(dir, "19c-camp8")
+	var lamp8: Vector2 = GameWorld.Ch8.lamps(world)[3]
+	world.player.pos = lamp8 + Vector2(220, 60)
+	world.ch8.decay = 0.3
+	world.player.shield = 1e9
+	world.player.shield_time = 999.0
+	for k in ["bong-hu-vo", "ke-nuot", "giap-si-hu-vo", "mat-hu-vo"]:
+		world.spawn_with_hooks(k, 86, world.player.pos + Vector2(150 + randf() * 200, randf() * 200 - 100))
+	world.spawn_with_hooks("giap-si-hu-vo", 90, world.player.pos + Vector2(-160, 80), {"elite": true})
+	await _wait(1.6)
+	_skip_dialog()
+	await _wait(0.3)
+	await _shot(dir, "19-region8")
+	p.quest.ch8 = GameWorld.Ch8.S_BOSS
+	world._load_map("8-3")
+	world.player.pos = world.arena_pos - Vector2(120, 0)
+	await _wait(1.0)
+	var gc = world.boss()
+	if gc != null:
+		gc.hp = gc.max_hp * 0.5
+		gc.phase = 2
+		world.ch8.chan_t = 1.0
+	await _wait(0.6)
+	_skip_dialog()
+	await _wait(0.3)
+	await _shot(dir, "19d-giao-chu")
+	world.enemies = []
+	# SN9-02: màn Chọn nhân vật (ô 1 = nhân vật smoke, thêm 1 nhân vật mẫu ở ô 3)
+	_persist()
+	var p3 := Profile.new()
+	p3.setup("mat-ung", RngUtil.make(3), _now(), "phap-su")
+	p3.name = "Lam Vân"
+	p3.level = 34
+	SaveSystem.select_slot(3)
+	SaveSystem.save_profile(p3)
+	SaveSystem.select_slot(1)
+	_end_session()
+	_open_slots()
+	await _wait(0.4)
+	await _shot(dir, "00-slots")
+	SaveSystem.delete_slot(3)
 	print("SMOKE done: boss_defeated=%s level=%d kills=%d" % [p.boss_defeated, p.level, p.kills])
 	SaveSystem.clear_save()
 	get_tree().quit()

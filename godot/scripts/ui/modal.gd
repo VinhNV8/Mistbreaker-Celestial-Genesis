@@ -8,9 +8,10 @@ var box: PanelContainer
 var _dim: ColorRect
 
 
-func _ready() -> void:
+func _ensure_box() -> void:
+	if box != null:
+		return
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
-	visible = false
 	_dim = ColorRect.new()
 	_dim.color = Color(0.02, 0.03, 0.04, 0.6)
 	_dim.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
@@ -23,6 +24,11 @@ func _ready() -> void:
 	box = PanelContainer.new()
 	box.theme_type_variation = "SolidPanel"
 	center.add_child(box)
+
+
+func _ready() -> void:
+	_ensure_box()
+	visible = false
 
 
 func _on_dim_input(event: InputEvent) -> void:
@@ -53,6 +59,7 @@ func toggle(w) -> void:
 
 ## Dựng lại toàn bộ nội dung bảng.
 func refresh() -> void:
+	_ensure_box()
 	for c in box.get_children():
 		box.remove_child(c)
 		c.queue_free()

@@ -14,6 +14,15 @@ static func color(el: String) -> Color:
 static func draw(ci: CanvasItem, c: Vector2, el: String, r: float, alpha := 1.0) -> void:
 	if not HEX.has(el):
 		return
+	# Vẽ quanh gốc rồi dời tới c: đa giác nhỏ (vài px) ở toạ độ lớn (map ×√3, x ~7000) làm Godot tam giác hoá
+	# sai do sai số float ("Invalid polygon data, triangulation failed").
+	ci.draw_set_transform(c, 0.0, Vector2.ONE)
+	_draw_at_origin(ci, el, r, alpha)
+	ci.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+
+static func _draw_at_origin(ci: CanvasItem, el: String, r: float, alpha: float) -> void:
+	var c := Vector2.ZERO
 	var col := color(el)
 	ci.draw_circle(c, r + 1.5, Color(0, 0, 0, 0.75 * alpha))
 	ci.draw_circle(c, r, Color(col.darkened(0.75), 0.95 * alpha))

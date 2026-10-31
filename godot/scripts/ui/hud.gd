@@ -18,6 +18,7 @@ const HUD_RESOURCES := ["gold", "wood", "torches", "stones", "essence", "ore", "
 ## TB-11: Đá, Sắt chỉ hiện khi đã có.
 const HUD_OPTIONAL := ["ore", "iron", "crystal"]
 const Maps = preload("res://scripts/data/maps.gd")
+const TargetFrame = preload("res://scripts/ui/target_frame.gd")
 const SkillBar = preload("res://scripts/ui/skill_bar.gd")
 const Chapters = preload("res://scripts/core/chapters.gd")
 const CharFrame = preload("res://scripts/ui/char_frame.gd")
@@ -34,6 +35,8 @@ const SLOT_BASIC := 0
 const SLOT_DODGE := 5
 const SLOT_TALENT := 6
 const SLOT_POTION := 7
+## SN10-02: ô bình MP (phím F) sau ô bình máu.
+const SLOT_MP_POTION := 8
 ## UI-16: bề rộng khung nhiệm vụ.
 const OBJ_W := 240
 
@@ -54,14 +57,18 @@ var _boss_box: VBoxContainer
 var _boss_name: Label
 var _boss_hp: ProgressBar
 var _boss_poise: ProgressBar
+## R1: đang thu gọn HUD bên phải vì có thanh máu boss.
+var _boss_compact := false
 
 var _combo: Label
 var _wind: Label
-## DH-11: ô 0 = đánh thường, 1–4 = kỹ năng lớp, 5 né, 6 Thiên phú (L), 7 bình máu.
+## DH-11: ô 0 = đánh thường, 1–4 = kỹ năng lớp, 5 né, 6 Thiên phú (L), 7 bình máu, 8 bình MP (SN10-02).
 var _skills: Control
 
 var _log: VBoxContainer
 var _banner: Label
+var _banner_sub: Label
+var _target: Control
 var _dead: ColorRect
 var _map_name: Label
 var _obj_title: Label
@@ -153,6 +160,9 @@ func _ready() -> void:
 	_wind.add_theme_font_override("font", UiTheme.bold_font())
 	_wind.add_theme_font_size_override("font_size", 16)
 	add_child(_wind)
+	# SN9-09: khung mục tiêu (quái đang đánh / rê chuột)
+	_target = TargetFrame.new()
+	add_child(_target)
 	_combo = UiTheme.label("", "HudLabel")
 	_combo.add_theme_font_override("font", UiTheme.bold_font())
 	_combo.add_theme_font_size_override("font_size", 24)
@@ -160,7 +170,7 @@ func _ready() -> void:
 	add_child(_combo)
 
 	_skills = SkillBar.new()
-	_skills.set_count(8)
+	_skills.set_count(9)
 	# UI-07 / UI-10: thanh kỹ năng gọn (Spec_Notes đợt 4, 6).
 	_skills.scale = Vector2.ONE * SKILL_BAR_SCALE
 	add_child(_skills)
@@ -290,6 +300,18 @@ static func _log_bbcode(text: String, col: Color) -> String:
 	return out + safe.substr(last)
 
 
+## R1 (docs/19 RS-UI06): mọi số nguyên ≥ 5 chữ số trong câu có dấu chấm ngăn nghìn ("100000 EXP" → "100.000 EXP").
+static func group_numbers(text: String) -> String:
+	var re := RegEx.new()
+	re.compile("(?<![0-9.,])[0-9]{5,}(?![0-9.,])")
+	var out := ""
+	var last := 0
+	for m in re.search_all(text):
+		out += text.substr(last, m.get_start() - last) + _group_thousands(m.get_string())
+		last = m.get_end()
+	return out + text.substr(last)
+
+
 ## "80000" → "80.000" (chỉ số nguyên ≥ 5 chữ số, có thể có dấu +/−).
 static func _group_thousands(n: String) -> String:
 	var sign := ""
@@ -307,8 +329,20 @@ static func _group_thousands(n: String) -> String:
 	return sign + out
 
 
-func banner(text: String) -> void:
+## sub: dòng phụ nhỏ dưới biểu ngữ (SN9-08: "HP +15 · Tấn công +2 …" khi lên cấp).
+func banner(text: String, sub := "") -> void:
 	_banner.text = text
+	if _banner_sub == null:
+		_banner_sub = UiTheme.label("", "")
+		_banner_sub.add_theme_font_size_override("font_size", UiTheme.fs(16))
+		_banner_sub.add_theme_color_override("font_color", Color("#f2d79a"))
+		_banner_sub.add_theme_constant_override("outline_size", 4)
+		_banner_sub.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
+		_banner_sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_banner_sub.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
+		_banner_sub.grow_horizontal = Control.GROW_DIRECTION_BOTH
+		_banner.add_child(_banner_sub)
+	_banner_sub.text = sub
 	var tw := _banner.create_tween()
 	_banner.modulate.a = 0.0
 	tw.tween_property(_banner, "modulate:a", 1.0, 0.25)
@@ -328,10 +362,10 @@ func update_from(w: GameWorld) -> void:
 	var t := w.talent()
 	var rank_color := Talents.rank_color(t.rank)
 
-	var form: Array = GameWorld.Ch4.evo_form(t.id, int(p.evo))
+	var form: Array = GameWorld.Ch7.form(t.id, int(p.evo))
 	var need := Formulas.exp_to_next(p.level)
 	var frame := {
-		"name": p.name, "level": p.level, "class_id": p.class_id, "look": p.look, "time": w.time,
+		"name": p.name, "title": Classes.title(str(p.class_id), str(p.job), str(p.job2), str(p.job3)), "level": p.level, "class_id": p.class_id, "look": p.look, "time": w.time,
 		"talent_name": "%s · %s" % [form[1], form[0]], "talent_icon": SpriteLib.talent_icon(t.id), "rank_color": rank_color,
 		"hp": maxf(0.0, pl.hp) / float(s.max_hp), "hp_text": "%d / %d" % [ceili(maxf(0.0, pl.hp)), s.max_hp],
 		"mp": maxf(0.0, pl.mp) / maxf(1.0, float(s.max_mp)), "mp_text": "%d / %d" % [floori(maxf(0.0, pl.mp)), s.max_mp],
@@ -386,6 +420,7 @@ func update_from(w: GameWorld) -> void:
 	_auto.on = w.auto_fight
 	frame.extra = " · ".join(extra)
 	_tl.set_data(frame)
+	_target.update_from(w)
 
 	var boss := w.big_enemy()
 	_boss_box.visible = boss != null
@@ -394,6 +429,16 @@ func update_from(w: GameWorld) -> void:
 		_boss_name.text = boss.name + tags
 		_boss_hp.value = maxf(0.0, boss.hp) / boss.max_hp
 		_boss_poise.value = boss.poise / boss.max_poise
+	# R1 (docs/19 RS-UI02): đang đánh boss — khung nhiệm vụ thu về 1 dòng, bản đồ nhỏ mờ để không che đấu trường
+	# (hang boss vùng 4–6 nằm phía đông map, đúng chỗ cột HUD bên phải).
+	if boss != null:
+		_objectives[1].visible = false
+		_objectives[2].visible = false
+	if _boss_compact != (boss != null):
+		_boss_compact = boss != null
+		_obj.modulate.a = 0.7 if _boss_compact else 1.0
+		_minimap.modulate.a = 0.35 if _boss_compact else 1.0
+		_obj.reset_size()
 	_dead.visible = pl.dead_timer > 0.0 and w.travel_timer <= 0.0
 	_travel.visible = w.travel_timer > 0.0
 	if _travel.visible:
@@ -454,6 +499,9 @@ func _update_skill_bar(w: GameWorld, t: Dictionary, rank_color: Color) -> void:
 		pot.cd_text = str(ceili(pl.potion_cd)) if pl.potion_cd > 0.0 else ""
 		pot.dim = p.potions <= 0
 	_skills.set_slot(SLOT_POTION, pot)
+	_skills.set_slot(SLOT_MP_POTION, {"key": "F", "name": "Bình MP", "icon": SpriteLib.icon("skill-mp_potion"),
+		"badge": str(int(p.mp_potions)), "cd": pl.mp_potion_cd / GameWorld.MP_POTION_CD,
+		"cd_text": str(ceili(pl.mp_potion_cd)) if pl.mp_potion_cd > 0.0 else "", "dim": int(p.mp_potions) <= 0})
 
 
 ## C1-12: bảng nhiệm vụ chương 1 (thay 3 mục tiêu cũ).
@@ -508,6 +556,7 @@ func _update_quest(w: GameWorld) -> void:
 func _set_obj(i: int, text: String, color: Color) -> void:
 	# UI-16: tiêu đề gọn ("CHƯƠNG 2 · NHIỆM VỤ 1/5" → "CHƯƠNG 2 · 1/5"); thưởng nhạt hơn
 	_obj_title.text = _obj_title.text.replace("NHIỆM VỤ ", "")
+	text = group_numbers(text)
 	_objectives[i].text = text
 	_objectives[i].visible = text != ""
 	_objectives[i].add_theme_color_override("font_color", color)
@@ -538,6 +587,9 @@ func _layout() -> void:
 		_boss_box.position.x = (sz.x - boss_w) / 2.0
 		wind_y = _boss_box.position.y + _boss_box.size.y + 4
 	_wind.position = Vector2((sz.x - _wind.size.x) / 2.0, wind_y)
+	# SN9-09: khung mục tiêu ngay dưới dòng môi trường / thanh boss
+	var target_y := wind_y + (_wind.size.y + 4.0 if _wind.visible else 0.0)
+	_target.position = Vector2((sz.x - _target.size.x) / 2.0, target_y)
 	_combo.reset_size()
 	_combo.position = Vector2(sz.x - _combo.size.x - 24, maxf(sz.y / 2.0, _obj.position.y + _obj.size.y + 8.0))
 	var sk_size: Vector2 = _skills.custom_minimum_size * _skills.scale

@@ -141,7 +141,7 @@ static func draw_over(ci: CanvasItem, world, view: Rect2, _art: bool) -> void:
 				var pts := PackedVector2Array([e.pos])
 				for i in 9:
 					pts.append(e.pos + Vector2.from_angle(a - Ch6.ICE_BREATH_ARC + 2.0 * Ch6.ICE_BREATH_ARC * i / 8.0) * Ch6.ICE_BREATH_RANGE)
-				ci.draw_colored_polygon(pts, Color(0.6, 0.85, 1.0, 0.15 + 0.25 * prog))
+				SpriteLib.poly(ci, pts, Color(0.6, 0.85, 1.0, 0.15 + 0.25 * prog))
 			"m_spin":
 				ci.draw_circle(e.pos, (Ch6.M_SPIN_R + e.radius) * prog, Color(0.4, 0.2, 0.65, 0.3))
 				ci.draw_arc(e.pos, Ch6.M_SPIN_R + e.radius, 0.0, TAU, 32, Color(0.7, 0.45, 1.0, 0.85), 2.0, true)

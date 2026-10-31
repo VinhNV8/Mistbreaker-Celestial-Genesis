@@ -10,6 +10,7 @@ const TIPS := [
 	"Cửa hang (cam) ở mỗi map: vào dọn quái, hạ Chúa Hang để nhận đồ Xanh dương trở lên. Hang mở lại sau 20 phút.",
 	"Bảng tên quái: Thường · Tinh anh · Thủ lĩnh · Hiếm · Chúa Hang. Cấp đỏ = mạnh hơn bạn từ 5 cấp.",
 	"Quái bị đánh từ xa sẽ lao tới nhanh hơn — đừng đứng yên khi thả diều.",
+	"Đảo bay: rơi khỏi mép về Đá Neo gần nhất, mất 10% HP. Lông Vũ Gió (Q) giúp lướt qua khe.",
 	"Có điểm tiềm năng: huy hiệu \"+N\" trên khung nhân vật nhấp nháy — nhấn C để cộng.",
 ]
 

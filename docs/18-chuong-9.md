@@ -8,7 +8,7 @@
 | Thứ tự | Sau M11. Chia M12.1 (vùng 9: tầng, hệ tầng, quái) → M12.2 (Ma Tôn, đồ) → M12.3 (cốt truyện, hai kết thúc) → M12.4 (endgame tối thiểu: cấp sau 100, Thần Vực / Tái Thiết Lục Địa, Thiên Đạo Hư Ảnh) |
 | Kiến trúc | `core/chapter9.gd` (vùng, Ma Tôn — dùng lại hàm cơ chế của `chapter4/5/6/7/8.gd`, không chép code), `core/endgame.gd` (cấp sau 100, 2 chế độ). Ma Tôn gọi cơ chế cũ qua hàm tĩnh công khai của từng chương (ví dụ `Ch5.lava_flood`, `Ch6.mirror_cast`, `Ch8.drain_talent`) — chương nào chưa tách hàm thì tách ra khi làm M12. Vẽ ở `view/region9_view.gd`, hình `tools/art/region9.py` |
 | Quy trình | Spec (file này) → duyệt → code → test → cập nhật 01/02/03/04/05/06/07 và mục Kết quả |
-| Trạng thái | ⬜ **Spec — chờ duyệt** (22/10/2026). Điểm cần duyệt: mục 10 (Q90–Q98) |
+| Trạng thái | 🟡 **Rà lại 31/10/2026** (mục 0b); Q90–Q98 dùng cột Mặc định (04 mục 13 dòng 14). Code sau M11 |
 
 Ký hiệu: ✅ xong · 🟡 một phần · ⬜ chưa làm.
 
@@ -26,12 +26,31 @@ Ký hiệu: ✅ xong · 🟡 một phần · ⬜ chưa làm.
 | UI-15/16/17 | Bảng tên quái hiện **biểu tượng hệ của tầng**; HUD *"Tầng 4 · Hỏa"*; mẹo F1: *"Cổng Thiên Đạo: mỗi tầng một hệ — nhặt Ấn Hệ để đòn đánh khắc hệ tầng 60 giây."* |
 | D41, F1–F4 | Phân thân của Ma Tôn: mọi bản `is_hidden`; không phạt theo từng đòn; không bất tử theo đồng hồ trừ Độn thổ ngắn (boss ngừng gây sát thương khi bất tử — F3) |
 
+## 0b. Rà lại 31/10/2026 — các thay đổi sau ngày viết spec (22/10)
+
+Chỗ đã sửa trong các mục sau được đánh dấu *(rà 31/10)*.
+
+| Thay đổi (tài liệu) | Ảnh hưởng tới chương 9 | Sửa ở |
+| --- | --- | --- |
+| **5 lớp** ([19](19-lop-ho-ve-trieu-hoi-su.md), [21](21-thiet-ke-lai-5-lop.md)); Q82 "Hộ Vệ ngoài phạm vi" không còn đúng | Test cân bằng và Thần Vực chạy **5 lớp**; bảng tổng kết hành trình ghi đúng chức 3 của 5 lớp | TL-B9, TL-B9b, mục 9 |
+| **Chuyển chức 3 + 5 Thần Kỹ đã code** ([23](23-chuyen-chuc-3-linh-thu-co-mau.md)) | Bot TL-B9 lắp Thần Kỹ docs/23 ở ô 4; Ma Tôn GĐ2 *Sao chép* có bản bóng cho Thần Kỹ qua `Ch6.MIRROR_OF` (J3 Q145) | C9-30b, TL-B9 |
+| **Linh thú có máu** (SH-03) | Ma Tôn, Thiên Đạo Hư Ảnh và quái gọi trong trận **không đánh linh thú**; quái thường vùng 9 đánh được | C9-30 |
+| **Kỹ năng bị động** (PV, [27](27-ky-nang-bi-dong.md)) | Không phải Thiên phú → không bị Hút Thiên phú (GĐ3 Ma Tôn), không được +20% của Tinh Quang Thủ Hộ | C9-30c, C9-46 |
+| **Bí Kíp = +1 Điểm Kỹ Năng** (BK, [29](29-bi-kip-diem-ky-nang.md)) | "Bí Kíp tầng II/III" → **Bí Kíp** (+1 Điểm Kỹ Năng), tỉ lệ giữ theo nguồn. Bộ Tái Thiết vùng 8 "+10% tỉ lệ rơi Bí Kíp" giữ nguyên | C9-31, C9-34 |
+| **Bản đồ ×3 diện tích** (SN11-03) | Toạ độ gốc 4.480 × 2.560 → trong game 7.760 × 4.434. Mỗi tầng ≈ 2.590 m bề ngang — đủ rộng; giữ 3 tầng mỗi map | C9-02 |
+| **EXP theo chênh cấp** (SN9-05) | Sau cấp 100, chênh cấp tính với **cấp 100** (cấp Thần Vực / Khai Thế không làm quái cấp 100 thành "thấp cấp") | C9-50 |
+| **Điểm Kỹ Năng, điểm tiềm năng mỗi cấp** (SK1, CS) | Cấp sau 100 **không** cho Điểm Kỹ Năng / điểm tiềm năng — chỉ cho Điểm Thiên Đạo | C9-50 |
+| **Bình MP** (SN10-02) | Tuyết Nga bán bình MP | C9-40 |
+| **Chương 8 rà lại** ([17](17-chuong-8.md) mục 0b) | Hút Thiên phú dùng `Ch8` (talent_mult = 0); 12/8/5 đèn ở vùng 8 không đổi số 3 đèn của đấu trường Ma Tôn | C9-30c |
+| Save đã tới v24, M11 = v25 | **M12 = v26** (thay v20) | mục 7 |
+| RS-K01 (Ma Tôn xuất hiện sớm), RS-K04 (lựa chọn nhỏ) — chưa duyệt | Ngoài phạm vi M12; kết thúc không đọc lựa chọn nhỏ | — |
+
 ## 1. Mở vùng 9
 
 | Mã | Yêu cầu | Tiêu chí |
 | --- | --- | --- |
 | C9-01 | Điều kiện (kịch bản mục 6): **đã chuyển chức 3** (`profile.job3 != ""`) + **hạ Giáo Chủ Hư Vô** + **cấp ≥ 94**. Cổng Thiên Thê ở 8-3 + bảng Cổng Dịch Chuyển hiện điều kiện còn thiếu | C9-T1 |
-| C9-02 | 3 map 4.480 × 2.560 (06): **9-1 Tầng 1–3** (cấp 95–97), **9-2 Tầng 4–6** (97–99), **9-3 Tầng 7–9** (99–100, hang *Thiên Đạo Chi Môn* cấp 100). Mỗi map chia **3 tầng theo chiều ngang** (mỗi tầng ≈ 1/3 bề rộng), ngăn bởi **Cửa Tầng**. Trạm đầu mỗi map: *Thiên Thê Đài I / II / III* (vùng an toàn, Cổng Dịch Chuyển) | C9-T1; smoke `21-region9` |
+| C9-02 | 3 map (toạ độ gốc 4.480 × 2.560 theo 06; trong game ×√3 — SN11-03 *(rà 31/10)*): **9-1 Tầng 1–3** (cấp 95–97), **9-2 Tầng 4–6** (97–99), **9-3 Tầng 7–9** (99–100, hang *Thiên Đạo Chi Môn* cấp 100). Mỗi map chia **3 tầng theo chiều ngang** (mỗi tầng ≈ 1/3 bề rộng), ngăn bởi **Cửa Tầng**. Trạm đầu mỗi map: *Thiên Thê Đài I / II / III* (vùng an toàn, Cổng Dịch Chuyển) | C9-T1; smoke `21-region9` |
 | C9-03 | **Thủ Tầng**: cuối mỗi tầng có 1 tinh anh canh Cửa Tầng (tầng lẻ: Thiên Tướng, tầng chẵn: Ngũ Hành Sứ Giả, tầng 9: cả hai). Hạ lần đầu → Cửa Tầng mở **vĩnh viễn** (`floors9`). Cửa Tầng đóng: bước vào báo *"Hạ Thủ Tầng để mở"* | C9-T1 |
 | C9-04 | Lưới khai phá 45 ô = **9 tầng × 5 ô** (06). Không có tài nguyên thường; ô sự kiện Tài nguyên đổi thành **Kỳ quan nhỏ** hoặc **Ổ quái**. Chiếm đủ 5 ô của một tầng → **1 Tinh Hoa Tiến Hoá** (06: *"phần thưởng là Tinh Hoa Tiến Hoá"*; 9 tầng = 9 Tinh Hoa) | C9-T6 |
 | C9-05 | Hang phụ **Mật Thất Thiên Đạo** (HP-02) ở cả 3 map | C9-T1 |
@@ -67,17 +86,17 @@ Chỉ số từ `Formulas.mob_stats` (06 vùng 9), hệ = hệ tầng.
 | C9-30b | **GĐ2 (66 → 33%) — Ký ức chương 4–6** | **Giấc mơ** (Nữ Vương): mỗi 25 giây, vung 1,5 s (sương tím quanh người chơi) → **đảo ngược điều khiển 4 giây** (hook `input_filter`, viền tím, chữ *"Giấc mơ!"*) — né lăn trong lúc vung **tránh được** · **Dung nham dâng** (Viêm Long): mỗi 25 giây (lệch Giấc mơ 12 giây) nền **ngập 5 giây** (báo 3 giây), chỉ 5 Đá Nổi an toàn, ngoài đá −8% HP/giây; **Ma Tôn không bay, vẫn đánh được** (D41) · **Sao chép** (Bản Ngã): dùng lại kỹ năng người chơi vừa dùng sau **3 giây** theo nhóm kỹ năng (C8-51), vung 0,6 s có báo | C9-T4 |
 | C9-30c | **GĐ3 (dưới 33%) — Vô Diện, ký ức chương 7–8** | **Chiến trường thu nhỏ** (Cự Thần): một cung vành ngoài vỡ sau mỗi **8% HP** mất hoặc 20 giây (lõi 24 m không vỡ); rơi → về mép lõi, −10% HP, Ma Tôn hồi 3% · **Hút Thiên phú** (Giáo Chủ): mỗi 30 giây kênh 1,5 giây, vô hiệu Thiên phú 10 giây, **3 Đèn Tinh Quang chặn được** (mỗi đèn 1 lần) · **Vô Diện**: **đổi hệ mỗi 10 giây** (biểu tượng hệ to trên đầu, báo 1 giây trước) | C9-T4 |
 | C9-30d | **Mảnh thứ hai thức tỉnh** (dưới 10% HP, đỉnh điểm CT-03) | Ma Tôn ngừng mọi cơ chế 3 giây (bất tử, không gây sát thương — F3), **gọi mảnh thứ hai**: thoại *"Trả lại... phần của ta!"*. Từ đó Ám Khí người chơi **+10 mỗi giây**; đầy → **Ám Hoá** (C6-43: +20% Tấn công, giữ điều khiển) rồi về 0 và tăng lại. Ma Tôn mất khả năng **Hút Thiên phú** (mảnh thứ hai đang chống lại hắn). Hạ Ma Tôn → cảnh kết (C9-44) | C9-T4 |
-| C9-31 | Ma Tôn rơi | 2 đồ Tím · **Mặt Nạ Vô Diện** lần đầu **100%**, sau đó 15% (mũ Cam: mỗi 30 giây, 10 giây đòn đánh đổi sang **hệ khắc mục tiêu**) · 3 Tinh Hoa · 1 Tinh Kim · 40% Bí Kíp tầng II. Hồi sinh 10 phút (đánh lại được sau kết thúc, không đổi kết thúc) | C9-T4 |
+| C9-31 | Ma Tôn rơi | 2 đồ Tím · **Mặt Nạ Vô Diện** lần đầu **100%**, sau đó 15% (mũ Cam: mỗi 30 giây, 10 giây đòn đánh đổi sang **hệ khắc mục tiêu**) · 3 Tinh Hoa · 1 Tinh Kim · 40% Bí Kíp (+1 Điểm Kỹ Năng *(rà 31/10)*). Hồi sinh 10 phút (đánh lại được sau kết thúc, không đổi kết thúc) | C9-T4 |
 | C9-32 | Đạo Tặc — **Vô Diện** (06) | Dùng ngẫu nhiên 1 kỹ năng boss **đã sao chép** với **×1,5** sát thương (cần ≥ 2 kỹ năng đã học; hồi chiêu = hồi chiêu của kỹ năng được chọn) | C9-T4 |
 | C9-33 | **Boss hiếm Thiên Đạo Hư Ảnh** (06: *"xuất hiện ở Endgame, sau khi hạ Ma Tôn"*) | 9-3 (cấp 100, Phép, mọi hệ, 200 đòn; 218.214 HP; `RARE_BOSSES["9-3"]`, chỉ sau khi đã chọn kết thúc). **3 giai đoạn**, mỗi giai đoạn rút 1 trong **6 Thiên phú hạng S trở lên** (không lặp): *Ngũ Hành Linh Căn* — đổi hệ mỗi 6 giây, mỗi lần đổi nổ vòng 6 m ×1,5 · *Thời Gian Ngưng Đọng* — mỗi 20 giây ngưng người chơi 1,5 giây (báo 1 giây, né lăn tránh) · *Bầy Đàn Bóng Tối* — mỗi 15 giây gọi 4 lính bóng · *Thiên Mệnh Khai Giới* — sương dày, tầm nhìn 50% · *Long Mạch* — mỗi 25 giây Long Hồn bay ngang đấu trường (vệt báo 1,5 s, ×1,5) · *Đạo Tặc* — mỗi 12 giây dùng 1 cơ chế boss chương ngẫu nhiên (bản rút gọn ở C9-30…30c) | C9-T4 |
-| C9-34 | Hư Ảnh rơi | 3 Tinh Hoa Tiến Hoá · 10 Tinh Hoa · **1 đồ Cam ngẫu nhiên của mọi vùng** (06 mục 4, 17 món) · Bí Kíp tầng III (100%) | C9-T4 |
+| C9-34 | Hư Ảnh rơi | 3 Tinh Hoa Tiến Hoá · 10 Tinh Hoa · **1 đồ Cam ngẫu nhiên của mọi vùng** (06 mục 4, 17 món) · Bí Kíp (100%, +1 Điểm Kỹ Năng) | C9-T4 |
 | C9-35 | **Bộ Thiên Đạo** (đồ Tím vùng 9, 06) | 2 — **+5% mọi chỉ số** · 4 — **khắc hệ +20%** (tổng +50%) · 6 — **kỹ năng L hồi nhanh 30%** | C9-T4 |
 
 ## 5. Cốt truyện (M12.3)
 
 | Mã | Yêu cầu | Tiêu chí |
 | --- | --- | --- |
-| C9-40 | **NPC Thiên Thê Đài I** (9-1): *Vân Hạc* (mang mảnh Bia Đá gốc, người dẫn truyện, chủ trì nghi thức cuối) · *Tuyết Nga* (**cửa hàng**: bình máu, Đèn Lồng Tinh Quang, Lông Vũ Gió, Than Hồng — đồ tiêu hao của mọi chương) · *Lam Nhi* (bạn đồng hành chương 4, có lại Thiên phú — đi cùng tới cuối). Ở cảnh kết có thêm *Thạch Lão* (trưởng làng chương 1), *Lạc Phong*, *Mạc Tam*, *Xích Đồng* | Smoke `21c-camp9` |
+| C9-40 | **NPC Thiên Thê Đài I** (9-1): *Vân Hạc* (mang mảnh Bia Đá gốc, người dẫn truyện, chủ trì nghi thức cuối) · *Tuyết Nga* (**cửa hàng**: bình máu, bình MP, Đèn Lồng Tinh Quang, Lông Vũ Gió, Than Hồng — đồ tiêu hao của mọi chương) · *Lam Nhi* (bạn đồng hành chương 4, có lại Thiên phú — đi cùng tới cuối). Ở cảnh kết có thêm *Thạch Lão* (trưởng làng chương 1), *Lạc Phong*, *Mạc Tam*, *Xích Đồng* | Smoke `21c-camp9` |
 | C9-41 | **Nhiệm vụ chương 9 — 7 bước**: (1) **Thiên Thê**: tới Thiên Thê Đài gặp Vân Hạc · (2) **Thiên binh**: hạ 30 quái vùng 9 · (3) **Vượt tầng**: mở Cửa Tầng tới **tầng 6** (hạ 5 Thủ Tầng đầu) · (4) **Ánh Hồn**: hạ **9 Tàn Hồn Khai Giới Giả** (mỗi con rơi 1 *Ánh Hồn* — vật phẩm nhiệm vụ) — Vân Hạc dùng 9 Ánh Hồn vá mảnh Bia Đá gốc thành **Ấn Phong Thiên** · (5) mở tới **tầng 9**, khám phá 9-3 ≥ 40% (tìm Thiên Đạo Chi Môn) · (6) hạ **Ma Tôn Vô Diện** · (7) **Lựa chọn** (C9-44). Thưởng EXP ≈ 25% EXP cấp 95 → 100 (13,57 triệu × 25% ≈ **3,39 triệu**); EXP thừa ở cấp 100 chuyển sang cấp sau 100 (C9-50) khi đã chọn kết thúc, trước đó **giữ trong "EXP tích luỹ"** (không mất) | C9-T5 |
 | C9-42 | **Thoại tầng**: mỗi lần mở Cửa Tầng mới, 1 dòng ký ức của Ma Tôn hiện trên màn hình (9 dòng — hắn từng là Khai Giới Giả mạnh nhất, bị Thiên Đạo từ chối, rồi đoạt Thiên phú gây Thiên Liệt) — kể dần lý do phản diện, không chỉ là ác | C9-T5 |
 | C9-43 | **Trước trận cuối**: vào Thiên Đạo Chi Môn → Ma Tôn nói chuyện (nhân vật mang linh hồn hắn: *"Ngươi là ta mười sáu năm qua"*), Lam Nhi và Vân Hạc ở lại cửa | Smoke `21d-ma-ton` |
@@ -92,7 +111,7 @@ Kịch bản Beta: *"chương 1–9, endgame, boss thế giới, shop, sự ki�
 
 | Mã | Yêu cầu | Tiêu chí |
 | --- | --- | --- |
-| C9-50 | **Cấp sau 100** (kịch bản mục 4, NV-09) — mở khi đã chọn kết thúc. Tên theo kết thúc: **Thần Vực N** (Hợp nhất) / **Khai Thế N** (Hiến tế), cùng số liệu. EXP mỗi cấp = EXP(100) × (1 + 0,02·N). Mỗi cấp **+1 Điểm Thiên Đạo**, cộng vào 5 nhánh (mỗi điểm): Tấn công +0,5% · HP +0,8% · Chí mạng +0,2% · Hồi chiêu −0,3% (trần −15%) · Sản lượng lãnh địa +1%. Không có cấp trần; tẩy điểm miễn phí ở vùng an toàn. Quái cấp 100 vẫn cho đủ EXP (không áp "thấp hơn 10 cấp") | C9-T8 |
+| C9-50 | **Cấp sau 100** (kịch bản mục 4, NV-09) — mở khi đã chọn kết thúc. Tên theo kết thúc: **Thần Vực N** (Hợp nhất) / **Khai Thế N** (Hiến tế), cùng số liệu. EXP mỗi cấp = EXP(100) × (1 + 0,02·N). Mỗi cấp **+1 Điểm Thiên Đạo**, cộng vào 5 nhánh (mỗi điểm): Tấn công +0,5% · HP +0,8% · Chí mạng +0,2% · Hồi chiêu −0,3% (trần −15%) · Sản lượng lãnh địa +1%. Không có cấp trần; tẩy điểm miễn phí ở vùng an toàn. Chênh cấp EXP (SN9-05) tính với **cấp 100** nên quái cấp 100 vẫn cho đủ EXP. Cấp sau 100 không cho Điểm Kỹ Năng / điểm tiềm năng *(rà 31/10)* | C9-T8 |
 | C9-51 | **Thần Vực** (Hợp nhất): cổng **Thần Vực** ở Thiên Thê Đài I → **tháp thử luyện vô tận**. Mỗi tầng: đấu trường tròn, **90 giây** hạ đủ 1 đợt quái + (cứ 5 tầng) **1 boss chương ngẫu nhiên**; cấp quái = 100 + 2 × tầng (công thức 06 chạy tiếp quá cấp 100). Thắng → tầng kế (hồi 30% HP); thua/hết giờ → ra ngoài, giữ **kỷ lục tầng cao nhất**. Thưởng mỗi tầng: Tinh Hoa (tầng/5 + 1), cứ 10 tầng 1 đồ Cam ngẫu nhiên. Tầng cao nhất hiện ở bảng Chỉ số (sẵn cho bảng xếp hạng online KT-09) | C9-T8 |
 | C9-52 | **Tái Thiết Lục Địa** (Hiến tế): mỗi vùng 1–9 có 1 **Công trình Tái Thiết** xây ở trạm vùng đó (bảng dưới), giá tăng theo vùng (vùng *k*: 2.000·k vàng, 200·k Gỗ, 150·k Đá, 100·k Sắt, 20·k Tinh Thạch, **k ≥ 8 thêm 2 Lõi Hư Vô**). Xây xong → **buff vĩnh viễn** + vùng đó có **Triều Hư Vô tàn dư** mỗi 30 phút chơi ở vùng (dùng khung đột kích C5-43: 1 đợt quái cấp 100 + 1 boss chương của vùng; thắng: Tinh Hoa + Tinh Thạch; thua: buff vùng đó tắt 30 phút). Xây đủ 9 → danh hiệu **"Người Tái Thiết"** + trung tâm lãnh địa vẽ thành Kinh Thành | C9-T8 |
 | C9-53 | Cả hai kết thúc: Thiên Đạo Hư Ảnh (C9-33) xuất hiện; Ma Tôn đánh lại được (rơi đồ như C9-31); EXP thừa trước khi chọn được cộng vào cấp sau 100 | C9-T8 |
@@ -111,9 +130,9 @@ Kịch bản Beta: *"chương 1–9, endgame, boss thế giới, shop, sự ki�
 | 8 | Đèn Tinh Quang Vĩnh Cửu | +10% tỉ lệ rơi Bí Kíp |
 | 9 | Đền Thiên Đạo | +5% mọi chỉ số |
 
-## 7. Thay đổi save (version 19 → 20)
+## 7. Thay đổi save (version 25 → 26)
 
-Số version tạm (M12 = v20; lấy số kế tiếp lúc code nếu đã đổi).
+*(rà 31/10)* M11 = v25 nên **M12 = v26**.
 
 | Trường | Kiểu | Mặc định save cũ |
 | --- | --- | --- |
@@ -139,9 +158,9 @@ Hệ tầng, Ấn Hệ, giai đoạn Ma Tôn là trạng thái trong trận (kh�
 | C9-T5 | Nhiệm vụ chương 9 đủ 7 bước; EXP ≈ 3,39 triệu; EXP thừa ở cấp 100 vào `exp_bank`; 9 dòng ký ức tầng |
 | C9-T6 | Lưới 45 ô (9 × 5), đủ 5 ô một tầng → 1 Tinh Hoa Tiến Hoá |
 | C9-T7 | Màn lựa chọn 2 thẻ + xác nhận 2 lần; Hợp nhất: Thiên Đạo Lực, Thần Hoá 10 giây; Hiến tế: sương vùng 1–9 mở hết, ô lộ sự kiện, Ám Khí mất, +20% Thiên phú, +30% lãnh địa; bảng tổng kết, danh đề; không đổi lại được |
-| C9-T8 | Cấp sau 100 (EXP công thức, Điểm Thiên Đạo, tẩy điểm, `exp_bank` cộng vào); Thần Vực (90 giây, cấp quái 100 + 2·tầng, boss mỗi 5 tầng, kỷ lục); Tái Thiết (giá theo vùng, Lõi Hư Vô từ vùng 8, 9 buff, Triều tàn dư); save v20 + chuyển đổi v19 |
-| TL-B9 | 3 lớp × 20 Thiên phú (chức 3, bộ kỹ năng mặc định cấp 99 có Thần Kỹ, tiến hoá 2 lần Lv10) hạ Ma Tôn (bot cấp 99, bộ đồ chuẩn cấp 99): F/S ≤ 25%, các lớp ≤ 25%, 0 lần chết. Bot: **tự đảo hướng khi Giấc mơ** (mô phỏng người biết cơ chế), lên Đá Nổi, đứng vòng đèn khi bị hút, đánh bản có bóng khi phân thân |
-| TL-B9b | Thần Vực: bot mỗi lớp (cấp 100, chưa có Điểm Thiên Đạo) đạt **tầng 10–20**; các lớp chênh ≤ 25% số tầng |
+| C9-T8 | Cấp sau 100 (EXP công thức, Điểm Thiên Đạo, tẩy điểm, `exp_bank` cộng vào); Thần Vực (90 giây, cấp quái 100 + 2·tầng, boss mỗi 5 tầng, kỷ lục); Tái Thiết (giá theo vùng, Lõi Hư Vô từ vùng 8, 9 buff, Triều tàn dư); save v26 + chuyển đổi v25 |
+| TL-B9 | **5 lớp** *(rà 31/10)* × 20 Thiên phú (chức 3, bộ kỹ năng mặc định cấp 99 có Thần Kỹ docs/23, tiến hoá 2 lần Lv10) hạ Ma Tôn (bot cấp 99, bộ đồ chuẩn cấp 99): F/S ≤ 25%, các lớp ≤ 25%, 0 lần chết. Bot: **tự đảo hướng khi Giấc mơ** (mô phỏng người biết cơ chế), lên Đá Nổi, đứng vòng đèn khi bị hút, đánh bản có bóng khi phân thân |
+| TL-B9b | Thần Vực: bot mỗi lớp trong **5 lớp** (cấp 100, chưa có Điểm Thiên Đạo) đạt **tầng 10–20**; các lớp chênh ≤ 25% số tầng |
 | PACE-T6 | (`--only=PACE`) bot cày vùng 9 cấp 95 → 100: phút, số lần chết |
 
 Smoke mới: `21-region9`, `21b-floor-element`, `21c-camp9`, `21d-ma-ton`, `22-ending-choice`, `22b-ending-hop-nhat`, `22c-ending-hien-te`, `22d-credits`, `23-than-vuc`, `23b-tai-thiet`.
@@ -155,7 +174,7 @@ Smoke mới: `21-region9`, `21b-floor-element`, `21c-camp9`, `21d-ma-ton`, `22-e
 | NV-09 (cấp Thần Vực) | C9-50 |
 | TP-05 (ô Thiên phú phụ cấp 30/60) | **Vẫn chưa làm** — Thiên phú thứ hai của kết thúc là ô **đặc biệt** riêng, không thay TP-05 |
 | BD-10 (Ác mộng / Địa ngục), boss thế giới, mùa, shop | Đợt Beta sau M12 — Thần Vực / Tái Thiết là nền (cấp quái > 100, Triều tàn dư) |
-| Hộ Vệ (lớp 4) | Ngoài phạm vi (Q82) |
+| Hộ Vệ, Triệu Hồi Sư | *(rà 31/10)* Đã có trong game (docs/19) — trong phạm vi M12 như 3 lớp kia |
 
 ## 10. Điểm cần duyệt
 

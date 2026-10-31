@@ -99,7 +99,7 @@ Cột **Code**: ✅ đã có trong game (M2), 🟡 có nhưng khác thiết kế
 | 17 | Bầy Đàn Bóng Tối | S · Triệu hồi | Quái bị hạ 15% → 22,5% thành lính bóng tối (tối đa 10, sống 60 giây, tấn công = 30% → 45% của nhân vật) | **Bóng Tối Trỗi Dậy** (60 giây): gọi ngay 3 → 5 lính | ✅ Lv1→10 (M3) |
 | 18 | Thiên Mệnh Khai Giới | SS · Khai phá | Mỗi Đuốc dọn thêm 2 ô kề bên; sản lượng lãnh địa +20% → +30% | — | ✅ Lv1→10 (M3) |
 | 19 | Long Mạch | SS · Lãnh địa | Mở công trình **Long Mạch Đàn**: +10% → +15% Tấn công và HP cho nhân vật và đồng minh | — | ✅ Lv1→10 (M3) |
-| 20 | Đạo Tặc (Ẩn) | SSS · Đặc biệt | **Cướp Thuộc Tính** khi hạ quái: tỉ lệ ×1,0 → ×1,5 (bảng ở CR-01), giới hạn 1 × cấp nhân vật | **Kỹ năng sao chép** (8 giây): dùng kỹ năng boss đã sao chép; +0% → +30% sát thương. Danh sách kỹ năng boss ở [06-ban-do-quai-boss](06-ban-do-quai-boss.md) mục 5 | ✅ Cướp Thuộc Tính + sao chép (M3) |
+| 20 | Đạo Tặc (Ẩn) | SSS · Đặc biệt | **Cướp Thuộc Tính** khi hạ quái: tỉ lệ ×1,0 → ×1,5 (bảng ở CR-01), giới hạn **cấp Thiên phú × cấp nhân vật**; đầy thì vào Túi Tang Vật (5), rồi Đà Cướp (+3% 30 giây × 5 tầng); mỗi loài tối đa 5 điểm, boss 9, boss hiếm 10 (CR-01 DT-17…19) | **Kỹ năng sao chép** (8 giây): dùng kỹ năng boss đã sao chép; +0% → +30% sát thương. Danh sách kỹ năng boss ở [06-ban-do-quai-boss](06-ban-do-quai-boss.md) mục 5 | ✅ Cướp Thuộc Tính + sao chép (M3) |
 
 ### 2.2. Ghi chú từng Thiên phú
 

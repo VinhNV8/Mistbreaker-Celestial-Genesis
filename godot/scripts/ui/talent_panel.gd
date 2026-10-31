@@ -1,51 +1,116 @@
 extends "res://scripts/ui/modal.gd"
 const Ch4 = preload("res://scripts/core/chapter4.gd")
+const Ch7 = preload("res://scripts/core/chapter7.gd")
 ## Bảng Thiên phú (phím T) — TL-15: thẻ, cấp, hiệu ứng, kỹ năng L, hiệu ứng phụ, luyện cấp.
 
 const Explore = preload("res://scripts/core/explore.gd")
 const Monsters = preload("res://scripts/data/monsters.gd")
 const Talents = preload("res://scripts/data/talents.gd")
 
-const W := 520.0
+## UI-28c: bề rộng chữ trong mỗi cột (3 cột vừa một màn hình, không cuộn).
+const W := 330.0
+const CharBar = preload("res://scripts/ui/char_bar.gd")
+const Ornate = preload("res://scripts/ui/ornate.gd")
+
+## UI-28b: bấm tab khác trên thanh tiêu đề chung — main.gd đóng bảng này rồi mở bảng / tab tương ứng.
+signal open_panel(id: String)
 
 
-func _render(content: VBoxContainer) -> void:
+## UI-28d (chủ dự án 30/10: "chưa thấy điểm nổi bật của cấp thiên phú"): khối cấp nổi bật trong thẻ —
+## "CẤP" + số lớn vàng "/10" + nhãn TỐI ĐA khi đủ cấp; 10 ô tiến độ (đã đạt tô màu hạng, mốc 5 / 10 viền vàng).
+func _level_block(lv: int, rank_color: Color) -> Control:
+	var box := UiTheme.panel(UiTheme.box(Color("#0e0a06", 0.85), 8, 1, Color("#7a5a2a"), 8))
+	box.name = "TalentLevel"
+	var v := UiTheme.vbox(6)
+	box.add_child(v)
+	var head := UiTheme.hbox(6)
+	var cap := UiTheme.strong("CẤP", 13, Color("#b8a888"))
+	cap.size_flags_vertical = Control.SIZE_SHRINK_END
+	head.add_child(cap)
+	var num := UiTheme.strong(str(lv), 34, Color("#ffd877"))
+	num.name = "TalentLevelValue"
+	head.add_child(num)
+	var of := UiTheme.strong("/ %d" % Talents.MAX_TALENT_LEVEL, 16, Color("#b8a888"))
+	of.size_flags_vertical = Control.SIZE_SHRINK_END
+	head.add_child(of)
+	head.add_child(UiTheme.spacer())
+	var maxed := lv >= Talents.MAX_TALENT_LEVEL
+	var tag := UiTheme.panel(UiTheme.box(Color("#3a2a10") if maxed else Color("#14202a"), 5, 1, UiTheme.GOLD if maxed else Color("#4a6a8a"), 4))
+	tag.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	tag.add_child(UiTheme.strong("TỐI ĐA" if maxed else "Cấp kế: %d" % (lv + 1), 12, UiTheme.GOLD if maxed else Color("#9cc4e8")))
+	head.add_child(tag)
+	v.add_child(head)
+	var pips := UiTheme.hbox(4)
+	for i in Talents.MAX_TALENT_LEVEL:
+		var on := i < lv
+		var milestone := (i + 1) % 5 == 0
+		var pip := Panel.new()
+		pip.custom_minimum_size = Vector2(0, 10)
+		pip.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		pip.add_theme_stylebox_override("panel", UiTheme.box(rank_color if on else Color("#1e1610"), 3,
+			1, UiTheme.GOLD if milestone else (rank_color.darkened(0.3) if on else Color("#3a2a18")), 0))
+		pip.tooltip_text = "Cấp %d%s" % [i + 1, " — mốc mở hiệu ứng phụ" if milestone else ""]
+		pips.add_child(pip)
+	v.add_child(pips)
+	return box
+
+
+## Một cột trong khung vẽ, tiêu đề vàng; nội dung pixel bên trong giữ Nearest.
+func _column(parent: Control, title: String, name_: String) -> VBoxContainer:
+	var frame := UiTheme.panel(Ornate.panel_style(20))
+	frame.name = name_
+	Ornate.linear(frame)
+	frame.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var col := UiTheme.vbox(8)
+	col.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	col.custom_minimum_size.x = W
+	frame.add_child(col)
+	col.add_child(UiTheme.strong(title, 19, Color("#f3d27a")))
+	parent.add_child(frame)
+	return col
+
+
+## UI-28c (chủ dự án 30/10: "trình bày lại cho gọn trên 1 page"): 3 cột —
+## trái: thẻ Thiên phú + kỹ năng L + trạng thái riêng · giữa: hiệu ứng theo cấp + luyện cấp · phải: cây tiến hoá.
+func _render(outer: VBoxContainer) -> void:
+	outer.add_child(CharBar.build(world, "talent", func(key: String): open_panel.emit(key), close))
 	var p = world.profile
 	var t: Dictionary = world.talent()
 	# C4-45 (M7): dạng tiến hoá hiện tại; lv = cấp của dạng hiện tại (talent_level là cấp hiệu dụng).
-	var form: Array = Ch4.evo_form(t.id, int(p.evo))
+	# C7-46: dạng bậc 2 / Đột Phá (chapter7.form).
+	var form: Array = Ch7.form(t.id, int(p.evo))
 	var lv: int = Ch4.stage_level(p)
 	var color := Talents.rank_color(form[1])
-	content.custom_minimum_size.x = W
-	_header(content, "Thiên phú · Cấp %d/%d%s" % [lv, Talents.MAX_TALENT_LEVEL, (" · đã tiến hoá %d lần" % int(p.evo)) if int(p.evo) > 0 else ""], "Đóng (T)")
+	var body := UiTheme.hbox(12)
+	outer.add_child(body)
 
+	# ---- cột trái: thẻ Thiên phú
+	var left := _column(body, "Thiên phú", "TalentCard")
 	var card := PanelContainer.new()
 	card.add_theme_stylebox_override("panel", UiTheme.rank_box(color))
-	var row := UiTheme.hbox(14)
-	var icon := TextureRect.new()
-	icon.texture = preload("res://scripts/view/sprite_lib.gd").talent_icon(t.id)
-	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	icon.custom_minimum_size = Vector2(64, 64)
-	row.add_child(icon)
-	var rank := UiTheme.label(form[1], "Heading")
-	rank.add_theme_font_size_override("font_size", 40)
-	rank.add_theme_color_override("font_color", color)
-	row.add_child(rank)
-	var col := UiTheme.vbox(2)
-	col.add_child(UiTheme.label("%s · %s" % [form[0], Talents.group_name(t)], "Heading"))
-	col.add_child(UiTheme.label(t.description, "", W - 120))
-	row.add_child(col)
-	card.add_child(row)
-	content.add_child(card)
-
+	var cv := UiTheme.vbox(6)
+	var top := UiTheme.hbox(12)
+	top.add_child(UiTheme.icon_rect(preload("res://scripts/view/sprite_lib.gd").talent_icon(t.id), 64))
+	var rank := UiTheme.strong(form[1], 40, color)
+	rank.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	top.add_child(rank)
+	var nv := UiTheme.vbox(2)
+	nv.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	nv.add_child(UiTheme.strong(str(form[0]), 18, Color("#ece6d8")))
+	nv.add_child(UiTheme.label(Talents.group_name(t) + ((" · Tiến hoá %d/2" % int(p.evo)) if int(p.evo) > 0 else ""), "Muted"))
+	top.add_child(nv)
+	cv.add_child(top)
+	cv.add_child(_level_block(lv, color))
+	cv.add_child(UiTheme.label(t.description, "", W - 20))
+	card.add_child(cv)
+	left.add_child(card)
 	if Talents.has_skill(t):
-		content.add_child(UiTheme.label("KỸ NĂNG (PHÍM L)", "Eyebrow"))
-		content.add_child(UiTheme.label("%s — %s Hồi chiêu %.1f giây." % [world.talent_skill_name(), t.skill.text, world.talent_skill_cd()], "", W))
-	_talent_state(content, p, t)
+		left.add_child(UiTheme.label("KỸ NĂNG (PHÍM L)", "Eyebrow"))
+		left.add_child(UiTheme.label("%s — %s Hồi chiêu %.1f giây." % [world.talent_skill_name(), t.skill.text, world.talent_skill_cd()], "Small", W))
+	_talent_state(left, p, t)
 	# TP-39 (M4.2): Đạo Tặc có ≥ 2 kỹ năng sao chép thì chọn kỹ năng dùng bằng phím L.
 	if t.id == "dao-tac" and p.copied_skills.size() >= 2:
-		var copy_row := UiTheme.hbox(8)
+		var copy_row := HFlowContainer.new()
 		copy_row.add_child(UiTheme.label("Kỹ năng L:", "Small"))
 		for sk in p.copied_skills:
 			var b := UiTheme.button(str(world.COPY_NAMES.get(sk, sk)), sk == world.active_copy())
@@ -55,57 +120,64 @@ func _render(content: VBoxContainer) -> void:
 				world.set_active_copy(id)
 				refresh())
 			copy_row.add_child(b)
-		content.add_child(copy_row)
-	_evolution(content, t)
+		left.add_child(copy_row)
 
-	content.add_child(UiTheme.label("HIỆU ỨNG THEO CẤP", "Eyebrow"))
+	# ---- cột giữa: hiệu ứng theo cấp + luyện cấp
+	var mid := _column(body, "Hiệu ứng theo cấp", "TalentLevels")
 	# TP-41: hiệu ứng chính mạnh dần tới Lv10.
 	var main_now := Talents.main_effect_text(t.id, p.talent_level)
 	if main_now != "":
-		var nxt := ""
+		mid.add_child(UiTheme.label("Cấp %d: %s" % [lv, main_now], "", W))
 		if lv < Talents.MAX_TALENT_LEVEL:
-			nxt = "   →   Cấp %d: %s" % [lv + 1, Talents.main_effect_text(t.id, p.talent_level + 1)]
-		content.add_child(UiTheme.label("Hiệu ứng chính cấp %d: %s%s" % [lv, main_now, nxt], "", W))
+			var nx := UiTheme.label("→ Cấp %d: %s" % [lv + 1, Talents.main_effect_text(t.id, p.talent_level + 1)], "Small", W)
+			nx.add_theme_color_override("font_color", UiTheme.GOOD)
+			mid.add_child(nx)
 	var bonus: int = 2 * (int(p.talent_level) - 1)
-	content.add_child(UiTheme.label("Cấp %d: +%d%% Tấn công, +%d%% HP (mỗi cấp hiệu dụng +2%%)." % [lv, bonus, bonus], "Muted", W))
+	mid.add_child(UiTheme.label("+%d%% Tấn công, +%d%% HP (mỗi cấp hiệu dụng +2%%)." % [bonus, bonus], "Muted", W))
 	var subs: Array = Talents.GROUP_SUB[t.group]
 	for i in subs.size():
 		var need := (i + 1) * 5
 		var on: bool = int(p.talent_level) >= need
 		var l := UiTheme.label("%s Cấp %d — %s" % ["✓" if on else "○", need, subs[i]], "", W)
 		l.add_theme_color_override("font_color", UiTheme.GOOD if on else UiTheme.MUTED)
-		content.add_child(l)
-
-	content.add_child(HSeparator.new())
-	content.add_child(UiTheme.label("Thiên Phú Tinh Hoa: %d  (boss chương 3 mỗi lần hạ, boss hiếm 5)" % p.essence, "Muted"))
+		mid.add_child(l)
+	mid.add_child(HSeparator.new())
+	mid.add_child(UiTheme.label("Thiên Phú Tinh Hoa: %d" % p.essence, ""))
+	var src := UiTheme.label("Boss chương 3 mỗi lần hạ +1, boss hiếm +5.", "Small", W)
+	src.add_theme_color_override("font_color", UiTheme.MUTED)
+	mid.add_child(src)
 	if lv >= Talents.MAX_TALENT_LEVEL:
-		content.add_child(UiTheme.label("Đã đạt cấp tối đa của dạng này.", "Muted"))
-		return
-	var cost := Talents.level_cost(lv)
-	var blocker := ""
-	if not Explore.is_built(p, "temple"):
-		blocker = "Cần xây Đền Thiên Phú (Bản đồ khai phá, phím M)." if not Explore.is_started(p, "temple") \
-			else "Đền Thiên Phú đang xây, còn %d giây." % ceili(Explore.remaining(p, "temple"))
-	elif p.essence < cost:
-		blocker = "Thiếu Tinh Hoa."
-	var b := UiTheme.button("Luyện cấp %d → %d (%d Tinh Hoa)" % [lv, lv + 1, cost], true)
-	b.size_flags_horizontal = SIZE_SHRINK_BEGIN
-	b.disabled = blocker != ""
-	b.pressed.connect(func():
-		world.level_talent()
-		refresh())
-	content.add_child(b)
-	if blocker != "":
-		var w := UiTheme.label(blocker, "", W)
-		w.add_theme_color_override("font_color", Color("#ffb27a"))
-		content.add_child(w)
+		mid.add_child(UiTheme.label("Đã đạt cấp tối đa của dạng này.", "Muted"))
+	else:
+		var cost := Talents.level_cost(lv)
+		var blocker := ""
+		if not Explore.is_built(p, "temple"):
+			blocker = "Cần xây Đền Thiên Phú (Bản đồ khai phá, phím M)." if not Explore.is_started(p, "temple") \
+				else "Đền Thiên Phú đang xây, còn %d giây." % ceili(Explore.remaining(p, "temple"))
+		elif p.essence < cost:
+			blocker = "Thiếu Tinh Hoa."
+		var b := UiTheme.button("Luyện cấp %d → %d (%d Tinh Hoa)" % [lv, lv + 1, cost])
+		b.name = "LevelButton"
+		Ornate.button(b, "gold")
+		b.custom_minimum_size.y = 48
+		b.disabled = blocker != ""
+		b.pressed.connect(func():
+			world.level_talent()
+			refresh())
+		mid.add_child(b)
+		if blocker != "":
+			var w := UiTheme.label(blocker, "Small", W)
+			w.add_theme_color_override("font_color", Color("#ffb27a"))
+			mid.add_child(w)
+
+	# ---- cột phải: cây tiến hoá
+	_evolution(_column(body, "Cây tiến hoá", "TalentEvolution"), t)
 
 
 ## Trạng thái riêng của từng Thiên phú (hệ, thú cưng, kỹ năng sao chép…).
 ## C1-14 (TP-43): cây tiến hoá hiện trước để người quay hạng thấp thấy đường đi lên.
 func _evolution(content: VBoxContainer, t: Dictionary) -> void:
 	var stages: Array = Talents.EVOLUTION.get(t.id, [])
-	content.add_child(UiTheme.label("CÂY TIẾN HOÁ", "Eyebrow"))
 	if stages.is_empty():
 		content.add_child(UiTheme.label("Thiên phú này đã ở đỉnh — không tiến hoá.", "Small", W))
 		return
@@ -124,7 +196,23 @@ func _evolution(content: VBoxContainer, t: Dictionary) -> void:
 		content.add_child(row)
 	content.add_child(UiTheme.label("Điều kiện bậc 1 (M7): Thiên phú Lv10 + 1 Tinh Hoa Tiến Hoá + nhiệm vụ chương 4 bước Tiến hoá. Có %d Tinh Hoa Tiến Hoá." % int(world.profile.evo_essence), "Small", W))
 	# C4-43: nút Tiến hoá — hoàn 50% Tinh Hoa đã luyện, không tụt sức mạnh.
-	if evo < stages.size():
+	# C7-43/44: lần 2 đi qua chapter7 (bước 7 chương 7; Thiên phú hết bậc 2 → Đột Phá).
+	if evo == 1 and not stages.is_empty():
+		var why2: String = Ch7.can_evolve2(world)
+		var nxt: Array = Ch7.form(t.id, 2)
+		var eb2 := UiTheme.button("Tiến hoá lần 2 → %s (%s)" % [nxt[0], nxt[1]], why2 == "")
+		eb2.name = "EvolveButton"
+		eb2.disabled = why2 != ""
+		eb2.size_flags_horizontal = SIZE_SHRINK_BEGIN
+		eb2.pressed.connect(func():
+			Ch7.evolve2(world)
+			refresh())
+		content.add_child(eb2)
+		if why2 != "":
+			var wl2 := UiTheme.label(why2, "", W)
+			wl2.add_theme_color_override("font_color", Color("#ffb27a"))
+			content.add_child(wl2)
+	elif evo < stages.size() and evo == 0:
 		var why: String = Ch4.can_evolve(world)
 		var eb := UiTheme.button("Tiến hoá → %s (%s)" % [stages[evo][0], stages[evo][1]], why == "")
 		eb.name = "EvolveButton"
@@ -152,11 +240,27 @@ func _talent_state(content: VBoxContainer, p, t: Dictionary) -> void:
 		"bay-dan":
 			lines.append("Lính bóng tối tối đa: %d." % world.ally_cap("shadow"))
 		"dao-tac":
-			lines.append("Đã sao chép: %s." % ("Vồ Mồi (Sói Chúa)" if "pounce" in p.copied_skills else "chưa có"))
+			var copies: Array = p.copied_skills.map(func(sk): return str(world.COPY_NAMES.get(sk, sk)))
+			lines.append("Đã sao chép: %s." % (", ".join(copies) if not copies.is_empty() else "chưa có"))
+			# DT-03/17/18/19: giới hạn, Túi Tang Vật, Đà Cướp, Sổ Đạo Tặc.
+			lines.append("Điểm cướp: %d/%d (giới hạn = cấp Thiên phú %d × cấp nhân vật %d)." % [p.stolen.size(), world.steal_cap(), Ch4.stage_level(p), p.level])
+			var bag: Array = p.steal_bag.map(func(k): return str(Monsters.STAT_NAMES.get(k, str(k).to_upper())))
+			lines.append("Túi Tang Vật: %d/%d%s — lên cấp sẽ tự cộng vào nhân vật." % [p.steal_bag.size(), world.STEAL_BAG_MAX, (" (" + ", ".join(bag) + ")") if not bag.is_empty() else ""])
+			if not world.steal_buffs.is_empty():
+				var buffs: Array = world.steal_buffs.map(func(b): return "%s %ds" % [Monsters.STAT_NAMES.get(b.stat, str(b.stat).to_upper()), int(ceil(float(b.left)))])
+				lines.append("Đà Cướp (+%d%% mỗi tầng): %s." % [int(world.STEAL_BUFF_PCT * 100), ", ".join(buffs)])
+			var kinds: Array = p.steal_log.keys()
+			kinds.sort_custom(func(a, b): return int(p.steal_log[a]) > int(p.steal_log[b]))
+			var entries: Array = kinds.map(func(k): return "%s %d/%d" % [Monsters.DEFS.get(k, {}).get("name", k), int(p.steal_log[k]), world.steal_species_cap(k)])
+			# UI-28c: chỉ hiện 6 loài cướp nhiều nhất để cột không dài quá trang
+			var shown: Array = entries.slice(0, 6)
+			lines.append("Sổ Đạo Tặc — đã cướp %d/%d loài: %s%s." % [kinds.size(), world.steal_species_total(), ", ".join(shown) if not shown.is_empty() else "chưa có", " …" if entries.size() > 6 else ""])
 		"long-mach":
 			var state := "đã xây" if Explore.is_built(p, "dragon") else "chưa xây — xây ở Bản đồ khai phá"
 			lines.append("Long Mạch Đàn: %s." % state)
 		"thao-duoc", "hap-huyet":
 			lines.append("Bình máu: %d · Thảo dược: %d." % [p.potions, p.herbs])
 	for line in lines:
-		content.add_child(UiTheme.label(line, "Muted", W))
+		var l := UiTheme.label(line, "Small", W)
+		l.add_theme_color_override("font_color", UiTheme.MUTED)
+		content.add_child(l)

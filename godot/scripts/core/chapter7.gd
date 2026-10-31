@@ -14,7 +14,7 @@ const Ch4 = preload("res://scripts/core/chapter4.gd")
 const MAPS := ["7-1", "7-2", "7-3"]
 const NPCS := ["van-hac", "phong-linh", "tuyet-nga-7"]
 const HOOKS := ["on_load", "tick", "check_quest", "after_spawn", "on_kill", "update_enemy", "chase", "perform", "elite_skill",
-	"update_rare", "adjust_damage", "dodge_hit", "derive_bonus", "move_mult", "heal_mult", "input_filter", "drink", "copy_skill",
+	"update_rare", "boss_phase_two", "adjust_damage", "dodge_hit", "derive_bonus", "move_mult", "heal_mult", "input_filter", "drink", "copy_skill",
 	"after_slash", "after_shot", "enemy_avoid", "vanish", "map_requirement", "gate_open", "env_text", "env_alert", "quest_hud", "talk"]
 
 # ---------------------------------------------------------------- C7-10…16: đảo bay
@@ -84,6 +84,9 @@ const HAMMER_WINDUP := 1.2
 const HAMMER_R := 120.0
 const HAMMER_MUL := 3.0
 const HAMMER_HITS := 3
+## Chuyển giai đoạn (60%, 20%): ấn Hư Vô rạn — Cự Thần gào thét 4 giây, không nhận và không gây sát thương.
+## Thời lượng cố định cộng như nhau cho mọi lớp (bài học chương 6: chuyển cảnh trung lập), thu hẹp chênh lệch giữa các lớp.
+const PHASE_INTRO := 4.0
 # ---------------------------------------------------------------- C7-33: Kỳ Lân Mây
 const KY_LAP := 3.0
 const KY_RING := 200.0
@@ -158,6 +161,7 @@ class State:
 	var hail_cd := 5.0
 	var hammer_cd := 0.0
 	var hammer_left := 0
+	var intro_t := 0.0
 	## Kỳ Lân: "run" | "stop"
 	var ky_mode := "run"
 	var ky_angle := 0.0
@@ -312,6 +316,7 @@ static func on_load(w) -> void:
 	st.cracks = []
 	st.broken = [false, false, false, false]
 	st.sector_warn = -1
+	st.intro_t = 0.0
 	st.shield_until = {}
 	st.pillar_t = {}
 	st.crumble = []
@@ -336,7 +341,8 @@ static func on_load(w) -> void:
 				continue
 			var lv: int = int(m.levels[0]) + 1
 			var a = w.spawn_enemy("neo-hu-vo", lv, va[i], {"role": "anchor"})
-			a.max_hp = 20.0 * lv * 40.0
+			# "thanh máu ≈ 20 đòn": 7 × HP quái thường loại Lì cùng cấp (quái thường ≈ 3 đòn)
+			a.max_hp = float(w.Formulas.mob_stats(lv, "thuong", "li").hp) * 7.0
 			a.hp = a.max_hp
 			a.nest_tile_id = -1
 			a.home = va[i]
@@ -692,9 +698,11 @@ static func vanish(w, e) -> bool:
 	return false
 
 
-static func adjust_damage(w, e, dmg: int, by_player: bool) -> int:
-	if not by_player:
-		return dmg
+## Chặn mọi nguồn sát thương (đòn, bẫy, Mưa Tên, đồng minh): chuyển cảnh Cự Thần, Khiên trời, Kỳ Lân đang chạy.
+static func adjust_damage(w, e, dmg: int, _by_player: bool) -> int:
+	if e.kind == "cu-than" and w.ch7.intro_t > 0.0:
+		_miss(w, e, "Miễn sát thương")
+		return 0
 	if float(w.ch7.shield_until.get(e.id, -1.0)) > w.time:
 		_miss(w, e, "Khiên trời")
 		return 0
@@ -718,15 +726,24 @@ static func _boss(w):
 	return b if b != null and b.kind == "cu-than" else null
 
 
+## Cự Thần tự quản giai đoạn (60% / 20%) — không dùng giai đoạn 2 chung ở 50% của GameWorld.
+static func boss_phase_two(_w, e) -> bool:
+	return e.kind == "cu-than"
+
+
 static func update_enemy(w, e, dt: float) -> bool:
 	if e.kind != "cu-than" or e.state == "stunned" or e.dead:
 		return false
 	var st = w.ch7
 	var p = w.player
+	_phase(w, e)
+	if st.intro_t > 0.0:
+		e.state = "chase"
+		st.hammer_left = 0
+		return true
 	st.slam_cd -= dt
 	st.hail_cd -= dt
 	st.hammer_cd -= dt
-	_phase(w, e)
 	if e.state == "windup":
 		e.timer -= dt
 		if e.timer <= 0.0:
@@ -777,10 +794,14 @@ static func _phase(w, e) -> void:
 		e.phase = 2
 		st.sector_t = 0.0
 		st.sector_mark = e.hp
+		st.intro_t = PHASE_INTRO
+		w._text(e.pos + Vector2(0, -80), "Ấn Hư Vô rạn nứt!", Color("#b46bff"), true)
 		w._message("Đảo vỡ dần! Vành ngoài sẽ sụp từng cung — đứng gần tâm.", "bad")
 	elif e.phase == 2 and e.hp <= e.max_hp * 0.2:
 		e.phase = 3
 		st.hammer_cd = 1.5
+		st.intro_t = PHASE_INTRO
+		w._text(e.pos + Vector2(0, -80), "Ấn Hư Vô vỡ toác!", Color("#b46bff"), true)
 		w._message("Thiên chuỳ! Cự Thần nện 3 lần vòng 12 m — chạy ra xa.", "bad")
 
 
@@ -810,7 +831,15 @@ static func _tick_boss(w, dt: float) -> void:
 		st.broken = [false, false, false, false]
 		st.sector_warn = -1
 		return
-	if b.phase != 2 or not (false in st.broken):
+	# đổi giai đoạn cả khi đang choáng; chuyển cảnh đếm theo đồng hồ thật (không đứng yên khi boss choáng)
+	# và không cho choáng trong lúc chuyển cảnh — nếu không, lớp hay Phá Thế (Hộ Vệ) bị kéo dài chuyển cảnh
+	_phase(w, b)
+	if st.intro_t > 0.0:
+		st.intro_t -= dt
+		if b.state == "stunned":
+			b.state = "chase"
+			b.broken = false
+	if b.phase != 2 or not (false in st.broken) or st.intro_t > 0.0:
 		return
 	if st.sector_warn >= 0:
 		st.sector_warn_t -= dt
@@ -1174,7 +1203,7 @@ static func map_requirement(w, id: String) -> String:
 	match id:
 		"7-1":
 			var b := region_blockers(w)
-			return "" if b.is_empty() else "Cần: " + " · ".join(b)
+			return "" if b.is_empty() else " · ".join(b)
 		"7-2":
 			return "" if "7-1" in w.profile.unlocked_maps else "Tới Đảo Mây Trôi trước."
 		"7-3":
@@ -1214,6 +1243,8 @@ static func env_text(w) -> String:
 			parts.append("Đảo vụn đang sụp")
 			break
 	var b = _boss(w)
+	if b != null and st.intro_t > 0.0:
+		parts.append("Cự Thần gào thét — ấn Hư Vô rạn (%.1f giây)" % st.intro_t)
 	if b != null and st.sector_warn >= 0:
 		parts.append("VÀNH ĐẢO SẮP VỠ — vào gần tâm!")
 	if int(w.profile.feathers) > 0:

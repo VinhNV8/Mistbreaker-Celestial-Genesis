@@ -9,7 +9,7 @@
 | Kiến trúc | Logic trong `core/chapter7.gd`, gắn qua `core/chapters.gd` (`MODULES += [Ch7]`). Đảo / cầu / điểm lưu khai báo trong `data/maps.gd` (`islands`, `bridges`, `anchors`). Vẽ ở `view/region7_view.gd`, hình ở `tools/art/region7.py`. Lãnh địa cấp 3–5 + Cảng Khí Cầu ở `core/explore.gd` (`BUILDINGS`) |
 | Phân công | Spec: phiên này. Code M10: **phiên game-39** (đã thống nhất 22/10/2026) |
 | Quy trình | Spec (file này) → duyệt → code → test → cập nhật 01/02/03/04/06/07 và mục Kết quả |
-| Trạng thái | ⬜ **Spec — chờ duyệt** (22/10/2026). Điểm cần duyệt: mục 9 (Q76–Q82) |
+| Trạng thái | ✅ **Xong 27/10/2026** (phiên game-39). Q76–Q82 dùng mặc định đề xuất (chủ dự án: "tiếp tục triển khai"). Kết quả: mục 10 |
 
 Ký hiệu: ✅ xong · 🟡 một phần · ⬜ chưa làm.
 
@@ -154,4 +154,27 @@ Smoke mới: `17-region7`, `17b-territory5`, `17c-camp7`, `17d-cu-than`, `18-cha
 
 ## 10. Kết quả
 
-Chưa làm.
+✅ Xong 27/10/2026. Test: C7-T1…T7 ✅, **TL-B7 ✅** (3 lớp × 20 Thiên phú × 2 seed: các lớp chênh **19%**, F/S trong lớp ≤ 9%, **0 lần chết**, rơi 0,00 lần/trận). Smoke: `17-region7`, `17b-territory5`, `17c-camp7`, `17d-cu-than`, `18-chapter7-end`, `18b-talent-evo2`.
+
+| Hạng mục | File |
+| --- | --- |
+| Lãnh địa Trấn / Thành / Hoàng Thành, Cảng Khí Cầu (giá trong `BUILDINGS`, `build_blocker`, `total_owned`, `camp_name`, sản lượng theo `CAMP_BONUS`) | `core/explore.gd`, `ui/map_panel.gd` |
+| 3 map đảo bay (`islands`, `bridges`, `anchors`, `pillars`, `void_anchors`, `crumble`, `solid`) | `data/maps.gd` |
+| Logic chương 7 (đảo bay, rơi, cầu gió, đảo vụn, Lông Vũ Gió, quái, Cự Thần, Kỳ Lân, đồ, nhiệm vụ, tiến hoá lần 2) | `core/chapter7.gd` (gắn `chapters.gd`) |
+| Vẽ trời mây, đảo, cầu, Đá Neo, Trụ Gió, đấu trường, vòng báo, rơi | `view/region7_view.gd` |
+| Hình (AR-62): quái, tinh anh, Cự Thần (builder `colossus`), Kỳ Lân, Neo Hư Vô (`void_pylon`), NPC Vân Hạc / Phong Linh, Đá Neo, Trụ Gió, Bia Đá gốc, 5 trung tâm lãnh địa, nền trời / cẩm thạch / cầu gió, icon Búa Cự Thần / Sừng Kỳ Lân / Lông Vũ Gió | `tools/art/region7.py` |
+| Nhiệm vụ + thoại | `data/story.gd` (`QUESTS7`, `DONE7 = 9`) |
+| Bảng Thiên phú "Tiến hoá 2/2", tên dạng bậc 2 / Đột Phá ở khung nhân vật | `ui/talent_panel.gd`, `ui/hud.gd` |
+| Save v17 | `core/profile.gd` |
+
+**Chỗ lệch so với spec (ghi lại để duyệt):**
+
+| # | Spec | Đã làm | Lý do |
+| --- | --- | --- | --- |
+| L1 | Cự Thần 3 giai đoạn, không có chuyển cảnh | Thêm **chuyển cảnh 4 giây** ở 60% và 20% ("ấn Hư Vô rạn"): Cự Thần không nhận và không gây sát thương | Đo TL-B7: trận chỉ 12–22 giây, chênh lệch sát thương gốc giữa 3 lớp lộ hết (30–32%, vượt 25%); tắt Mưa đá / Đấm đất / cho boss đứng yên không đổi kết quả. Chuyển cảnh thời lượng cố định cộng như nhau cho mọi lớp (cách chương 6 làm) → 19%. Bộ đếm chuyển cảnh chạy theo đồng hồ thật và Cự Thần không bị choáng trong lúc chuyển cảnh (nếu không, lớp hay Phá Thế như Hộ Vệ bị kéo dài chuyển cảnh 13–18 giây). Đo thử với 5 lớp (có Hộ Vệ, Triệu Hồi Sư — nhánh của phiên game-c6): chênh 21% |
+| L2 | Hitbox theo 06 | Bán kính Cự Thần 40 → **56** | Khớp hình vẽ (×2,3); lớp cận chiến đánh trúng khi né vòng báo |
+| L3 | Neo Hư Vô "thanh máu = 20 × cấp" | **≈ 20 đòn** = 7 × HP quái thường loại Lì cùng cấp | 20 × cấp (≈ 1.600) chết trong 1 đòn ở cấp 80 |
+| L4 | TL-B7 "tiến hoá 1 lần Lv10" | Bot dùng `talent_level = 10` như TL-B5/B6 | Cấp hiệu dụng 19 làm trận chỉ còn 12–18 giây; giữ cùng quy ước với các chương trước để so sánh được |
+| L5 | Cửa sổ / khiên chặn đòn của người chơi | Chuyển cảnh Cự Thần, Khiên trời, Kỳ Lân đang chạy chặn **mọi nguồn** sát thương (cả bẫy, Mưa Tên, đồng minh) | Bẫy / Mưa Tên gây sát thương với `by_player = false` nên lọt qua nếu chỉ chặn đòn tay |
+| L6 | — | Cự Thần khai báo hook `boss_phase_two` | Không có hook này GameWorld áp giai đoạn 2 chung ở 50% (gọi sói của Sói Chúa) |
+

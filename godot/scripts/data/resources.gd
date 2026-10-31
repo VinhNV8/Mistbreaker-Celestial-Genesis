@@ -24,6 +24,8 @@ const LIST := [
 		"desc": "Mỏ Tinh Thạch ở vùng 5 sản xuất. Cần 30 để chuyển chức 2; Kim Phú / Tiểu Hoả đổi 5 Tinh Thạch → 1 Tinh Kim."},
 	{"id": "potions", "icon": "potion", "name": "Bình máu",
 		"desc": "Phím Q hồi 35% HP, hồi chiêu 8 giây, mang tối đa 5. Mua ở cửa hàng làng (phím E)."},
+	{"id": "mp_potions", "icon": "mp_potion", "name": "Bình MP",
+		"desc": "Phím F hồi 40% MP, hồi chiêu 8 giây, không giới hạn số bình. Mua ở cửa hàng làng; rơi từ quái (3%), tinh anh (25%), boss."},
 ]
 
 

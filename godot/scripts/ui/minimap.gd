@@ -127,6 +127,13 @@ func _draw() -> void:
 		var pcol: Color = {"next": Color("#ffc940"), "back": Color("#6fb6ff"), "cave": Color("#e08a3c"), "exit": Color("#7fe0c0")}.get(pt.kind, Color("#b46bff"))
 		draw_circle(pc, 3.5, Color(0, 0, 0, 0.7))
 		draw_circle(pc, 2.5, pcol)
+	# SN9-06: bãi quái — vòng mờ + số cấp (chỉ bãi đã khám phá)
+	for c in w.camps:
+		if not w.fog.is_open_at(c.pos):
+			continue
+		var cc := _to_map(c.pos, rect)
+		draw_arc(cc, maxf(4.0, float(c.r) * k), 0.0, TAU, 16, Color(0.95, 0.55, 0.4, 0.55), 1.0, true)
+		draw_string(UiTheme.font(), cc + Vector2(-8, 4), str(int(c.level)), HORIZONTAL_ALIGNMENT_CENTER, 16, 9, Color(1, 0.85, 0.7, 0.9))
 	# NPC
 	for npc in w.npcs():
 		draw_circle(_to_map(npc.pos, rect), 2.5, UiTheme.GOLD)

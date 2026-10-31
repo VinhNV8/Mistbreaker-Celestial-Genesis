@@ -36,12 +36,17 @@ func gift_used() -> bool:
 
 
 ## CR-02: lượt quay thêm từ gift code — không tốn lượt quay lại (GC-02).
-func gift_roll(serial := "") -> Dictionary:
+## talent_id khác rỗng (GC-09, mã có tiền tố Thiên phú) thì ra đúng Thiên phú đó.
+func gift_roll(serial := "", talent_id := "") -> Dictionary:
 	if gift_used():
 		return {}
-	var min_rank := Talents.rank_index(GIFT_MIN_RANK)
-	var pool := _pool.filter(func(t): return Talents.rank_index(t.rank) >= min_rank)
-	var talent: Dictionary = RngUtil.pick_weighted(pool, func(t): return Talents.roll_weight(t), _rng)
+	var talent: Dictionary
+	if talent_id != "":
+		talent = Talents.get_talent(talent_id)
+	else:
+		var min_rank := Talents.rank_index(GIFT_MIN_RANK)
+		var pool := _pool.filter(func(t): return Talents.rank_index(t.rank) >= min_rank)
+		talent = RngUtil.pick_weighted(pool, func(t): return Talents.roll_weight(t), _rng)
 	rolls.append(talent)
 	gift_index = rolls.size() - 1
 	gift_serial = serial

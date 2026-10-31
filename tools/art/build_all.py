@@ -23,6 +23,7 @@ from builders import BUILDERS  # noqa: E402
 from catalog import SPRITES, FPS, LOOP  # noqa: E402
 import icons  # noqa: E402
 import env  # noqa: E402
+import class_sheet  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(HERE))
 ASSETS = os.path.join(ROOT, "godot", "assets")
@@ -55,6 +56,11 @@ def build_sprites(only):
         out[sid] = {"path": path, "w": fw, "h": fh, "origin": [fw // 2, round(fh * 29.5 / 32)], "anims": anims, "name": d["name"],
                     "size_mul": d.get("size_mul", 1.0)}
         previews.append((d["name"], img))
+    # AR-44: nhân vật 5 lớp cắt từ sprite sheet người dùng cung cấp (tools/art/src/class-sheet.png)
+    for sid, (img, meta) in class_sheet.build().items():
+        path = _save(img, "sprites", sid + ".png") if not only or sid in only else "res://assets/sprites/%s.png" % sid
+        out[sid] = dict({"path": path}, **meta)
+        previews.append((meta["name"], img))
     return out, previews
 
 
@@ -91,6 +97,9 @@ def main():
     contact("icons", list(icon_imgs.items()), scale=3, cols=10)
     env_imgs = env.build_all()
     for eid, (img, origin) in env_imgs.items():
+        manifest["env"][eid] = {"path": _save(img, "env", eid + ".png"), "w": img.width, "h": img.height, "origin": origin}
+    env_imgs.update(class_sheet.fx())  # AR-44: hiệu ứng kỹ năng cắt từ sprite sheet 5 lớp
+    for eid, (img, origin) in class_sheet.fx().items():
         manifest["env"][eid] = {"path": _save(img, "env", eid + ".png"), "w": img.width, "h": img.height, "origin": origin}
     contact("env", [(k, v[0]) for k, v in env_imgs.items()], scale=3, cols=8)
     with open(os.path.join(ASSETS, "art_manifest.json"), "w", encoding="utf-8", newline=chr(10)) as f:

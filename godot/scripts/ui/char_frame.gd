@@ -98,7 +98,24 @@ func _draw_name_plate() -> void:
 		draw_arc(base + Vector2(side * 6.0, -6.0), 5.0, PI * 0.5, PI * 1.5 if side < 0 else -PI * 0.5, 8, GOLD, 1.5, true)
 		draw_arc(base + Vector2(side * 6.0, 6.0), 5.0, -PI * 0.5, PI * 0.5 if side > 0 else -PI * 1.5, 8, GOLD, 1.5, true)
 	_gem(Vector2(W / 2.0, cy - hh - 1.0), 6.0)
-	_text(str(data.name), Vector2(x0 + 12, cy), x1 - x0 - 24, 19, GOLD_LIGHT, true)
+	# SN9-01 (Spec_Notes đợt 9): "Tên · Chức nghiệp" một dòng, tên vàng + chức tím nhạt, tự thu cỡ chữ.
+	var title := str(data.get("title", ""))
+	if title == "":
+		_text(str(data.name), Vector2(x0 + 12, cy), x1 - x0 - 24, 19, GOLD_LIGHT, true)
+		return
+	var f := UiTheme.bold_font()
+	var nm := str(data.name)
+	var tt := " · " + title
+	var width := x1 - x0 - 24
+	var fsz := UiTheme.fs(17)
+	while fsz > 9 and f.get_string_size(nm + tt, HORIZONTAL_ALIGNMENT_LEFT, -1, fsz).x > width * 0.94:
+		fsz -= 1
+	var w_nm := f.get_string_size(nm, HORIZONTAL_ALIGNMENT_LEFT, -1, fsz).x
+	var w_all := f.get_string_size(nm + tt, HORIZONTAL_ALIGNMENT_LEFT, -1, fsz).x
+	var base := Vector2(W / 2.0 - w_all / 2.0, cy + (f.get_ascent(fsz) - f.get_descent(fsz)) * 0.5)
+	for part in [[nm, base, GOLD_LIGHT], [tt, base + Vector2(w_nm, 0), Color("#d8c4ff")]]:
+		draw_string_outline(f, part[1], part[0], HORIZONTAL_ALIGNMENT_LEFT, -1, fsz, 3, Color(0, 0, 0, 0.85))
+		draw_string(f, part[1], part[0], HORIZONTAL_ALIGNMENT_LEFT, -1, fsz, part[2])
 
 
 func _draw_portrait() -> void:

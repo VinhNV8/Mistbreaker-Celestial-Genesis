@@ -1126,7 +1126,8 @@ static func advance(w) -> void:
 			w._events.append({"type": "chapter_end", "chapter": 5})
 
 
-## Bấm E. Trả về "shop" (mở cửa hàng), "job2" (mở bảng chọn nhánh chuyển chức 2) hoặc "".
+## Bấm E. Trả về "shop" (mở cửa hàng), "job2" (mở bảng chọn nhánh chuyển chức 2), "job3" (bảng chuyển chức 3,
+## J3 bản tạm Q140 — docs/23) hoặc "".
 static func talk(w, npc_id: String) -> String:
 	ensure(w)
 	var step := int(w.profile.quest.ch5)
@@ -1152,6 +1153,13 @@ static func talk(w, npc_id: String) -> String:
 			if can_job2(w) == "":
 				w._force_say("liet_job")
 				return "job2"
+			# J3: sau chức 2, từ cấp 90 Liệt Diễm mở bảng chuyển chức 3 (thiếu điều kiện thì bảng ghi lý do).
+			# M11 (C8-45): có chương 8 thì Liệt Diễm chỉ đường tới 5 Tổ Sư ở Cổng Phá Vây.
+			if job2(w) != "" and str(w.profile.job3) == "" and int(w.profile.level) >= Classes.JOB3_LEVEL:
+				if Classes.JOB3_NEED_CH8:
+					w._force_say("liet_job3_ch8")
+					return ""
+				return "job3"
 			w._force_say("liet_wait" if job2(w) == "" else "ch5_done")
 			return ""
 	return ""
@@ -1235,7 +1243,7 @@ static func quest_hud(w) -> Dictionary:
 				[("Thưởng: " + rt) if rt != "" else "", "muted"]]}
 	if int(w.profile.quest.ch5) >= Story.DONE5:
 		return {"done": true, "title": "CHƯƠNG 5 · HOÀN THÀNH ✓",
-			"lines": [["Chức: %s" % Classes.title(str(w.profile.class_id), str(w.profile.job), str(w.profile.job2)), "text"],
+			"lines": [["Chức: %s" % Classes.title(str(w.profile.class_id), str(w.profile.job), str(w.profile.job2), str(w.profile.job3)), "text"],
 				["Săn boss hiếm Phượng Hoàng Tro ở Miệng Núi Lửa — 2 lần mỗi ngày", "muted"],
 				["Chương 6: Băng Nguyên Bắc Cực — sắp mở", "muted"]]}
 	return {}

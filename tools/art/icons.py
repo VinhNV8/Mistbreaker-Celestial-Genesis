@@ -187,6 +187,16 @@ def g_potion(cv):
     cv.line(10, 14, 12, 12, (255, 255, 255, 180))
 
 
+def g_mp_potion(cv):
+    """SN10-02: bình MP — cùng dáng bình máu, nước xanh lam."""
+    cv.rect(13, 3, 19, 7, R["wood"][2])
+    cv.shade_poly([(13, 7), (19, 7), (19, 12), (25, 18), (25, 26), (21, 29), (11, 29), (7, 26), (7, 18), (13, 12)], [hexc("#9aa8c0", 255)] * 4)
+    cv.shade_poly([(8, 19), (24, 19), (24, 26), (21, 28), (11, 28), (8, 26)], R["crystal"])
+    cv.set(10, 20, (255, 255, 255, 255))
+    cv.line(10, 14, 12, 12, (255, 255, 255, 180))
+    cv.ellipse(19, 23, 1.2, 1.2, (220, 240, 255, 230))
+
+
 # ====================================================================== kỹ năng
 def _skill_bg(cv, hex_bg):
     cv.shade_poly([(2, 4), (4, 2), (28, 2), (30, 4), (30, 28), (28, 30), (4, 30), (2, 28)],
@@ -221,6 +231,13 @@ def g_skill_potion(cv):
     _skill_bg(cv, "#4a2430")
     tmp = _new()
     g_potion(tmp)
+    cv.paste(tmp, 0, 0)
+
+
+def g_skill_mp_potion(cv):
+    _skill_bg(cv, "#24304a")
+    tmp = _new()
+    g_mp_potion(tmp)
     cv.paste(tmp, 0, 0)
 
 
@@ -466,7 +483,7 @@ ITEMS = {"weapon": g_sword, "helm": g_helm, "armor": g_armor, "gloves": g_gloves
          "necklace": g_necklace, "ring": g_ring, "amulet": g_amulet, "wolf_fang": g_wolf_fang, "lao_thu_bark": g_bark, "huyen_anh_mask": g_huyen_mask,
          "bach_ho_claw": g_tiger_claw, "sa_hoang_tail": g_scorpion_tail, "nhan_su_eye": g_sphinx_eye}
 RESOURCES = {"gold": g_gold, "wood": g_wood, "stone": g_stone, "essence": g_essence, "tinh_kim": g_tinh_kim,
-             "torch": g_torch, "herb": g_herb, "potion": g_potion, "ore": g_ore, "iron": g_iron}
+             "torch": g_torch, "herb": g_herb, "potion": g_potion, "mp_potion": g_mp_potion, "ore": g_ore, "iron": g_iron}
 # ---------------------------------------------------------------------- kỹ năng M3 (03-mvp-spec mục 5.4)
 def _bow(cv, ox=0, oy=0, pull=0.0):
     cv.arc(13 + ox, 16 + oy, 11, math.radians(-75), math.radians(75), R["wood"][2], 2.0)
@@ -604,7 +621,7 @@ def g_skill_barrier(cv):
     cv.set(15, 15, (255, 255, 255, 255))
 
 
-SKILLS = {"slash": g_skill_slash, "spin": g_skill_spin, "dodge": g_skill_dodge, "potion": g_skill_potion,
+SKILLS = {"slash": g_skill_slash, "spin": g_skill_spin, "dodge": g_skill_dodge, "potion": g_skill_potion, "mp_potion": g_skill_mp_potion,
           "shot": g_skill_shot, "dash": g_skill_dash, "wave": g_skill_wave, "guard": g_skill_guard,
           "rain": g_skill_rain, "pierce": g_skill_pierce, "trap": g_skill_trap, "eagle": g_skill_eagle,
           "fireball": g_skill_fireball, "chain": g_skill_chain, "nova": g_skill_nova, "meteor": g_skill_meteor,
@@ -619,8 +636,14 @@ def build_all():
         cv = _new(); fn(cv); out["res-" + k] = _done(cv).to_image()
     for k, fn in SKILLS.items():
         cv = _new(); fn(cv); out["skill-" + k] = _done(cv).to_image()
+    for k, fn in STAT_ICONS.items():
+        cv = _new(); fn(cv); out["stat-" + k] = _done(cv).to_image()
+    out.update(_portraits.build())
     for tid, rank, group, glyph in TALENTS:
         out["talent-" + tid] = talent_icon(glyph, rank, group).to_image()
+    # AR-44: icon kỹ năng 5 lớp cắt từ hình chủ dự án (class_skill_icons.py) — ghi đè icon vẽ bằng code cùng id
+    out.update(_class_skill_icons.build())
+    out.update(_class_sheet.busts())  # AR-44: chân dung bán thân từ sprite sheet 5 lớp
     return out
 
 # M8 (docs/12): icon vùng 5 trong region5.py
@@ -635,6 +658,26 @@ _region6.register_icons(ITEMS, RESOURCES, SKILLS)
 # M10 (chương 7): icon vùng 7 trong region7.py
 import region7 as _region7  # noqa: E402
 _region7.register_icons(ITEMS, RESOURCES, SKILLS)
+# M11 (chương 8): icon vùng 8 trong region8.py
+import region8 as _region8  # noqa: E402
+_region8.register_icons(ITEMS, RESOURCES, SKILLS)
 # SK2 (docs/13): icon 12 kỹ năng mới trong skills2_icons.py
 import skills2_icons as _skills2  # noqa: E402
 _skills2.register(SKILLS)
+# UI-21: icon trang Chỉ số / Nhân vật trong stat_icons.py
+import stat_icons as _stat_icons  # noqa: E402
+STAT_ICONS = {}
+_stat_icons.register(STAT_ICONS)
+# UI-22: chân dung lớn màn chọn lớp trong portraits.py (64×72, không phải icon 32×32)
+import portraits as _portraits  # noqa: E402
+import class_skill_icons as _class_skill_icons  # noqa: E402
+import class_sheet as _class_sheet  # noqa: E402
+# LH1 / LH2 (docs/19): icon kỹ năng Hộ Vệ, Triệu Hồi Sư trong classes45_icons.py
+import classes45_icons as _classes45  # noqa: E402
+_classes45.register(SKILLS)
+# J3 (docs/23): icon Thần Kỹ chuyển chức 3 (viền bạc) trong job3_icons.py
+import job3_icons as _job3_icons  # noqa: E402
+_job3_icons.register(SKILLS)
+# PV (docs/27): icon kỹ năng bị động (viền xanh lục) trong passive_icons.py
+import passive_icons as _passive_icons  # noqa: E402
+_passive_icons.register(SKILLS)

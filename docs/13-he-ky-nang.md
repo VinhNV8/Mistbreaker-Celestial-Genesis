@@ -11,9 +11,9 @@
 
 | Lớp | Đánh thường | 4 kỹ năng (phím 1–4) | Chuyển chức 1 (cấp 30) | Chuyển chức 2 (cấp 60, chọn 1/2) |
 | --- | --- | --- | --- | --- |
-| Kiếm Khách | Chém | Xoáy Kiếm · Đột Kích · Kiếm Khí · Thiết Bích | Kiếm Sư (bị động) | Kiếm Thánh / Huyết Kiếm (bị động) |
-| Thợ Săn | Bắn | Mưa Tên · Tên Xuyên Phá · Bẫy Gai · Ưng Nhãn | Xạ Thủ (bị động) | Thần Tiễn / Thợ Bẫy (bị động) |
-| Pháp Sư | Hỏa Cầu | Lôi Xích · Băng Ngục · Thiên Thạch · Pháp Thuẫn | Pháp Sư Nguyên Tố (bị động) | Đại Pháp Sư / Tử Linh Sư (bị động) |
+| Kiếm Khách | Chém | Xoáy Kiếm · Đột Kích · Trảm Phong · Kiếm Ý *(CL1)* | Kiếm Sư (bị động) | Kiếm Thánh / Huyết Kiếm (bị động) |
+| Thợ Săn | Bắn | Vũ Tiễn · Xuyên Tâm Tiễn · Lộn Nhào · Ưng Nhãn *(CL1)* | Xạ Thủ (bị động) | Thần Tiễn / Thợ Bẫy (bị động) |
+| Pháp Sư | Hỏa Cầu | Sét Chuỗi · Băng Lao · Thiên Thạch · Pháp Thuẫn *(CL1)* | Pháp Sư Nguyên Tố (bị động) | Đại Pháp Sư / Tử Linh Sư (bị động) |
 
 Ngoài ra: 1 kỹ năng Thiên phú (phím L, 20 Thiên phú — khác nhau mạnh) và Đạo Tặc sao chép kỹ năng boss (5 kỹ năng).
 
@@ -56,11 +56,13 @@ Mỗi lớp **12 kỹ năng chủ động**, vẫn lắp **4 ô** (phím 1–4) 
 
 | Mốc | Kiếm Khách | Thợ Săn | Pháp Sư |
 | --- | --- | --- | --- |
-| Cấp 1 | Xoáy Kiếm, Đột Kích | Mưa Tên, Tên Xuyên Phá | Lôi Xích, Băng Ngục |
-| Cấp 4 | Kiếm Khí | Bẫy Gai | Thiên Thạch |
-| Cấp 8 | Thiết Bích | Ưng Nhãn | Pháp Thuẫn |
-| Cấp 15 | *Liên Trảm* (3 nhát liên tiếp) | *Tên Nảy* (nảy giữa 4 quái) | *Hoả Tường* (tường lửa chắn đường) |
-| Cấp 22 | *Hống Kiếm* (gầm khiêu khích, giảm Tấn công quái) | *Lăn Bắn* (né lăn kèm 3 mũi tên) | *Dịch Chuyển* (blink 15 m) |
+| Cấp 1 | Xoáy Kiếm, Đột Kích | Vũ Tiễn, Xuyên Tâm Tiễn | Sét Chuỗi, Băng Lao |
+| Cấp 4 | Trảm Phong | Lộn Nhào | Thiên Thạch |
+| Cấp 8 | Kiếm Ý | Ưng Nhãn | Pháp Thuẫn |
+| Cấp 15 | *Nguyệt Ảnh Liên Trảm* (lướt tới quái rồi 3 nhát) | *Tên Nảy* (nảy giữa 4 quái) | *Hoả Tường* (tường lửa chắn đường) |
+| Cấp 22 | *Hống Kiếm* (gầm khiêu khích, giảm Tấn công quái) | *Bẫy Gai* (đổi chỗ với Lộn Nhào) | *Băng Ngục* (nổ băng trói quái, thay Dịch Chuyển) |
+
+> **CL1 (27/10/2026, [docs/21](21-thiet-ke-lai-5-lop.md)):** theo [charactors.md](charactors.md), 4 kỹ năng chính mỗi lớp đổi tên / chỉnh số / thay cơ chế — Kiếm Khí → **Trảm Phong** (CD 4 s, ×1,6), Thiết Bích → **Kiếm Ý** (`kiemy`: 8 s +20% chí mạng, +15% tốc đánh), Liên Trảm → **Nguyệt Ảnh Liên Trảm** (lướt 15 m, 3 nhát ×1,15, CD 10 s), Vạn Kiếm Quy Tông 12 × 0,67 = 800%; Mưa Tên → **Vũ Tiễn** (×0,5), Tên Xuyên Phá → **Xuyên Tâm Tiễn** (xuyên 3 quái, ×1,8, CD 5 s), Lăn Bắn → **Lộn Nhào** (mở cấp 4, +50% né tránh 3 s, trần 60%), Bẫy Gai xuống cấp 22; Lôi Xích → **Sét Chuỗi** (×1,2, CD 5 s), **Băng Lao** mới (`banglao`, cấp 1: mũi băng xuyên 40 m ×1,5, làm chậm 3 s) thay Băng Ngục, Băng Ngục xuống cấp 22 thay Dịch Chuyển, Thiên Hoả Phần Thế → **Thiên Tai Nguyên Tố** (lửa ×4,0 → băng ×3,0 làm chậm → sét nảy 5 quái ×3,0). Các bảng chi tiết bên dưới còn ghi số cũ của SK1–SK3; số đang dùng nằm ở `godot/scripts/data/classes.gd` và docs/21 mục 10.
 | Chuyển chức 1 (30) | +2 kỹ năng của chức: *Kiếm Vũ* (đứng xoáy giữ phím), *Phi Kiếm* | *Liên Xạ* (bắn giữ phím), *Tên Độc* | *Mưa Băng*, *Cầu Sấm* |
 | Cấp 45 | 1 kỹ năng tối thượng mỗi lớp (hồi 60 giây) | | |
 | Chuyển chức 2 (60) | +2 kỹ năng **riêng từng nhánh** (ví dụ Huyết Kiếm: *Huyết Bạo*; Thợ Bẫy: *Bãi Mìn*; Tử Linh Sư: *Triệu Hồi Xương*) | | |
@@ -142,7 +144,7 @@ Biến thể tầng II của mọi kỹ năng sát thương là **một trong 5 
 | Điểm Kỹ Năng | +1 mỗi lần lên cấp (tách khỏi điểm tiềm năng, Q67). Save cũ được bù `cấp − 1` điểm |
 | Cấp kỹ năng 1–10 | Kỹ năng sát thương ×(1 + 8% × (cấp − 1)) → cấp 10 ×1,72; kỹ năng hỗ trợ (Thiết Bích, Ưng Nhãn, Pháp Thuẫn) hồi chiêu −4%/cấp → cấp 10 −36% |
 | 4 ô lắp | `profile.loadout` (id kỹ năng), phím 1–4 theo ô; `GameWorld.slot_skill(i)` thay mọi chỗ đọc kỹ năng theo vị trí. Đổi ô (2 ô đổi chỗ, hồi chiêu đi theo kỹ năng) và **tẩy điểm miễn phí chỉ ở vùng an toàn** |
-| Giao diện | Bảng **Kỹ năng — phím U** (`ui/skill_panel.gd`; phím K đã là kỹ năng 1 khi chơi bàn phím, Q29): cấp, mô tả, +1 cấp, nút ô 1–4, Tẩy điểm. Thanh kỹ năng ghi cấp kỹ năng (ví dụ "Xoáy Kiếm 5"). Màn chọn lớp ghi cấp mở |
+| Giao diện | Bảng **Kỹ năng — phím U** (`ui/skill_panel.gd`; phím K đã là kỹ năng 1 khi chơi bàn phím, Q29): cấp, mô tả, +1 cấp, nút ô 1–4, Tẩy điểm. Từ UI-23 (27/10) bảng dựng kiểu cây kỹ năng + cột chi tiết — xem [03 UI-23](03-mvp-spec.md). Thanh kỹ năng ghi cấp kỹ năng (ví dụ "Xoáy Kiếm 5"). Màn chọn lớp ghi cấp mở |
 | Save | v13: `skill_points`, `skill_levels`, `loadout` (v12 dành cho M9 chương 6) |
 | Cân bằng | TL-B…TL-B5 không đổi: bot dùng kỹ năng cấp 1 (Điểm Kỹ Năng chưa dùng), các boss ở cấp ≥ 5. Ở TL-B (cấp 5) kỹ năng 4 (hỗ trợ) bị khoá — không ảnh hưởng thời gian. Khi SK2 có thêm kỹ năng, cần build mẫu cho từng lớp trong TL-B |
 | Kiểm thử | SK1-T1 (mốc mở, khoá), SK1-T2 (điểm, +8%, −4%, tẩy ở vùng an toàn), SK1-T3 (đổi ô, phím theo ô, save v13 + bù điểm). Sửa CL-T3, SN-T2 (đặt cấp 8), C1-T4 (dùng 2 kỹ năng cấp 1) |
@@ -229,3 +231,20 @@ Mọi nhánh trong ±15% bộ mặc định, 0 lần chết. Thần Tiễn nhanh
 - [Maxroll — Torchlight Infinite skill system](https://maxroll.gg/torchlight-infinite/getting-started/skill-system-overview) · [Steam — Torchlight Infinite support skill drops](https://steamcommunity.com/app/1974050/discussions/0/4634860616374295237)
 - [PoE Vault — PoE2 gems guide](https://www.poe-vault.com/poe2/guides/gems-guide) · [Prima Games — leveling gems in PoE2](https://primagames.com/tips/how-to-level-skill-and-support-gems-in-path-of-exile-2)
 - [TheGamer — Lost Ark Tripods](https://www.thegamer.com/lost-ark-tripod-skill-upgrades-explained/) · [Mobalytics — Lost Ark skill points](https://mobalytics.gg/blog/lost-ark/lostark-how-to-get-skill-points-in-lost-ark-lost-ark-skill-point-guide/) · [GameSpot — Lost Ark skill point potions](https://gamespot.com/articles/lost-ark-skill-points-easy-ways-to-earn-skill-point-potions/1100-6501010/)
+
+## 10. Thần Kỹ — chuyển chức 3 (J3, 27/10/2026)
+
+Mỗi lớp có thêm 1 **Thần Kỹ** mở khi chuyển chức 3 (cấp 90), chi tiết ở [23](23-chuyen-chuc-3-linh-thu-co-mau.md) mục 3. Thần Kỹ dùng chung khung của mục này:
+
+- `"unlock": 90, "job3": true` trong `classes.gd`; `skill_unlocked` khoá khi `profile.job3 == ""`.
+- Lắp vào 4 ô như kỹ năng thường (không có ô thứ 5 — Q87). Có cấp kỹ năng 1–10, biến thể 3 tầng (bảng gây sát thương) và Bí Kíp. Bí Kíp của Thần Kỹ chỉ rơi khi đã chuyển chức 3.
+- Bảng Kỹ năng có tab **"Chức 3"**; chưa chuyển thì ghi *"Chuyển chức 3 ở cấp 90"*. Icon viền bạc.
+- Hồi chiêu 30 giây, tốn 40 MP.
+
+## 11. Kỹ năng bị động (PV, 30/10/2026)
+
+Mỗi lớp thêm **4 kỹ năng bị động** (cấp mở 10 / 20 / 35 / 50, cấp 0–5, nâng bằng Điểm Kỹ Năng chung, luôn có tác dụng, không chiếm ô). Bảng Kỹ năng có tab **Bị động**, gồm cả bị động sẵn có (đặc tính lớp, chuyển chức 1/2/3). Chi tiết: [27](27-ky-nang-bi-dong.md).
+
+## 12. Bí Kíp = Điểm Kỹ Năng (BK, 31/10/2026)
+
+Thay phần Bí Kíp của mục 9: nhặt Bí Kíp được **+1 Điểm Kỹ Năng** (nguồn rơi giữ nguyên), biến thể ✦ mở bằng **2 Điểm Kỹ Năng**, bỏ Mảnh Bí Kíp. Chi tiết: [29](29-bi-kip-diem-ky-nang.md).

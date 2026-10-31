@@ -1,1 +1,1 @@
-Nhân vật: Hiển thị Tên nhân vật + Chức nghiệp hiện tại. Ví dụ: Anh Vinh Đẹp Zai - Kiếm đồ
+Bình HP đang bị giới hạn 5 Bình, bỏ giới hạn đi giống MP.

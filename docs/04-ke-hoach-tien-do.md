@@ -29,15 +29,15 @@ File này liệt kê **mọi hạng mục trong kịch bản**: trạng thái hi
 | --- | --- | --- | --- | --- | --- |
 | Thế giới quan, cốt truyện (mục 2) | 13 | 7 | 4 | 2 | 0 |
 | Thiên phú (mục 3) | 42 | 29 | 7 | 6 | 0 |
-| Nhân vật, chỉ số (mục 4) | 26 | 20 | 2 | 4 | 0 |
+| Nhân vật, chỉ số (mục 4) | 28 | 24 | 2 | 2 | 0 |
 | Chiến đấu, quái (mục 5) | 23 | 20 | 1 | 1 | 1 |
 | Bản đồ, vượt map (mục 6) | 13 | 10 | 1 | 2 | 0 |
-| Khai phá, lãnh địa (mục 7) | 22 | 15 | 2 | 5 | 0 |
+| Khai phá, lãnh địa (mục 7) | 22 | 17 | 2 | 3 | 0 |
 | Trang bị, kinh tế (mục 8) | 17 | 14 | 1 | 1 | 1 |
 | 30 phút đầu (mục 9) | 9 | 9 | 0 | 0 | 0 |
 | Đồ hoạ, âm thanh | 13 | 13 | 0 | 0 | 0 |
 | Kỹ thuật, phát hành | 10 | 5 | 2 | 3 | 0 |
-| **Tổng** | **188** | **142** (76%) | **20** (11%) | **24** (13%) | **2** |
+| **Tổng** | **190** | **148** (78%) | **20** (11%) | **20** (11%) | **2** |
 
 ### Các giai đoạn
 
@@ -55,8 +55,8 @@ File này liệt kê **mọi hạng mục trong kịch bản**: trạng thái hi
 | Alpha — M7 | **Chương 4 Đầm Lầy Mộng**: vùng 4 (nước đầm, độc tích luỹ, ảo ảnh), 4 quái + 2 tinh anh, Nữ Vương Phệ Mộng (giấc mơ đảo điều khiển), Thuỷ Quái Thất Đầu, Bộ U Minh, 2 đồ Cam, Mộng Cảnh, Lam Nhi, **tiến hoá Thiên phú lần 1**; bộ điều phối chương `core/chapters.gd` — [11](11-chuong-4.md) | ✅ Xong 21/10/2026 (phiên game-bc) |
 | Alpha — M8 | **Chương 5 Núi Lửa Phẫn Nộ**: vùng 5 Núi Viêm Long (dung nham, núi lửa phun, nhiệt), 4 quái + 2 tinh anh, Viêm Long (dung nham dâng theo lượt, đá nổi), Phượng Hoàng Tro (Niết bàn), Bộ Hoả Ngục, Long Tâm, Lông Phượng, Long Tức, Thương hội Kim Luân phản bội + Công Trại (chiến tranh lãnh địa), Tinh Thạch, chuyển chức 2 (6 nhánh) — [12](12-chuong-5.md) | ✅ Xong 21/10/2026 (phiên game-c6) |
 | Beta — M9 | **Chương 6 Băng Nguyên Vĩnh Dạ**: vùng 6 Băng Nguyên Bắc Cực (băng giá tích tầng → đông cứng, đêm dài, mặt băng trơn, lửa trại, Than Hồng), 4 quái + 2 tinh anh, Bản Ngã Bóng Tối (sao chép kỹ năng người chơi, Gương vỡ, Thiên phú phản chiếu), Long Băng Bắc Cực, Bộ Cực Quang, Gương Bản Ngã, Vảy Long Băng, Kính Ảnh, Đèn Cực Quang, **Ám Khí — mất kiểm soát**, sự thật về thân phận — [14](14-chuong-6.md) | ✅ Xong 21/10/2026 (phiên game-bc) |
-| Beta — M10 | **Chương 7 Thiên Không Đảo**: lãnh địa cấp 3–5 + Cảng Khí Cầu, vùng 7 Quần Đảo Thiên Không (đảo bay, rơi về Đá Neo, cầu gió, đảo vỡ, Lông Vũ Gió), 4 quái + 2 tinh anh, Thiên Không Cự Thần (chiến trường thu nhỏ), Kỳ Lân Mây, Bộ Thiên Phong, Búa Cự Thần, Sừng Kỳ Lân, Thiên Chuỳ, Bia Đá gốc, **tiến hoá Thiên phú lần 2** — [16](16-chuong-7.md) | ⬜ Spec chờ duyệt 22/10/2026; code: phiên game-39 |
-| Beta — M11 | **Chương 8 Vực Hư Vô**: Suy Thiên (Thiên phú yếu dần, Đèn Tinh Quang), không hệ, 4 quái + 2 tinh anh, Giáo Chủ Hư Vô (Hút Thiên phú), Hư Vô Thú, Bộ Tinh Quang, Ấn Hư Vô, Nanh Hư Vô, Hút Thiên Phú, Tổng tấn công Sào Huyệt, **chuyển chức 3** (Thần Kỹ) — [17](17-chuong-8.md) | ⬜ Spec chờ duyệt 22/10/2026 |
+| Beta — M10 | **Chương 7 Thiên Không Đảo**: lãnh địa cấp 3–5 + Cảng Khí Cầu, vùng 7 Quần Đảo Thiên Không (đảo bay, rơi về Đá Neo, cầu gió, đảo vỡ, Lông Vũ Gió), 4 quái + 2 tinh anh, Thiên Không Cự Thần (chiến trường thu nhỏ), Kỳ Lân Mây, Bộ Thiên Phong, Búa Cự Thần, Sừng Kỳ Lân, Thiên Chuỳ, Bia Đá gốc, **tiến hoá Thiên phú lần 2** — [16](16-chuong-7.md) | ✅ Xong 27/10/2026 (phiên game-39) — 7 test C7 + TL-B7 |
+| Beta — M11 | **Chương 8 Vực Hư Vô**: Suy Thiên (Thiên phú yếu dần, Đèn Tinh Quang), không hệ, 4 quái + 2 tinh anh, Giáo Chủ Hư Vô (Hút Thiên phú), Hư Vô Thú, Bộ Tinh Quang, Ấn Hư Vô, Nanh Hư Vô, Hút Thiên Phú, Tổng tấn công Sào Huyệt, **chuyển chức 3** (Thần Kỹ) — [17](17-chuong-8.md) (rà lại 31/10 theo 5 lớp, J3, BK, map ×3) | ✅ Xong 31/10/2026 (phiên game-3f) — 6 test C8 + TL-B8, save v25 |
 | Beta — M12 | **Chương 9 Thiên Đạo Chi Môn**: 9 tầng mỗi tầng một hệ, Ấn Hệ, 4 quái + 2 tinh anh (Thủ Tầng), Ma Tôn Vô Diện (cơ chế 8 boss chương), Thiên Đạo Hư Ảnh, Bộ Thiên Đạo, Mặt Nạ Vô Diện, Vô Diện, **hai kết thúc** Hợp nhất / Hiến tế, endgame tối thiểu (cấp sau 100, Thần Vực, Tái Thiết Lục Địa) — [18](18-chuong-9.md) | ⬜ Spec chờ duyệt 22/10/2026 |
 | MVP — G | Đồ hoạ nhân vật, quái, bản đồ, hiệu ứng, âm thanh cho chương 1–2 | 🟡 G1 (hình chương 1, sinh bằng code) xong 20/10/2026 — [07](07-do-hoa-ke-hoach.md); còn âm thanh, khung giao diện, vùng 2 |
 | Thử nghiệm kín | 50–100 người chơi (kịch bản mục 9) | ⬜ Cần M3–M5 + G |
@@ -78,7 +78,7 @@ File này liệt kê **mọi hạng mục trong kịch bản**: trạng thái hi
 | CT-09 | Chương 1 — Thức Tỉnh | ✅ | C1 | C1-T4 | Đủ gameplay, boss, thoại, cảnh mở đầu, hướng dẫn, kết chương ([08](08-chuong-1-hoan-chinh.md)) |
 | CT-10 | Chương 2 — Thành Biên Đài | ✅ | M4.3 | KP-T2 | 5 bước nhiệm vụ chính, 3 NPC (E), thoại, màn kết chương 2 |
 | CT-11 | Chương 3–5 | ✅ | Alpha | C3-T5, C4-T5, C5-T5 | Chương 3 (M6), chương 4 (M7), chương 5 (M8: Thương hội phản bội, Công Trại, Viêm Long, chuyển chức 2) |
-| CT-12 | Chương 6–9 | 🟡 | M9 / M10–M12 | C6-T5, C6-T6 | Chương 6 (M9): mảnh thứ hai thức giấc (Ám Khí, mất kiểm soát), Bản Ngã Bóng Tối, sự thật về thân phận. Còn chương 7–9 — **spec đã viết, chờ duyệt** (22/10/2026): [16](16-chuong-7.md) chương 7 (M10, phiên game-39 code), [17](17-chuong-8.md) chương 8 (M11), [18](18-chuong-9.md) chương 9 (M12) |
+| CT-12 | Chương 6–9 | 🟡 | M9 / M10–M12 | C6-T5, C6-T6 | Chương 6 (M9): mảnh thứ hai thức giấc (Ám Khí, mất kiểm soát), Bản Ngã Bóng Tối, sự thật về thân phận. Chương 7 (M10, [16](16-chuong-7.md)) **xong 27/10/2026**: Bia Đá gốc, Giáo Chủ Hư Vô lấy mảnh Bia. Chương 8 (M11, [17](17-chuong-8.md)) **xong 31/10/2026**: Tổng tấn công Sào Huyệt, Mạc Tam hối cải, Thiên phú bị nuốt trả về chủ cũ, Ma Tôn gọi mảnh thứ hai. Còn chương 9 — spec rà lại 31/10, [18](18-chuong-9.md) (M12) |
 | CT-13 | Hai kết thúc (Hợp nhất / Hiến tế) | ⬜ | M12 | C9-T7 | Spec [18](18-chuong-9.md) C9-44…47: màn lựa chọn, Thần Vực / Tái Thiết Lục Địa, trục Thiên phú riêng mỗi kết thúc |
 
 ## 3. Hệ thống Thiên phú (kịch bản mục 3)
@@ -98,7 +98,7 @@ Thiết kế chi tiết từng Thiên phú (hiệu ứng Lv1 → Lv10, 2 bậc t
 | TP-09 | Kỹ năng chủ động hạng B, kỹ năng tối thượng hạng S | 🟡 | M2 | TL-D | Kịch bản không ghi kỹ năng cụ thể; spec tự thiết kế, **chờ duyệt Q6** |
 | TP-10 | Luyện cấp Thiên phú Lv 1 → 10 bằng Tinh Hoa | ✅ | M2 | TL-G | |
 | TP-11 | Mỗi 5 cấp mở 1 hiệu ứng phụ | 🟡 | M2 | TL-G | Bảng hiệu ứng phụ theo nhóm do spec đề xuất, **chờ duyệt Q11** |
-| TP-12 | Tiến hoá hạng (ví dụ Tay Nhanh → Phong Ảnh Thủ → Vô Ảnh Kiếm), bắt buộc ở chương 4 và 7 | 🟡 | M7 | C4-T6 | Tiến hoá lần 1 (chương 4): tên + hạng mới, cấp hiệu dụng (D39). Còn hiệu ứng riêng của từng dạng (Q55), tiến hoá lần 2 (chương 7 — spec [16](16-chuong-7.md) C7-43, C7-44: Đột Phá cho Thiên phú hết bậc, M10) |
+| TP-12 | Tiến hoá hạng (ví dụ Tay Nhanh → Phong Ảnh Thủ → Vô Ảnh Kiếm), bắt buộc ở chương 4 và 7 | 🟡 | M7 | C4-T6 | Tiến hoá lần 1 (chương 4): tên + hạng mới, cấp hiệu dụng (D39). Tiến hoá lần 2 (M10, chương 7 bước 7 ở Bia Đá gốc; Thiên phú hết bậc → Đột Phá, C7-43/44, C7-T7) ✅. Còn hiệu ứng riêng của từng dạng (Q55) |
 | TP-13 | Cộng hưởng 2 Thiên phú cùng nhóm | ⬜ | Alpha | — | Cần có Thiên phú phụ (TP-05) trước |
 | TP-14 | Tẩy Thiên phú bằng Nước Thánh Tinh Quang, giữ 50% cấp | ⬜ | Alpha | — | |
 | TP-15 | SSS "độc nhất server" | ⬜ | Beta | DT-10…15 | **Đổi từ ⛔ sang làm** theo yêu cầu 20/10/2026 ([CR-01](03-mvp-spec.md)); cần backend (KT-09, KT-10) |
@@ -127,7 +127,7 @@ Thiết kế chi tiết từng Thiên phú (hiệu ứng Lv1 → Lv10, 2 bậc t
 | TP-37 | Thiên Mệnh Khai Giới | SS | ✅ | |
 | TP-38 | Long Mạch | SS | ✅ | |
 | TP-39 | Đạo Tặc (Ẩn) — sao chép kỹ năng boss | SSS | ✅ | Vồ Mồi (Sói Chúa) + Phân Thân (Huyền Ảnh, M4.2); chọn kỹ năng L trong bảng Thiên phú |
-| TP-40 | Đạo Tặc (Ẩn) — Cướp Thuộc Tính khi hạ quái | SSS | ✅ | M3 ([CR-01](03-mvp-spec.md), DT-01…08, test TP-T3). Code theo mặc định Q13–Q16 — số liệu vẫn chờ duyệt |
+| TP-40 | Đạo Tặc (Ẩn) — Cướp Thuộc Tính khi hạ quái | SSS | ✅ | M3 ([CR-01](03-mvp-spec.md), DT-01…08, test TP-T3). Sửa 2026-10-30: điểm cướp giữ vĩnh viễn, đầy thì không cướp thêm (trước đây thay điểm cũ nhất). Code theo mặc định Q13–Q16 — số liệu vẫn chờ duyệt |
 
 ### 3.2. Bổ sung từ thiết kế chi tiết ([05](05-thien-phu-chi-tiet.md), đã chốt Q17–Q21)
 
@@ -138,7 +138,7 @@ Thiết kế chi tiết từng Thiên phú (hiệu ứng Lv1 → Lv10, 2 bậc t
 | TP-43 | Bảng Thiên phú hiện trước cây tiến hoá (tên, hạng, điều kiện) | ✅ | C1 | Smoke `05d-talent` | **Q20** (C1-14) |
 | TP-44 | Cộng hưởng đặc biệt hiện "???" kèm gợi ý cho tới khi kích hoạt | ⬜ | Alpha | — | **Q21**. Đi cùng TP-13; Thợ Săn Di Tích hiện sẵn |
 | TP-45 | Thông báo toàn server khi có người tiến hoá lên SSS (không giới hạn độc nhất) | ⬜ | Beta | — | **Q19**. Cần backend (KT-09) |
-| TP-46 | **Gift code** ở Lễ Thức Tỉnh: lượt quay thêm chỉ ra hạng A–SSS ([CR-02](03-mvp-spec.md)) | ✅ | C1 | GC-T1, GC-T2 | Bản offline: mỗi mã 1 lần mỗi máy; mỗi mã 1 lần toàn server cần backend (KT-10). Sinh mã: `python tools/giftcode.py` |
+| TP-46 | **Gift code** ở Lễ Thức Tỉnh: lượt quay thêm chỉ ra hạng A–SSS ([CR-02](03-mvp-spec.md)) | ✅ | C1 | GC-T1, GC-T2 | Bản offline: mỗi mã 1 lần mỗi máy; mỗi mã 1 lần toàn server cần backend (KT-10). Sinh mã: `python tools/giftcode.py`. GC-09: mã seri `DT…` → luôn ra Đạo Tặc (`--talent DT`) |
 
 ## 4. Nhân vật, chỉ số và lên cấp (kịch bản mục 4)
 
@@ -147,10 +147,12 @@ Thiết kế chi tiết từng Thiên phú (hiệu ứng Lv1 → Lv10, 2 bậc t
 | NV-01 | Lớp Kiếm Khách | ✅ | Proto | — | Mới có 1 kỹ năng (Xoáy Kiếm), cần đủ 4 (CB-01) |
 | NV-02 | Lớp Thợ Săn | ✅ | M3 | CL-T1, CL-T2 | Bắn tên 45 m, Tấn công từ AGI, HP thấp hơn, né gốc 5%; vũ khí tên Cung. SN-07: AGI của Thợ Săn chỉ +0,6% tốc đánh (lớp khác +1%) để cân bằng vùng 2 |
 | NV-03 | Lớp Pháp Sư | ✅ | SN2 | SN-T1, SN-T2, TL-B, TL-B2 | Hỏa Cầu nổ lan, Lôi Xích, Băng Ngục (trói), Thiên Thạch, Pháp Thuẫn; Tấn công từ INT, HP thấp nhất, MP +30; vũ khí tên Trượng ([09](09-spec-notes-dot-2.md)) |
-| NV-04 | Lớp Hộ Vệ | ⬜ | Alpha | — | |
+| NV-04 | Lớp Hộ Vệ | ✅ | LH1 | HV-T1…T3, TL-B… | [19 mục 2](19-lop-ho-ve-trieu-hoi-su.md): VIT, Khiên −15% sát thương nhận, 13 kỹ năng (CL2), Hiệp Sĩ → Thánh Kỵ Sĩ / Thiết Vệ |
+| NV-04b | Lớp Triệu Hồi Sư (CR-03) | ✅ | LH2 | TH-T1…T3, TL-B… | [19 mục 3](19-lop-ho-ve-trieu-hoi-su.md): INT, linh thú, Linh Sư → Ngự Long Sư / Đồ Đằng Sư |
 | NV-05 | Chọn lớp khi tạo nhân vật | ✅ | M3 | Smoke `02b-class` | Màn hình sau Lễ Thức Tỉnh; không đổi lớp giữa chừng (Q34) |
 | NV-06 | Chuyển chức 1 (cấp 30) và 2 (cấp 60) | ✅ | Alpha | C3-T6, C5-T7 | Chuyển chức 1 (M6): Kiếm Sư · Xạ Thủ · Pháp Sư Nguyên Tố. Chuyển chức 2 (M8): chọn 1 trong 2 nhánh — Kiếm Thánh / Huyết Kiếm, Thần Tiễn / Thợ Bẫy, Đại Pháp Sư / Tử Linh Sư; +10% HP/Tấn công + 2 hiệu ứng, 30 Tinh Thạch |
-| NV-07 | Chuyển chức 3 (cấp 90) | ⬜ | M11 | C8-T7 | Spec [17](17-chuong-8.md) C8-45, C8-46: Kiếm Thần · Thiên Lạc Xạ Thủ · Hiền Giả (2 nhánh chức 2 hợp về 1), +10%, 2 hiệu ứng + 1 Thần Kỹ, 3 Lõi Hư Vô |
+| NV-07 | Chuyển chức 3 (cấp 90) | ✅ | J3 → M11 | J3-T1…T3, TL-J3, C8-T5 | [23](23-chuyen-chuc-3-linh-thu-co-mau.md): đủ 5 lớp — Kiếm Thần · Thiên Lạc Xạ Thủ · Hiền Giả · Thủ Hộ Thần · Vạn Linh Chi Chủ, +10%, 2 hiệu ứng + 1 Thần Kỹ. M11 ([17](17-chuong-8.md) C8-45, 31/10): điều kiện chương 8 (hạ Giáo Chủ + 3 Lõi Hư Vô + 50 Tinh Thạch), chuyển chức ở 5 Tổ Sư (Cổng Phá Vây); Liệt Diễm chỉ đường |
+| NV-07b | Linh thú có máu (Q112) | ✅ | SH | SH-T1 | [23 mục 4](23-chuyen-chuc-3-linh-thu-co-mau.md): HP theo loại, quái thường / tinh anh đánh linh thú, Thạch Quỷ khiêu khích, boss bỏ qua, Linh Hồ sinh lại sau 10 giây |
 | NV-08 | Cấp tối đa 100 | ✅ | Proto | CHR-01 | |
 | NV-09 | Cấp Thần Vực vô hạn (endgame) | ⬜ | M12 | C9-T8 | Spec [18](18-chuong-9.md) C9-50: cấp sau 100 cho cả hai kết thúc (Thần Vực / Khai Thế), Điểm Thiên Đạo |
 | NV-10 | Chỉ số gốc STR, AGI, VIT | ✅ | Proto | — | |
@@ -210,7 +212,7 @@ Chi tiết 9 vùng × 3 map con, cơ chế môi trường có số liệu, bộ 
 | BD-01 | Vùng 1 Rừng Sương (cấp 1–10, hệ Mộc) | ✅ | C1 | C1-T5 | Map 1-1 Rừng Sương + map 1-3 Lõi Sương (M4.1) |
 | BD-02 | Vùng 2 Đồng Bằng Gió Hú (cấp 10–20, hệ Kim, gió đẩy lùi) | ✅ | M4.2 | GI-T1 | 3 map Cửa Gió, Thảo Nguyên Hú, Mắt Bão; gió đổi 12/8 giây |
 | BD-03 | Vùng 3–5 | ✅ | Alpha | C3-T1, C4-T1, C5-T1 | Vùng 3 (M6), vùng 4 (M7), vùng 5 Núi Viêm Long (M8: mở bằng hạ Nữ Vương + tiến hoá 1 lần + cấp 44; dung nham, núi lửa phun, nhiệt) |
-| BD-04 | Vùng 6–9 | 🟡 | M9 / Beta | C6-T1, C6-T2 | Vùng 6 Băng Nguyên Bắc Cực (M9: mở bằng chuyển chức 2 + hạ Viêm Long + cấp 59; băng giá, đêm dài, mặt băng trơn). Còn vùng 7–9 (vùng 7 cần lãnh địa cấp 5, Q75) — spec [16](16-chuong-7.md) / [17](17-chuong-8.md) / [18](18-chuong-9.md) (M10–M12) |
+| BD-04 | Vùng 6–9 | 🟡 | M9 / Beta | C6-T1, C6-T2 | Vùng 6 Băng Nguyên Bắc Cực (M9: mở bằng chuyển chức 2 + hạ Viêm Long + cấp 59; băng giá, đêm dài, mặt băng trơn). Vùng 7 Quần Đảo Thiên Không (M10: Hoàng Thành + Cảng Khí Cầu + hạ Bản Ngã + cấp 71; đảo bay, cầu gió, đảo vụn) ✅. Vùng 8 Vực Hư Vô (M11: tiến hoá 2 lần + hạ Cự Thần + cấp 83; Suy Thiên, Đèn Tinh Quang, Cột Đá, không hệ) ✅ 31/10. Còn vùng 9 — spec [17](17-chuong-8.md) / [18](18-chuong-9.md) (M11–M12) |
 | BD-05 | Điều kiện mở map: đủ cấp + hạ boss vùng + khai phá ≥ 60% | ✅ | M4.2 | MP-T2 | Vùng 2: hạ Sói Chúa + 60% vùng 1 + thử thách vượt ải (cấp ≥ 5) |
 | BD-06 | 3 map con mỗi vùng + dungeon boss | ✅ | C1 / M4.2 | C1-T6 | Vùng 1: 2 map (Q35) + lưới 3 map con; vùng 2: 3 map + Phủ Huyền Ảnh |
 | BD-07 | Bản đồ lục địa, di chuyển giữa các vùng | ✅ | M4.1 | MP-T1 | Phím N |
@@ -237,12 +239,12 @@ Chi tiết 9 vùng × 3 map con, cơ chế môi trường có số liệu, bộ 
 | KP-10 | Sự kiện Cổng dungeon | ⬜ | Alpha | — | Gắn với BD-11 |
 | KP-11 | Tỉ lệ sự kiện theo bảng kịch bản (35/25/12/10/8/7/3%) | ✅ | C1 | C1-T6 | 40/28/12/10/8/2% — Cổng dungeon (7%) để Alpha, dồn sang Tài nguyên, Ổ quái |
 | KP-12 | Trung tâm lãnh địa: Trại → Thôn | ✅ | Proto / M2 | TL-F | |
-| KP-13 | Trung tâm lãnh địa: Trấn → Thành → Hoàng Thành | ⬜ | M10 | C7-T1 | Spec [16](16-chuong-7.md) C7-02, C7-03: cần số ô đã chiếm 40/80/120 + Gỗ/Đá/Sắt/Tinh Thạch, mỗi cấp +10% sản lượng |
+| KP-13 | Trung tâm lãnh địa: Trấn → Thành → Hoàng Thành | ✅ | M10 | C7-T1 | Spec [16](16-chuong-7.md) C7-02, C7-03: cần số ô đã chiếm 40/80/120 + Gỗ/Đá/Sắt/Tinh Thạch, mỗi cấp +10% sản lượng |
 | KP-14 | Đền Thiên Phú | ✅ | M2 | TL-G | |
 | KP-15 | Xưởng Rèn (chế trang bị) | ✅ | C1 | C1-T9 | Chế theo ô, Xanh lá/Xanh dương/Tím 60/35/5% (C1-30) |
 | KP-16 | Vườn Thảo Dược (thuốc) | ✅ | C1 | C1-T9 | 1 thảo dược mỗi 3 phút, cả khi offline (C1-31) |
 | KP-17 | Doanh Trại, Tháp Canh | ⬜ | Alpha | — | |
-| KP-18 | Cảng Khí Cầu (đi vùng 7) | ⬜ | M10 | C7-T1 | Spec [16](16-chuong-7.md) C7-04: xây khi Hoàng Thành, mở cổng Bến Khí Cầu 6-3 → 7-1 |
+| KP-18 | Cảng Khí Cầu (đi vùng 7) | ✅ | M10 | C7-T1 | Spec [16](16-chuong-7.md) C7-04: xây khi Hoàng Thành, mở cổng Bến Khí Cầu 6-3 → 7-1 |
 | KP-19 | Dân cư có kỹ năng nghề, xếp vào công trình | ⬜ | Alpha | — | Hiện người sống sót chỉ +10% sản lượng |
 | KP-20 | Thu hoạch offline tối đa 12 giờ | ✅ | Proto | EXP-09 | |
 | KP-21 | Thiên phú ảnh hưởng khai phá: Mắt Ưng, Trái Tim Lãnh Chúa | ✅ | Proto / M2 | TL-C, TL-F | |
@@ -401,23 +403,47 @@ Mỗi đợt theo quy trình: **viết spec → duyệt → code → test → c�
 - [x] UI-16: khung nhiệm vụ gọn (nền mờ, 4 dòng, bỏ dòng phím tắt) + UI-16b thiết kế lại khung (QuestBox); UI-17: bảng Trợ giúp F1 / H; UI-13b: biểu tượng hệ không đè Thiên phú (đợt 7)
 - [x] UI-20: nhật ký thông báo vẽ lại (dải mờ dần, huy hiệu theo loại, số tô đậm, dấu chấm ngăn nghìn)
 - [x] UI-18: bỏ trùng chỉ số ở tab Chỉ số (khung tổng kết lặp cột nhân vật; Lực chiến chỉ ở tiêu đề, cột trái thêm ST chí mạng)
+- [x] CL1: thiết kế lại kỹ năng / chỉ số 3 lớp theo charactors.md ([21](21-thiet-ke-lai-5-lop.md) mục 10) — Kiếm Ý, Nguyệt Ảnh Liên Trảm, Xuyên Tâm Tiễn, Lộn Nhào, Băng Lao, Thiên Tai Nguyên Tố; save cũ chuyển điểm; cân bằng đạt
+- [x] CL1b: Băng Lao làm chậm đúng 50%, Thiên Tai Nguyên Tố mang 3 hệ (Hỏa / Thủy / Kim), vệt chém + kiếm khí Kiếm Khách màu đỏ (icon Kiếm Ý / Băng Lao: ✅ game-5f)
+- [x] CL2 (spec): sửa docs/19 — 7 kỹ năng Hộ Vệ / Triệu Hồi Sư theo charactors.md (code: phiên game-c6, LH1/LH2)
+- [x] LH1: lớp Hộ Vệ (NV-04) — 13 kỹ năng, Khiên, Hiệp Sĩ / Thánh Kỵ Sĩ / Thiết Vệ, Chùy, hình tạm + icon, thẻ chọn lớp mở — [19 mục 2, 7](19-lop-ho-ve-trieu-hoi-su.md)
+- [x] LH2: lớp Triệu Hồi Sư (CR-03) — 13 kỹ năng, Linh Hồ thường trực, 8 loại linh thú, đồ đằng, Linh Sư / Ngự Long Sư / Đồ Đằng Sư, Linh Châu — [19 mục 3, 7](19-lop-ho-ve-trieu-hoi-su.md)
+- [x] J3: chuyển chức 3 cho 5 lớp (NV-07, bản tạm Q140) — 5 chức, 10 hiệu ứng, 5 Thần Kỹ (icon viền bạc), bảng chuyển chức 3, tab "Chức 3" bảng Kỹ năng, save v18 — [23](23-chuyen-chuc-3-linh-thu-co-mau.md)
+- [x] SH: linh thú có máu (Q112) — [23 mục 4](23-chuyen-chuc-3-linh-thu-co-mau.md)
+- [x] UI-24, UI-25 (Spec_Notes đợt 8): Cửa hàng kiểu mới (tab dọc, thẻ hàng, chọn số lượng, Mua ×N, khung chi tiết) + **Lò Rèn tách riêng** (phím R; cường hoá có ô chi phí cần / có + bảng chi phí mọi cấp, chế tạo, luyện nguyên liệu, phân rã); Túi đồ hiện chi phí cường hoá bằng ô icon. Màn chọn lớp: đã làm ở UI-22. Test UI-24, UI-25
+- [x] UI-26 (28/10, ảnh mẫu của chủ dự án): thẻ thuộc tính kiểu mới — icon lớn, nhãn Thuộc tính chính (xếp đầu), "Tăng mỗi điểm" từng dòng, cột Tổng + "(N cơ bản + M điểm cộng)", nút ? và +; icon vương miện `stat-main` (AR-77); UI-26b: phần gốc trắng, phần điểm cộng xanh lá đậm, phần cướp đỏ; UI-26c: thứ tự thẻ cố định mọi lớp (STR VIT AGI INT WIS DEX LUK), thẻ cao bằng nhau (3 dòng), khung bộ đồ cột trái cuộn được — hết tràn che nút Tẩy điểm. Test UI-19 mở rộng
+- [x] UI-27 (28/10): bảng Nhân vật dùng trang trí cắt từ ảnh mẫu (`tools/art/ui_cut.py`, `ui/ornate.gd`, 17 mảnh `assets/ui/`) — khung cột, 7 hàng thuộc tính gọn (icon vẽ, nhãn Chính, nút i, nút +), ô Điểm thuộc tính, biển Lực chiến, nút Phân bổ tự động / Tẩy điểm. Còn lại theo ảnh: thanh tab trên + vàng / kim cương, khung bộ đồ dạng thẻ. Test UI-19 viết lại cho hàng gọn
+- [x] AS (30/10): tốc đánh cảm nhận được — hoạt ảnh và vệt chém đánh thường nhanh theo tốc đánh; trang Chỉ số hiện "đòn/giây" và tooltip giây mỗi đòn. Test AS-T1 (D65, docs/26 mục 2.1)
+- [x] DT-04 (30/10): sửa lỗi Đạo Tặc — điểm cướp giữ vĩnh viễn, đầy 1 × cấp thì không cướp thêm (trước đây thay điểm cũ nhất nên không cộng dồn). Test TP-T3 mở rộng
+- [x] DT-03/17/18/19 (30/10, Q169–Q170): giới hạn cướp = cấp Thiên phú × cấp; Túi Tang Vật (5), Đà Cướp (+3% 30 giây × 5), Sổ Đạo Tặc (loài 5 / boss 9 / boss hiếm 10); bảng Thiên phú hiện đủ; save v20. Test DT-T2. ⚠ Cuối game ≈ +60% điểm tiềm năng — cần playtest cân bằng
+- [x] PV (30/10): kỹ năng bị động cho 5 lớp — 4 bị động mỗi lớp (cấp 10/20/35/50, cấp 0–5, Điểm Kỹ Năng chung), tab Bị động trong bảng Kỹ năng (kèm đặc tính lớp và bị động chuyển chức 1/2/3), 21 icon viền xanh lục, tẩy điểm hoàn cả bị động, save v21. Test PV-T1…T4 — [27](27-ky-nang-bi-dong.md)
+- [x] BK (31/10): Bí Kíp nhặt được = +1 Điểm Kỹ Năng (nguồn rơi giữ nguyên); biến thể ✦ mở bằng 2 Điểm Kỹ Năng (nút "Mở ✦"); bỏ Mảnh Bí Kíp; tẩy điểm khoá lại ✦ và hoàn điểm; save v24 (Mảnh cũ → điểm). Test SK3-T3 / BK-T1, BK-T2, R1-T1. Đề xuất Q171–Q175 chờ duyệt — [29](29-bi-kip-diem-ky-nang.md)
+- [x] UI-28 (30/10): thanh tiêu đề bảng Nhân vật theo ảnh mẫu — quay lại, "Nhân Vật", 5 tab chữ (tab chọn nền vàng + hình thoi), Kỹ năng / Thiên phú mở bảng riêng, Vàng + Tinh Thạch, nút +, X; khung vẽ cho cả 3 cột mọi tab. UI-28b: Kỹ năng / Thiên phú dùng chung thanh tiêu đề (`ui/char_bar.gd`), chuyển qua lại được giữa 5 tab; UI-28c: tab Thiên phú 3 cột vừa 1 trang (thẻ · hiệu ứng theo cấp + luyện cấp · cây tiến hoá), không cuộn. UI-28d: khối cấp Thiên phú nổi bật (số lớn, 10 ô tiến độ, TỐI ĐA). Chưa có tab Danh hiệu. Test UI-21 mở rộng
+- [x] UI-23: bảng Kỹ năng kiểu mới theo ảnh thiết kế (27/10): tab nhóm kỹ năng (Lớp · Chuyển chức 1 · Tối thượng · Chuyển chức 2), biển lớp + Điểm kỹ năng, cây kỹ năng có mũi tên, cột chi tiết (hiệu ứng hiện tại / cấp kế, Nâng cấp, ô lắp, biến thể), Tẩy điểm
+- [x] R1-01…07 (rà soát docs/19 mục 0): "+N!" cường hoá trên chân dung, màn chiến thắng nền 0,95, nhật ký kỹ năng chưa mở báo 1 lần, số ≥ 5 chữ số có dấu chấm ở khung nhiệm vụ, Bí Kíp chỉ cho kỹ năng đã mở, HUD phải thu gọn khi đánh boss; icon tràn thẻ lớp đã hết nhờ UI-22
+- [x] SN9-01…09 (Spec_Notes đợt 9, [25](25-spec-notes-dot-9.md)): tên + chức nghiệp, 5 ô nhân vật, số sát thương "-N" theo màu, thú lao trước, EXP theo chênh cấp, bãi quái theo cấp, "+9 + 15 (gốc)", dòng tăng chỉ số khi lên cấp, khung mục tiêu
+- [x] CS — chỉ số lớp đặc thù (góp ý người chơi 28/10): [26](26-build-lop.md) gộp [24](24-de-xuat-chi-so-lop.md) + CR-001, duyệt theo đề xuất (Q147–Q152, Q161–Q168): 7 thuộc tính, đặc tính lớp, 3 build mỗi lớp, save v19
+- [x] SN10-01, 02 (Spec_Notes đợt 10, [28](28-spec-notes-dot-10.md)): kết quả cường hoá giữa màn hình, bình MP (phím F, cửa hàng, rơi đồ, save v22)
+- [x] SN11-01…03 (Spec_Notes đợt 11, 31/10, [30](30-spec-notes-dot-11.md)): thẻ trang bị khi rê chuột (đồ đang mặc / trong túi), so sánh ▲▼ với đồ đang mặc, bản đồ ×3 diện tích (trần quái 120, bãi 10, save v23 phủ sương lại); sửa lỗi "triangulation failed" khi vẽ hình nhỏ ở toạ độ lớn
+- [x] UI-22: tạo nhân vật 2 bước — màn chọn lớp kiểu thẻ (5 thẻ, chân dung lớn theo lớp, chỉ số cấp 1, 4 kỹ năng, Hộ Vệ / Triệu Hồi Sư "Sắp ra mắt") rồi đặt tên + ngoại hình (nút Đổi lớp)
+- [x] UI-21: bảng Nhân vật kiểu mới theo ảnh thiết kế (27/10): tiêu đề + tab vàng, cột nhân vật (bệ đá, thẻ Thiên phú có sao, khung bộ đồ Xem set), trang Điểm thuộc tính dạng thẻ (tổng + điểm cộng), mẫu Tự cộng điểm theo lớp, cột Lực chiến + Chỉ số chiến đấu + lửa trại; Túi đồ / Tài nguyên cùng phong cách; 21 icon `stat-*`; UI-21b: kiếm chéo trên biển Lực chiến (không đè chữ), tab Chỉ số không lặp 8 chỉ số ở cột trái; UI-21c: khung bộ đồ hiện đủ mức thưởng, chỉ khi có mặc đồ bộ, bỏ nút Xem set; 3 tab cột trái không còn 8 chỉ số
 - [x] UI-19: chỉ số mặc định theo lớp (tổng 17), trang Chỉ số hiện "mặc định + điểm cộng" và chỉ số đó đang cho bao nhiêu — chỉ số cuối không đổi
 - [x] HP-01…10: hang phụ trong từng map (cửa hang, 3 khu, Chúa Hang, thưởng, đóng 20 phút, save v15) — [15](15-hang-phu.md)
 
-### M10–M12 — Chương 7–9 (spec [16](16-chuong-7.md), [17](17-chuong-8.md), [18](18-chuong-9.md), viết 22/10/2026 — chờ duyệt Q76–Q98)
+### M10–M12 — Chương 7–9 (spec [16](16-chuong-7.md), [17](17-chuong-8.md), [18](18-chuong-9.md), viết 22/10/2026; 17–18 rà lại 31/10 theo các thay đổi sau đó — mục 0b mỗi spec)
 
 - [x] Spec chương 7, 8, 9 (bám kịch bản mục 2, 4, 5, 6 + 06 vùng 7–9 + các điều chỉnh SK1–SK3, HP, MP-09, CB-30, UI-15/16/17, D41)
-- [ ] M10.1: KP-13 Trấn / Thành / Hoàng Thành, KP-18 Cảng Khí Cầu (C7-01…04)
-- [ ] M10.2: vùng 7 — đảo bay, rơi về Đá Neo, cầu gió, đảo vỡ, Lông Vũ Gió, 4 quái + 2 tinh anh, Hang Mây Ẩn (C7-05…25)
-- [ ] M10.3: Thiên Không Cự Thần, Kỳ Lân Mây, Bộ Thiên Phong, Búa Cự Thần, Sừng Kỳ Lân, Thiên Chuỳ (C7-30…35, TL-B7)
-- [ ] M10.4: nhiệm vụ chương 7, Bia Đá gốc, tiến hoá lần 2 + Đột Phá, save v17 (C7-40…46)
-- [ ] M11.1: vùng 8 — Suy Thiên (hook `talent_mult`), Đèn Tinh Quang, không hệ, Cột Đá, Đèn Lồng, 4 quái + 2 tinh anh (C8-01…25)
-- [ ] M11.2: Giáo Chủ Hư Vô, Hư Vô Thú, Bộ Tinh Quang, Ấn Hư Vô, Nanh Hư Vô, Lõi Hư Vô, Hút Thiên Phú (C8-30…35, TL-B8)
-- [ ] M11.3: nhiệm vụ chương 8, Tổng tấn công, Phản công Hư Vô, chuyển chức 3 + Thần Kỹ, save v19 (C8-40…47, TL-J3)
+- [x] M10.1: KP-13 Trấn / Thành / Hoàng Thành, KP-18 Cảng Khí Cầu (C7-01…04)
+- [x] M10.2: vùng 7 — đảo bay, rơi về Đá Neo, cầu gió, đảo vỡ, Lông Vũ Gió, 4 quái + 2 tinh anh, Hang Mây Ẩn (C7-05…25)
+- [x] M10.3: Thiên Không Cự Thần, Kỳ Lân Mây, Bộ Thiên Phong, Búa Cự Thần, Sừng Kỳ Lân, Thiên Chuỳ (C7-30…35, TL-B7)
+- [x] M10.4: nhiệm vụ chương 7, Bia Đá gốc, tiến hoá lần 2 + Đột Phá, save v17 (C7-40…46)
+- [x] M11.1: vùng 8 — Suy Thiên (hook `talent_mult`, D70), Đèn Tinh Quang (12/8/5), không hệ, Cột Đá, Đèn Lồng, Mạch Tinh Thạch, 4 quái + 2 tinh anh (C8-01…25)
+- [x] M11.2: Giáo Chủ Hư Vô, Hư Vô Thú, Bộ Tinh Quang, Ấn Hư Vô, Nanh Hư Vô, Lõi Hư Vô, Hút Thiên Phú (C8-30…35, TL-B8)
+- [x] M11.3: nhiệm vụ chương 8, Tổng tấn công, Phản công Hư Vô, chuyển chức 3 ở 5 Tổ Sư (Thần Kỹ đã có từ J3), save v25 (C8-40…47)
 - [ ] M12.1: vùng 9 — 9 tầng, hệ tầng, Ấn Hệ, Cửa Tầng / Thủ Tầng, 4 quái + 2 tinh anh (C9-01…25)
 - [ ] M12.2: Ma Tôn Vô Diện 3 giai đoạn + mảnh thứ hai, Thiên Đạo Hư Ảnh, Bộ Thiên Đạo, Mặt Nạ Vô Diện, Vô Diện (C9-30…35, TL-B9)
 - [ ] M12.3: nhiệm vụ chương 9, hai kết thúc, cảnh kết, danh đề (C9-40…47)
-- [ ] M12.4: cấp sau 100, Thần Vực, Tái Thiết Lục Địa, save v20 (C9-50…53, TL-B9b)
+- [ ] M12.4: cấp sau 100, Thần Vực, Tái Thiết Lục Địa, save v26 (C9-50…53, TL-B9b)
 
 ### G — Đồ hoạ và âm thanh
 
@@ -426,6 +452,7 @@ Mỗi đợt theo quy trình: **viết spec → duyệt → code → test → c�
 - [ ] DH-03: Thợ Săn vào game (cùng M3); AR-41: icon 3 kỹ năng mới mỗi lớp
 - [ ] DH-08: vùng 2 (cùng M4, AR-40)
 - [ ] DH-10 phần còn lại, DH-11 khung giao diện, DH-12/13 âm thanh (G2)
+- [x] AR-44 (phần nhân vật): sprite 5 lớp cắt từ sprite sheet chủ dự án cung cấp (`tools/art/class_sheet.py` → `pc-<lớp>`), thay thân nhân vật sinh bằng code trong trận và giao diện (27/10/2026); 20 icon kỹ năng cắt từ hình kỹ năng 5 lớp (`tools/art/class_skill_icons.py`); lựa chọn Kiểu hình (Hình lớp / Tuỳ biến); thẻ chọn lớp + chân dung từ sheet; 10 hiệu ứng kỹ năng `fx-sheet-*` (`view/class_fx.gd`); test AR-44
 
 ## 13. Quyết định đang chờ chủ dự án
 
@@ -443,6 +470,7 @@ Mỗi đợt theo quy trình: **viết spec → duyệt → code → test → c�
 | 13 | ~~Q65–Q70: hệ kỹ năng~~ — [13 mục 6](13-he-ky-nang.md) | Toàn bộ combat | **Đã chốt** 21/10/2026 "theo đề xuất": mở theo cấp + chuyển chức + Bí Kíp, 4 ô, Điểm Kỹ Năng riêng, Bí Kíp tầng III khoá nhân vật, ngũ hành ở biến thể tầng II, làm SK1 trước |
 | 14 | Q76–Q98: chương 7–9 — lãnh địa cấp 5 = Hoàng Thành, Lõi Hư Vô dùng cho chuyển chức 3 (lệch 06 Q26), giá nâng lãnh địa, Đột Phá cho Thiên phú hết bậc, Kỳ Lân / Hút Thiên phú / Không Mặt / Sứ Giả mềm hơn 06, chức 3 hợp nhánh + Thần Kỹ, kết thúc không đổi lại, cấp sau 100 cho cả hai kết thúc, endgame tối thiểu — [16 mục 9](16-chuong-7.md), [17 mục 9](17-chuong-8.md), [18 mục 10](18-chuong-9.md) | Chương 7–9, endgame | Như cột Mặc định đề xuất của từng spec |
 | 12 | Q59–Q64: mức "chiến tranh lãnh địa" ở MVP, thiên thạch −25% HP, Bình Nước Thánh cho Phượng Hoàng, chuyển chức 2 tốn 30 Tinh Thạch, ô Thiên phú phụ 2, phe Kim Luân — [12 mục 8](12-chuong-5.md) | Chương 5 | Như 12 mục 8 |
+| 15 | Q140–Q146: chuyển chức 3 khi chưa có chương 8 (Liệt Diễm, cấp 90 + 50 Tinh Thạch), Thủ Hộ Thần / Vạn Linh Chi Chủ tự thiết kế, boss không đánh linh thú, thú cưng / Xương Nô không có máu, Bản Ngã sao chép Thần Kỹ, cây 3 chức ở màn chọn lớp — [23 mục 7](23-chuyen-chuc-3-linh-thu-co-mau.md) | Chuyển chức 3, linh thú | Như cột Mặc định của 23 (đã code, trừ Q146) |
 
 ### 13.1. Đã chốt
 

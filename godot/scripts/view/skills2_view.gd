@@ -3,6 +3,7 @@ extends RefCounted
 ## (Liên Trảm, Kiếm Vũ, Hống Kiếm, Dịch Chuyển dùng vòng nổ `blasts`; Tên Nảy / Cầu Sấm dùng tia `bolts`.)
 
 const Skills2 = preload("res://scripts/core/skills2.gd")
+const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
 
 
 static func draw(ci: CanvasItem, world) -> void:
@@ -16,10 +17,17 @@ static func draw(ci: CanvasItem, world) -> void:
 			var p: Vector2 = wl.a + (wl.b - wl.a) * (float(i) + 0.5) / n
 			var h: float = 18.0 + 8.0 * sin(t * 12.0 + i * 1.7)
 			var side: Vector2 = dir * 7.0
-			ci.draw_colored_polygon(PackedVector2Array([p - side, p + Vector2(0, -h), p + side]), Color(1.0, 0.45, 0.1, 0.75 * a))
-			ci.draw_colored_polygon(PackedVector2Array([p - side * 0.5, p + Vector2(0, -h * 0.55), p + side * 0.5]), Color(1.0, 0.9, 0.5, 0.8 * a))
+			SpriteLib.poly(ci, PackedVector2Array([p - side, p + Vector2(0, -h), p + side]), Color(1.0, 0.45, 0.1, 0.75 * a))
+			SpriteLib.poly(ci, PackedVector2Array([p - side * 0.5, p + Vector2(0, -h * 0.55), p + side * 0.5]), Color(1.0, 0.9, 0.5, 0.8 * a))
 		ci.draw_line(wl.a, wl.b, Color(1.0, 0.4, 0.1, 0.35 * a), Skills2.HT_THICK, true)
 	for z in st.ice:
+		# LH1: vùng có màu riêng (Thánh Vực, Thiên Thần Hộ Mệnh) — vòng sáng, không rơi băng.
+		if z.has("color"):
+			var c := Color(str(z.color))
+			ci.draw_circle(z.pos, z.r, Color(c.r, c.g, c.b, 0.12))
+			ci.draw_arc(z.pos, z.r, 0.0, TAU, 40, Color(c.r, c.g, c.b, 0.7), 2.0, true)
+			ci.draw_arc(z.pos, z.r * (0.4 + 0.6 * fposmod(t * 0.8, 1.0)), 0.0, TAU, 40, Color(c.r, c.g, c.b, 0.35), 1.5, true)
+			continue
 		ci.draw_circle(z.pos, z.r, Color(0.6, 0.85, 1.0, 0.14))
 		ci.draw_arc(z.pos, z.r, 0.0, TAU, 40, Color(0.75, 0.92, 1.0, 0.6), 2.0, true)
 		for i in 8:

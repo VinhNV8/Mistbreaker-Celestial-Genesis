@@ -6,6 +6,7 @@ extends RefCounted
 const Classes = preload("res://scripts/data/classes.gd")
 const Monsters = preload("res://scripts/data/monsters.gd")
 const Formulas = preload("res://scripts/core/formulas.gd")
+const Classes2 = preload("res://scripts/core/classes2.gd")
 
 # ---------------------------------------------------------------- biến thể (docs/13 mục 4.3, 4.4)
 ## Tầng mở ở cấp kỹ năng 4 / 7 / 10.
@@ -13,30 +14,32 @@ const TIER_LEVELS := [4, 7, 10]
 const ELEMENTS := ["hoa", "thuy", "moc", "kim", "tho"]
 const ELEMENT_NAMES := {"hoa": "Hỏa", "thuy": "Thủy", "moc": "Mộc", "kim": "Kim", "tho": "Thổ"}
 ## [id, tên, mô tả]
-## Lựa chọn thứ 4 có cờ "book" (SK3): cần Bí Kíp của kỹ năng ở tầng đó (secret_books).
+## Lựa chọn ✦ có cờ "book" (SK3): BK (docs/29) mở bằng STAR_COST Điểm Kỹ Năng (secret_books).
 const TIER_DAMAGE := [
-	[["mp", "Tiết Kiệm", "−20% MP"], ["cd", "Thần Tốc", "−15% hồi chiêu"], ["song", "Song Phát", "Bí Kíp: 25% hồi chiêu ngay sau khi dùng", "book"]],
+	[["mp", "Tiết Kiệm", "−20% MP"], ["cd", "Thần Tốc", "−15% hồi chiêu"], ["song", "Song Phát", "✦ 25% hồi chiêu ngay sau khi dùng", "book"]],
 	[["hoa", "Hỏa", "Thiêu đốt 3 giây (15% Tấn công/giây)"], ["thuy", "Thủy", "Làm chậm 2 giây"],
 		["moc", "Mộc", "Hút máu 4% sát thương"], ["kim", "Kim", "Bỏ qua 25% Phòng thủ"], ["tho", "Thổ", "+50% vào thanh Phá Thế"],
-		["amduong", "Âm Dương", "Bí Kíp: luôn đổi sang hệ khắc quái trúng (+30%)", "book"]],
-	[["dmg", "Bạo Lực", "+25% sát thương"], ["crit", "Chí Mạng", "+20% tỉ lệ chí mạng"], ["vosong", "Vô Song", "Bí Kíp: +40% sát thương lên boss và tinh anh", "book"]],
+		["amduong", "Âm Dương", "✦ luôn đổi sang hệ khắc quái trúng (+30%)", "book"]],
+	[["dmg", "Bạo Lực", "+25% sát thương"], ["crit", "Chí Mạng", "+20% tỉ lệ chí mạng"], ["vosong", "Vô Song", "✦ +40% sát thương lên boss và tinh anh", "book"]],
 ]
 const TIER_UTILITY := [
-	[["mp", "Tiết Kiệm", "−20% MP"], ["cd", "Thần Tốc", "−15% hồi chiêu"], ["song", "Song Phát", "Bí Kíp: 25% hồi chiêu ngay sau khi dùng", "book"]],
-	[["long", "Bền Bỉ", "Hiệu lực dài thêm 30%"], ["heal", "Hồi Phục", "Dùng kỹ năng hồi 10% HP"], ["thanhtam", "Thanh Tâm", "Bí Kíp: dùng kỹ năng hồi 20% MP", "book"]],
-	[["cd2", "Tinh Thông", "−20% hồi chiêu"], ["mp0", "Vô Ngã", "Không tốn MP"], ["kienco", "Kiên Cố", "Bí Kíp: 2 giây giảm 50% sát thương nhận vào", "book"]],
+	[["mp", "Tiết Kiệm", "−20% MP"], ["cd", "Thần Tốc", "−15% hồi chiêu"], ["song", "Song Phát", "✦ 25% hồi chiêu ngay sau khi dùng", "book"]],
+	[["long", "Bền Bỉ", "Hiệu lực dài thêm 30%"], ["heal", "Hồi Phục", "Dùng kỹ năng hồi 10% HP"], ["thanhtam", "Thanh Tâm", "✦ dùng kỹ năng hồi 20% MP", "book"]],
+	[["cd2", "Tinh Thông", "−20% hồi chiêu"], ["mp0", "Vô Ngã", "Không tốn MP"], ["kienco", "Kiên Cố", "✦ 2 giây giảm 50% sát thương nhận vào", "book"]],
 ]
 const SONG_CHANCE := 0.25
 const VOSONG := 0.4
 const THANHTAM := 0.2
 const KIENCO_TIME := 2.0
-## SK3: Bí Kíp — tầng I từ tinh anh (5%), tầng II từ boss vùng (40%) / Chúa Hang (25%), tầng III từ boss hiếm (100%),
-## ô Di tích giải câu đố (30%, tầng I hoặc II). Trùng → 1 Mảnh; 5 Mảnh đổi Bí Kíp bất kỳ ở vùng an toàn.
+## BK (docs/29): Bí Kíp rơi = +1 Điểm Kỹ Năng — tinh anh 5%, boss vùng 40%, Chúa Hang 25%, boss hiếm 100%,
+## ô Di tích giải câu đố 30%. Biến thể ✦ (lựa chọn có cờ "book") mở bằng STAR_COST Điểm Kỹ Năng, lưu ở secret_books.
 const BOOK_ELITE := 0.05
 const BOOK_BOSS := 0.4
 const BOOK_CAVE := 0.25
 const BOOK_RELIC := 0.3
-const SHARDS_PER_BOOK := 5
+const STAR_COST := 2
+## Save cũ (< v22): 5 Mảnh Bí Kíp = 1 Bí Kíp = 1 điểm (làm tròn lên).
+const SHARDS_PER_POINT := 5
 const TIER_NAMES := ["I", "II", "III"]
 const COUNTER_BONUS := 1.3
 const BURN_TIME := 3.0
@@ -103,6 +106,30 @@ const HB_LEECH := 0.2
 const HA_DASHES := 2
 const HA_GAP := 0.35
 const PK_RANGE := 700.0
+# CL1 (docs/21): Kiếm Ý, Nguyệt Ảnh Liên Trảm, Lộn Nhào, Xuyên Tâm Tiễn, Băng Lao, Thiên Tai Nguyên Tố
+const KY_TIME := 8.0
+const KY_CRIT := 0.2
+const KY_SPEED := 0.15
+const CRIT_CAP := 0.6
+const NA_REACH := 150.0
+const LN_TIME := 3.0
+const LN_EVASION := 0.5
+const LN_CAP := 0.6
+const XT_MAX_HITS := 3
+const BL_RANGE := 400.0
+const BL_SLOW := 3.0
+## Băng Lao làm chậm 50% (quái còn 50% tốc chạy).
+const BL_SLOW_MUL := 0.5
+## Thiên Tai Nguyên Tố: hệ từng đợt — thiên thạch Hỏa, băng Thủy, sét Kim.
+const TTN_ELEMENTS := ["hoa", "thuy", "kim"]
+const TTN_FIRE_R := 120.0
+const TTN_FIRE := 4.0
+const TTN_ICE := 3.0
+const TTN_BOLT := 3.0
+const TTN_GAP := 0.7
+const TTN_JUMPS := 4
+## Kỹ năng thay thế ô cũ: điểm / biến thể / Bí Kíp của id cũ chuyển sang id mới khi tải save cũ.
+const REPLACED := {"kiemy": "guard", "banglao": "dichchuyen"}
 const TL_SHOTS := 3
 const TL_GAP := 0.15
 const BM_MINES := 5
@@ -131,6 +158,11 @@ class State:
 	var ice: Array = []
 	## [{pos, vel, ttl, zap, mul, skill}] — Cầu Sấm
 	var orbs: Array = []
+	## CL1: thời gian còn lại của Kiếm Ý / Lộn Nhào (giây)
+	var kiemy_t := 0.0
+	var lonnhao_t := 0.0
+	## CL1: hệ của đợt Thiên Tai Nguyên Tố đang đánh ("" = Hỏa, đợt thiên thạch)
+	var wave_el := ""
 
 
 static func is_utility(sk: Dictionary) -> bool:
@@ -153,80 +185,99 @@ static func variant(w, id: String, tier: int) -> String:
 
 
 static func element_of(w, id: String) -> String:
+	# CL1 Thiên Tai Nguyên Tố: mỗi đợt mang hệ riêng (thiên thạch = Hỏa; băng, sét đặt tạm wave_el lúc đánh).
+	if id == "thienhoa":
+		return w.sk2.wave_el if w.sk2.wave_el != "" else TTN_ELEMENTS[0]
 	var el := variant(w, id, 1)
 	return el if el in ELEMENTS else ""
 
 
-## SK3: đã có Bí Kíp của kỹ năng id ở tầng tier chưa.
+## Biến thể ✦ của kỹ năng id ở tầng tier đã mở chưa (secret_books, tên trường giữ từ SK3).
 static func has_book(w, id: String, tier: int) -> bool:
 	var b: Array = w.profile.secret_books.get(id, [])
 	return tier < b.size() and bool(b[tier])
 
 
-## Nhận Bí Kíp (id, tầng). Trùng → +1 Mảnh Bí Kíp. Trả về true nếu là sách mới.
-static func grant_book(w, id: String, tier: int) -> bool:
+## Lựa chọn ✦ của kỹ năng sk ở tầng tier: [id, tên, mô tả, "book"].
+static func star_of(sk: Dictionary, tier: int) -> Array:
+	return tiers_for(sk)[tier].filter(func(o): return o.size() > 3)[0]
+
+
+## Lý do chưa mở được ✦ ("" = mở được).
+static func can_unlock_star(w, id: String, tier: int) -> String:
 	var sk: Dictionary = Classes.skill_by_id(w.profile.class_id, id)
-	if sk.is_empty():
-		return false
+	if sk.is_empty() or tier < 0 or tier > 2:
+		return "Không có biến thể này."
 	if has_book(w, id, tier):
-		w.profile.book_shards = int(w.profile.book_shards) + 1
-		w._pickup_note("book_shard", "+%d Mảnh Bí Kíp", 1.0, Color("#c89aff"))
-		return false
+		return "Đã mở."
+	if not w.skill_unlocked(sk) or w.skill_level(id) < TIER_LEVELS[tier]:
+		return "%s cần cấp %d để mở tầng %s." % [sk.name, TIER_LEVELS[tier], TIER_NAMES[tier]]
+	if int(w.profile.skill_points) < STAR_COST:
+		return "Cần %d Điểm Kỹ Năng (còn %d). Nhặt Bí Kíp hoặc lên cấp để có thêm." % [STAR_COST, int(w.profile.skill_points)]
+	return ""
+
+
+## BK: mở biến thể ✦ bằng STAR_COST Điểm Kỹ Năng (mở ở mọi nơi; chọn biến thể vẫn ở vùng an toàn).
+static func unlock_star(w, id: String, tier: int) -> Dictionary:
+	var why := can_unlock_star(w, id, tier)
+	if why != "":
+		return _res(w, false, why)
+	var sk: Dictionary = Classes.skill_by_id(w.profile.class_id, id)
+	w.profile.skill_points = int(w.profile.skill_points) - STAR_COST
 	var b: Array = w.profile.secret_books.get(id, [false, false, false]).duplicate()
 	while b.size() < 3:
 		b.append(false)
 	b[tier] = true
 	w.profile.secret_books[id] = b
-	var opt: Array = tiers_for(sk)[tier].filter(func(o): return o.size() > 3)[0]
-	w._pickup_note("book_%s_%d" % [id, tier], "Bí Kíp: %s · %s" % [sk.name, opt[1]], 0.0, Color("#ffc940"), true)
-	w._message("Nhận Bí Kíp %s tầng %s — mở biến thể %s (bảng Kỹ năng, phím U)." % [sk.name, TIER_NAMES[tier], opt[1]], "good")
+	return _res(w, true, "Mở biến thể ✦ %s của %s (−%d Điểm Kỹ Năng)." % [star_of(sk, tier)[1], sk.name, STAR_COST])
+
+
+## Tẩy điểm: khoá lại mọi ✦, bỏ chọn ✦ đang dùng; trả về số điểm hoàn.
+static func reset_stars(p) -> int:
+	var n := 0
+	for id in p.secret_books:
+		for got in p.secret_books[id]:
+			if bool(got):
+				n += 1
+	p.secret_books = {}
+	for id in p.variants:
+		var v: Array = p.variants[id]
+		for t in v.size():
+			if str(v[t]) in STAR_IDS:
+				v[t] = ""
+	return n * STAR_COST
+
+
+## Id các lựa chọn ✦ (để bỏ chọn khi khoá lại).
+const STAR_IDS := ["song", "amduong", "vosong", "thanhtam", "kienco"]
+
+
+## BK: nhặt Bí Kíp = +1 Điểm Kỹ Năng.
+static func drop_book(w) -> void:
+	w.profile.skill_points = int(w.profile.skill_points) + 1
+	w._pickup_note("book", "✦ +%d Điểm Kỹ Năng", 1.0, Color("#ffc940"), true)
+	w._message("Nhặt Bí Kíp: +1 Điểm Kỹ Năng (bảng Kỹ năng, phím U).", "good")
 	w._sfx("pickup_item")
-	return true
-
-
-## Bí Kíp ngẫu nhiên của lớp ở tầng tier (ưu tiên kỹ năng chưa có sách tầng đó).
-static func drop_book(w, tier: int) -> void:
-	var pool: Array = []
-	for sk in Classes.skills_of(w.profile.class_id):
-		if sk.has("job2") and str(sk.job2) != str(w.profile.job2):
-			continue
-		pool.append(str(sk.id))
-	var fresh: Array = pool.filter(func(id): return not has_book(w, id, tier))
-	var pick: Array = fresh if not fresh.is_empty() and w._r() < 0.75 else pool
-	grant_book(w, str(pick[int(w._r() * pick.size()) % pick.size()]), tier)
-
-
-## Đổi 5 Mảnh lấy Bí Kíp chọn trước (vùng an toàn).
-static func exchange_book(w, id: String, tier: int) -> Dictionary:
-	if not w.in_safe_zone():
-		return _res(w, false, "Đổi Bí Kíp ở vùng an toàn (làng, trại, thành).")
-	if int(w.profile.book_shards) < SHARDS_PER_BOOK:
-		return _res(w, false, "Cần %d Mảnh Bí Kíp (có %d)." % [SHARDS_PER_BOOK, int(w.profile.book_shards)])
-	if has_book(w, id, tier):
-		return _res(w, false, "Đã có Bí Kíp này.")
-	w.profile.book_shards = int(w.profile.book_shards) - SHARDS_PER_BOOK
-	grant_book(w, id, tier)
-	return {"ok": true, "message": ""}
 
 
 ## Rơi Bí Kíp khi hạ quái (GameWorld._kill_enemy).
 static func on_kill(w, e) -> void:
 	if e.role == "rare":
-		drop_book(w, 2)
+		drop_book(w)
 	elif e.role == "boss":
 		if w._r() < BOOK_BOSS:
-			drop_book(w, 1)
+			drop_book(w)
 	elif "cave_boss" in e and bool(e.get("cave_boss")):
 		if w._r() < BOOK_CAVE:
-			drop_book(w, 1)
+			drop_book(w)
 	elif e.elite and w._r() < BOOK_ELITE:
-		drop_book(w, 0)
+		drop_book(w)
 
 
 ## Giải câu đố ô Di tích.
 static func on_relic(w) -> void:
 	if w._r() < BOOK_RELIC:
-		drop_book(w, 0 if w._r() < 0.6 else 1)
+		drop_book(w)
 
 
 ## Đổi biến thể chỉ ở vùng an toàn (như đổi ô kỹ năng).
@@ -249,7 +300,7 @@ static func set_variant(w, id: String, tier: int, opt: String) -> Dictionary:
 	if not ok:
 		return _res(w, false, "Biến thể không hợp lệ.")
 	if book and not has_book(w, id, tier):
-		return _res(w, false, "%s cần Bí Kíp %s tầng %s." % [name, sk.name, TIER_NAMES[tier]])
+		return _res(w, false, "%s chưa mở — cần %d Điểm Kỹ Năng." % [name, STAR_COST])
 	var v: Array = w.profile.variants.get(id, ["", "", ""]).duplicate()
 	while v.size() < 3:
 		v.append("")
@@ -289,6 +340,8 @@ static func after_cast(w, id: String, slot := -1) -> void:
 			p.guard_time *= LONG_MUL
 			p.eagle_time *= LONG_MUL
 			p.shield_time *= LONG_MUL
+			if id == "kiemy":
+				w.sk2.kiemy_t *= LONG_MUL
 		"heal":
 			p.hp = minf(float(w.stats.max_hp), p.hp + float(w.stats.max_hp) * HEAL_PCT)
 		"thanhtam":
@@ -308,7 +361,38 @@ static func source(w) -> String:
 
 
 static func crit_bonus(w, id: String) -> float:
-	return CRIT_BONUS if id != "" and variant(w, id, 2) == "crit" else 0.0
+	var b := CRIT_BONUS if id != "" and variant(w, id, 2) == "crit" else 0.0
+	# CL1 Kiếm Ý: +20% chí mạng cho mọi đòn, không vượt trần 60%.
+	if w.sk2.kiemy_t > 0.0:
+		b += clampf(CRIT_CAP - float(w.stats.crit), 0.0, KY_CRIT)
+	return b
+
+
+## CL1 Kiếm Ý: hệ số tốc đánh.
+static func speed_mult(w) -> float:
+	return 1.0 + KY_SPEED if w.sk2.kiemy_t > 0.0 else 1.0
+
+
+## CL1 Lộn Nhào: né tránh hiệu lực (+50% trong 3 giây, trần 60%).
+static func evasion_of(w) -> float:
+	var ev := float(w.stats.evasion)
+	if w.sk2.lonnhao_t > 0.0:
+		ev = minf(LN_CAP, ev + LN_EVASION)
+	return ev
+
+
+## CL1: save cũ còn điểm / biến thể / Bí Kíp của kỹ năng đã bị thay (Thiết Bích, Dịch Chuyển) → chuyển sang kỹ năng mới cùng ô.
+static func migrate_replaced(p) -> void:
+	for new_id in REPLACED:
+		var old: String = REPLACED[new_id]
+		if Classes.skill_by_id(str(p.class_id), new_id).is_empty():
+			continue
+		for dict_name in ["skill_levels", "variants", "secret_books"]:
+			var d: Dictionary = p.get(dict_name)
+			if d.has(old):
+				if not d.has(new_id):
+					d[new_id] = d[old]
+				d.erase(old)
 
 
 static func hit_mult(w, e, id: String) -> float:
@@ -334,6 +418,9 @@ static func after_hit(w, e, id: String, dmg: int) -> void:
 		return
 	if id == "huyetbao":
 		w.player.hp = minf(float(w.stats.max_hp), w.player.hp + dmg * HB_LEECH)
+	if id == "banglao":
+		e.slow_t = maxf(e.slow_t, BL_SLOW)
+		e.slow_mul = BL_SLOW_MUL
 	if id == "tendoc" or id == "khidoc":
 		e.venom_stacks = mini(TD_STACKS, e.venom_stacks + 1)
 		if e.venom_timer <= 0.0:
@@ -362,8 +449,20 @@ static func cast(w, id: String, mul: float) -> bool:
 	var p = w.player
 	match id:
 		"lientram":
+			# CL1 Nguyệt Ảnh Liên Trảm: lướt tới quái gần nhất trong 15 m, rồi 3 nhát.
+			var tg = w._nearest_enemy(p.pos, NA_REACH)
+			if tg != null:
+				var from: Vector2 = p.pos
+				var to_t: Vector2 = tg.pos - p.pos
+				var gap: float = tg.radius + w.PLAYER_RADIUS + 6.0
+				if to_t.length() > gap:
+					p.pos = tg.pos - to_t.normalized() * gap
+					w._enforce_gate()
+					w._enforce_arena_lock()
+					w._blast(from.lerp(p.pos, 0.5), 30.0, Color("#c8b0ff"))
+				p.facing = (tg.pos - p.pos).angle()
 			for k in LT_STRIKES:
-				w.sk2.queue.append({"t": LT_GAP * k, "skill": id, "kind": "cone", "mul": mul})
+				w.sk2.queue.append({"t": 0.05 + LT_GAP * k, "skill": id, "kind": "cone", "mul": mul})
 			p.swing = LT_GAP * LT_STRIKES
 			p.swing_kind = "slash"
 		"hongkiem":
@@ -411,6 +510,8 @@ static func cast(w, id: String, mul: float) -> bool:
 			p.dodge_dir = -dir
 			p.dodge_time = w.DODGE_TIME
 			p.perfect_used = false
+			# CL1 Lộn Nhào: +50% né tránh trong 3 giây sau khi lộn.
+			w.sk2.lonnhao_t = w.DODGE_TIME + LN_TIME
 			p.swing = 0.16
 			p.swing_kind = "shot"
 		"lienxa":
@@ -480,22 +581,33 @@ static func cast(w, id: String, mul: float) -> bool:
 			p.swing = 0.25
 			p.swing_kind = "shot"
 		"thienhoa":
+			# CL1 Thiên Tai Nguyên Tố: lửa (thiên thạch) → băng → sét, cùng một điểm.
 			var c0: Vector2 = p.pos + (w._aim - p.pos).limit_length(w.METEOR_RANGE)
-			var n1 = w._nearest_enemy(c0, TH_SPREAD)
+			var n1 = w._nearest_enemy(c0, TTN_FIRE_R)
 			if n1 == null:
 				n1 = w._nearest_enemy(p.pos, w.METEOR_RANGE)
 				if n1 != null:
 					c0 = n1.pos
-			for k in TH_COUNT:
-				var m = w.Meteor.new()
-				m.pos = c0 + (Vector2.ZERO if k == 0 else Vector2.from_angle(TAU * k / (TH_COUNT - 1)) * TH_SPREAD * 0.6)
-				m.timer = w.METEOR_DELAY + 0.2 * k
-				m.radius = w.METEOR_RADIUS
-				m.mul = mul
-				m.skill = id
-				w.meteors.append(m)
-			w._text(p.pos + Vector2(0, -60), "Thiên Hoả Phần Thế!", Color("#ff7a1a"), true)
+			var m = w.Meteor.new()
+			m.pos = c0
+			m.timer = w.METEOR_DELAY
+			m.radius = TTN_FIRE_R
+			m.mul = mul * TTN_FIRE
+			m.skill = id
+			w.meteors.append(m)
+			w.sk2.queue.append({"t": w.METEOR_DELAY + TTN_GAP, "skill": id, "kind": "tt_ice", "mul": mul * TTN_ICE, "pos": c0})
+			w.sk2.queue.append({"t": w.METEOR_DELAY + TTN_GAP * 2.0, "skill": id, "kind": "tt_bolt", "mul": mul * TTN_BOLT, "pos": c0})
+			w._text(p.pos + Vector2(0, -60), "Thiên Tai Nguyên Tố!", Color("#ff7a1a"), true)
 			p.swing = 0.3
+			p.swing_kind = "cast"
+		"kiemy":
+			w.sk2.kiemy_t = KY_TIME
+			w._blast(p.pos, 40.0, Color("#ff5a50"))
+			w._text(p.pos + Vector2(0, -40), "Kiếm Ý!", Color("#ff7a6a"), true)
+		"banglao":
+			w._soft_lock(BL_RANGE)
+			w._fire(w.PIERCE_SPEED, BL_RANGE, mul, true, "pierce", false, 14.0)
+			p.swing = 0.2
 			p.swing_kind = "cast"
 		"thanhkiem":
 			w._auto_face(w.WAVE_RANGE, deg_to_rad(15.0))
@@ -586,7 +698,8 @@ static func cast(w, id: String, mul: float) -> bool:
 			p.swing = 0.25
 			p.swing_kind = "cast"
 		_:
-			return false
+			# LH1 / LH2: kỹ năng của Hộ Vệ, Triệu Hồi Sư (docs/19).
+			return Classes2.cast(w, id, mul)
 	return true
 
 
@@ -632,6 +745,8 @@ static func _bounce(w, id: String, mul: float) -> void:
 static func tick(w, dt: float) -> void:
 	var st = w.sk2
 	var p = w.player
+	st.kiemy_t = maxf(0.0, st.kiemy_t - dt)
+	st.lonnhao_t = maxf(0.0, st.lonnhao_t - dt)
 	# đòn trễ
 	for q in st.queue:
 		q.t -= dt
@@ -662,11 +777,42 @@ static func tick(w, dt: float) -> void:
 				p.dash_time = w.DASH_TIME
 				p.dash_mul = float(q.mul)
 				p.dash_hit = {}
+				p.dash_skill = str(q.skill)
+				p.dash_dist = w.DASH_DIST
 				p.swing = w.DASH_TIME + 0.05
 				p.swing_kind = "dash"
 			"pierce":
 				w._soft_lock(w.PIERCE_RANGE)
-				w._fire(w.PIERCE_SPEED, w.PIERCE_RANGE, float(q.mul), true, "pierce", false, 12.0)
+				var ps = w._fire(w.PIERCE_SPEED, w.PIERCE_RANGE, float(q.mul), true, "pierce", false, 12.0)
+				if str(q.skill) == "pierce":
+					ps.max_hits = XT_MAX_HITS
+			"tt_ice":
+				st.wave_el = TTN_ELEMENTS[1]
+				var ic: Vector2 = q.pos
+				w._blast(ic, TTN_FIRE_R, Color("#9de0ff"))
+				w._sfx("explode")
+				for e in w.enemies:
+					if not e.dead and e.pos.distance_to(ic) <= TTN_FIRE_R + e.radius:
+						w._hit_enemy(e, float(q.mul), false, true)
+						if not e.dead:
+							e.slow_t = maxf(e.slow_t, BL_SLOW)
+				st.wave_el = ""
+			"tt_bolt":
+				st.wave_el = TTN_ELEMENTS[2]
+				var hit := {}
+				var cur = w._nearest_enemy(q.pos, TTN_FIRE_R + 40.0)
+				var b = w.Bolt.new()
+				b.points.append(Vector2(q.pos) + Vector2(0, -260))
+				for _i in TTN_JUMPS + 1:
+					if cur == null:
+						break
+					hit[cur.id] = true
+					b.points.append(cur.pos)
+					w._hit_enemy(cur, float(q.mul), false, true)
+					cur = w._nearest_enemy(cur.pos, w.CHAIN_HOP, hit)
+				if b.points.size() > 1:
+					w.bolts.append(b)
+				st.wave_el = ""
 			"volley":
 				var tgt = w._nearest_enemy(p.pos, w.SHOT_RANGE)
 				if tgt != null:
@@ -704,6 +850,9 @@ static func tick(w, dt: float) -> void:
 				w._hit_enemy(e, float(z.mul), false, true)
 				if not z.get("poison", false):
 					e.slow_t = maxf(e.slow_t, 1.0)
+		# LH1: Thánh Vực hồi HP mỗi nhịp.
+		if z.has("heal"):
+			p.hp = minf(float(w.stats.max_hp), p.hp + float(w.stats.max_hp) * float(z.heal))
 		w.skill_ctx = ""
 	st.ice = st.ice.filter(func(z): return z.ticks > 0 or z.timer > 0.0)
 	# Cầu Sấm

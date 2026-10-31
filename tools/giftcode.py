@@ -2,6 +2,7 @@
 
     python tools/giftcode.py 100              # 100 mã, đợt "default"
     python tools/giftcode.py 500 ra-mat       # 500 mã, ghi tools/giftcode_out/ra-mat.csv
+    python tools/giftcode.py --talent DT 20 dao-tac   # 20 mã seri bắt đầu bằng DT → Thiên phú Đạo Tặc
     python tools/giftcode.py --check TPKG-XXXX-XXXX-XXXX
 
 Thuật toán giống hệt godot/scripts/core/gift_code.gd (sửa một bên phải sửa cả hai):
@@ -17,6 +18,8 @@ import sys
 PREFIX = "TPKG"
 SECRET = "ThienPhuKhaiGioi::gift::2026-C1"
 ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
+# GC-09: tiền tố seri → Thiên phú cố định (giống SERIAL_TALENTS trong gift_code.gd).
+SERIAL_TALENTS = {"DT": ("dao-tac", "Đạo Tặc")}
 OUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "giftcode_out")
 
 
@@ -40,24 +43,45 @@ def normalize(raw: str) -> str:
     return s[len(PREFIX):] if s.startswith(PREFIX) else s
 
 
+def talent_of(serial: str):
+    for prefix, talent in SERIAL_TALENTS.items():
+        if serial.startswith(prefix):
+            return talent
+    return None
+
+
 def is_valid(raw: str) -> bool:
     s = normalize(raw)
     return len(s) == 12 and all(ch in ALPHABET for ch in s) and s[8:] == check_of(s[:8])
 
 
 def main() -> None:
+    # console Windows mặc định cp1252 — in tiếng Việt bị lỗi nếu không đổi sang UTF-8
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
     args = sys.argv[1:]
     if args[:1] == ["--check"]:
         for code in args[1:]:
-            print(code, "hợp lệ" if is_valid(code) else "KHÔNG hợp lệ")
+            if not is_valid(code):
+                print(code, "KHÔNG hợp lệ")
+                continue
+            talent = talent_of(normalize(code)[:8])
+            print(code, "hợp lệ" + (" → Thiên phú %s" % talent[1] if talent else " → quay ngẫu nhiên hạng A–SSS"))
         return
+    prefix = ""
+    if args[:1] == ["--talent"]:
+        if len(args) < 2 or args[1].upper() not in SERIAL_TALENTS:
+            sys.exit("--talent cần một tiền tố: " + ", ".join(SERIAL_TALENTS))
+        prefix = args[1].upper()
+        args = args[2:]
     count = int(args[0]) if args else 10
     batch = args[1] if len(args) > 1 else "default"
     seen = set()
     codes = []
     while len(codes) < count:
-        serial = "".join(secrets.choice(ALPHABET) for _ in range(8))
-        if serial in seen:
+        serial = prefix + "".join(secrets.choice(ALPHABET) for _ in range(8 - len(prefix)))
+        # mã thường không được trùng tiền tố Thiên phú (tránh tặng nhầm Đạo Tặc)
+        if serial in seen or (not prefix and talent_of(serial)):
             continue
         seen.add(serial)
         codes.append(make(serial))
@@ -65,9 +89,9 @@ def main() -> None:
     path = os.path.join(OUT_DIR, batch + ".csv")
     with open(path, "w", encoding="utf-8", newline="") as f:
         w = csv.writer(f)
-        w.writerow(["code", "batch"])
+        w.writerow(["code", "batch", "talent"])
         for c in codes:
-            w.writerow([c, batch])
+            w.writerow([c, batch, SERIAL_TALENTS[prefix][1] if prefix else ""])
     for c in codes[:20]:
         print(c)
     if count > 20:

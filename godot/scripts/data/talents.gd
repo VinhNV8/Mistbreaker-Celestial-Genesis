@@ -92,7 +92,7 @@ const LIST := [
 	{"id": "long-mach", "name": "Long Mạch", "rank": "SS", "group": "territory",
 		"description": "Mở công trình Long Mạch Đàn: khi xây xong, +10% Tấn công và HP cho nhân vật và mọi đồng minh."},
 	{"id": "dao-tac", "name": "Đạo Tặc", "rank": "SSS", "group": "special", "hidden": true,
-		"description": "Hạ quái có tỉ lệ cướp 1 điểm thuộc tính của quái (cộng thẳng vào nhân vật, tối đa 1 × cấp). Hạ boss: cướp 3 điểm và sao chép 1 kỹ năng của boss.",
+		"description": "Hạ quái có tỉ lệ cướp 1 điểm thuộc tính của quái (cộng vĩnh viễn vào nhân vật, tối đa cấp Thiên phú × cấp nhân vật; mỗi loài có trần riêng, đầy thì vào Túi Tang Vật rồi thành Đà Cướp). Hạ boss: cướp 3 điểm và sao chép 1 kỹ năng của boss.",
 		"skill": {"name": "Kỹ năng sao chép", "cd": 8.0, "text": "Dùng kỹ năng boss đã sao chép."}},
 ]
 
@@ -207,8 +207,13 @@ static func roll_weight(t: Dictionary) -> float:
 
 
 ## TL-14: Thiên phú `talent_id` ở cấp `level` đã mở hiệu ứng phụ `tier` (1 = cấp 5, 2 = cấp 10) của nhóm `group` chưa.
+## C8-10 / C8-30b (M11): Suy Thiên ≥ 50% hoặc bị Hút Thiên phú → tắt hiệu ứng phụ bậc 5/10.
+## Chapter8.tick đặt lại mỗi khung hình (GameWorld hiện tại); on_load đưa về false.
+static var suppressed := false
+
+
 static func has_sub(talent_id: String, level: int, group: String, tier: int) -> bool:
-	if talent_id == "":
+	if talent_id == "" or suppressed:
 		return false
 	return get_talent(talent_id).group == group and level >= tier * 5
 

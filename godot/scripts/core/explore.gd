@@ -23,6 +23,8 @@ const EVENT_INFO := {
 	## M4.3 (KP-06): núi đá → Mỏ (Đá, Sắt); suối → Bến Cá (+3% HP tối đa mỗi Bến Cá, tối đa +15%).
 	"mine": {"name": "Núi đá", "short": "Mỏ", "desc": "Xây Mỏ: 4 Đá và 2 Sắt mỗi phút, kể cả khi offline.", "color": "#8c8f99"},
 	"fishery": {"name": "Suối", "short": "Suối", "desc": "Xây Bến Cá: +3% HP tối đa (cộng dồn tối đa +15%).", "color": "#4a9df8"},
+	## C8-03 (M11): vùng 8 không có tài nguyên thường — ô Tài nguyên thành Mạch Tinh Thạch.
+	"vein": {"name": "Mạch Tinh Thạch", "short": "Mạch", "desc": "Chiếm ô: +10 Tinh Thạch một lần (không xây công trình).", "color": "#b48af0"},
 	"merchant": {
 		"name": "Thương nhân lữ hành",
 		"short": "Thương nhân",
@@ -34,9 +36,24 @@ const EVENT_INFO := {
 ## C1-21: 3 map con của vùng 1 trên cùng một lưới (zone 1–3). Zone 3 = Lõi Sương, khoá tới khi hạ Sói Chúa.
 const ZONE_NAMES := {1: "Bìa Rừng Sương", 2: "Rừng Sương Sâu", 3: "Lõi Sương"}
 const ZONE_NAMES_R2 := {1: "Cửa Gió", 2: "Thảo Nguyên Hú", 3: "Mắt Bão"}
+const REGION_ZONE_NAMES := {
+	1: {1: "Bìa Rừng Sương", 2: "Rừng Sương Sâu", 3: "Lõi Sương"},
+	2: {1: "Cửa Gió", 2: "Thảo Nguyên Hú", 3: "Mắt Bão"},
+	3: {1: "Rìa Cát Đỏ", 2: "Ốc Đảo Lãng Quên", 3: "Di Tích Khai Giới Giả"},
+	4: {1: "Bãi Lau Mù", 2: "Đầm Sâu", 3: "Cung Mộng"},
+	5: {1: "Chân Núi Tro", 2: "Sườn Dung Nham", 3: "Miệng Núi Lửa"},
+	6: {1: "Đồng Tuyết", 2: "Rừng Băng", 3: "Đỉnh Cực Quang"},
+	7: {1: "Đảo Mây Trôi", 2: "Đảo Rừng Treo", 3: "Thiên Cung Đổ Nát"},
+	8: {1: "Rìa Vực", 2: "Đáy Vực", 3: "Sào Huyệt Hư Vô"},
+}
+## C8-03: vùng 8 — chiếm ô Mạch Tinh Thạch +10, mọi ô khác +3 Tinh Thạch.
+const VEIN_CRYSTAL := 10
+const VOID_TILE_CRYSTAL := 3
 
 
 static func zone_name(region: int, zone: int) -> String:
+	if REGION_ZONE_NAMES.has(region):
+		return str(REGION_ZONE_NAMES[region].get(zone, ""))
 	return str((ZONE_NAMES_R2 if region == 2 else ZONE_NAMES).get(zone, ""))
 const ZONE2_EVENTS := ["resource", "resource", "resource", "resource", "resource", "resource", "nest", "nest", "nest", "nest",
 	"relic", "relic", "survivor", "survivor", "merchant"]
@@ -114,6 +131,10 @@ static func create_region_tiles(region: int, rng: Callable, talent := "") -> Arr
 	if talent == "khuu-giac":
 		for _i in 4:
 			events[events.find("resource")] = "relic"
+	if region == 8:
+		for i in events.size():
+			if events[i] in ["resource", "mine", "fishery"]:
+				events[i] = "vein"
 	events = RngUtil.shuffle(events, rng)
 	var coords: Array = ring(1) + ring(2) + ring(3)
 	var r4: Array = ring(4)
@@ -295,6 +316,25 @@ static func reveal_blocker(p, tile: Dictionary) -> String:
 	return ""
 
 
+## Lý do chưa thể chiếm ô đất (thiếu tài nguyên / vàng / gỗ); "" nếu đủ điều kiện.
+static func claim_blocker(p, tile: Dictionary) -> String:
+	if tile.is_empty() or tile.status != "revealed":
+		return "Ô đất này chưa thể chiếm."
+	match tile.event:
+		"resource":
+			if p.gold < Config.LUMBER_COST_GOLD:
+				return "Cần %d vàng để xây Xưởng Gỗ (hiện có %d vàng)." % [Config.LUMBER_COST_GOLD, int(p.gold)]
+		"mine":
+			var def: Dictionary = BUILDINGS["mine"]
+			if p.gold < def.gold or p.wood < def.wood:
+				return "Cần %d vàng và %d Gỗ để xây Mỏ (hiện có %d vàng, %d Gỗ)." % [int(def.gold), int(def.wood), int(p.gold), int(p.wood)]
+		"fishery":
+			var def: Dictionary = BUILDINGS["fishery"]
+			if p.gold < def.gold or p.wood < def.wood:
+				return "Cần %d vàng và %d Gỗ để xây Bến Cá (hiện có %d vàng, %d Gỗ)." % [int(def.gold), int(def.wood), int(p.gold), int(p.wood)]
+	return ""
+
+
 static func find_tile(p, id: int) -> Dictionary:
 	for t in p.tiles:
 		if int(t.id) == id:
@@ -332,10 +372,23 @@ static func reveal_tile(p, id: int) -> Dictionary:
 
 ## bonus: ô Di tích mở bằng cách giải câu đố (M5-04) — thưởng gấp đôi + 1 Đá Cường Hoá.
 static func claim_tile(p, id: int, bonus := false) -> Dictionary:
+	var res := _claim_tile(p, id, bonus)
+	var tile := find_tile(p, id)
+	if res.ok and int(p.tiles_region) == 8 and not tile.is_empty() and tile.status == "owned" and tile.event != "vein":
+		p.crystal += VOID_TILE_CRYSTAL
+		res.message = str(res.message) + " +%d Tinh Thạch." % VOID_TILE_CRYSTAL
+	return res
+
+
+static func _claim_tile(p, id: int, bonus := false) -> Dictionary:
 	var tile := find_tile(p, id)
 	if tile.is_empty() or tile.status != "revealed":
 		return _result(false, "Ô đất này chưa thể chiếm.")
 	match tile.event:
+		"vein":
+			tile.status = "owned"
+			p.crystal += VEIN_CRYSTAL
+			return _result(true, "Chiếm Mạch Tinh Thạch: +%d Tinh Thạch." % VEIN_CRYSTAL)
 		"resource":
 			if p.gold < Config.LUMBER_COST_GOLD:
 				return _result(false, "Cần %d vàng để xây Xưởng Gỗ." % Config.LUMBER_COST_GOLD)
@@ -536,7 +589,7 @@ static func production_per_minute(p) -> Dictionary:
 	for rg in region_grids(p):
 		survivors += count_owned(rg[1], "survivor")
 	# C7-02: Thôn +20%, Trấn +30%, Thành +40%, Hoàng Thành +50%.
-	var mult := 1.0 + 0.1 * survivors + CAMP_BONUS[clampi(int(p.camp_level), 1, 5)]
+	var mult: float = 1.0 + 0.1 * survivors + float(CAMP_BONUS[clampi(int(p.camp_level), 1, 5)])
 	if p.talent == "thien-menh":
 		mult += Talents.lv_value(0.2, 0.3, p.talent_level)
 	if Talents.has_sub(p.talent, p.talent_level, "territory", 1):

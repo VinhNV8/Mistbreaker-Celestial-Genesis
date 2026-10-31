@@ -122,6 +122,16 @@ const SETS := {
 			{"count": 6, "text": "Rơi khỏi mép đảo không mất HP (hồi 60 giây)", "bonus": {}},
 		],
 	},
+	## C8-35 (M11): bộ vùng 8 — 2 và 6 món xử lý trong core/chapter8.gd.
+	"tinh_quang": {
+		"name": "Bộ Tinh Quang",
+		"suffix": "Tinh Quang",
+		"tiers": [
+			{"count": 2, "text": "Suy Thiên tăng chậm 50%", "bonus": {}},
+			{"count": 4, "text": "+12% HP tối đa", "bonus": {"max_hp_pct": 0.12}},
+			{"count": 6, "text": "Mỗi 60 giây miễn 1 lần bị vô hiệu Thiên phú", "bonus": {}},
+		],
+	},
 	## C3-35 (M6): bộ vùng 3.
 	"sa_hanh": {
 		"name": "Bộ Sa Hành Giả",
@@ -137,9 +147,9 @@ const SETS := {
 const SA_HANH := "sa_hanh"
 const REGION_SET := "frost_hunter"
 ## Đồ Tím rơi ở vùng nào thì thuộc bộ của vùng đó (M4.2).
-const REGION_SETS := {1: "frost_hunter", 2: "phong_hanh", 3: "sa_hanh", 4: "u_minh", 5: "hoa_nguc", 6: "cuc_quang", 7: "thien_phong"}
+const REGION_SETS := {1: "frost_hunter", 2: "phong_hanh", 3: "sa_hanh", 4: "u_minh", 5: "hoa_nguc", 6: "cuc_quang", 7: "thien_phong", 8: "tinh_quang"}
 ## Đồ Cam của từng boss chương.
-const BOSS_UNIQUES := {"boss": "wolf_fang", "huyen-anh": "huyen_anh_mask", "sa-hoang": "sa_hoang_tail", "nu-vuong": "goi_mong", "vien-long": "long_tam", "ban-nga": "guong_ban_nga", "cu-than": "bua_cu_than"}
+const BOSS_UNIQUES := {"boss": "wolf_fang", "huyen-anh": "huyen_anh_mask", "sa-hoang": "sa_hoang_tail", "nu-vuong": "goi_mong", "vien-long": "long_tam", "ban-nga": "guong_ban_nga", "cu-than": "bua_cu_than", "giao-chu": "an_hu_vo"}
 
 ## EQ-16: đồ Cam có hiệu ứng riêng.
 const UNIQUES := {
@@ -189,6 +199,18 @@ const UNIQUES := {
 		"name": "Sừng Kỳ Lân",
 		"slot": "necklace",
 		"text": "+20% hiệu lực hồi máu; mỗi 10 giây hồi 5% HP.",
+	},
+	## C8-31 (M11): rơi từ Giáo Chủ Hư Vô (15%).
+	"an_hu_vo": {
+		"name": "Ấn Hư Vô",
+		"slot": "ring",
+		"text": "Miễn Suy Thiên; bị Hút Thiên phú chỉ còn 5 giây.",
+	},
+	## C8-34 (M11): rơi từ boss hiếm Hư Vô Thú.
+	"nanh_hu_vo": {
+		"name": "Nanh Hư Vô",
+		"slot": "weapon",
+		"text": "Đòn đánh bỏ qua 30% Phòng thủ quái.",
 	},
 	## C6-34 (M9): rơi từ boss hiếm Long Băng Bắc Cực.
 	"vay_long_bang": {

@@ -55,6 +55,10 @@ static func new_item(p, level: int, rarity: String, rng: Callable, slot := "", s
 				item["style"] = "bow"
 			"phap-su":
 				item["style"] = "staff"
+			"ho-ve":
+				item["style"] = "mace"
+			"trieu-hoi-su":
+				item["style"] = "orb"
 	return item
 
 
@@ -341,6 +345,10 @@ static func _type_name(item: Dictionary) -> String:
 			return "Cung"
 		"staff":
 			return "Trượng"
+		"mace":
+			return "Chùy"
+		"orb":
+			return "Linh Châu"
 	return str(ItemData.SLOTS[item.slot].item)
 
 
@@ -359,6 +367,24 @@ static func display_name(item: Dictionary) -> String:
 
 static func rarity_color(item: Dictionary) -> Color:
 	return Color(ItemData.RARITIES[item.rarity].color)
+
+
+## SN9-07 (Spec_Notes đợt 9: "9 + 15 Tấn công (gốc)"): chỉ số gốc tách phần gốc và phần cường hoá.
+## plus < 0 = cấp cường hoá hiện tại của món. Đồ +0: "+9 Tấn công". Phần "+ 15" tô xanh khi bbcode = true.
+static func base_text(item: Dictionary, plus := -1, bbcode := false) -> String:
+	var p: int = int(item.plus) if plus < 0 else plus
+	var stat := base_stat(item)
+	var raw := base_value(item, 0)
+	var bonus := base_value(item, p) - raw
+	if p <= 0:
+		return stat_text(stat, raw)
+	var label: String = ItemData.AFFIXES[stat].name
+	var pct: bool = stat in ItemData.PERCENT_STATS
+	var a := ("+%.1f%%" % (raw * 100.0)) if pct else ("+%d" % roundi(raw))
+	var b := ("%.1f%%" % (bonus * 100.0)) if pct else ("%d" % (roundi(base_value(item, p)) - roundi(raw)))
+	if bbcode:
+		return "%s [color=#5bd16a]+ %s[/color] %s" % [a, b, label]
+	return "%s + %s %s" % [a, b, label]
 
 
 static func stat_text(stat: String, value: float) -> String:

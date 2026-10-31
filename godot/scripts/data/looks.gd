@@ -2,6 +2,10 @@ extends RefCounted
 ## C1-02: ngoại hình nhân vật. Hình: thân hero-<lớp>-<giới tính>-<da> + tóc hair-<lớp>-<kiểu> tô màu
 ## (tools/art/catalog.py sinh). Tên hiện trên màn hình Tạo nhân vật.
 
+## AR-44: "sheet" = hình nhân vật của lớp cắt từ sprite sheet (pc-<lớp>, không đổi theo giới tính/da/tóc);
+## "custom" = thân + tóc ghép theo các lựa chọn bên dưới (C1-02).
+const STYLES := ["sheet", "custom"]
+const STYLE_NAMES := {"sheet": "Hình lớp", "custom": "Tuỳ biến"}
 const GENDERS := ["nam", "nu"]
 const GENDER_NAMES := {"nam": "Nam", "nu": "Nữ"}
 const SKIN_NAMES := ["Sáng", "Vừa", "Ngăm"]
@@ -22,13 +26,15 @@ const DEFAULT_NAME := "Khai Giới Giả"
 
 
 static func default_look(gender := "nam") -> Dictionary:
-	return {"gender": gender, "skin": 1, "hair_style": "ngan" if gender == "nam" else "dai", "hair_color": 0}
+	return {"style": "sheet", "gender": gender, "skin": 1, "hair_style": "ngan" if gender == "nam" else "dai", "hair_color": 0}
 
 
 ## Chuẩn hoá ngoại hình đọc từ save (giá trị lạ → mặc định).
 static func sanitize(look) -> Dictionary:
 	var d := default_look()
 	if look is Dictionary:
+		var style := str(look.get("style", "sheet"))
+		d.style = style if style in STYLES else "sheet"
 		var g := str(look.get("gender", "nam"))
 		d.gender = g if g in GENDERS else "nam"
 		d.skin = clampi(int(look.get("skin", 1)), 0, SKIN_NAMES.size() - 1)
@@ -44,6 +50,11 @@ static func clean_name(raw: String) -> String:
 	if n.length() < NAME_MIN or n.length() > NAME_MAX:
 		return ""
 	return n
+
+
+## Dùng hình pc-<lớp> (khi có) thay cho thân + tóc ghép.
+static func uses_sheet(look: Dictionary) -> bool:
+	return str(look.get("style", "sheet")) != "custom"
 
 
 static func base_sprite(class_id: String, look: Dictionary) -> String:
