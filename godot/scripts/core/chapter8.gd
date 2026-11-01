@@ -15,7 +15,7 @@ const Ch7 = preload("res://scripts/core/chapter7.gd")
 const MAPS := ["8-1", "8-2", "8-3"]
 const NPCS := ["lac-phong-8", "tuyet-nga-8", "mac-tam-8", "lac-phong-8c", "to-su-kiem", "to-su-tien", "to-su-phap", "to-su-thuan", "to-su-linh"]
 const HOOKS := ["on_load", "tick", "check_quest", "after_spawn", "on_kill", "is_hidden", "update_enemy", "chase", "perform", "elite_skill",
-	"boss_phase_two", "copy_skill", "adjust_damage", "enemy_avoid", "vanish", "player_hurt", "safe_blocked", "drink",
+	"boss_phase_two", "update_rare", "copy_skill", "adjust_damage", "enemy_avoid", "vanish", "player_hurt", "safe_blocked", "drink",
 	"derive_bonus", "derive_after", "map_requirement", "gate_open", "env_text", "env_alert", "quest_hud", "talk", "npc_visible",
 	"talent_mult", "talent_cd_mult"]
 
@@ -209,7 +209,8 @@ static func talent_cd_mult(w) -> float:
 
 
 static func immune_decay(w) -> bool:
-	return w.has_unique(AN_HU_VO) or w.ch8.lantern_t > 0.0
+	# C9-46: kết thúc Hiến tế (Tinh Quang Thủ Hộ) miễn Suy Thiên.
+	return w.has_unique(AN_HU_VO) or w.ch8.lantern_t > 0.0 or str(w.profile.ending) == "hien-te"
 
 
 static func _apply_k(w) -> void:
@@ -302,6 +303,10 @@ static func add_decay(w, v: float) -> void:
 static func on_load(w) -> void:
 	ensure(w)
 	var st = w.ch8
+	# cờ tĩnh có thể còn từ world trước (test, đổi nhân vật) — đặt lại rồi tính lại chỉ số
+	if Talents.suppressed:
+		Talents.suppressed = false
+		w._refresh_stats()
 	st.marks = []
 	st.beams = []
 	st.gaze = {}
@@ -946,6 +951,11 @@ static func _tick_marks(w, dt: float) -> void:
 
 
 # ================================================================ Hư Vô Thú (C8-33)
+
+
+## Chặn nhánh boss hiếm chung của GameWorld._update_rare (Lão Thụ gọi Mộc Tinh ở 40%) khi Hư Vô Thú ở xa.
+static func update_rare(_w, e, _dt: float) -> bool:
+	return e.kind == "hu-vo-thu"
 
 
 ## Gọi từ update_enemy (không qua update_rare: GameWorld vẫn chạy máy trạng thái chung sau update_rare).

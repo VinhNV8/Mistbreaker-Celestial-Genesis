@@ -8,7 +8,7 @@
 | Thứ tự | Sau M11. Chia M12.1 (vùng 9: tầng, hệ tầng, quái) → M12.2 (Ma Tôn, đồ) → M12.3 (cốt truyện, hai kết thúc) → M12.4 (endgame tối thiểu: cấp sau 100, Thần Vực / Tái Thiết Lục Địa, Thiên Đạo Hư Ảnh) |
 | Kiến trúc | `core/chapter9.gd` (vùng, Ma Tôn — dùng lại hàm cơ chế của `chapter4/5/6/7/8.gd`, không chép code), `core/endgame.gd` (cấp sau 100, 2 chế độ). Ma Tôn gọi cơ chế cũ qua hàm tĩnh công khai của từng chương (ví dụ `Ch5.lava_flood`, `Ch6.mirror_cast`, `Ch8.drain_talent`) — chương nào chưa tách hàm thì tách ra khi làm M12. Vẽ ở `view/region9_view.gd`, hình `tools/art/region9.py` |
 | Quy trình | Spec (file này) → duyệt → code → test → cập nhật 01/02/03/04/05/06/07 và mục Kết quả |
-| Trạng thái | 🟡 **Rà lại 31/10/2026** (mục 0b); Q90–Q98 dùng cột Mặc định (04 mục 13 dòng 14). Code sau M11 |
+| Trạng thái | ✅ **Đã code 01/11/2026** (phiên game-3f) sau khi rà lại spec (mục 0b). Q90–Q98 dùng cột Mặc định (04 mục 13 dòng 14). Kết quả: mục 11 |
 
 Ký hiệu: ✅ xong · 🟡 một phần · ⬜ chưa làm.
 
@@ -190,6 +190,51 @@ Smoke mới: `21-region9`, `21b-floor-element`, `21c-camp9`, `21d-ma-ton`, `22-e
 | Q97 | Kết thúc Hiến tế mở hết sương — mất nội dung khám phá? | Mở **sương bản đồ** và **lộ sự kiện ô**, nhưng ô vẫn phải chiếm (thủ lĩnh, câu đố) — giữ vòng chơi, đổi cảm giác "lục địa được giải phóng" |
 | Q98 | Có làm M12.4 (endgame) cùng chương 9 hay tách? | **Cùng M12** ở mức tối thiểu (C9-50…53) — kết thúc mà không mở gì là trái kịch bản |
 
-## 11. Kết quả
+## 11. Kết quả (M12, 01/11/2026)
 
-Chưa làm.
+**Code:**
+
+- `core/chapter9.gd` (mới) — chương 9; `core/endgame.gd` (mới) — cấp sau 100, Thần Vực, Tái Thiết. Cả hai là module của `Chapters`; hook mới `after_exp`.
+- `core/game_world.gd`: hệ riêng của quái `Enemy.el_override` + `el_of(e)` (D71 — các file đọc hệ quái đổi theo), `tv()` nhân cả k > 1, `RARE_BOSSES["9-3"]`, Đạo Tặc sao chép `vo_dien`, buff Tái Thiết / Điểm Thiên Đạo (EXP, đi đường, hồi chiêu, bình máu, vàng, cường hoá), Ma Tôn không dùng luật "boss ở xa thì ẩn".
+- `core/explore.gd` (lưới 9 tầng × 5 ô, Tinh Hoa Tiến Hoá mỗi tầng, 9 công trình Tái Thiết, sản lượng, Đuốc), `core/profile.gd` (save v26), `core/chapter6.gd` (Ám Khí tắt sau kết thúc), `core/chapter8.gd` (Hiến tế miễn Suy Thiên; chặn nhánh boss hiếm chung cho Hư Vô Thú), `core/skills2.gd`, `core/passives.gd`, `core/chapter3.gd`, `core/caves.gd`.
+- Dữ liệu: `data/maps.gd` (9-1…9-3; `doors9`, `guards9`, `seals9`), `data/monsters.gd` (8 loại), `data/items.gd`, `data/story.gd` (`QUESTS9`, 9 dòng ký ức, 2 kết thúc).
+- Giao diện: `view/region9_view.gd` (mới), `ui/divine_panel.gd` (mới), `ui/screens.gd` (màn lựa chọn, tổng kết + danh đề, màn chiến thắng chương 8–9), `main.gd`, `ui/shop_panel.gd`, `ui/map_panel.gd`, `ui/target_frame.gd`, `view/world_view.gd`.
+- Hình: `tools/art/region9.py` (AR-66).
+
+**Chỗ khác spec khi code:**
+
+| Mục | Spec | Đã làm | Lý do |
+| --- | --- | --- | --- |
+| Kiến trúc Ma Tôn | gọi hàm cơ chế của chương 4–8 | Viết gọn trong `chapter9.gd`; chỉ dùng lại `Ch8.drain_talent` và bảng `Ch6.MIRROR_OF` | Cơ chế cũ gắn chặt với trạng thái từng chương (đấu trường, vòng báo riêng) — tách ra phải sửa 5 file chương đã cân bằng |
+| C9-30 chuyển giai đoạn | không nêu | 6 giây trung lập ở 66% / 33%, 3 giây ở 10% | Bài học chương 6–8 (TL-B8) |
+| C9-30b Sao chép | mọi nhóm kỹ năng | thuẫn / tăng cường không sao chép (chỉ hiện chữ) | Không có cơ chế tương ứng cho boss |
+| C9-21 | tên Thiên phú dưới bảng tên | lưu ở quái (`talent9`), chưa vẽ trên bảng tên | Bảng tên dùng chung mọi vùng — để đợt giao diện |
+| C9-03 | Thủ Tầng canh Cửa Tầng | tầng 3 / 6 canh cổng sang map sau; tầng 9 (2 tinh anh) canh cửa Thiên Đạo Chi Môn | Mỗi map có 2 Cửa Tầng, tầng thứ 3 nối map kế |
+| C9-41 / mục 7 | trường `exp_bank` | dùng chính `profile.xp` ở cấp 100 | Ở cấp 100 EXP đã không mất — không cần trường mới |
+| C9-35 Bộ Thiên Đạo 2 món | +5% mọi chỉ số | +5% HP và Tấn công | Giống cách bộ khác cộng chỉ số |
+| C9-51 Thần Vực | boss chương ngẫu nhiên mỗi 5 tầng | **Thần Tướng** (Thiên Tướng ×8 HP) | Boss chương phụ thuộc đấu trường riêng của chương đó |
+| C9-52 Triều tàn dư | 1 đợt + 1 boss chương của vùng | 8 quái cấp 100, giữ 120 giây | Như trên |
+| C9-33 Thiên Mệnh | tầm nhìn 50% | lớp sương sáng phủ màn hình khi có cơ chế này | Chưa có hệ tầm nhìn chung (chỉ vùng 6) |
+| Tái Thiết | xây ở trạm vùng đó | xây trong bảng Khai phá (phím M) của vùng đó | Dùng lại luồng công trình lãnh địa có sẵn |
+
+**Kiểm thử:** 6 test C9 (C9-T1…T8 gộp) và TL-B9 qua; toàn bộ bộ test 194/195 (TL-J3 hỏng từ trước — SN11-03, chờ chủ dự án).
+
+TL-B9 (bot cấp 99, chức 3 + Thần Kỹ ô 4, tiến hoá 2 lần Lv10, đồ xanh dương/xanh lá cấp 99; bot né Giấc mơ, lên Đá Nổi, vào vòng đèn, đánh bản có bóng; 5 lớp × 20 Thiên phú, 0 lần chết):
+
+| Lớp | F | S | F/S chênh | Trung bình |
+| --- | --- | --- | --- | --- |
+| Kiếm Khách | 26,8 giây | 25,7 giây | 4% | 27,2 giây |
+| Thợ Săn | 27,2 | 25,5 | 6% | 26,7 |
+| Pháp Sư | 32,2 | 30,4 | 6% | 31,2 |
+| Hộ Vệ | 33,9 | 29,7 | 12% | 32,2 |
+| Triệu Hồi Sư | 30,0 | 28,2 | 6% | 29,8 |
+
+5 lớp chênh **17%** (≤ 25%).
+
+**Smoke:** `21c-camp9`, `21-region9`, `21d-ma-ton`, `22-ending-choice`, `22d-credits` (ở `docs/images/m12/`).
+
+![Ma Tôn Vô Diện](images/m12/21d-ma-ton.png)
+
+![Màn lựa chọn kết thúc](images/m12/22-ending-choice.png)
+
+**Chưa làm:** TL-B9b (bot leo Thần Vực), PACE-T6, smoke `21b`, `22b/22c` (cảnh kết riêng), `23-than-vuc`, `23b-tai-thiet`; test riêng từng cơ chế Thiên Đạo Hư Ảnh; tên Thiên phú của Tàn Hồn trên bảng tên.

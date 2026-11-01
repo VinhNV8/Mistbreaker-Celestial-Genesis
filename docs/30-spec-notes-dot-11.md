@@ -62,4 +62,8 @@ Code: `data/maps.gd` `MAP_SCALE`, `get_map()` (có cache), `scaled()`, `POINT_LI
 | SN11-T1, T2 | Thẻ ĐANG MẶC cho đồ đang mặc; đồ trong túi 2 thẻ + so sánh; ▲ Tấn công khi mạnh hơn, ▼ đỏ khi yếu hơn; ô trống không có thẻ ĐANG MẶC; khung chi tiết có "So với đang mặc:"; ô đang mặc rê chuột hiện thẻ |
 | SN-T5, C3-T1, C4-T1, C5-T1, C6-T1, C7-T1 | Kích thước map = cũ × `MAP_SCALE`; cấp quái theo chiều ngang nhân ×√3 |
 | CL-T3, CB-T9, C3-T3, C3-T4, C4-T3, C4-T4, C5-T4 | Các phép kiểm "đòn trúng" đặt né tránh = 0 (chuỗi ngẫu nhiên đổi vì map lớn hơn — trước đó có lúc né trúng 10% của Kiếm Khách) |
+| C4-T4 | Đo hồi máu Vảy Thất Đầu: xoá quái và độc đầm còn lại từ đoạn trước của test |
 | PV-T3 | Đo trung bình **3 seed** (5, 11, 13) thay vì 2 cho ổn định |
+| M1-12 | Đo trung bình **5 seed** (13, 11, 12, 14, 15) thay vì 3 — đồ rơi theo seed dao động 17–25 giây; trung bình 20,5 giây (ngưỡng > 20 giữ nguyên, sát ngưỡng) |
+
+**Còn sát / dưới ngưỡng sau khi đổi chuỗi ngẫu nhiên (chưa chỉnh cân bằng, chờ chủ dự án):** PV-T3 Kiếm Khách bị động cấp 5 chỉ nhanh hơn ~1,7% (ngưỡng ≥ 2%); TL-J3 Pháp Sư chức 3 nhanh hơn chức 2 ~8% (ngưỡng 8–20%, rơi xuống dưới khi làm tròn). Hai test này đo sát biên từ trước — chuỗi ngẫu nhiên đổi là lệch qua ngưỡng.

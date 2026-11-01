@@ -398,6 +398,45 @@ const DEFS := {
 		"element": "", "name": "Hư Vô Thú", "arch": "li", "speed": 120.0, "radius": 38.0, "range": 55.0,
 		"windup": 0.6, "recover": 0.9, "attack": "melee", "color": "#3a1a5a", "steal": {"str": 50, "vit": 50},
 	},
+	## ---------------------------------------------------------------- M12 chương 9 (docs/18 C9-20…34). Hệ ghi ở đây là mặc định —
+	## ở vùng 9 hệ thật = hệ tầng (Enemy.el_override, chapter9).
+	## C9-20: Kích ngũ hành — đâm thẳng 6 m ×1,4 (hồi 6 giây, chapter9.chase). Tinh anh Thiên Tướng (C9-24): Thiên phạt.
+	"thien-binh": {
+		"element": "kim", "name": "Thiên Binh Ngũ Hành", "arch": "giap", "speed": 85.0, "radius": 18.0, "range": 40.0,
+		"windup": 0.6, "recover": 1.2, "attack": "melee", "color": "#e8d8a0", "steal": {"str": 60, "vit": 40},
+		"elite_name": "Thiên Tướng", "elite_arch": "giap", "elite_min_level": 96, "elite_skill": "thienphat", "elite_sprite": "thien-tuong",
+	},
+	## C9-21: mang 1 Thiên phú ngẫu nhiên, hiệu ứng theo nhóm (chapter9). Tinh anh Ngũ Hành Sứ Giả (C9-25): đổi hệ, chỉ hệ khắc nhận đủ.
+	"tan-hon": {
+		"element": "moc", "name": "Tàn Hồn Khai Giới Giả", "arch": "phep", "speed": 100.0, "radius": 15.0, "range": 180.0,
+		"windup": 0.7, "recover": 1.4, "attack": "volley1", "color": "#bcd8f0", "steal": {"int": 60, "luk": 40},
+		"elite_name": "Ngũ Hành Sứ Giả", "elite_arch": "phep", "elite_min_level": 97, "elite_skill": "none", "elite_sprite": "ngu-hanh-su-gia",
+	},
+	## C9-22: Phi nước đại — lao thẳng 20 m ×1,5 (hồi 7 giây, chapter9.chase).
+	"thien-ma": {
+		"element": "hoa", "name": "Thiên Mã", "arch": "nhanh", "speed": 175.0, "radius": 17.0, "range": 40.0,
+		"windup": 0.5, "recover": 0.9, "attack": "melee", "color": "#f0f0ff", "steal": {"agi": 70, "luk": 30},
+	},
+	## C9-23: Gầm ngũ hành — vòng 8 m ×1,2 + mất thưởng khắc hệ 5 giây (hồi 10 giây, chapter9.chase).
+	"linh-thu-ngu-hanh": {
+		"element": "tho", "name": "Ngũ Hành Linh Thú", "arch": "li", "speed": 90.0, "radius": 22.0, "range": 45.0,
+		"windup": 0.7, "recover": 1.3, "attack": "melee", "color": "#d8b86a", "steal": {"vit": 60, "str": 40},
+	},
+	## C9-30: boss chương 9 (Thiên Đạo Chi Môn, 3 giai đoạn dùng lại cơ chế boss chương 1–8 — chapter9).
+	"ma-ton": {
+		"element": "kim", "name": "Ma Tôn Vô Diện", "arch": "boss", "speed": 120.0, "radius": 32.0, "range": 60.0,
+		"windup": 0.6, "recover": 0.9, "attack": "melee", "color": "#141018", "steal": {"str": 34, "int": 33, "agi": 33},
+	},
+	## C9-30: phân thân của Ma Tôn (bản giả tan khi trúng đòn — chapter9.vanish).
+	"ma-ton-ao": {
+		"element": "kim", "name": "Ma Tôn Vô Diện", "arch": "boss", "speed": 120.0, "radius": 32.0, "range": 60.0,
+		"windup": 0.6, "recover": 0.9, "attack": "none", "color": "#141018", "steal": {"str": 100},
+	},
+	## C9-33: boss hiếm 9-3 (sau khi chọn kết thúc) — mỗi giai đoạn rút 1 cơ chế Thiên phú S+.
+	"thien-dao-hu-anh": {
+		"element": "kim", "name": "Thiên Đạo Hư Ảnh", "arch": "phep", "speed": 110.0, "radius": 34.0, "range": 200.0,
+		"windup": 0.7, "recover": 1.0, "attack": "volley1", "color": "#fff0c0", "steal": {"int": 50, "luk": 50},
+	},
 	## C4-30: boss chương 4
 	"nu-vuong": {
 		"element": "thuy", "name": "Nữ Vương Phệ Mộng", "arch": "boss", "speed": 110.0, "radius": 30.0, "range": 50.0,

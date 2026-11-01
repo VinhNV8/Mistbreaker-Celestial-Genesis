@@ -15,6 +15,8 @@ const CONTROLS := [
 	["Chuột", "Ngắm hướng đánh"],
 	["Chuột trái / J", "Đánh thường (giữ để đánh liên tục)"],
 	["1 · 2 · 3 · 4", "4 kỹ năng đang lắp (tốn MP); K / chuột phải = kỹ năng 1"],
+	["5 · 6 · G", "Ô 5 (mở khi chuyển chức 1), ô 6 (chuyển chức 2), ô Tuyệt kỹ G (cấp 45)"],
+	["X", "Đổi Bộ kỹ năng 1 / 2 (ngoài giao tranh)"],
 	["Space", "Né lăn — bất tử 0,3 giây"],
 	["L", "Kỹ năng Thiên phú (nếu có)"],
 	["Q", "Uống bình máu"],
@@ -466,7 +468,106 @@ const VICTORY := {
 	"cu-than": [7, "Thiên Không Cự Thần đã quỳ xuống",
 		"Ấn Hư Vô trên trán Cự Thần vỡ vụn. Người khổng lồ tỉnh lại, quỳ trước Bia Đá gốc rồi hoá đá. Bia Đá gốc rung lên khi %s bước tới gần…",
 		"Chạm Bia Đá gốc ở Đài Cự Thần (E) để làm nghi thức Nghịch Thiên Cải Mệnh — tiến hoá Thiên phú lần 2."],
+	"giao-chu": [8, "Giáo Chủ Hư Vô đã ngã xuống",
+		"Mặt nạ bạc vỡ đôi. Thiên phú bị nuốt bay về chủ cũ khắp lục địa — và từ trên cao, Ma Tôn gọi đúng tên %s.",
+		"Mang 3 Lõi Hư Vô tới Tổ Sư ở Cổng Phá Vây để chuyển chức lần 3. Cổng Thiên Đạo mở sau chuyển chức 3."],
+	"ma-ton": [9, "Ma Tôn Vô Diện đã tan",
+		"Khoảng trống xoáy sương tan biến. Mảnh thứ hai bừng sáng trong ngực %s — Ấn Phong Thiên mở ra trước Cổng Thiên Đạo.",
+		"Hãy chọn số phận của mảnh thứ hai."],
 }
+
+## C9-44: 2 thẻ kết thúc — [id, tên, mô tả, hệ quả].
+const ENDINGS := [
+	["hop-nhat", "Hợp nhất", "Hấp thụ mảnh thứ hai, trở thành Thiên Đạo mới.",
+		"Sương mù còn, nhưng nghe lệnh bạn · Ám Khí thành Thiên Đạo Lực (đầy → Thần Hoá 10 giây: +30% Tấn công, +15% tốc đánh, đòn khắc hệ) · Endgame: Thần Vực (tháp vô tận) · Cấp sau 100: Thần Vực N"],
+	["hien-te", "Hiến tế", "Trả mảnh thứ hai cho Bia Đá — sương mù tan.",
+		"Sương bản đồ vùng 1–9 mở hết, ô khai phá lộ sự kiện · Ám Khí biến mất · Thiên phú +20%, lãnh địa +30%, miễn Suy Thiên · Endgame: Tái Thiết Lục Địa (9 công trình) · Cấp sau 100: Khai Thế N"],
+]
+
+
+## C9-44: màn lựa chọn kết thúc — chọn 1 thẻ rồi xác nhận lần 2 ("Lựa chọn này không thể đổi lại.").
+static func ending_choice(on_pick: Callable) -> Control:
+	var page := _page(0.95, 900.0)
+	var col: VBoxContainer = page[1]
+	col.add_child(_centered("CHƯƠNG 9 · LỰA CHỌN", "Eyebrow"))
+	col.add_child(_centered("Số phận của mảnh thứ hai", "Title"))
+	var row := UiTheme.hbox(24)
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	col.add_child(row)
+	var confirm := _centered("", "", 860)
+	var confirm_row := _buttons(col)
+	col.add_child(confirm)
+	var chosen := [""]
+	for e in ENDINGS:
+		var card := PanelContainer.new()
+		card.name = "Ending_" + str(e[0])
+		card.custom_minimum_size = Vector2(400, 260)
+		var sb := StyleBoxFlat.new()
+		sb.bg_color = Color(0.12, 0.11, 0.16, 0.96)
+		sb.border_color = Color("#fff0b0") if e[0] == "hop-nhat" else Color("#9de0e6")
+		sb.set_border_width_all(2)
+		sb.set_corner_radius_all(12)
+		sb.set_content_margin_all(18)
+		card.add_theme_stylebox_override("panel", sb)
+		var v := UiTheme.vbox(10)
+		card.add_child(v)
+		var h := UiTheme.label(str(e[1]), "Heading")
+		h.add_theme_color_override("font_color", sb.border_color)
+		v.add_child(h)
+		v.add_child(UiTheme.label(str(e[2]), "", 360))
+		v.add_child(UiTheme.label(str(e[3]), "Small", 360))
+		var b := UiTheme.button("Chọn %s" % e[1], true)
+		b.name = "Pick_" + str(e[0])
+		b.pressed.connect(func():
+			chosen[0] = str(e[0])
+			confirm.text = "Chọn %s? Lựa chọn này không thể đổi lại." % e[1]
+			confirm_row.visible = true)
+		v.add_child(b)
+		row.add_child(card)
+	confirm_row.visible = false
+	var yes := UiTheme.button("Xác nhận", true)
+	yes.name = "EndingConfirm"
+	yes.pressed.connect(func():
+		if chosen[0] != "":
+			on_pick.call(chosen[0]))
+	confirm_row.add_child(yes)
+	var no := UiTheme.button("Nghĩ lại")
+	no.pressed.connect(func():
+		chosen[0] = ""
+		confirm.text = ""
+		confirm_row.visible = false)
+	confirm_row.add_child(no)
+	return page[0]
+
+
+## C9-47: bảng tổng kết hành trình + danh đề.
+static func credits(world, on_close: Callable) -> Control:
+	var page := _page(0.97, 700.0)
+	var col: VBoxContainer = page[1]
+	var p = world.profile
+	var t: Dictionary = world.talent()
+	var end_name := "Hợp nhất" if str(p.ending) == "hop-nhat" else "Hiến tế"
+	col.add_child(_centered("HÀNH TRÌNH HOÀN THÀNH · %s" % end_name.to_upper(), "Eyebrow"))
+	col.add_child(_centered(str(p.name), "Title"))
+	var bosses := 0
+	for k in p.bosses:
+		if bool(p.bosses[k]) and k != "ending9":
+			bosses += 1
+	var tiles := 0
+	for rg in Explore.region_grids(p):
+		tiles += Explore.owned_count(rg[1])
+	col.add_child(_centered("Thời gian chơi %d giờ %d phút  ·  Cấp %d  ·  Quái đã hạ %d  ·  Boss %d  ·  Ô đã chiếm %d" % [
+		int(p.play_seconds) / 3600, (int(p.play_seconds) % 3600) / 60, p.level, p.kills, bosses + (1 if p.boss_defeated else 0), tiles], "", 680))
+	col.add_child(_centered("Thiên phú cuối: %s · %s  ·  Chức: %s" % [t.rank, t.name,
+		Classes.title(str(p.class_id), str(p.job), str(p.job2), str(p.job3))], "", 680))
+	var roll := _centered("THIÊN PHÚ KHAI GIỚI — MISTBREAKER: CELESTIAL GENESIS\n\nKịch bản, thiết kế, chỉ đạo: vinhnv\nLập trình, đồ hoạ sinh bằng code, cân bằng: các phiên Claude\nĐộng cơ: Godot 4 · Font: Be Vietnam Pro (OFL)\n\nCảm ơn bạn đã đi hết hành trình qua chín vùng đất của Huyền Thổ.", "Muted", 640)
+	col.add_child(roll)
+	var row := _buttons(col)
+	var b := UiTheme.button("Về Thiên Thê Đài", true)
+	b.name = "CreditsClose"
+	b.pressed.connect(on_close)
+	row.add_child(b)
+	return page[0]
 
 
 static func victory(world, on_continue: Callable, on_title: Callable, boss_id := "boss") -> Control:

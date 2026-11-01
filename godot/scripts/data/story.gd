@@ -324,6 +324,66 @@ const DIALOGS := {
 	"raid8_warn": [[LAC, "Hư Vô Giáo phản công một Đèn Tinh Quang! Giữ đèn trong 60 giây tới!"]],
 	"rare_hu_vo_thu": [["Hư Vô Thú", "(Một tiếng gầm không âm thanh. Ánh đèn quanh ổ run lên rồi mờ dần.)"]],
 	"rare_hu_vo_thu_down": [["{name}", "(Con thú tan thành sương đen. Một chiếc nanh tím vẫn còn lại trên nền đá.)"]],
+	# ---------------------------------------------------------------- chương 9 (docs/18 C9-40…47)
+	"r9_arrive": [
+		["{name}", "Cầu thang ánh sáng dẫn lên… mỗi tầng một màu trời khác."],
+		["{name}", "(Mỗi tầng mang một hệ, đổi mỗi lần bước vào. Nhặt Ấn Hệ trên bệ đá để đòn đánh khắc hệ tầng 60 giây. Hạ Thủ Tầng để mở Cửa Tầng.)"],
+	],
+	"van9_meet": [
+		[VANHAC, "Đây là Thiên Thê — chín tầng tới Cổng Thiên Đạo. Ma Tôn đang ở trên cùng, dùng mảnh Bia mở cổng."],
+		[LAM, "Mình đi cùng cậu tới cuối, {name}. Lần này tới lượt mình gọi tên cậu."],
+		[NGA, "Thiên binh canh từng tầng. Cứ đi, ta giữ hàng ở đây."],
+	],
+	"van9_kills": [[VANHAC, "Dẹp thiên binh quanh đài trước đã. Rồi mở Cửa Tầng — hạ Thủ Tầng đứng canh mỗi cửa."]],
+	"van9_floors": [[VANHAC, "Lên tới tầng 6. Mỗi Cửa Tầng mở ra, ngươi sẽ thấy ký ức của hắn — hãy nhìn cho kỹ."]],
+	"van9_souls": [
+		[VANHAC, "Những Tàn Hồn kia là Khai Giới Giả bị Ma Tôn cướp Thiên phú một nghìn năm trước. Giải thoát chín hồn — mỗi hồn để lại một Ánh Hồn."],
+		[VANHAC, "Chín Ánh Hồn đủ vá mảnh Bia Đá gốc thành Ấn Phong Thiên — thứ duy nhất khép được Cổng."],
+	],
+	"van9_seal": [[VANHAC, "Ấn Phong Thiên đã thành. Lên tầng 9, tìm Thiên Đạo Chi Môn. Lão sẽ theo sau."]],
+	"floor9_1": [["Ký ức", "(Một thiếu niên đứng trước Bia Đá. Ánh sáng không đến. \"Thiên Đạo chọn người khác.\")"]],
+	"floor9_2": [["Ký ức", "(Cậu ta vẫn luyện kiếm mỗi đêm. Không Thiên phú — nhưng mạnh hơn mọi Khai Giới Giả cùng tuổi.)"]],
+	"floor9_3": [["Ký ức", "(Cậu ta cứu cả một làng khỏi bầy quái. Dân làng cảm ơn người có Thiên phú đứng cạnh.)"]],
+	"floor9_4": [["Ký ức", "(\"Nếu Thiên Đạo không cho, ta sẽ tự lấy.\" Lần đầu tiên, cậu ta chạm vào Thiên phú của người khác.)"]],
+	"floor9_5": [["Ký ức", "(Thiên phú thứ hai, thứ mười, thứ trăm. Khuôn mặt cậu ta mờ dần sau mỗi lần nuốt.)"]],
+	"floor9_6": [["Ký ức", "(Hắn trèo lên Thiên Thê. Thiên Đạo từ chối hắn lần thứ hai — và hắn đập vỡ Bia Đá.)"]],
+	"floor9_7": [["Ký ức", "(Thiên Liệt. Sương mù tràn khắp lục địa. Hắn không còn mặt — chỉ còn khoảng trống xoáy sương.)"]],
+	"floor9_8": [["Ký ức", "(Các Tổ Sư phong ấn hắn. Trước khi chìm, hắn xé linh hồn mình làm đôi và ném một nửa vào luân hồi.)"]],
+	"floor9_9": [["Ký ức", "(Nửa linh hồn ấy rơi vào một đứa trẻ sinh ra ở làng Thanh Thạch, mười sáu năm trước.)"]],
+	"floor9_locked": [["{name}", "(Cửa Tầng đóng chặt. Thủ Tầng vẫn đứng canh phía trước.)"]],
+	"ma_ton_gate": [
+		["Ma Tôn Vô Diện", "Ngươi tới rồi. Mười sáu năm qua, ngươi là ta — ta nhìn qua mắt ngươi, ta lớn lên cùng ngươi."],
+		["Ma Tôn Vô Diện", "Trả lại nửa kia đi. Rồi ta sẽ cho ngươi xem Thiên Đạo trông như thế nào từ phía bên kia."],
+		[LAM, "Đừng nghe hắn, {name}! Mình ở đây!"],
+	],
+	"ma_ton_shard": [["Ma Tôn Vô Diện", "Trả lại… phần của ta!"], ["{name}", "(Mảnh thứ hai trong ngực bùng cháy — nhưng nó không bay về phía hắn.)"]],
+	"ch9_choice": [
+		["{name}", "(Ma Tôn tan thành sương. Mảnh thứ hai sáng rực trong ngực. Ấn Phong Thiên mở ra trước Cổng Thiên Đạo.)"],
+		[VANHAC, "Lựa chọn là của ngươi, Khai Giới Giả. Không ai có thể chọn thay."],
+	],
+	"end_hop_nhat": [
+		["{name}", "(Mình hấp thụ mảnh thứ hai. Sương mù khắp lục địa… lặng xuống, như chờ lệnh.)"],
+		["{name}", "(Cổng Thiên Đạo mở ra trong mình. Mình nhìn thấy từng Thiên phú như những vì sao.)"],
+		[LAM, "Cậu vẫn là cậu chứ?"],
+		["{name}", "Vẫn là mình. Chỉ là… giờ mình nghe được tiếng của cả lục địa."],
+		[VANHAC, "Một Thiên Đạo có khuôn mặt. Ba trăm năm, lão chưa từng nghĩ sẽ thấy ngày này."],
+		["{name}", "(Thần Vực mở ra phía trên Thiên Thê Đài — nơi Thiên Đạo mới thử thách chính mình.)"],
+	],
+	"end_hien_te": [
+		["{name}", "(Mình đặt tay lên Ấn Phong Thiên. Mảnh thứ hai rời khỏi ngực, bay về phía Bia Đá.)"],
+		["{name}", "(…)"],
+		[ELDER, "Tỉnh rồi à? Ngủ ba ngày ba đêm đấy, cháu."],
+		["{name}", "(Làng Thanh Thạch. Bia Đá liền lại. Ngoài cửa sổ — không còn sương mù.)"],
+		[LAM, "Sương tan khắp lục địa rồi. Giờ thì xây lại thôi, {name}."],
+		["{name}", "(Tái Thiết Lục Địa: mỗi vùng chờ một công trình mới.)"],
+	],
+	"van9_idle": [[VANHAC, "Ánh Hồn, Cửa Tầng, rồi Cổng. Từng bước một, Khai Giới Giả."]],
+	"ch9_done": [[VANHAC, "Lục địa có một tương lai mới. Ngươi viết nó, không phải Thiên Đạo."]],
+	"nga9_shop": [[NGA, "Đồ tiêu hao của mọi chương đều có — bình máu, bình MP, Đèn Lồng, Lông Vũ Gió, Than Hồng."]],
+	"lam9_idle": [[LAM, "Thiên phú của mình đã về. Lần này, mình sẽ dùng nó để đứng cạnh cậu."]],
+	"than_vuc_locked": [["Cổng Thần Vực", "(Cổng im lặng. Chỉ Thiên Đạo mới bước qua được.)"]],
+	"rare_hu_anh": [["Thiên Đạo Hư Ảnh", "Ta là cái bóng của mọi Thiên phú từng được ban xuống. Ngươi muốn biết mình xứng đáng không?"]],
+	"rare_hu_anh_down": [["{name}", "(Hư Ảnh tan thành vô số đốm sáng, mỗi đốm mang hình một Thiên phú, rồi lặng lẽ tắt.)"]],
 }
 
 
@@ -388,6 +448,24 @@ const DONE6 := 8
 
 static func quest6(step: int) -> Dictionary:
 	return QUESTS6[step - 1] if step >= 1 and step <= QUESTS6.size() else {}
+
+
+## M12 (docs/18 C9-41): nhiệm vụ chính chương 9. Bước lưu ở profile.quest.ch9: 0 = chưa xong chương 8, 1…7 = bước 1…7, 8 = xong.
+## Thưởng EXP ≈ 25% EXP cấp 95 → 100 ≈ 3,39 triệu.
+const QUESTS9 := [
+	{"title": "Thiên Thê", "hint": "Tới Thiên Thê Đài, gặp Vân Hạc", "type": "talk_van9", "need": 1, "reward": {"exp": 200000, "gold": 5000}},
+	{"title": "Thiên binh", "hint": "Hạ 30 quái vùng 9", "type": "kills9", "need": 30, "reward": {"exp": 350000}},
+	{"title": "Vượt tầng", "hint": "Mở Cửa Tầng tới tầng 6", "type": "floors9", "need": 5, "reward": {"exp": 450000, "stones": 12}},
+	{"title": "Ánh Hồn", "hint": "Giải thoát 9 Tàn Hồn Khai Giới Giả", "type": "souls9", "need": 9, "reward": {"exp": 500000, "crystal": 15}},
+	{"title": "Thiên Đạo Chi Môn", "hint": "Mở tới tầng 9, tìm Cổng (40% map)", "type": "explore9", "need": 1, "reward": {"exp": 550000}},
+	{"title": "Ma Tôn Vô Diện", "hint": "Hạ Ma Tôn ở Thiên Đạo Chi Môn", "type": "boss9", "need": 1, "reward": {"exp": 600000, "crystal": 20}},
+	{"title": "Lựa chọn", "hint": "Chọn số phận của mảnh thứ hai", "type": "ending9", "need": 1, "reward": {"exp": 740000, "gold": 10000}},
+]
+const DONE9 := 8
+
+
+static func quest9(step: int) -> Dictionary:
+	return QUESTS9[step - 1] if step >= 1 and step <= QUESTS9.size() else {}
 
 
 ## M11 (docs/17 C8-41): nhiệm vụ chính chương 8. Bước lưu ở profile.quest.ch8: 0 = chưa xong chương 7, 1…7 = bước 1…7, 8 = xong.

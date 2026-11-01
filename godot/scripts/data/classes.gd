@@ -330,7 +330,14 @@ static func job2_def(class_id: String, job2: String) -> Dictionary:
 
 
 ## SK1 (docs/13): hệ kỹ năng — mở theo cấp, Điểm Kỹ Năng (1/cấp), cấp kỹ năng 1–10, 4 ô lắp.
-const SKILL_SLOTS := 4
+## SN12-02 (docs/31): 7 ô kỹ năng — ô 0–3 phím 1–4; ô 4 phím 5 (mở khi chuyển chức 1); ô 5 phím 6 (chuyển chức 2);
+## ô 6 = ô Tuyệt kỹ phím G (cấp 45), chỉ lắp Tối thượng hoặc Thần Kỹ. Ô trống = "".
+const SKILL_SLOTS := 7
+## Số ô bộ lắp mặc định / bộ cũ (save < v27).
+const BASE_SLOTS := 4
+const SLOT_ULT := 6
+const ULT_SLOT_LEVEL := 45
+const SLOT_KEYS := ["1", "2", "3", "4", "5", "6", "G"]
 const SKILL_MAX_LEVEL := 10
 ## Kỹ năng gây sát thương: +8% hệ số mỗi cấp. Kỹ năng hỗ trợ (mul = 0): −4% hồi chiêu mỗi cấp.
 const SKILL_LEVEL_MUL := 0.08
@@ -348,13 +355,20 @@ static func skill_by_id(class_id: String, id: String) -> Dictionary:
 	return {}
 
 
-## Thứ tự lắp mặc định = thứ tự trong dữ liệu.
+## Thứ tự lắp mặc định = 4 kỹ năng đầu trong dữ liệu; ô 5, 6, Tuyệt kỹ để trống (SN12-02).
 static func default_loadout(class_id: String) -> Array:
 	var out: Array = []
 	for sk in skills_of(class_id):
-		if out.size() < SKILL_SLOTS:
+		if out.size() < BASE_SLOTS:
 			out.append(str(sk.id))
+	while out.size() < SKILL_SLOTS:
+		out.append("")
 	return out
+
+
+## SN12-02: kỹ năng lắp được vào ô Tuyệt kỹ (Tối thượng, Thần Kỹ).
+static func is_ult(sk: Dictionary) -> bool:
+	return bool(sk.get("ultimate", false)) or bool(sk.get("job3", false))
 
 
 static func job_def(class_id: String) -> Dictionary:

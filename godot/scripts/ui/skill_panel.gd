@@ -7,6 +7,9 @@ extends "res://scripts/ui/modal.gd"
 ## ô lắp, biến thể), chân bảng Tẩy điểm.
 ## PV (docs/27): tab "Bị động" — cột trái 4 bị động học bằng Điểm Kỹ Năng (cấp 0–5), cột phải bị động sẵn có
 ## (đặc tính lớp, chuyển chức 1 / 2 / 3) chỉ để xem.
+## SN12-02 (docs/31): 7 ô (1–4, 5 khi chuyển chức 1, 6 khi chuyển chức 2, Tuyệt kỹ G cấp 45). Chân bảng có hàng
+## "Thanh kỹ năng" 7 ô — kéo kỹ năng từ cây thả vào ô, chuột phải ô để bỏ trống; nút đổi Bộ 1 / Bộ 2 (phím X).
+## Đổi ô ở vùng an toàn hoặc ngoài giao tranh (5 giây không đánh / bị đánh).
 
 const Classes = preload("res://scripts/data/classes.gd")
 const Skills2 = preload("res://scripts/core/skills2.gd")
@@ -42,10 +45,23 @@ class SkillNode:
 	var max_level := Classes.SKILL_MAX_LEVEL
 	var slot := -1
 	var on_click: Callable
+	## SN12-02: id kỹ năng chủ động kéo được ("" = không kéo: bị động, chưa mở).
+	var drag_id := ""
 
 	func _init() -> void:
 		custom_minimum_size = Vector2(56, 56)
 		mouse_default_cursor_shape = CURSOR_POINTING_HAND
+
+	func _get_drag_data(_at: Vector2) -> Variant:
+		if drag_id == "" or not unlocked:
+			return null
+		var pv := TextureRect.new()
+		pv.texture = tex
+		pv.custom_minimum_size = Vector2(44, 44)
+		pv.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		pv.modulate = Color(1, 1, 1, 0.85)
+		set_drag_preview(pv)
+		return {"skill_id": drag_id}
 
 	func _gui_input(event: InputEvent) -> void:
 		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
@@ -88,7 +104,62 @@ class SkillNode:
 			var c2 := Vector2(size.x - 2, 2)
 			draw_circle(c2, 9.0, Color("#2a5a9a"))
 			draw_arc(c2, 9.0, 0, TAU, 20, Color("#cfe3ff"), 1.5)
-			draw_string(f, c2 + Vector2(-9, 4), str(slot + 1), HORIZONTAL_ALIGNMENT_CENTER, 18, 11, Color.WHITE)
+			draw_string(f, c2 + Vector2(-9, 4), Classes.SLOT_KEYS[slot], HORIZONTAL_ALIGNMENT_CENTER, 18, 11, Color.WHITE)
+
+
+## SN12-02: một ô của hàng "Thanh kỹ năng" ở chân bảng — icon kỹ năng đang lắp, phím, ô chưa mở có khoá.
+## Nhận kéo-thả (can_drop(id) / on_drop(id)); nhấp trái chọn kỹ năng đó; nhấp phải bỏ trống ô.
+class LoadoutSlot:
+	extends Control
+	var tex: Texture2D
+	var key := ""
+	var open := true
+	var big := false
+	var hint := ""
+	var can_drop: Callable
+	var on_drop: Callable
+	var on_click: Callable
+	var on_clear: Callable
+
+	func _init() -> void:
+		custom_minimum_size = Vector2(42, 42)
+		mouse_default_cursor_shape = CURSOR_POINTING_HAND
+
+	func _gui_input(event: InputEvent) -> void:
+		if event is InputEventMouseButton and event.pressed:
+			if event.button_index == MOUSE_BUTTON_LEFT and on_click.is_valid():
+				on_click.call()
+				accept_event()
+			elif event.button_index == MOUSE_BUTTON_RIGHT and on_clear.is_valid():
+				on_clear.call()
+				accept_event()
+
+	func _can_drop_data(_at: Vector2, data: Variant) -> bool:
+		return data is Dictionary and data.has("skill_id") and can_drop.is_valid() and bool(can_drop.call(str(data.skill_id)))
+
+	func _drop_data(_at: Vector2, data: Variant) -> void:
+		on_drop.call(str(data.skill_id))
+
+	func _draw() -> void:
+		var r := Rect2(Vector2.ZERO, size)
+		var sb := StyleBoxFlat.new()
+		sb.bg_color = Color("#120c08") if open else Color("#0c0907")
+		sb.set_corner_radius_all(6)
+		sb.set_border_width_all(2)
+		sb.border_color = Color("#f3d27a") if big and open else (Color("#c9a45c") if open else Color("#3a2c18"))
+		draw_style_box(sb, r)
+		var f := UiTheme.bold_font()
+		if not open:
+			var c := r.get_center()
+			draw_arc(c + Vector2(0, -4), 5.0, PI, TAU, 12, Color("#6a5a48"), 2.0)
+			draw_rect(Rect2(c + Vector2(-7, -4), Vector2(14, 11)), Color("#6a5a48"))
+		elif tex != null:
+			draw_texture_rect(tex, r.grow(-4), false)
+		else:
+			draw_string(f, Vector2(0, size.y / 2.0 + 7), "+", HORIZONTAL_ALIGNMENT_CENTER, size.x, 20, Color("#c9a45c", 0.7))
+		var kr := Rect2(Vector2(size.x - 15, size.y - 14), Vector2(16, 15))
+		draw_rect(kr, Color("#20160f"))
+		draw_string(f, kr.position + Vector2(0, 12), key, HORIZONTAL_ALIGNMENT_CENTER, kr.size.x, 11, Color("#f3d27a"))
 
 
 ## Nền cây kỹ năng: đường nối gấp khúc vàng + đầu mũi tên từ kỹ năng trước tới kỹ năng mở sau.
@@ -372,6 +443,7 @@ func _tree(g: Dictionary) -> Control:
 		nd.selected = str(sk.id) == _sel
 		nd.level = world.skill_level(str(sk.id))
 		nd.slot = world.profile.loadout.find(str(sk.id))
+		nd.drag_id = str(sk.id)
 		nd.custom_minimum_size = Vector2(NODE, NODE)
 		nd.size_flags_horizontal = SIZE_SHRINK_CENTER
 		nd.tooltip_text = str(sk.name)
@@ -568,27 +640,92 @@ func _num(x: float) -> String:
 
 
 func _slots(id: String) -> Control:
-	var safe: bool = world.in_safe_zone()
+	var can: bool = world.can_change_loadout()
+	var sk := Classes.skill_by_id(str(world.profile.class_id), id)
 	var v := UiTheme.vbox(4)
-	var row := UiTheme.hbox(6)
+	var row := UiTheme.hbox(4)
 	row.add_child(UiTheme.strong("Lắp vào ô", 14, GOLD_LIGHT))
 	row.add_child(UiTheme.spacer())
 	var slot: int = world.profile.loadout.find(id)
 	for i in Classes.SKILL_SLOTS:
-		var b := UiTheme.button(str(i + 1), slot == i)
+		var key: String = Classes.SLOT_KEYS[i]
+		var b := UiTheme.button(key, slot == i)
 		b.name = "Slot_%s_%d" % [id, i]
-		b.custom_minimum_size = Vector2(40, 36)
-		b.tooltip_text = "Lắp vào ô %d (phím %d)" % [i + 1, i + 1]
-		b.disabled = not safe or slot == i
+		b.custom_minimum_size = Vector2(32, 34)
+		var accepts: bool = world.slot_accepts(i, sk)
+		if not world.slot_open(i):
+			b.tooltip_text = _slot_lock_text(i)
+		elif not accepts:
+			b.tooltip_text = "Ô Tuyệt kỹ (G) chỉ lắp Tối thượng hoặc Thần Kỹ."
+		else:
+			b.tooltip_text = "Lắp vào ô %s (phím %s)" % [key, key]
+		b.disabled = not can or slot == i or not accepts
 		var si: int = i
 		b.pressed.connect(func():
 			world.set_slot(si, id)
 			refresh())
 		row.add_child(b)
 	v.add_child(row)
-	if not safe:
-		v.add_child(UiTheme.label("Đổi ô và biến thể: về làng / trại / thành (vùng an toàn).", "Small", DETAIL_W - 14))
+	if not can:
+		v.add_child(UiTheme.label("Đang giao tranh — đổi ô sau 5 giây không đánh / bị đánh. Biến thể: ở vùng an toàn.", "Small", DETAIL_W - 14))
 	return v
+
+
+## SN12-02: lý do ô 5 / 6 / G còn khoá.
+func _slot_lock_text(i: int) -> String:
+	if i == 4:
+		return "Ô 5 mở khi chuyển chức 1 (cấp %d)." % Classes.JOB_LEVEL
+	if i == 5:
+		return "Ô 6 mở khi chuyển chức 2 (cấp %d)." % Classes.JOB2_LEVEL
+	return "Ô Tuyệt kỹ (G) mở ở cấp %d — lắp Tối thượng hoặc Thần Kỹ." % Classes.ULT_SLOT_LEVEL
+
+
+## SN12-02: hàng "Thanh kỹ năng" ở chân bảng + nút đổi bộ.
+func _loadout_bar() -> Control:
+	var p = world.profile
+	var row := UiTheme.hbox(5)
+	row.name = "LoadoutBar"
+	var lbl := UiTheme.strong("Bộ %d" % (int(p.loadout_set) + 1), 14, GOLD_LIGHT)
+	lbl.size_flags_vertical = SIZE_SHRINK_CENTER
+	row.add_child(lbl)
+	for i in Classes.SKILL_SLOTS:
+		var sk: Dictionary = world.slot_skill(i)
+		var ls := LoadoutSlot.new()
+		ls.name = "Bar_%d" % i
+		ls.key = Classes.SLOT_KEYS[i]
+		ls.open = world.slot_open(i)
+		ls.big = i == Classes.SLOT_ULT
+		ls.tex = SpriteLib.icon("skill-" + str(sk.icon)) if not sk.is_empty() else null
+		ls.tooltip_text = _slot_lock_text(i) if not ls.open else (
+			("%s — kéo kỹ năng khác vào để thay, chuột phải để bỏ trống." % sk.name) if not sk.is_empty()
+			else "Ô trống — kéo kỹ năng từ cây vào đây.")
+		var si: int = i
+		ls.can_drop = func(id: String) -> bool:
+			var d := Classes.skill_by_id(str(p.class_id), id)
+			return not d.is_empty() and world.skill_unlocked(d) and world.slot_accepts(si, d)
+		ls.on_drop = func(id: String):
+			world.set_slot(si, id)
+			_sel = id
+			refresh()
+		ls.on_click = func():
+			if not world.slot_skill(si).is_empty():
+				_sel = str(world.slot_skill(si).id)
+				refresh()
+		ls.on_clear = func():
+			if not world.slot_skill(si).is_empty():
+				world.set_slot(si, "")
+				refresh()
+		row.add_child(ls)
+	var sw := UiTheme.button("⇄ Bộ %d (X)" % (2 - int(p.loadout_set)))
+	sw.name = "SwapLoadout"
+	sw.custom_minimum_size = Vector2(0, 38)
+	sw.tooltip_text = "Đổi giữa Bộ kỹ năng 1 và 2 (ví dụ bộ đánh quái / bộ đánh boss). Ngoài giao tranh hoặc ở vùng an toàn."
+	sw.disabled = not world.can_change_loadout()
+	sw.pressed.connect(func():
+		world.swap_loadout()
+		refresh())
+	row.add_child(sw)
+	return row
 
 
 ## SK2: 3 tầng biến thể, mỗi tầng chọn 1 (tầng II: 5 hệ ngũ hành với kỹ năng sát thương).
@@ -650,11 +787,11 @@ func _footer() -> Control:
 	reset.pressed.connect(func():
 		world.skill_reset()
 		refresh())
+	# SN12-02: ghi chú tẩy điểm chuyển vào tooltip; chỗ đó là hàng Thanh kỹ năng (kéo-thả) + đổi bộ.
+	reset.tooltip_text = ("Tẩy lại toàn bộ điểm kỹ năng, hoàn đủ điểm — miễn phí ở vùng an toàn." if safe
+		else "Tẩy điểm: về làng / trại / thành (vùng an toàn).")
 	foot.add_child(reset)
-	var note := UiTheme.label(("Tẩy lại toàn bộ điểm kỹ năng, hoàn đủ điểm — miễn phí ở vùng an toàn." if safe
-		else "Tẩy điểm và đổi ô kỹ năng: về làng / trại / thành (vùng an toàn)."), "Muted")
-	note.size_flags_vertical = SIZE_SHRINK_CENTER
-	foot.add_child(note)
+	foot.add_child(_loadout_bar())
 	foot.add_child(UiTheme.spacer())
 	var books := UiTheme.label("Bí Kíp = +1 Điểm Kỹ Năng", "Muted")
 	books.tooltip_text = "Bí Kíp rơi từ tinh anh, boss vùng, Chúa Hang, boss hiếm và ô Di tích. Nhặt được là cộng ngay 1 Điểm Kỹ Năng."

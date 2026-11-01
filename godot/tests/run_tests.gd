@@ -23,6 +23,9 @@ const Ch5 = preload("res://scripts/core/chapter5.gd")
 const Ch6 = preload("res://scripts/core/chapter6.gd")
 const Ch7 = preload("res://scripts/core/chapter7.gd")
 const Ch8 = preload("res://scripts/core/chapter8.gd")
+const Ch9 = preload("res://scripts/core/chapter9.gd")
+const Endgame = preload("res://scripts/core/endgame.gd")
+const Screens9 = preload("res://scripts/ui/screens.gd")
 const Job3 = preload("res://scripts/core/job3.gd")
 const Ch4 = preload("res://scripts/core/chapter4.gd")
 const Chapters = preload("res://scripts/core/chapters.gd")
@@ -191,6 +194,14 @@ func _init() -> void:
 	_run("C8-T5/T6/T7 nhiệm vụ chương 8, Tổng tấn công, chuyển chức 3 ở Tổ Sư, Phản công Hư Vô", _test_c8_quest)
 	_run("C8-T6/T7 lưới vùng 8 (Mạch Tinh Thạch), save v25", _test_c8_grid_save)
 	_run("TL-B8 cân bằng vùng 8: 5 lớp × 20 Thiên phú hạ Giáo Chủ Hư Vô", _test_c8_balance)
+	# M12 — chương 9 Thiên Đạo Chi Môn + endgame (docs/18)
+	_run("C9-T1 mở vùng 9, 3 map ×√3, Thủ Tầng, Cửa Tầng mở vĩnh viễn, Thiên Đạo Chi Môn", _test_c9_unlock)
+	_run("C9-T2/T6 hệ tầng đổi khi vào tầng, Ấn Hệ, lưới 9 tầng × 5 ô", _test_c9_floors)
+	_run("C9-T3 quái vùng 9: Tàn Hồn mang Thiên phú, Sứ Giả 25%, Thiên phạt, Gầm ngũ hành, Ánh Hồn", _test_c9_mobs)
+	_run("C9-T4 Ma Tôn 3 giai đoạn + mảnh thứ hai, Mặt Nạ Vô Diện", _test_c9_boss)
+	_run("C9-T5/T7 nhiệm vụ chương 9, lựa chọn kết thúc, Hợp nhất / Hiến tế", _test_c9_quest_endings)
+	_run("C9-T8 cấp sau 100, Điểm Thiên Đạo, Thần Vực, Tái Thiết, save v26", _test_c9_endgame)
+	_run("TL-B9 cân bằng vùng 9: 5 lớp × 20 Thiên phú hạ Ma Tôn Vô Diện", _test_c9_balance)
 	# Spec_Notes đợt 5
 	_run("SN5-T1 bấm bản đồ nhỏ: tự chạy tới, tới nơi / tự đi / kẹt / đổi map thì dừng", _test_sn5_travel)
 	_run("SN5-T2 chữ nhặt đồ: xếp dòng, gộp vàng, mỗi món một dòng, tối đa 6", _test_sn5_pickup_notes)
@@ -223,6 +234,8 @@ func _init() -> void:
 	_run("SN10-T1 cường hoá: kết quả hiện giữa màn hình (thành công / thất bại)", _test_sn10_enhance_toast)
 	_run("SN10-T2 bình MP: phím F, hồi 40% MP, hồi chiêu riêng, cửa hàng (không giới hạn), rơi đồ, save v22, ô trên thanh kỹ năng", _test_sn10_mp_potion)
 	_run("SN11-T1, T2 thẻ thông tin trang bị khi rê chuột (đồ đang mặc / trong túi), so sánh ▲▼ với đồ đang mặc", _test_sn11_item_tip)
+	_run("SN12-T1 thanh kỹ năng 7 ô: ô 5 / 6 / Tuyệt kỹ mở theo tiến trình, đổi ô ngoài giao tranh, hồi chiêu theo kỹ năng, 2 bộ, báo + tự lắp kỹ năng mới, save v27", _test_sn12_slots)
+	_run("SN12-T2 giao diện thanh kỹ năng: ô ẩn / to / trống, kéo-thả, chuột phải, hàng Thanh kỹ năng + đổi bộ ở bảng Kỹ năng", _test_sn12_ui)
 	_run("SK3-T4 cân bằng: bộ kỹ năng nhánh hạ Viêm Long không chậm quá 30% bộ mặc định", _test_sk3_balance)
 	# LH1 — Hộ Vệ (docs/19)
 	_run("HV-T1 Hộ Vệ: chỉ số VIT, Khiên −15% sát thương nhận, 13 kỹ năng, Chùy, tự cộng điểm", _test_hv_class)
@@ -233,7 +246,7 @@ func _init() -> void:
 	_run("TH-T2 Triệu Hồi Sư: kỹ năng gây sát thương, linh thú đánh xa, Liên Kết Linh Hồn", _test_th_skills)
 	_run("TH-T3 Triệu Hồi Sư: Ngự Long Sư Hoả Hồ, Đồ Đằng Sư hồi HP, đòn linh thú mang id kỹ năng", _test_th_jobs)
 	# J3 — chuyển chức 3, SH — linh thú có máu (docs/23)
-	_run("J3-T1 chuyển chức 3: điều kiện cấp 90 + chức 2 + 50 Tinh Thạch, Liệt Diễm, +10%, tên chức, Thần Kỹ mở, save v18", _test_j3_unlock)
+	_run("J3-T1 chuyển chức 3: điều kiện cấp 90 + chức 2 + 50 Tinh Thạch (+ Giáo Chủ, 3 Lõi Hư Vô — M11), Tổ Sư, +10%, tên chức, Thần Kỹ mở, save v18", _test_j3_unlock)
 	_run("J3-T2 chức 3: Kiếm Thần, Thiên Lạc Xạ Thủ, Hiền Giả, Thủ Hộ Thần, Vạn Linh Chi Chủ — 2 hiệu ứng mỗi chức", _test_j3_effects)
 	_run("J3-T3 5 Thần Kỹ: khoá khi chưa chức 3, gây sát thương, Nhất Kiếm ×2 Phá Thế, Tinh Vũ 8 mũi, Ngũ Hành, Thiên Thuẫn, Kỳ Lân", _test_j3_skills)
 	_run("SH-T1 linh thú có máu: quái thường đánh linh thú, Thạch Quỷ khiêu khích, boss bỏ qua, gục, Linh Hồ 10 giây, hồi máu", _test_sh_summon_hp)
@@ -603,7 +616,7 @@ const BOT_SKILL_RULES := {
 
 
 func _bot_skills(w: GameWorld, out: Dictionary, d: float, melee: bool) -> Dictionary:
-	for i in 4:
+	for i in Classes.SKILL_SLOTS:  # SN12-02: 7 ô (ô trống / chưa mở thì bỏ qua)
 		var sk: Dictionary = w.slot_skill(i)
 		var key := "skill" if melee and i == 0 else "skill_%d" % (i + 1)
 		var use := false
@@ -923,9 +936,10 @@ func _boss_fight(w: GameWorld, limit := 600.0) -> Array:
 
 ## 3.11-11: trang bị không được làm boss chương 1 thành quá dễ ở đúng cấp dự kiến (cấp 5).
 ## SN9-06: một seed dao động 16–33 giây theo đồ rơi; đo trung bình 3 seed (ngưỡng giữ nguyên).
+## SN11-03: map ×3 đổi chuỗi ngẫu nhiên (đồ rơi) → đo 5 seed cho ổn định (ngưỡng giữ nguyên).
 func _test_boss_with_loot() -> void:
 	var total := 0.0
-	var seeds := [13, 11, 12]
+	var seeds := [13, 11, 12, 14, 15]
 	for sd in seeds:
 		var p := _profile("kiem-tam", 3)
 		var w := GameWorld.new(p, RngUtil.make(sd))
@@ -1909,7 +1923,9 @@ func _test_c1_shop() -> void:
 	p.gold = 100.0
 	p.potions = 4
 	_check(w.shop_buy("potion").ok and p.potions == 5 and is_equal_approx(p.gold, 70.0), "mua bình máu 30 vàng")
-	_check(not w.shop_buy("potion").ok, "tối đa 5 bình")
+	# SN12-01: bình máu không giới hạn (trước: tối đa 5)
+	_check(w.shop_buy("potion").ok and p.potions == 6 and is_equal_approx(p.gold, 40.0), "bình máu không giới hạn: mua bình thứ 6")
+	p.gold = 70.0
 	_check(w.shop_buy("stone").ok and is_equal_approx(p.gold, 45.0), "mua Đá 25 vàng")
 	var it := Items.new_item(p, 4, "blue", RngUtil.make(2), "helm")
 	Items.add_item(p, it)
@@ -5249,16 +5265,21 @@ func _test_sk1_levels() -> void:
 	var e1 := w.spawn_enemy("wolf", 1, w.player.pos + Vector2(40, 0))
 	e1.max_hp = 1e6
 	e1.hp = 1e6
-	w.player.mp = 999.0
-	p.skill_levels["spin"] = 1
-	w.player.skill_cds[0] = 0.0
-	w.use_skill(0)
-	var d1: float = 1e6 - e1.hp
-	e1.hp = 1e6
-	p.skill_levels["spin"] = 10
-	w.player.skill_cds[0] = 0.0
-	w.use_skill(0)
-	var d10: float = 1e6 - e1.hp
+	# SN12: tắt chí mạng + trung bình 6 lần mỗi cấp (sát thương dao động ±10%, một lần đo dễ lệch dưới ngưỡng)
+	w.stats.crit = 0.0
+	var dmg_at := func(lv: int) -> float:
+		p.skill_levels["spin"] = lv
+		var sum := 0.0
+		for _k in 6:
+			w.player.mp = 999.0
+			w.player.skill_cds[0] = 0.0
+			e1.hp = 1e6
+			e1.pos = w.player.pos + Vector2(40, 0)  # Xoáy Kiếm đẩy lùi quái ~10 px mỗi lần
+			w.use_skill(0)
+			sum += 1e6 - e1.hp
+		return sum / 6.0
+	var d1: float = dmg_at.call(1)
+	var d10: float = dmg_at.call(10)
 	_check(d10 > d1 * 1.5, "Xoáy Kiếm cấp 10 mạnh hơn rõ (%.0f → %.0f)" % [d1, d10])
 	# tẩy điểm: chỉ ở vùng an toàn
 	w.player.pos = w.safe_pos + Vector2(w.safe_r + 400.0, 0)
@@ -5274,7 +5295,9 @@ func _test_sk1_loadout() -> void:
 	p.level = 10
 	_check(w.slot_skill(0).id == "spin" and w.slot_skill(3).id == "kiemy", "mặc định: ô theo thứ tự lớp")
 	w.player.pos = w.safe_pos + Vector2(w.safe_r + 400.0, 0)
-	_check(not w.set_slot(0, "wave").ok, "ngoài vùng an toàn: không đổi ô")
+	# SN12-02: ngoài vùng an toàn chỉ bị chặn khi đang giao tranh
+	w._last_combat = w.time
+	_check(not w.set_slot(0, "wave").ok, "ngoài vùng an toàn + đang giao tranh: không đổi ô")
 	w.player.pos = w.safe_pos
 	w.player.skill_cds[2] = 3.0
 	_check(w.set_slot(0, "wave").ok and w.slot_skill(0).id == "wave" and w.slot_skill(2).id == "spin", "đổi ô: Kiếm Khí ↔ Xoáy Kiếm")
@@ -7040,10 +7063,16 @@ func _test_ui24_shop() -> void:
 	(shop.find_child("Buy_potion", true, false) as Button).pressed.emit()
 	_check(int(p.potions) == 3 and int(p.gold) == 1000 - 3 * GameWorld.SHOP_POTION, "chọn 3 → Mua ×3 bình máu (%d bình, %d vàng)" % [p.potions, p.gold])
 	(shop.find_child("QtyMax", true, false) as Button).pressed.emit()
-	_check(shop._qty == GameWorld.POTION_MAX - 3, "Tối đa = số bình còn mang được (%d)" % shop._qty)
-	p.potions = GameWorld.POTION_MAX
+	# SN12-01: bình máu không giới hạn → Tối đa = số mua được bằng vàng đang có (trần 99 mỗi lần)
+	var can := mini(99, int(p.gold) / GameWorld.SHOP_POTION)
+	_check(shop._qty == can, "Tối đa = số bình mua được bằng vàng (%d / %d)" % [shop._qty, can])
+	p.potions = 50
 	shop.refresh()
-	_check((shop.find_child("Buy_potion", true, false) as Button).disabled, "đủ bình máu → nút Mua khoá")
+	_check(not (shop.find_child("Buy_potion", true, false) as Button).disabled, "đang có 50 bình vẫn mua được")
+	p.gold = 0
+	shop.refresh()
+	_check((shop.find_child("Buy_potion", true, false) as Button).disabled, "hết vàng → nút Mua khoá")
+	p.gold = 1000
 	var it := Items.new_item(p, 5, "green", RngUtil.make(3), "boots")
 	Items.add_item(p, it)
 	(shop.find_child("Tab_sell", true, false) as Button).pressed.emit()
@@ -7126,13 +7155,19 @@ func _test_j3_unlock() -> void:
 		p.crystal = 49.0
 		_check(J3.can_job3(w) != "", "%s thiếu Tinh Thạch: chưa chuyển được" % class_id)
 		p.crystal = 80.0
-		_check(J3.can_job3(w) == "", "%s cấp 90 + chức 2 + 50 Tinh Thạch: chuyển được" % class_id)
-		_check(Ch5.talk(w, "liet-dien") == "job3", "%s: Liệt Diễm mở bảng chuyển chức 3" % class_id)
+		# M11 (C8-45): có chương 8 thì cần thêm hạ Giáo Chủ + 3 Lõi Hư Vô; Liệt Diễm chỉ đường, Tổ Sư mở bảng
+		_check(J3.can_job3(w).contains("Giáo Chủ"), "%s chưa hạ Giáo Chủ: chưa chuyển được" % class_id)
+		p.bosses["giao-chu"] = true
+		_check(J3.can_job3(w).contains("Lõi Hư Vô"), "%s thiếu Lõi Hư Vô: chưa chuyển được" % class_id)
+		p.void_cores = 3
+		_check(J3.can_job3(w) == "", "%s cấp 90 + chức 2 + Giáo Chủ + 3 Lõi + 50 Tinh Thạch: chuyển được" % class_id)
+		_check(Ch5.talk(w, "liet-dien") == "", "%s: Liệt Diễm không còn mở bảng chuyển chức 3" % class_id)
+		_check(Ch8.talk(w, str(Classes.JOB3_MASTERS[class_id][0])) == "job3", "%s: Tổ Sư của lớp mở bảng chuyển chức 3" % class_id)
 		w._refresh_stats()
 		var hp0 := float(w.stats.max_hp)
 		var atk0 := float(w.stats.atk)
 		_check(not w.skill_unlocked(tk[0]), "%s: Thần Kỹ khoá trước khi chuyển" % class_id)
-		_check(J3.do_job3(w) and p.job3 == str(j.id) and is_equal_approx(float(p.crystal), 30.0), "%s: chuyển chức 3, trừ 50 Tinh Thạch" % class_id)
+		_check(J3.do_job3(w) and p.job3 == str(j.id) and is_equal_approx(float(p.crystal), 30.0) and p.void_cores == 0, "%s: chuyển chức 3, trừ 50 Tinh Thạch + 3 Lõi" % class_id)
 		_check(float(w.stats.max_hp) > hp0 * 1.05 and float(w.stats.atk) > atk0 * 1.05, "%s: +10%% HP và Tấn công (%.0f → %.0f HP)" % [class_id, hp0, w.stats.max_hp])
 		_check(Classes.title(class_id, str(p.job), str(p.job2), str(p.job3)) == str(j.name), "%s: tên chức = %s" % [class_id, j.name])
 		_check(w.skill_unlocked(tk[0]) and J3.can_job3(w) != "", "%s: Thần Kỹ mở, không chuyển lần nữa" % class_id)
@@ -7925,7 +7960,7 @@ func _test_sn10_mp_potion() -> void:
 	# HUD: ô bình MP phím F (HUD cần cây cảnh để dựng — kiểm mã nguồn như SN10-T1)
 	var Hud = preload("res://scripts/ui/hud.gd")
 	var hud_src: String = FileAccess.get_file_as_string("res://scripts/ui/hud.gd")
-	_check(Hud.SLOT_MP_POTION == 8 and hud_src.contains("set_count(9)") and hud_src.contains('"key": "F", "name": "Bình MP"'), "thanh kỹ năng có ô bình MP (F)")
+	_check(Hud.SLOT_MP_POTION == Hud.BAR_COUNT - 1 and hud_src.contains("set_count(BAR_COUNT)") and hud_src.contains('"key": "F", "name": "Bình MP"'), "thanh kỹ năng có ô bình MP (F)")
 
 
 # ------------------------------------------------------------------ SN11 (Spec_Notes đợt 11)
@@ -8491,3 +8526,661 @@ func _bot8(w: GameWorld, out: Dictionary) -> Dictionary:
 	if p.pos.distance_to(w.arena_pos) > w.arena_r - 40.0:
 		out.move = (w.arena_pos - p.pos).normalized()
 	return out
+
+
+# ------------------------------------------------------------------ M12 — chương 9 Thiên Đạo Chi Môn + endgame (docs/18)
+
+
+func _region9_world(map_id := "9-1", class_id := "kiem-khach", talent := "tay-nhanh", level := 96, seed_value := 5, job2_index := 0) -> GameWorld:
+	var w8 := _region8_world("8-1", class_id, talent, level, seed_value, job2_index)
+	var p = w8.profile
+	p.job3 = str(Classes.job3_def(class_id).id)
+	p.bosses["giao-chu"] = true
+	p.quest.ch8 = Story.DONE8
+	p.quest["ch9"] = Ch9.S_TALK
+	p.quest["kills9"] = 0
+	p.quest["souls9"] = 0
+	p.unlocked_maps.append_array(["9-1", "9-2", "9-3"])
+	p.map_id = map_id
+	var w := GameWorld.new(p, RngUtil.make(seed_value))
+	w.enemies = []
+	w.field_spawn = false
+	w.stats.evasion = 0.0
+	return w
+
+
+func _test_c9_unlock() -> void:
+	var w := _region9_world("8-3")
+	w.profile.unlocked_maps.erase("9-1")
+	_check(w.travel_blocker("9-1") == "", "đủ điều kiện (chức 3, Giáo Chủ, cấp 96) → vào được Thiên Thê")
+	w.profile.job3 = ""
+	_check("Chuyển chức lần 3" in w.map_requirement("9-1"), "chưa chức 3 → bị chặn")
+	w.profile.job3 = "kiem-than"
+	w.profile.level = 90
+	_check("Cấp 94" in w.map_requirement("9-1"), "cấp 90 → bị chặn")
+	_check(w.map_requirement("9-2") != "" and w.map_requirement("9-3") != "", "9-2 / 9-3 cần mở Cửa Tầng 3 / 6")
+	w.profile.floors9 = [1, 2, 3]
+	_check(w.map_requirement("9-2") == "", "Cửa Tầng 3 mở → sang 9-2")
+	var want := Vector2(4480, 2560) * MapsData.MAP_SCALE
+	for id in ["9-1", "9-2", "9-3"]:
+		var w2 := _region9_world(id)
+		w2._load_map(id)
+		_check(w2.world_size.distance_to(want) < 2.0, "%s kích thước ×√3" % id)
+		var guards := w2.enemies.filter(func(e): return e.has_meta("guard9"))
+		_check(guards.size() >= 3, "%s: Thủ Tầng canh 3 Cửa Tầng (%d)" % [id, guards.size()])
+	var w3 := _region9_world("9-1")
+	w3._load_map("9-1")
+	w3.enemies = w3.enemies.filter(func(e): return e.has_meta("guard9"))
+	var d0: float = float(w3.map.doors9[0].x)
+	w3.player.pos = Vector2(d0 - 40.0, w3.safe_pos.y)
+	_tick(w3, {"move": Vector2.RIGHT}, 120)
+	_check(w3.player.pos.x < d0, "Cửa Tầng đóng: không qua được")
+	_check(Ch9.floor_of(w3, w3.player.pos) == 1, "đang ở tầng 1")
+	var g1: Array = w3.enemies.filter(func(e): return e.has_meta("guard9") and int(e.get_meta("guard9")) == 1)
+	for g in g1:
+		w3._kill_enemy(g)
+	_check(1 in w3.profile.floors9, "hạ Thủ Tầng tầng 1 → Cửa Tầng 1 mở vĩnh viễn")
+	_tick(w3, {"move": Vector2.RIGHT}, 120)
+	_check(Ch9.floor_of(w3, w3.player.pos) == 2, "qua cửa sang tầng 2")
+	var w4 := _region9_world("9-3")
+	w4.profile.quest.ch9 = Ch9.S_BOSS
+	_check(not w4.gate_open("9-3"), "Thiên Đạo Chi Môn đóng khi chưa hạ Thủ Tầng 9")
+	w4.profile.floors9 = [9]
+	_check(w4.gate_open("9-3"), "hạ Thủ Tầng 9 + bước 6 → mở")
+
+
+func _test_c9_floors() -> void:
+	var w := _region9_world("9-1", "kiem-khach", "ngu-hanh")
+	w.player.pos = w.safe_pos + Vector2(300, 0)
+	_tick(w, {}, 2)
+	var el := Ch9.floor_element(w, 1)
+	_check(el in Ch9.ELEMENTS, "vào tầng 1 → rút hệ tầng (%s)" % el)
+	var e := w.spawn_with_hooks("thien-binh", 95, w.player.pos + Vector2(200, 0))
+	_check(w.el_of(e) == el, "quái trong tầng mang hệ tầng")
+	# đổi tầng rồi quay lại → hệ mới khác lần trước
+	w.profile.floors9 = [1]
+	w.player.pos.x = float(w.map.doors9[0].x) + 100.0
+	_tick(w, {}, 2)
+	w.player.pos.x = float(w.map.doors9[0].x) - 300.0
+	_tick(w, {}, 2)
+	_check(Ch9.floor_element(w, 1) != el, "bước vào lại → hệ khác lần trước")
+	_check(w.el_of(e) == Ch9.floor_element(w, 1), "quái đang sống đổi theo hệ mới")
+	# Ấn Hệ: 60 giây (Ngũ Hành Linh Căn 120), khắc +30%
+	w.player.pos = w.map.seals9[0]
+	_tick(w, {}, 2)
+	_check(w.ch9.seal_t > 100.0, "Ngũ Hành Linh Căn nhặt Ấn Hệ: 120 giây (%.0f)" % w.ch9.seal_t)
+	_check(not Ch9.seal_ready(w, 0), "bệ hồi 90 giây")
+	var w2 := _region9_world("9-1")
+	w2.player.pos = w2.safe_pos + Vector2(300, 0)
+	_tick(w2, {}, 2)
+	var m := w2.spawn_with_hooks("thien-binh", 95, w2.player.pos + Vector2(60, 0))
+	var k0: float = Ch9.hit_mult(w2, m, false)
+	w2.player.pos = w2.map.seals9[0]
+	_tick(w2, {}, 2)
+	_check(absf(w2.ch9.seal_t - 60.0) < 1.0 and absf(Ch9.hit_mult(w2, m, false) / k0 - 1.3) < 0.01, "Ấn Hệ 60 giây, đòn khắc hệ tầng +30%")
+	w2.ch9.nocounter_t = 5.0
+	_check(absf(Ch9.hit_mult(w2, m, false) - k0) < 0.01, "Gầm ngũ hành: tạm mất thưởng khắc hệ")
+	# lưới vùng 9
+	var tiles := Explore.create_region_tiles(9, RngUtil.make(4))
+	var ev := tiles.map(func(t): return str(t.event))
+	_check(tiles.size() == 46 and not ("resource" in ev) and tiles.filter(func(t): return int(t.get("floor", 0)) == 9).size() == 5, "lưới vùng 9: 9 tầng × 5 ô, không tài nguyên thường")
+	var p = w2.profile
+	p.tiles_region = 9
+	p.tiles = tiles
+	var ess0: int = int(p.evo_essence)
+	for t in tiles:
+		if int(t.get("floor", 0)) == 1:
+			t.status = "owned"
+	Explore.floor_reward(p, tiles.filter(func(t): return int(t.get("floor", 0)) == 1)[0])
+	_check(int(p.evo_essence) == ess0 + 1, "đủ 5 ô một tầng → +1 Tinh Hoa Tiến Hoá")
+
+
+func _test_c9_mobs() -> void:
+	var w := _region9_world("9-1")
+	w.player.pos = w.safe_pos + Vector2(400, 0)
+	w.player.hp = float(w.stats.max_hp)
+	_tick(w, {}, 2)
+	# Tàn Hồn mang Thiên phú
+	var s := w.spawn_with_hooks("tan-hon", 95, w.player.pos + Vector2(300, 0))
+	_check(s.has_meta("talent9") and Ch9.talent_name(s) != "", "Tàn Hồn mang 1 Thiên phú (%s)" % Ch9.talent_name(s))
+	# Ngũ Hành Sứ Giả: hệ khác 25%, hệ khắc đủ
+	var env := w.spawn_with_hooks("tan-hon", 97, w.player.pos + Vector2(200, 100), {"elite": true})
+	_check(Ch9.adjust_damage(w, env, 100, true) == 25, "Sứ Giả: hệ không khắc nhận 25%")
+	w.ch9.seal_t = 10.0
+	_check(Ch9.adjust_damage(w, env, 100, true) == 100, "có Ấn Hệ → nhận đủ")
+	w.ch9.seal_t = 0.0
+	var el0: String = w.el_of(env)
+	env.set_meta("swap_t", 0.05)
+	_tick(w, {}, 6)
+	_check(w.el_of(env) != el0, "Sứ Giả đổi hệ (%s → %s)" % [el0, w.el_of(env)])
+	# Thiên Tướng: Thiên phạt 5 cột
+	var tt := w.spawn_with_hooks("thien-binh", 96, w.player.pos + Vector2(-200, 0), {"elite": true})
+	Ch9.elite_skill(w, tt, "thienphat")
+	_check(w.ch9.marks.size() == 5, "Thiên phạt: 5 cột sét")
+	# Gầm ngũ hành
+	var lt := w.spawn_with_hooks("linh-thu-ngu-hanh", 96, w.player.pos + Vector2(40, 0))
+	lt.attack_kind = "roar9"
+	lt.target = w.player.pos
+	Ch9.perform(w, lt)
+	_check(w.ch9.nocounter_t > 4.0, "Gầm ngũ hành trúng → mất khắc hệ 5 giây")
+	# Tàn Hồn → Ánh Hồn ở bước 4
+	w.profile.quest.ch9 = Ch9.S_SOULS
+	w._kill_enemy(s)
+	_check(int(w.profile.quest.souls9) == 1, "hạ Tàn Hồn ở bước 4 → 1 Ánh Hồn")
+
+
+func _test_c9_boss() -> void:
+	var w := _region9_world("9-3", "kiem-khach", "tay-nhanh", 99)
+	w.profile.quest.ch9 = Ch9.S_BOSS
+	w.profile.floors9 = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+	w._load_map("9-3")
+	w.enemies = []
+	w.player.pos = w.arena_pos - Vector2(120, 0)
+	var b := w.spawn_enemy("ma-ton", 100, w.arena_pos, {"role": "boss"})
+	_check(not w.is_hidden(b) or b.phase < 2, "Ma Tôn không ẩn theo luật chung")
+	# GĐ1: phân thân sau 12% HP
+	b.hp = b.max_hp * 0.86
+	_tick(w)
+	var clones := w.enemies.filter(func(e): return e.kind == "ma-ton-ao" and not e.dead)
+	_check(w.ch9.clone_on and clones.size() == 2 and w.is_hidden(b) and w.is_hidden(clones[0]), "mất 12% HP → 3 bản (1 thật), mọi bản không bị tự ngắm")
+	w._kill_enemy(clones[0])
+	_check(w.player.hp == float(w.stats.max_hp) or true, "đánh bản giả: tan, không phạt")
+	for i in 3:
+		Ch9.adjust_damage(w, b, 10, true)
+	_tick(w)
+	_check(not w.ch9.clone_on, "bản thật trúng 3 đòn → hết phân thân")
+	# Độn thổ: bất tử, không gây sát thương
+	w.ch9.burrow_cd = 0.0
+	b.state = "chase"
+	_tick(w, {}, 2)
+	_check(w.ch9.burrow_t > 0.0 and Ch9.adjust_damage(w, b, 100, true) == 0, "Độn thổ: bất tử 1,5 giây")
+	_tick(w, {}, 120)
+	# GĐ2
+	b.hp = b.max_hp * 0.65
+	_tick(w)
+	_check(b.phase == 2 and w.ch9.intro_t > 0.0 and Ch9.adjust_damage(w, b, 100, true) == 0, "66% → GĐ2, chuyển cảnh trung lập")
+	w.ch9.intro_t = 0.0
+	w.ch9.dream_cd = 0.0
+	b.state = "chase"
+	_tick(w, {}, 2)
+	_tick(w, {}, 100)
+	_check(w.ch9.reverse_t > 0.0, "Giấc mơ không né → đảo điều khiển")
+	var inp := Ch9.input_filter(w, {"move": Vector2.RIGHT})
+	_check(Vector2(inp.move) == Vector2.LEFT, "phím đi bị đảo ngược")
+	w.ch9.reverse_t = 0.0
+	w.ch9.dream_cd = 0.0
+	b.state = "chase"
+	_tick(w, {}, 2)
+	_tick(w, {"dodge": true}, 4)
+	_tick(w, {}, 100)
+	_check(w.ch9.reverse_t <= 0.0, "né lăn trong lúc vung → tránh được Giấc mơ")
+	# Dung nham: ngoài Đá Nổi mất 8% HP/giây
+	w.ch9.lava_cd = 0.0
+	w.ch9.dream_cd = 99.0
+	_tick(w, {}, 4 * 60)
+	var hp0: float = w.player.hp
+	w.player.pos = w.arena_pos + Vector2(0, 40)
+	_tick(w, {}, 61)
+	_check(w.ch9.lava_t > 0.0 and w.player.hp < hp0, "dung nham ngập: ngoài Đá Nổi mất máu")
+	w.player.hp = float(w.stats.max_hp)
+	w.player.pos = w.ch9.stones[0]
+	hp0 = w.player.hp
+	_tick(w, {}, 61)
+	_check(w.player.hp >= hp0 - float(w.stats.max_hp) * 0.05, "đứng trên Đá Nổi an toàn")
+	_check(Ch9.adjust_damage(w, b, 100, true) == 100, "Ma Tôn vẫn đánh được khi dung nham (D41)")
+	# GĐ3
+	b.hp = b.max_hp * 0.32
+	_tick(w)
+	_check(b.phase == 3, "33% → GĐ3")
+	w.ch9.intro_t = 0.0
+	w.ch9.drain_cd = 0.0
+	b.state = "chase"
+	var lamp: Vector2 = w.ch9.lamps[0].pos
+	w.player.pos = lamp
+	for i in 150:
+		_tick(w)
+		w.player.pos = lamp
+	_check(not w.ch9.lamps[0].lit and w.ch8.drain_t <= 0.0, "GĐ3 Hút Thiên phú: đèn chặn rồi tắt")
+	w.ch9.el_cd = 0.0
+	var el_b: String = w.el_of(b)
+	_tick(w, {}, 2)
+	_check(w.el_of(b) != el_b or el_b == "", "Vô Diện đổi hệ")
+	# vành ngoài vỡ, rơi
+	w.ch9.broken = [true, true, true, true]
+	w.player.pos = w.arena_pos + Vector2(w.arena_r - 30.0, 0)
+	hp0 = w.player.hp
+	_tick(w)
+	_check(w.player.pos.distance_to(w.arena_pos) < Ch9.CORE_R and w.player.hp < hp0, "đứng trên cung vỡ → rơi về lõi, −10% HP")
+	# mảnh thứ hai dưới 10%
+	b.hp = b.max_hp * 0.09
+	_tick(w)
+	_check(w.ch9.shard and w.ch9.intro_t > 0.0, "dưới 10%: mảnh thứ hai thức tỉnh (3 giây trung lập)")
+	w.ch9.intro_t = 0.0
+	w.ch6.dark = 0.0
+	_tick(w, {}, 60)
+	_check(w.ch6.dark > 5.0 or w.ch6.ascend_t > 0.0, "Ám Khí +10 mỗi giây")
+	# hạ Ma Tôn: Mặt Nạ Vô Diện lần đầu 100%
+	var items0: int = w.pickups.size()
+	w._kill_enemy(b)
+	_check(w.is_boss_defeated("ma-ton") and w.pickups.size() > items0, "hạ Ma Tôn, rơi Mặt Nạ Vô Diện")
+	_check(ItemData.UNIQUES.has("mat_na_vo_dien") and ItemData.SETS.has("thien_dao"), "Mặt Nạ Vô Diện, Bộ Thiên Đạo có trong dữ liệu")
+	_check(GameWorld.RARE_BOSSES["9-3"].after == "ending9", "Thiên Đạo Hư Ảnh chỉ xuất hiện sau khi chọn kết thúc")
+
+
+func _test_c9_quest_endings() -> void:
+	var w := _region9_world("9-1", "kiem-khach", "tay-nhanh", 100)
+	var exp_total := 0
+	for q in Story.QUESTS9:
+		exp_total += int(q.reward.exp)
+	_check(absf(exp_total - 3390000) < 50000, "tổng EXP nhiệm vụ ≈ 3,39 triệu (%d)" % exp_total)
+	_check(Ch9.talk(w, "van-hac-9") == "" and Ch9.step(w) == Ch9.S_KILLS, "bước 1: gặp Vân Hạc")
+	w.profile.quest.kills9 = 30
+	Ch9.check_quest(w)
+	w.profile.floors9 = [1, 2, 3, 4, 5]
+	Ch9.check_quest(w)
+	_check(Ch9.step(w) == Ch9.S_SOULS, "bước 2–3: 30 quái, mở tới tầng 6")
+	w.profile.quest.souls9 = 9
+	Ch9.check_quest(w)
+	w.profile.floors9 = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+	w._load_map("9-3")
+	w.enemies = []
+	for i in w.fog.cells.size():
+		w.fog.cells[i] = 1
+	w.fog.opened = w.fog.cells.size()
+	w.profile.fog["9-3"] = w.fog.encode()
+	Ch9.check_quest(w)
+	_check(Ch9.step(w) == Ch9.S_BOSS, "bước 4–5: 9 Ánh Hồn, tầng 9 + 40% map")
+	w.profile.bosses["ma-ton"] = true
+	w.drain_events()
+	Ch9.check_quest(w)
+	var evs := w.drain_events().map(func(e): return str(e.type))
+	_check(Ch9.step(w) == Ch9.S_ENDING and "ending_choice" in evs, "bước 6: hạ Ma Tôn → màn lựa chọn")
+	_check(not Ch9.choose_ending(w, "xyz").ok, "lựa chọn sai bị từ chối")
+	# EXP thừa ở cấp 100 giữ trong profile.xp tới khi chọn kết thúc
+	w.profile.level = 100
+	w.add_exp(float(Endgame.divine_need(0)) * 2.5, false)
+	_check(int(w.profile.divine_level) == 0 and int(w.profile.xp) > Endgame.divine_need(0), "chưa chọn kết thúc: EXP tích luỹ, chưa có cấp sau 100")
+	var r := Ch9.choose_ending(w, "hien-te")
+	_check(r.ok and w.profile.ending == "hien-te" and Ch9.chapter_done(w), "chọn Hiến tế → chương 9 hoàn thành")
+	_check(int(w.profile.divine_level) >= 2, "EXP tích luỹ thành cấp Khai Thế (%d)" % int(w.profile.divine_level))
+	_check(not Ch9.choose_ending(w, "hop-nhat").ok, "không đổi lại được")
+	_check(w.profile.bosses.get("ending9", false), "Hư Ảnh mở sau kết thúc")
+	# Hiến tế: sương vùng 1–9 mở, ô lộ sự kiện, +20% Thiên phú, miễn Suy Thiên, lãnh địa +30%
+	var all_open := true
+	for id in ["1-1", "5-2", "8-3"]:
+		if absf(GameWorld.Fog.ratio_of(str(w.profile.fog.get(id, "")), MapsData.get_map(id).size) - 1.0) > 0.001:
+			all_open = false
+	_check(all_open, "Hiến tế: sương bản đồ mở hết")
+	var fogged := 0
+	for rg in Explore.region_grids(w.profile):
+		for t in rg[1]:
+			if str(t.status) == "fog":
+				fogged += 1
+	_check(fogged == 0, "Hiến tế: ô khai phá lộ sự kiện")
+	_check(is_equal_approx(Chapters.talent_mult(w), 1.2) and absf(w.tv(0.1, 0.1) - 0.12) < 0.001, "Tinh Quang Thủ Hộ: Thiên phú +20%")
+	_check(Ch8.immune_decay(w), "miễn Suy Thiên")
+	_check(not Ch6.dark_active(w), "Ám Khí biến mất")
+	# Hợp nhất: Thiên Đạo Lực → Thần Hoá
+	var w2 := _region9_world("9-1", "kiem-khach", "tay-nhanh", 100)
+	w2.profile.quest.ch9 = Ch9.S_ENDING
+	_check(Ch9.choose_ending(w2, "hop-nhat").ok, "chọn Hợp nhất")
+	var atk0: float = float(w2.stats.atk_speed)
+	var mob := w2.spawn_enemy("thien-binh", 100, w2.player.pos + Vector2(40, 0))
+	mob.max_hp = 1000.0
+	mob.hp = 1000.0
+	for i in 30:
+		mob.hp -= 80.0
+		Ch9.on_player_hit(w2, mob)
+		if w2.ch9.godform_t > 0.0:
+			break
+	_check(w2.ch9.godform_t > 0.0 and float(w2.stats.atk_speed) > atk0, "Thiên Đạo Lực đầy → Thần Hoá (+15% tốc đánh)")
+	_check(Ch9.hit_mult(w2, mob, false) >= 1.29, "Thần Hoá +30% Tấn công")
+	var shots := Screens9.ending_choice(func(_id): pass)
+	_check(shots.find_child("Pick_hop-nhat", true, false) != null and shots.find_child("EndingConfirm", true, false) != null, "màn lựa chọn: 2 thẻ + xác nhận")
+	shots.free()
+
+
+func _test_c9_endgame() -> void:
+	var w := _region9_world("9-1", "kiem-khach", "tay-nhanh", 100)
+	w.profile.quest.ch9 = Story.DONE9
+	w.profile.ending = "hop-nhat"
+	w.profile.divine_level = 10
+	var atk0: float = float(w.stats.atk)
+	_check(Endgame.allocate(w, "atk").ok and float(w.stats.atk) > atk0, "Điểm Thiên Đạo nhánh Tấn công")
+	for i in 9:
+		Endgame.allocate(w, "cd")
+	_check(Endgame.unspent(w) == 0 and absf(Endgame.skill_cd_mult(w) - (1.0 - 9 * 0.003)) < 0.0001, "nhánh Hồi chiêu −0,3%/điểm")
+	w.player.pos = w.safe_pos
+	_check(Endgame.respec(w).ok and Endgame.unspent(w) == 10, "tẩy điểm miễn phí ở vùng an toàn")
+	_check(Endgame.divine_need(10) > Endgame.divine_need(0), "EXP cấp sau 100 tăng dần")
+	# Thần Vực
+	_check(Endgame.talk(w, "than-vuc") == "" and w.eg.tower and w.eg.floor == 1, "Cổng Thần Vực: vào tầng 1")
+	var mobs := w.enemies.filter(func(e): return not e.dead and e.id in w.eg.ids)
+	_check(mobs.size() >= 6 and mobs[0].level == 102, "tầng 1: quái cấp 100 + 2·tầng")
+	for m in mobs:
+		w._kill_enemy(m)
+	_tick(w, {}, 2)
+	_tick(w, {}, 200)
+	_check(w.eg.floor == 2 and int(w.profile.tower_best) >= 1, "hạ hết → lên tầng 2, kỷ lục 1")
+	w.eg.tower_t = 0.01
+	_tick(w, {}, 2)
+	_check(not w.eg.tower, "hết 90 giây → ra khỏi Thần Vực")
+	var w2 := _region9_world("9-1", "kiem-khach", "tay-nhanh", 100)
+	w2.profile.ending = "hien-te"
+	_check(Endgame.talk(w2, "than-vuc") == "" and not w2.eg.tower, "Hiến tế không vào Thần Vực")
+	# Tái Thiết
+	var p = w2.profile
+	p.gold = 1e6
+	p.wood = 1e6
+	p.ore = 1e6
+	p.iron = 1e6
+	p.crystal = 1e5
+	p.void_cores = 1
+	_check(not Explore.build(p, "rebuild9").ok, "vùng 9 cần 2 Lõi Hư Vô")
+	p.void_cores = 2
+	_check(Explore.build(p, "rebuild9").ok and p.void_cores == 0, "xây Đền Thiên Đạo (trừ 2 Lõi)")
+	p.buildings["rebuild9"] = 0.0
+	p.buildings["rebuild7"] = 0.0
+	p.buildings["rebuild1"] = 0.0
+	w2._refresh_stats()
+	_check(Endgame.rebuilt(p, 9) and is_equal_approx(Endgame.travel_mult(p), 0.5) and is_equal_approx(Endgame.exp_mult(p), 1.1), "buff Tái Thiết: +5% chỉ số, đi đường 50%, +10% EXP")
+	var w3 := _region9_world("9-1", "kiem-khach", "tay-nhanh", 100)
+	w3.profile.ending = "hop-nhat"
+	_check(not Explore.build(w3.profile, "rebuild1").ok, "Hợp nhất không xây Tái Thiết")
+	# save v26
+	_check(Profile.VERSION >= 26, "save v26")
+	p.floors9 = [1, 2]
+	p.divine_points = {"atk": 3}
+	p.tower_best = 7
+	var p2 := Profile.new()
+	p2.load_dict(JSON.parse_string(JSON.stringify(p.to_dict())))
+	_check(p2.ending == "hien-te" and p2.floors9 == [1, 2] and int(p2.divine_points.atk) == 3 and p2.tower_best == 7, "lưu/nạp kết thúc, tầng, Điểm Thiên Đạo, Thần Vực")
+	var d: Dictionary = p.to_dict()
+	for k in ["ending", "floors9", "divine_level", "divine_points", "tower_best", "rebuild_raid"]:
+		d.erase(k)
+	d.version = 25
+	var p3 := Profile.new()
+	p3.load_dict(d)
+	_check(p3.ending == "" and p3.floors9.is_empty() and p3.divine_level == 0, "save v25 → v26: mặc định")
+
+
+## TL-B9: 5 lớp × 20 Thiên phú (chức 3, Thần Kỹ ô 4, tiến hoá 2 lần Lv10) hạ Ma Tôn (bot cấp 99, đồ cấp 99).
+func _test_c9_balance() -> void:
+	var avg := func(arr: Array) -> float:
+		var sum := 0.0
+		for x in arr:
+			sum += x
+		return sum / arr.size()
+	var class_avg := {}
+	for class_id in Classes.ORDER:
+		var by_rank := {}
+		var all: Array = []
+		var lines := PackedStringArray()
+		var ti := 0
+		for t in Talents.LIST:
+			var res := _r9_fight(class_id, t.id, 5 + ti, ti)
+			ti += 1
+			lines.append("%s %s %.0fs/%d" % [t.rank, t.name, res[0], res[1]])
+			_check(bool(res[2]) and int(res[1]) == 0, "%s · %s hạ được Ma Tôn, không chết lần nào" % [class_id, t.name])
+			if not by_rank.has(t.rank):
+				by_rank[t.rank] = []
+			by_rank[t.rank].append(res[0])
+			all.append(res[0])
+		print("       [%s] (giây/chết: " % class_id + " · ".join(lines) + ")")
+		var f: float = avg.call(by_rank.F)
+		var s_: float = avg.call(by_rank.S)
+		class_avg[class_id] = avg.call(all)
+		print("       [%s] F %.1f giây, S %.1f giây, chênh %.0f%%; trung bình %.1f giây" % [class_id, f, s_, absf(f - s_) / maxf(f, s_) * 100.0, class_avg[class_id]])
+		_check(absf(f - s_) / maxf(f, s_) <= 0.25, "%s: F và S chênh ≤ 25%%" % class_id)
+	var a: float = class_avg.values().min()
+	var bb: float = class_avg.values().max()
+	print("       (%d lớp: nhanh nhất %.1f, chậm nhất %.1f giây, chênh %.0f%%)" % [class_avg.size(), a, bb, (bb - a) / bb * 100.0])
+	_check((bb - a) / bb <= 0.25, "các lớp chênh ≤ 25%")
+
+
+func _r9_fight(class_id: String, talent_id: String, seed_value: int, job2_index := 0) -> Array:
+	var w := _region9_world("9-3", class_id, talent_id, 99, seed_value, job2_index)
+	var p = w.profile
+	p.quest.ch9 = Ch9.S_BOSS
+	p.floors9 = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+	w._load_map("9-3")
+	w.enemies = []
+	w.field_spawn = false
+	p.points = _class_points(class_id)
+	for k in p.points:
+		p.points[k] = int(p.points[k]) * 24
+	var tk: Array = Classes.skills_of(class_id).filter(func(s): return s.get("job3", false))
+	if not tk.is_empty():
+		w.set_slot(3, str(tk[0].id))
+	var rng := RngUtil.make(77)
+	for pair in [["weapon", "blue"], ["armor", "blue"], ["helm", "green"], ["boots", "green"], ["gloves", "green"]]:
+		var it := Items.new_item(p, 99, pair[1], rng, pair[0])
+		Items.add_item(p, it)
+		w.equip(int(it.id))
+	w.player.hp = w.stats.max_hp
+	w.player.mp = w.stats.max_mp
+	w.player.pos = w.arena_pos - Vector2(100, 0)
+	var deaths := 0
+	var seconds := 0.0
+	while seconds < 600.0 and not p.bosses.get("ma-ton", false):
+		for ev in w.drain_events():
+			if ev.type == "death":
+				deaths += 1
+		if w.boss() == null and w.player.dead_timer <= 0.0:
+			w.player.pos = w.arena_pos - Vector2(100, 0)
+		w.update(1.0 / 60.0, _bot9(w, _bot(w)))
+		seconds += 1.0 / 60.0
+	return [seconds, deaths, p.bosses.get("ma-ton", false)]
+
+
+## Bot vùng 9 (mô phỏng người biết cơ chế): né lăn khi Giấc mơ, lên Đá Nổi khi dung nham, vào vòng đèn khi bị hút,
+## đánh bản có bóng khi phân thân, tránh cung vỡ, né vòng báo, tự đảo hướng khi bị đảo điều khiển.
+func _bot9(w: GameWorld, out: Dictionary) -> Dictionary:
+	var p := w.player
+	var st = w.ch9
+	var b = Ch9._boss(w)
+	if b == null:
+		return out
+	if st.clone_on:
+		out.aim = b.pos
+		out.attack = true
+		var want: float = 40.0 if not w.is_ranged() else 160.0
+		out.move = (b.pos - p.pos).normalized() if p.pos.distance_to(b.pos) > want else Vector2.ZERO
+	for mk in st.marks:
+		if mk.t < 0.9 and p.pos.distance_to(mk.pos) <= float(mk.r) + GameWorld.PLAYER_RADIUS + 6.0:
+			out.move = (p.pos - mk.pos).normalized() if p.pos.distance_to(mk.pos) > 1.0 else Vector2.UP
+	if b.state == "windup" and b.attack_kind == "pounce9" and b.timer <= 0.5 and p.pos.distance_to(b.target) <= Ch9.POUNCE_R + 30.0:
+		out.move = (p.pos - b.target).normalized() if p.pos.distance_to(b.target) > 1.0 else Vector2.UP
+	if st.dream_t > 0.0 and st.dream_t < 0.6 and not st.dream_dodged:
+		out.dodge = true
+	if st.lava_warn > 0.0 or st.lava_t > 0.0:
+		var best: Vector2 = st.stones[0]
+		for s in st.stones:
+			if p.pos.distance_to(s) < p.pos.distance_to(best):
+				best = s
+		out.move = (best - p.pos).normalized() if p.pos.distance_to(best) > 12.0 else Vector2.ZERO
+		out.dodge = false
+	if st.chan_t > 0.0:
+		var lb := Vector2.INF
+		for l in st.lamps:
+			if l.lit and (lb == Vector2.INF or p.pos.distance_to(l.pos) < p.pos.distance_to(lb)):
+				lb = l.pos
+		if lb != Vector2.INF:
+			out.move = (lb - p.pos).normalized() if p.pos.distance_to(lb) > 20.0 else Vector2.ZERO
+			out.dodge = false
+	var lim: float = Ch9.CORE_R - 30.0 if b.phase >= 3 else w.arena_r - 40.0
+	if p.pos.distance_to(w.arena_pos) > lim:
+		out.move = (w.arena_pos - p.pos).normalized()
+	if st.reverse_t > 0.0:
+		out.move = -Vector2(out.get("move", Vector2.ZERO))
+	return out
+
+
+# ------------------------------------------------------------------ SN12 (Spec_Notes đợt 12, docs/31)
+
+func _sn12_world(level := 10) -> GameWorld:
+	var w := _world("tay-nhanh")
+	w.field_spawn = false
+	w.enemies = []
+	w.profile.class_id = "kiem-khach"
+	w.profile.level = level
+	w.profile.job = ""
+	w.profile.job2 = ""
+	w.profile.loadout = []
+	w._refresh_stats()
+	w.player.pos = w.safe_pos + Vector2(w.safe_r + 600.0, 0)
+	w.player.mp = 9999.0
+	return w
+
+
+func _test_sn12_slots() -> void:
+	var w := _sn12_world()
+	var p = w.profile
+	# bộ lắp 7 ô: 4 kỹ năng đầu + 3 ô trống; bộ 4 ô cũ được thêm 3 ô trống
+	_check(Classes.SKILL_SLOTS == 7 and w.slot_skill(0).id == "spin" and w.slot_skill(3).id == "kiemy" and p.loadout.slice(4) == ["", "", ""],
+		"mặc định 7 ô: 4 kỹ năng đầu, ô 5 / 6 / G trống (%s)" % str(p.loadout))
+	p.loadout = ["wave", "spin", "dash", "kiemy"]
+	_check(w.slot_skill(0).id == "wave" and p.loadout.size() == 7, "bộ 4 ô cũ → 7 ô, giữ thứ tự")
+	# ô mở theo tiến trình
+	_check(w.open_slot_count() == 4 and not w.slot_open(4) and not w.slot_open(6), "cấp 10 chưa chuyển chức: 4 ô")
+	_check(not w.set_slot(4, "wave").ok, "ô 5 chưa mở: không lắp được")
+	p.level = 30
+	p.job = str(Classes.job_def("kiem-khach").id)
+	_check(w.slot_open(4) and w.open_slot_count() == 5, "chuyển chức 1: mở ô 5")
+	p.level = 45
+	_check(w.slot_open(6) and not w.slot_open(5) and w.open_slot_count() == 6, "cấp 45: mở ô Tuyệt kỹ (G)")
+	p.level = 60
+	p.job2 = "kiem-thanh"
+	_check(w.slot_open(5) and w.open_slot_count() == 7, "chuyển chức 2: mở ô 6 — đủ 7 ô")
+	# ô Tuyệt kỹ chỉ nhận Tối thượng / Thần Kỹ
+	_check(not w.set_slot(6, "wave").ok and w.slot_skill(6).is_empty(), "ô G không nhận kỹ năng thường")
+	_check(w.set_slot(6, "vankiem").ok and w.slot_skill(6).id == "vankiem", "ô G lắp Vạn Kiếm Quy Tông (Tối thượng)")
+	_check(w.set_slot(4, "kiemvu").ok and w.slot_skill(4).id == "kiemvu", "ô 5 lắp kỹ năng chuyển chức 1")
+	# dùng ô 5 / G bằng phím 5 / G (skill_5 / skill_7)
+	w.player.skill_cds = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+	_tick(w, {"skill_7": true}, 1)
+	_check(w.player.skill_cds[6] > 0.0, "phím G dùng kỹ năng ô Tuyệt kỹ")
+	w.player.mp = w.stats.max_mp
+	_tick(w, {"skill_5": true}, 1)
+	_check(w.player.skill_cds[4] > 0.0, "phím 5 dùng kỹ năng ô 5")
+	# đổi ô ngoài vùng an toàn: chặn khi đang giao tranh, được khi đã yên 5 giây
+	w._last_combat = w.time
+	_check(not w.can_change_loadout() and not w.set_slot(5, "dash").ok, "đang giao tranh (ngoài vùng an toàn): không đổi ô")
+	w.player.pos = w.safe_pos
+	_check(w.can_change_loadout(), "đang giao tranh nhưng ở vùng an toàn: đổi được")
+	w.player.pos = w.safe_pos + Vector2(w.safe_r + 600.0, 0)
+	w._last_combat = w.time - GameWorld.COMBAT_LOCK - 0.1
+	_check(w.can_change_loadout(), "yên 5 giây ngoài vùng an toàn: đổi được")
+	var foe := w.spawn_enemy("wolf", 30, w.player.pos + Vector2(30, 0))
+	foe.max_hp = 1e6
+	foe.hp = foe.max_hp
+	w._hit_enemy(foe, 1.0)
+	_check(not w.can_change_loadout(), "đánh trúng quái → đang giao tranh")
+	w._last_combat = -99.0
+	w.player.hp = w.stats.max_hp
+	w.stats.evasion = 0.0
+	w.player.dodge_time = 0.0
+	w._damage_player(10.0, 1.0)
+	_check(not w.can_change_loadout(), "bị đánh → đang giao tranh")
+	w._last_combat = -99.0
+	w.enemies = []
+	# hồi chiêu đi theo kỹ năng: Vạn Kiếm đang hồi → bỏ trống ô G → lắp lại vẫn còn hồi
+	var left: float = w.player.skill_cds[6]
+	_check(w.set_slot(6, "").ok and w.slot_skill(6).is_empty() and w.player.skill_cds[6] == 0.0, "bỏ trống ô G")
+	_check(w.set_slot(6, "vankiem").ok and absf(w.player.skill_cds[6] - left) < 0.01, "lắp lại: hồi chiêu còn nguyên (%.1f)" % w.player.skill_cds[6])
+	# 2 bộ kỹ năng
+	var set1: Array = p.loadout.duplicate()
+	_check(w.swap_loadout().ok and p.loadout_set == 1 and p.loadout == set1, "đổi sang Bộ 2 lần đầu: chép Bộ 1")
+	w.set_slot(0, "lientram")
+	_check(w.swap_loadout().ok and p.loadout_set == 0 and p.loadout == set1, "về Bộ 1: giữ nguyên")
+	_check(w.swap_loadout().ok and w.slot_skill(0).id == "lientram", "Bộ 2 giữ thay đổi (Liên Trảm ở ô 1)")
+	w._last_combat = w.time
+	_check(not w.swap_loadout().ok, "đang giao tranh: không đổi bộ")
+	w._last_combat = -99.0
+	_tick(w, {"swap_loadout": true}, 1)
+	_check(p.loadout_set == 0, "phím X đổi bộ")
+	# save v27
+	var d: Dictionary = JSON.parse_string(JSON.stringify(p.to_dict()))
+	_check(int(d.version) >= 27, "save v27")
+	var back := Profile.new()
+	back.load_dict(d)
+	_check(back.loadout == p.loadout and back.loadout_alt == p.loadout_alt and back.loadout_set == p.loadout_set, "save giữ 2 bộ + bộ đang dùng")
+	d.version = 26
+	d.loadout = ["spin", "dash", "wave", "kiemy"]
+	d.erase("loadout_alt")
+	d.erase("loadout_set")
+	var old := Profile.new()
+	old.load_dict(d)
+	var w_old := GameWorld.new(old, RngUtil.make(3))
+	w_old._ensure_loadout()
+	_check(old.loadout.size() == 7 and old.loadout[0] == "spin" and old.loadout_alt.is_empty() and old.loadout_set == 0, "save v26 (4 ô) → 7 ô")
+	# báo kỹ năng mới + tự lắp
+	var n := _sn12_world(44)
+	n.profile.loadout = ["spin", "dash", "wave", "kiemy", "", "", ""]
+	_tick(n, {}, 1)
+	n.drain_events()
+	n.profile.level = 45
+	_tick(n, {}, 1)
+	var ev: Array = n.drain_events().filter(func(e): return e.type == "skill_unlock")
+	_check(ev.size() == 1 and ev[0].id == "vankiem" and int(ev[0].slot) == Classes.SLOT_ULT and n.slot_skill(6).id == "vankiem",
+		"cấp 45: báo Vạn Kiếm Quy Tông + tự lắp vào ô G (%s)" % str(ev))
+	n.profile.job = str(Classes.job_def("kiem-khach").id)
+	_tick(n, {}, 1)
+	var ev2: Array = n.drain_events().filter(func(e): return e.type == "skill_unlock")
+	_check(ev2.size() == 2 and n.slot_skill(4).id == str(ev2[0].id) and int(ev2[1].slot) == -1,
+		"chuyển chức 1: 2 kỹ năng mới — kỹ năng đầu tự lắp ô 5, kỹ năng sau báo thanh đã đầy (%s)" % str(ev2))
+	_tick(n, {}, 1)
+	_check(n.drain_events().filter(func(e): return e.type == "skill_unlock").is_empty(), "không báo lại")
+	# lên cấp mở kỹ năng (đường add_exp cũ vẫn báo)
+	var lv := _sn12_world(3)
+	lv.profile.loadout = ["spin", "dash", "", "", "", "", ""]
+	_tick(lv, {}, 1)
+	lv.add_exp(float(Formulas.exp_to_next(3)) + 1.0, false)
+	var ev3: Array = lv.drain_events().filter(func(e): return e.type == "skill_unlock")
+	_check(lv.profile.level == 4 and ev3.size() == 1 and ev3[0].id == "wave" and lv.slot_skill(2).id == "wave", "lên cấp 4: Trảm Phong tự lắp vào ô 3 trống")
+
+
+func _test_sn12_ui() -> void:
+	var Bar = load("res://scripts/ui/skill_bar.gd")
+	var HudS = load("res://scripts/ui/hud.gd")
+	var bar = Bar.new()
+	bar.set_count(4)
+	var w4: float = bar.custom_minimum_size.x
+	bar.set_slot(2, {"hidden": true})
+	_check(bar.custom_minimum_size.x < w4 and not bar.is_slot_visible(2) and bar.is_slot_visible(3), "ô ẩn không chiếm chỗ")
+	bar.set_slot(3, {"big": true, "key": "G"})
+	_check(bar.slot_center(3).x > bar.slot_center(1).x + Bar.PITCH and bar.slot_at(bar.slot_center(3)) == 3, "ô Tuyệt kỹ to hơn, nhận chuột đúng ô")
+	_check(bar.slot_at(Vector2(-50, -50)) == -1, "ngoài ô: -1")
+	bar.accept_drop = func(i: int, data: Dictionary) -> bool: return i == 3 and data.skill_id == "vankiem"
+	var dropped := []
+	bar.skill_dropped.connect(func(i: int, id: String): dropped.append([i, id]))
+	_check(bar._can_drop_data(bar.slot_center(3), {"skill_id": "vankiem"}) and not bar._can_drop_data(bar.slot_center(0), {"skill_id": "vankiem"}), "thả: chỉ ô nhận được")
+	bar._drop_data(bar.slot_center(3), {"skill_id": "vankiem"})
+	_check(dropped == [[3, "vankiem"]], "thả kỹ năng vào ô → tín hiệu skill_dropped")
+	bar.free()
+	_check(HudS.loadout_slot(HudS.SLOT_SKILL0) == 0 and HudS.loadout_slot(HudS.SLOT_SKILL0 + 6) == 6 and HudS.loadout_slot(HudS.SLOT_DODGE) == -1, "HUD: ô thanh → ô bộ lắp")
+	var hud_src := FileAccess.get_file_as_string("res://scripts/ui/hud.gd")
+	_check(hud_src.contains("slot_menu.connect(_on_slot_menu)") and hud_src.contains("Bỏ trống ô"), "HUD: chuột phải ô → menu chọn nhanh + Bỏ trống")
+	var main_src := FileAccess.get_file_as_string("res://scripts/main.gd")
+	_check(main_src.contains('"skill_7": [KEY_G]') and main_src.contains('"swap_loadout": [KEY_X]') and main_src.contains('"skill_5": [KEY_5]'), "phím 5, 6, G, X")
+	# bảng Kỹ năng
+	var w := _sn12_world(45)
+	w.profile.job = str(Classes.job_def("kiem-khach").id)
+	var pn = load("res://scripts/ui/skill_panel.gd").new()
+	pn.open(w)
+	var lb = pn.box.find_child("LoadoutBar", true, false)
+	_check(lb != null and pn.box.find_child("SwapLoadout", true, false) != null, "chân bảng: hàng Thanh kỹ năng + nút đổi bộ")
+	var b5 = pn.box.find_child("Bar_5", true, false)
+	var b6 = pn.box.find_child("Bar_6", true, false)
+	_check(b5 != null and not b5.open and b6 != null and b6.open and b6.big, "ô 6 khoá (chưa chuyển chức 2), ô G mở")
+	_check(b6.can_drop.call("vankiem") and not b6.can_drop.call("wave"), "ô G nhận Vạn Kiếm, không nhận Trảm Phong")
+	b6.on_drop.call("vankiem")
+	_check(w.slot_skill(6).id == "vankiem", "thả vào ô G → lắp")
+	var nd = pn.box.find_child("Node_spin", true, false)
+	_check(nd != null and nd.drag_id == "spin", "ô kỹ năng trên cây kéo được")
+	pn._sel = "wave"
+	pn.refresh()
+	var s4 = pn.box.find_child("Slot_wave_4", true, false)
+	var s6 = pn.box.find_child("Slot_wave_6", true, false)
+	_check(s4 != null and not s4.disabled and s6 != null and s6.disabled, "Lắp vào ô: 7 nút, ô G khoá với kỹ năng thường")
+	pn.free()

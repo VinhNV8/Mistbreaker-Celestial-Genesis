@@ -32,11 +32,14 @@ const LOG_LIFE := 6.0
 ## UI-10: thanh đã vẽ gọn (ô R 22, không tên) nên giữ tỉ lệ 1.
 const SKILL_BAR_SCALE := 1.0
 const SLOT_BASIC := 0
-const SLOT_DODGE := 5
-const SLOT_TALENT := 6
-const SLOT_POTION := 7
-## SN10-02: ô bình MP (phím F) sau ô bình máu.
-const SLOT_MP_POTION := 8
+## SN12-02 (docs/31): ô kỹ năng 1–7 của bộ lắp ở chỉ số 1–7 trên thanh (7 = ô Tuyệt kỹ, phím G).
+const SLOT_SKILL0 := 1
+const SLOT_DODGE := 8
+const SLOT_TALENT := 9
+const SLOT_POTION := 10
+## SN10-02: ô bình MP (phím F) ngay sau bình máu.
+const SLOT_MP_POTION := 11
+const BAR_COUNT := 12
 ## UI-16: bề rộng khung nhiệm vụ.
 const OBJ_W := 240
 
@@ -64,6 +67,11 @@ var _combo: Label
 var _wind: Label
 ## DH-11: ô 0 = đánh thường, 1–4 = kỹ năng lớp, 5 né, 6 Thiên phú (L), 7 bình máu, 8 bình MP (SN10-02).
 var _skills: Control
+## SN12-02: menu chọn nhanh kỹ năng cho một ô (chuột phải) — ô đang mở menu, danh sách id theo mục.
+var _slot_popup: PopupMenu
+var _menu_slot := -1
+var _menu_ids: Array = []
+var _world
 
 var _log: VBoxContainer
 var _banner: Label
@@ -170,7 +178,15 @@ func _ready() -> void:
 	add_child(_combo)
 
 	_skills = SkillBar.new()
-	_skills.set_count(9)
+	_skills.set_count(BAR_COUNT)
+	# SN12-02: chuột phải ô kỹ năng → chọn nhanh; thả kỹ năng (kéo từ bảng Kỹ năng) vào ô.
+	_skills.slot_menu.connect(_on_slot_menu)
+	_skills.skill_dropped.connect(_on_skill_dropped)
+	_skills.accept_drop = _accept_drop
+	_slot_popup = PopupMenu.new()
+	_slot_popup.name = "SlotMenu"
+	_slot_popup.id_pressed.connect(_on_slot_pick)
+	add_child(_slot_popup)
 	# UI-07 / UI-10: thanh kỹ năng gọn (Spec_Notes đợt 4, 6).
 	_skills.scale = Vector2.ONE * SKILL_BAR_SCALE
 	add_child(_skills)
@@ -463,11 +479,18 @@ func _update_skill_bar(w: GameWorld, t: Dictionary, rank_color: Color) -> void:
 	var pl := w.player
 	var p = w.profile
 	var c: Dictionary = Classes.get_class_def(p.class_id)
+	_world = w
 	_skills.set_slot(SLOT_BASIC, {"key": "J", "name": c.basic.name, "icon": SpriteLib.icon("skill-" + str(c.basic.icon))})
-	for i in 4:
-		# SK1: ô kỹ năng theo bộ lắp; chưa mở thì mờ + ghi cấp mở.
+	for i in Classes.SKILL_SLOTS:
+		# SK1: ô kỹ năng theo bộ lắp; chưa mở thì mờ + ghi cấp mở. SN12-02: ô 5, 6, G chưa mở thì ẩn; đã mở mà trống thì "+".
+		var key: String = Classes.SLOT_KEYS[i]
+		var big: bool = i == Classes.SLOT_ULT
+		if not w.slot_open(i):
+			_skills.set_slot(SLOT_SKILL0 + i, {"hidden": true, "key": key})
+			continue
 		var sk: Dictionary = w.slot_skill(i)
 		if sk.is_empty():
+			_skills.set_slot(SLOT_SKILL0 + i, {"empty": true, "key": key, "name": "", "big": big})
 			continue
 		var cd_left: float = pl.skill_cds[i]
 		var mp := int(w.skill_mp(i))
@@ -475,10 +498,10 @@ func _update_skill_bar(w: GameWorld, t: Dictionary, rank_color: Color) -> void:
 		var low := pl.mp < mp
 		var lv: int = w.skill_level(str(sk.id))
 		# UI-10: cấp kỹ năng ở huy hiệu, ô khoá ghi cấp mở; thiếu MP thì ô ngả xanh (dim).
-		_skills.set_slot(i + 1, {"key": str(i + 1), "name": sk.name, "icon": SpriteLib.icon("skill-" + str(sk.icon)),
+		_skills.set_slot(SLOT_SKILL0 + i, {"key": key, "name": sk.name, "icon": SpriteLib.icon("skill-" + str(sk.icon)),
 			"cd": 0.0 if locked else cd_left / maxf(0.1, w.skill_cd_of(i)), "cd_text": "" if locked else (str(ceili(cd_left)) if cd_left > 0.0 else ""),
 			"badge": str(lv) if lv > 1 and not locked else "", "lock": ("Cấp %d" % int(sk.unlock)) if locked else "",
-			"dim": low or locked})
+			"dim": low or locked, "big": big})
 	_skills.set_slot(SLOT_DODGE, {"key": "Space", "name": "Né lăn", "icon": SpriteLib.icon("skill-dodge"),
 		"cd": pl.dodge_cd / GameWorld.DODGE_CD, "cd_text": ("%.1f" % pl.dodge_cd) if pl.dodge_cd > 0.0 else ""})
 	var tal := {"key": "L", "icon": SpriteLib.talent_icon(t.id), "ring": rank_color}
@@ -502,6 +525,58 @@ func _update_skill_bar(w: GameWorld, t: Dictionary, rank_color: Color) -> void:
 	_skills.set_slot(SLOT_MP_POTION, {"key": "F", "name": "Bình MP", "icon": SpriteLib.icon("skill-mp_potion"),
 		"badge": str(int(p.mp_potions)), "cd": pl.mp_potion_cd / GameWorld.MP_POTION_CD,
 		"cd_text": str(ceili(pl.mp_potion_cd)) if pl.mp_potion_cd > 0.0 else "", "dim": int(p.mp_potions) <= 0})
+
+
+## SN12-02: ô trên thanh (chỉ số thanh) → ô bộ lắp (0–6), -1 nếu không phải ô kỹ năng.
+static func loadout_slot(bar_index: int) -> int:
+	var i := bar_index - SLOT_SKILL0
+	return i if i >= 0 and i < Classes.SKILL_SLOTS else -1
+
+
+func _accept_drop(bar_index: int, data: Dictionary) -> bool:
+	var i := loadout_slot(bar_index)
+	if i < 0 or _world == null:
+		return false
+	var sk: Dictionary = Classes.skill_by_id(str(_world.profile.class_id), str(data.get("skill_id", "")))
+	return not sk.is_empty() and _world.skill_unlocked(sk) and _world.slot_accepts(i, sk)
+
+
+func _on_skill_dropped(bar_index: int, id: String) -> void:
+	var i := loadout_slot(bar_index)
+	if i >= 0 and _world != null:
+		_world.set_slot(i, id)
+
+
+## Chuột phải ô kỹ năng: danh sách kỹ năng đã mở lắp được vào ô đó (đang lắp ở ô khác thì 2 ô đổi chỗ) + "Bỏ trống ô".
+func _on_slot_menu(bar_index: int, at: Vector2) -> void:
+	var i := loadout_slot(bar_index)
+	if i < 0 or _world == null:
+		return
+	_slot_popup.clear()
+	_menu_slot = i
+	_menu_ids = []
+	var lo: Array = _world.profile.loadout
+	for sk in Classes.skills_of(str(_world.profile.class_id)):
+		if not _world.skill_unlocked(sk) or not _world.slot_accepts(i, sk):
+			continue
+		var at_slot: int = lo.find(str(sk.id))
+		var label := str(sk.name) + (("  (ô %s)" % Classes.SLOT_KEYS[at_slot]) if at_slot >= 0 else "")
+		_slot_popup.add_icon_item(SpriteLib.icon("skill-" + str(sk.icon)), label, _menu_ids.size())
+		if at_slot == i:
+			_slot_popup.set_item_disabled(_menu_ids.size(), true)
+		_menu_ids.append(str(sk.id))
+	_slot_popup.add_separator()
+	_slot_popup.add_item("Bỏ trống ô %s" % Classes.SLOT_KEYS[i], _menu_ids.size())
+	_menu_ids.append("")
+	_slot_popup.reset_size()
+	_slot_popup.position = Vector2i(at) - Vector2i(0, int(_slot_popup.size.y) + 8)
+	_slot_popup.popup()
+
+
+func _on_slot_pick(idx: int) -> void:
+	if _world == null or idx < 0 or idx >= _menu_ids.size():
+		return
+	_world.set_slot(_menu_slot, str(_menu_ids[idx]))
 
 
 ## C1-12: bảng nhiệm vụ chương 1 (thay 3 mục tiêu cũ).

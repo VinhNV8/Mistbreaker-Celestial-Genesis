@@ -165,3 +165,6 @@ _region7.register_sprites(SPRITES)
 # M11 (chương 8): vùng 8 Vực Hư Vô — region8.py
 import region8 as _region8  # noqa: E402
 _region8.register_sprites(SPRITES)
+# M12 (chương 9): vùng 9 Cổng Thiên Đạo — region9.py
+import region9 as _region9  # noqa: E402
+_region9.register_sprites(SPRITES)

@@ -45,6 +45,7 @@ const REGION_ZONE_NAMES := {
 	6: {1: "Đồng Tuyết", 2: "Rừng Băng", 3: "Đỉnh Cực Quang"},
 	7: {1: "Đảo Mây Trôi", 2: "Đảo Rừng Treo", 3: "Thiên Cung Đổ Nát"},
 	8: {1: "Rìa Vực", 2: "Đáy Vực", 3: "Sào Huyệt Hư Vô"},
+	9: {1: "Tầng 1–3", 2: "Tầng 4–6", 3: "Tầng 7–9"},
 }
 ## C8-03: vùng 8 — chiếm ô Mạch Tinh Thạch +10, mọi ô khác +3 Tinh Thạch.
 const VEIN_CRYSTAL := 10
@@ -90,6 +91,16 @@ const BUILDINGS := {
 	"camp5": {"name": "Nâng Thành thành Hoàng Thành", "time": 2400.0, "gold": 15000, "wood": 1200, "ore": 1000, "iron": 700, "crystal": 100, "tiles": 120, "needs": "camp4"},
 	# C7-04: Cảng Khí Cầu (KP-18) — chỉ xây khi trung tâm cấp 5; mở Bến Khí Cầu 6-3 → 7-1.
 	"port": {"name": "Cảng Khí Cầu", "time": 1200.0, "gold": 5000, "wood": 400, "iron": 300, "crystal": 60, "needs": "camp5"},
+	# C9-52 (M12): Tái Thiết Lục Địa — 1 công trình mỗi vùng k (giá theo k; k ≥ 8 thêm 2 Lõi Hư Vô), chỉ sau kết thúc Hiến tế.
+	"rebuild1": {"name": "Tháp Sương Tan", "time": 600.0, "gold": 2000, "wood": 200, "ore": 150, "iron": 100, "crystal": 20},
+	"rebuild2": {"name": "Phong Đài", "time": 600.0, "gold": 4000, "wood": 400, "ore": 300, "iron": 200, "crystal": 40},
+	"rebuild3": {"name": "Giếng Sa Mạc", "time": 600.0, "gold": 6000, "wood": 600, "ore": 450, "iron": 300, "crystal": 60},
+	"rebuild4": {"name": "Vườn Mộng", "time": 600.0, "gold": 8000, "wood": 800, "ore": 600, "iron": 400, "crystal": 80},
+	"rebuild5": {"name": "Lò Rèn Viêm Long", "time": 600.0, "gold": 10000, "wood": 1000, "ore": 750, "iron": 500, "crystal": 100},
+	"rebuild6": {"name": "Đài Cực Quang", "time": 600.0, "gold": 12000, "wood": 1200, "ore": 900, "iron": 600, "crystal": 120},
+	"rebuild7": {"name": "Cảng Thiên Không", "time": 600.0, "gold": 14000, "wood": 1400, "ore": 1050, "iron": 700, "crystal": 140},
+	"rebuild8": {"name": "Đèn Tinh Quang Vĩnh Cửu", "time": 600.0, "gold": 16000, "wood": 1600, "ore": 1200, "iron": 800, "crystal": 160, "cores": 2},
+	"rebuild9": {"name": "Đền Thiên Đạo", "time": 600.0, "gold": 18000, "wood": 1800, "ore": 1350, "iron": 900, "crystal": 180, "cores": 2},
 }
 ## C7-02: tên trung tâm theo cấp và % sản lượng cộng thêm.
 const CAMP_NAMES := ["", "Trại Khai Giới", "Thôn", "Trấn", "Thành", "Hoàng Thành"]
@@ -135,6 +146,13 @@ static func create_region_tiles(region: int, rng: Callable, talent := "") -> Arr
 		for i in events.size():
 			if events[i] in ["resource", "mine", "fishery"]:
 				events[i] = "vein"
+	# C9-04: vùng 9 không có tài nguyên thường — ô Tài nguyên thành Kỳ quan nhỏ hoặc Ổ quái.
+	if region == 9:
+		var flip := false
+		for i in events.size():
+			if events[i] in ["resource", "mine", "fishery"]:
+				events[i] = "wonder" if flip else "nest"
+				flip = not flip
 	events = RngUtil.shuffle(events, rng)
 	var coords: Array = ring(1) + ring(2) + ring(3)
 	var r4: Array = ring(4)
@@ -145,7 +163,28 @@ static func create_region_tiles(region: int, rng: Callable, talent := "") -> Arr
 		var c: Array = coords[i]
 		var rr := hex_distance({"q": c[0], "r": c[1]}, {"q": 0, "r": 0})
 		tiles.append({"id": tiles.size(), "q": c[0], "r": c[1], "event": events[i], "status": "fog", "zone": clampi(rr - 1, 1, 3)})
+	# C9-04: 45 ô = 9 tầng × 5 ô (tầng theo thứ tự vòng từ trong ra)
+	if region == 9:
+		for i in range(1, tiles.size()):
+			tiles[i]["floor"] = (i - 1) / 5 + 1
 	return tiles
+
+
+## C9-04: chiếm đủ 5 ô của một tầng vùng 9 → 1 Tinh Hoa Tiến Hoá (mỗi tầng 1 lần). Trả về số tầng vừa đủ (0 nếu không).
+static func floor_reward(p, tile: Dictionary) -> int:
+	var f := int(tile.get("floor", 0))
+	if f <= 0:
+		return 0
+	var done: Array = p.quest.get("tiles9", [])
+	if f in done:
+		return 0
+	for t in p.tiles:
+		if int(t.get("floor", 0)) == f and str(t.status) != "owned":
+			return 0
+	done.append(f)
+	p.quest["tiles9"] = done
+	p.evo_essence = int(p.evo_essence) + 1
+	return f
 
 
 ## Khoá công trình trên ô: vùng 1 giữ dạng cũ "lumber_<id>", vùng khác "lumber_r<vùng>_<id>" (id ô trùng giữa các vùng).
@@ -295,12 +334,14 @@ static func torch_max(p) -> int:
 			n += 1
 	# TB-05: Bộ Phong Hành ≥ 4 món + Thiên phú nhóm Khai phá → +1 Đuốc tối đa.
 	var resonance := 1 if n >= 4 and str(Talents.get_talent(p.talent).group) == "explore" else 0
-	return Config.TORCH_MAX + (1 if Talents.has_sub(p.talent, p.talent_level, "explore", 1) else 0) + resonance
+	# C9-52: Giếng Sa Mạc (Tái Thiết vùng 3) +1 Đuốc tối đa.
+	var well := 1 if is_built(p, "rebuild3") else 0
+	return Config.TORCH_MAX + (1 if Talents.has_sub(p.talent, p.talent_level, "explore", 1) else 0) + resonance + well
 
 
 ## Khai phá cấp 10: Đuốc hồi nhanh hơn 20%.
 static func torch_regen_sec(p) -> float:
-	return Config.TORCH_REGEN_SEC * (0.8 if Talents.has_sub(p.talent, p.talent_level, "explore", 2) else 1.0)
+	return Config.TORCH_REGEN_SEC * (0.8 if Talents.has_sub(p.talent, p.talent_level, "explore", 2) else 1.0) * (0.8 if is_built(p, "rebuild3") else 1.0)
 
 
 ## Lý do không thể dùng Đuốc lên ô này, hoặc chuỗi rỗng nếu được phép.
@@ -377,6 +418,8 @@ static func claim_tile(p, id: int, bonus := false) -> Dictionary:
 	if res.ok and int(p.tiles_region) == 8 and not tile.is_empty() and tile.status == "owned" and tile.event != "vein":
 		p.crystal += VOID_TILE_CRYSTAL
 		res.message = str(res.message) + " +%d Tinh Thạch." % VOID_TILE_CRYSTAL
+	if res.ok and not tile.is_empty() and tile.status == "owned" and floor_reward(p, tile) > 0:
+		res.message = str(res.message) + " Đủ 5 ô tầng %d: +1 Tinh Hoa Tiến Hoá." % int(tile.floor)
 	return res
 
 
@@ -435,6 +478,7 @@ static func conquer_tile(p, id: int) -> bool:
 	if tile.is_empty() or tile.status == "owned":
 		return false
 	tile.status = "owned"
+	floor_reward(p, tile)
 	return true
 
 
@@ -558,6 +602,12 @@ static func build(p, kind: String) -> Dictionary:
 	var block := build_blocker(p, kind)
 	if block != "":
 		return _result(false, block)
+	if kind.begins_with("rebuild"):
+		if str(p.ending) != "hien-te":
+			return _result(false, "Tái Thiết Lục Địa mở sau kết thúc Hiến tế.")
+		if int(p.void_cores) < int(def.get("cores", 0)):
+			return _result(false, "Cần %d Lõi Hư Vô." % int(def.cores))
+		p.void_cores = int(p.void_cores) - int(def.get("cores", 0))
 	for ck in COST_KEYS:
 		var cost := float(def.get(ck[0], 0))
 		if cost > 0.0:
@@ -594,6 +644,8 @@ static func production_per_minute(p) -> Dictionary:
 		mult += Talents.lv_value(0.2, 0.3, p.talent_level)
 	if Talents.has_sub(p.talent, p.talent_level, "territory", 1):
 		mult += 0.1
+	# C9-50 / C9-46 (M12): Điểm Thiên Đạo nhánh lãnh địa +1%/điểm; kết thúc Hiến tế +30% (Endgame.territory_bonus).
+	mult += int(p.divine_points.get("terr", 0)) * 0.01 + (0.3 if str(p.ending) == "hien-te" else 0.0)
 	return {"gold": lumber * 3.0 * mult, "wood": lumber * 6.0 * mult, "ore": mines * 4.0 * mult, "iron": mines * 2.0 * mult,
 		"crystal": crystal_mines * 1.0 * mult}
 

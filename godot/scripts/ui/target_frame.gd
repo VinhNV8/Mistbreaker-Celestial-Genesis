@@ -104,7 +104,7 @@ func _draw() -> void:
 	var fs := UiTheme.fs(14)
 	var x := PR * 2.0 + 14.0
 	var y := 24.0
-	ElementIcon.draw(self, Vector2(x + 6.0, y - 5.0), str(Monsters.DEFS[e.kind].element), 7.0, 1.0)
+	ElementIcon.draw(self, Vector2(x + 6.0, y - 5.0), (e.el_override if e.el_override != "" else str(Monsters.DEFS[e.kind].element)), 7.0, 1.0)
 	x += 18.0
 	for pt in [[str(tier[0]) + " · ", accent], [str(e.name) + " · ", Color(0.96, 0.94, 0.88)],
 			["Lv%d" % int(e.level), level_color(int(e.level) - _player_level)]]:

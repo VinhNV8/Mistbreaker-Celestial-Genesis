@@ -397,4 +397,7 @@ def build_all():
     # M11: vùng 8 Vực Hư Vô (region8.py)
     import region8
     region8.register_env(out)
+    # M12: vùng 9 Cổng Thiên Đạo (region9.py)
+    import region9
+    region9.register_env(out)
     return {k: (cv.to_image(), origin) for k, (cv, origin) in out.items()}

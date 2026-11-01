@@ -25,6 +25,7 @@ const J3View = preload("res://scripts/view/job3_view.gd")
 const R6View = preload("res://scripts/view/region6_view.gd")
 const R7View = preload("res://scripts/view/region7_view.gd")
 const R8View = preload("res://scripts/view/region8_view.gd")
+const R9View = preload("res://scripts/view/region9_view.gd")
 const Ch7 = preload("res://scripts/core/chapter7.gd")
 const HIT_FX_TIME := 0.25
 
@@ -204,6 +205,7 @@ func _draw() -> void:
 		R5View.draw_arena(self, world, _art)
 		R7View.draw_arena(self, world, _art)
 		R8View.draw_arena(self, world, _art)
+		R9View.draw_arena(self, world, _art)
 	_draw_portals()
 	if _art:
 		_draw_sorted(view)
@@ -257,6 +259,7 @@ func _draw() -> void:
 	R6View.draw_over(self, world, view, _art)
 	R7View.draw_over(self, world, view, _art)
 	R8View.draw_over(self, world, view, _art)
+	R9View.draw_over(self, world, view, _art)
 	_draw_texts()
 	_update_tracking()
 
@@ -371,6 +374,8 @@ func _draw_ground(view: Rect2) -> void:
 	R7View.draw_ground(self, world, view, _art)
 	# M11: Cột Đá Hư Vô, Đèn Tinh Quang (region8_view.gd)
 	R8View.draw_ground(self, world, view, _art)
+	# M12: màu tầng, Cửa Tầng, bệ Ấn Hệ (region9_view.gd)
+	R9View.draw_ground(self, world, view, _art)
 	# M6: ốc đảo (C3-13) và bóng râm dưới tảng đá (C3-11)
 	for o in Ch3.oases(world):
 		var oc: Vector2 = o[0]
@@ -567,6 +572,10 @@ func _draw_tree_sprite(t: Dictionary) -> void:
 	# M10: đảo bay — rừng treo, mây / cột Thiên Cung.
 	if str(world.map.get("decor", "forest")) in ["sky", "sky_ruins"]:
 		SpriteLib.draw_env(self, R7View.decor_id(t.variant, str(world.map.decor) == "sky_ruins"), base, Color.WHITE, 1.0 if t.r < 28.0 else 1.4, t.shade > 0.5)
+		return
+	# M12: Thiên Thê — cột ngọc, mây vàng.
+	if str(world.map.get("decor", "forest")) == "heaven":
+		SpriteLib.draw_env(self, R9View.decor_id(t.variant), base, Color.WHITE, 1.0 if t.r < 28.0 else 1.3, t.shade > 0.5)
 		return
 	# M11: vực Hư Vô — cây chết, đá vụn.
 	if str(world.map.get("decor", "forest")) == "void":
@@ -1037,7 +1046,7 @@ func _enemy_nameplate(e, at: Vector2) -> void:
 		total += f.get_string_size(pt[0], HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
 	var icon_w := 16.0
 	var x := at.x - (total + icon_w) / 2.0
-	var el: String = Monsters.DEFS[e.kind].element
+	var el: String = world.el_of(e)
 	ElementIcon.draw(self, Vector2(x + 6.0, at.y - fs * 0.35), el, 6.5, 0.95)
 	x += icon_w
 	for pt in parts:

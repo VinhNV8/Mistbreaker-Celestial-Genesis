@@ -262,15 +262,17 @@ static func drop_book(w) -> void:
 
 ## Rơi Bí Kíp khi hạ quái (GameWorld._kill_enemy).
 static func on_kill(w, e) -> void:
+	# C9-52: Đèn Tinh Quang Vĩnh Cửu (Tái Thiết vùng 8) +10% tỉ lệ rơi Bí Kíp.
+	var k: float = w.Endgame.book_mult(w.profile)
 	if e.role == "rare":
 		drop_book(w)
 	elif e.role == "boss":
-		if w._r() < BOOK_BOSS:
+		if w._r() < BOOK_BOSS * k:
 			drop_book(w)
 	elif "cave_boss" in e and bool(e.get("cave_boss")):
-		if w._r() < BOOK_CAVE:
+		if w._r() < BOOK_CAVE * k:
 			drop_book(w)
-	elif e.elite and w._r() < BOOK_ELITE:
+	elif e.elite and w._r() < BOOK_ELITE * k:
 		drop_book(w)
 
 
@@ -402,9 +404,9 @@ static func hit_mult(w, e, id: String) -> float:
 	if variant(w, id, 2) == "vosong" and (e.elite or e.role in ["boss", "rare"]):
 		k *= 1.0 + VOSONG
 	var el := element_of(w, id)
-	if variant(w, id, 1) == "amduong" and str(Monsters.DEFS[e.kind].element) != "":
+	if variant(w, id, 1) == "amduong" and w.el_of(e) != "":
 		k *= COUNTER_BONUS
-	elif el != "" and Monsters.counters(el, str(Monsters.DEFS[e.kind].element)):
+	elif el != "" and Monsters.counters(el, w.el_of(e)):
 		k *= COUNTER_BONUS
 	return k
 

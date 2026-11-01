@@ -33,3 +33,7 @@ Khi focus vào đánh quái, cần hiển thị là đang focus vào quái nào 
 - (Đợt 11 — [30](30-spec-notes-dot-11.md), **done 31/10/2026**) Tab trang bị - Khi chọn hoặc di chuột vào 1 trang bị, thì không thấy hiển thị thông tin trang bị đang mặc để compare với trang bị đang select nhỉ? - đề xuất cho tôi... Các game thường sẽ có kiểu này.
 
 - (Đợt 11 — [30](30-spec-notes-dot-11.md), **done 31/10/2026**) Map(bản đồ) - hiện tại đang bé quá đi vài bước cahan đã hết bản đồ rồi, tôi không thấy sự khám phá trong đó, tôi muốn bản đồ rộng gấp 3 lần hiện tại, đi khám phá, đánh quái mới thấy hứng thú.
+
+- (Đợt 12 — [31](31-de-xuat-thanh-ky-nang.md), **done 01/11/2026**) Bình HP đang bị giới hạn 5 Bình, bỏ giới hạn đi giống MP.
+
+- (Đợt 12 — [31](31-de-xuat-thanh-ky-nang.md), **done 01/11/2026**) Các kỹ năng mở mới thì làm thế nào để sử dụng, trong khi thanh kỹ năng ở màn hình game đang chỉ có giới hạn vài skills? - Đề xuất giải pháp

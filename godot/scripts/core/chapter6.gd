@@ -935,7 +935,8 @@ static func chapter_done(w) -> bool:
 
 ## Ám Khí tăng/giảm: từ bước 4 (ở Đỉnh Cực Quang) hoặc từ bước 5 (mọi map vùng 6), trừ trong hang boss.
 static func dark_active(w) -> bool:
-	if not in_region(w):
+	# M12 (C9-45/46): sau kết thúc, Ám Khí thành Thiên Đạo Lực (Hợp nhất) hoặc biến mất (Hiến tế).
+	if not in_region(w) or str(w.profile.ending) != "":
 		return false
 	var s := step(w)
 	if s < 4 or (s == 4 and w.map_id != "6-3"):

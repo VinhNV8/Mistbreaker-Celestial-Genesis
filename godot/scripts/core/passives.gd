@@ -227,7 +227,7 @@ static func hit_mult(w, e, _crit: bool) -> float:
 	var tt := val(w, "nguyento")
 	if tt > 0.0:
 		var el_sk: String = w.Skills2.element_of(w, w.Skills2.source(w))
-		if w.element_bonus(e) > 0.0 or (el_sk != "" and Monsters.counters(el_sk, Monsters.DEFS[e.kind].element)):
+		if w.element_bonus(e) > 0.0 or (el_sk != "" and Monsters.counters(el_sk, w.el_of(e))):
 			k += tt
 	return k
 

@@ -1,1 +1,0 @@
-Bình HP đang bị giới hạn 5 Bình, bỏ giới hạn đi giống MP.

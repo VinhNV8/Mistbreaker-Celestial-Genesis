@@ -29,7 +29,12 @@ const RngUtil = preload("res://scripts/core/rng_util.gd")
 ## v24: BK — Bí Kíp rơi = +1 Điểm Kỹ Năng; Mảnh Bí Kíp bỏ (save cũ: 5 Mảnh = 1 điểm, làm tròn lên); biến thể ✦ mở bằng điểm (docs/29).
 ## v25: M11 chương 8 — void_cores (Lõi Hư Vô), lanterns (Đèn Lồng Tinh Quang), lamp_off_until {"map:đèn": giây chơi},
 ## assault_play (giây chơi tới Phản công Hư Vô), quest.ch8/kills8/lamps8/cages8/pillars8 (docs/17 mục 6).
-const VERSION := 25
+## v26: M12 chương 9 + endgame — floors9 (Cửa Tầng đã mở), ending ("" | hop-nhat | hien-te), divine_level, divine_points
+## {nhánh: điểm}, tower_best (tầng Thần Vực), rebuild_raid {vùng: giây chơi buff tắt tới, "t<vùng>": giây tới Triều kế},
+## quest.ch9/kills9/souls9 (docs/18 mục 7). EXP tích luỹ ở cấp 100 dùng chính profile.xp (thay trường exp_bank của spec).
+## v27: SN12-02 — 7 ô kỹ năng (loadout 7 phần tử, "" = trống; save cũ 4 ô được thêm 3 ô trống), bộ kỹ năng thứ 2
+## (loadout_alt), bộ đang dùng (loadout_set 0 / 1) (docs/31).
+const VERSION := 27
 
 var talent := ""
 var level := 1
@@ -138,6 +143,9 @@ var skill_levels := {}
 ## PV (docs/27, v21): cấp kỹ năng bị động {id: 0–5}
 var passive_levels := {}
 var loadout: Array = []
+## SN12-02 (v27): bộ kỹ năng còn lại (đổi bằng phím X) và bộ đang dùng (0 = Bộ 1, 1 = Bộ 2).
+var loadout_alt: Array = []
+var loadout_set := 0
 var variants := {}
 ## HP-07: hang đã dọn → mở lại khi play_seconds ≥ giá trị (docs/15).
 var caves := {}
@@ -151,6 +159,13 @@ var embers := 0
 ## C7-15: Lông Vũ Gió · C7-12: Đá Neo đã chạm theo map.
 var feathers := 0
 var anchor_stones := {}
+## M12 (v26)
+var floors9: Array = []
+var ending := ""
+var divine_level := 0
+var divine_points := {}
+var tower_best := 0
+var rebuild_raid := {}
 ## M11 (v25)
 var void_cores := 0
 var lanterns := 0
@@ -245,6 +260,8 @@ func to_dict() -> Dictionary:
 		"skill_levels": skill_levels,
 		"passive_levels": passive_levels,
 		"loadout": loadout,
+		"loadout_alt": loadout_alt,
+		"loadout_set": loadout_set,
 		"variants": variants,
 		"caves": caves,
 		"secret_books": secret_books,
@@ -255,6 +272,12 @@ func to_dict() -> Dictionary:
 		"embers": embers,
 		"feathers": feathers,
 		"anchor_stones": anchor_stones,
+		"floors9": floors9,
+		"ending": ending,
+		"divine_level": divine_level,
+		"divine_points": divine_points,
+		"tower_best": tower_best,
+		"rebuild_raid": rebuild_raid,
 		"void_cores": void_cores,
 		"lanterns": lanterns,
 		"lamp_off_until": lamp_off_until,
@@ -415,6 +438,11 @@ func load_dict(d: Dictionary) -> bool:
 	loadout = []
 	for k in d.get("loadout", []):
 		loadout.append(str(k))
+	# v27: 4 ô cũ → 7 ô (GameWorld._ensure_loadout thêm ô trống); chưa có bộ 2 → để trống, lần đổi bộ đầu tiên chép bộ 1.
+	loadout_alt = []
+	for k in d.get("loadout_alt", []):
+		loadout_alt.append(str(k))
+	loadout_set = clampi(int(d.get("loadout_set", 0)), 0, 1)
 	caves = {}
 	var cv: Dictionary = d.get("caves", {})
 	for k in cv:
@@ -450,6 +478,21 @@ func load_dict(d: Dictionary) -> bool:
 		for x in an[k]:
 			arr.append(int(x))
 		anchor_stones[str(k)] = arr
+	# v26 — save v25 trở xuống: chưa tới vùng 9.
+	floors9 = []
+	for f in d.get("floors9", []):
+		floors9.append(int(f))
+	ending = str(d.get("ending", ""))
+	divine_level = int(d.get("divine_level", 0))
+	divine_points = {}
+	var dp: Dictionary = d.get("divine_points", {})
+	for k in dp:
+		divine_points[str(k)] = int(dp[k])
+	tower_best = int(d.get("tower_best", 0))
+	rebuild_raid = {}
+	var rr: Dictionary = d.get("rebuild_raid", {})
+	for k in rr:
+		rebuild_raid[str(k)] = float(rr[k])
 	# v25 — save v24 trở xuống: chưa tới vùng 8.
 	void_cores = int(d.get("void_cores", 0))
 	lanterns = int(d.get("lanterns", 0))

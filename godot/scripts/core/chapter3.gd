@@ -594,7 +594,7 @@ static func derive_after(_w, bonus: Dictionary, st: Dictionary) -> void:
 
 ## Hệ số thêm khi người chơi đánh trúng: Mắt Nhân Sư (chí mạng vào quái bị khắc ×1,2).
 static func hit_mult(w, e, crit: bool) -> float:
-	if crit and w.has_unique("nhan_su_eye") and Monsters.counters(str(w.profile.element), str(Monsters.DEFS[e.kind].element)):
+	if crit and w.has_unique("nhan_su_eye") and Monsters.counters(str(w.profile.element), w.el_of(e)):
 		return EYE_MUL
 	return 1.0
 
@@ -743,7 +743,7 @@ static func advance(w) -> void:
 	var r: Dictionary = q.reward
 	w.profile.gold += float(r.get("gold", 0))
 	w.profile.stones += int(r.get("stones", 0))
-	w.profile.potions = mini(w.POTION_MAX, int(w.profile.potions) + int(r.get("potions", 0)))
+	w.profile.potions = int(w.profile.potions) + int(r.get("potions", 0))
 	var rt := Story.reward_text(r)
 	w._message("Nhiệm vụ chương 3 hoàn thành: %s%s" % [q.title, (". Thưởng: " + rt) if rt != "" else ""], "good")
 	var step := int(w.profile.quest.ch3)

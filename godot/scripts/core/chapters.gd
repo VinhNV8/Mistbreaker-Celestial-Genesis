@@ -25,6 +25,7 @@ extends RefCounted
 ##   M9 (D42): input_filter(w, input) -> Dictionary (thay cả phím của khung hình — mất kiểm soát chương 6)
 ##   M11 (D70): talent_mult(w) -> float (hiệu lực Thiên phú, nhân dồn — Suy Thiên, Hút Thiên phú) ·
 ##   talent_cd_mult(w) -> float (nhân hồi chiêu phím L)
+##   M12: after_exp(w) (sau mỗi lần cộng EXP — cấp sau 100, core/endgame.gd)
 
 const Ch3 = preload("res://scripts/core/chapter3.gd")
 const Ch4 = preload("res://scripts/core/chapter4.gd")
@@ -32,11 +33,14 @@ const Ch5 = preload("res://scripts/core/chapter5.gd")
 const Ch6 = preload("res://scripts/core/chapter6.gd")
 const Ch7 = preload("res://scripts/core/chapter7.gd")
 const Ch8 = preload("res://scripts/core/chapter8.gd")
+const Ch9 = preload("res://scripts/core/chapter9.gd")
+## M12.4 (docs/18 mục 6): endgame dùng chung khung hook.
+const Endgame = preload("res://scripts/core/endgame.gd")
 ## J3 (docs/23): chuyển chức 3 dùng chung khung hook (không có map / NPC riêng).
 const Job3 = preload("res://scripts/core/job3.gd")
 ## PV (docs/27): kỹ năng bị động cũng dùng khung hook.
 const Passives = preload("res://scripts/core/passives.gd")
-const MODULES := [Ch3, Ch4, Ch5, Ch6, Ch7, Ch8, Job3, Passives]
+const MODULES := [Ch3, Ch4, Ch5, Ch6, Ch7, Ch8, Ch9, Endgame, Job3, Passives]
 
 
 ## Danh sách chương có hook, tính 1 lần rồi giữ lại (hook được gọi nhiều lần mỗi khung hình cho từng quái).
@@ -109,6 +113,11 @@ static func skill_trail(w, pos: Vector2, r: float) -> void:
 static func after_shot(w, mul: float) -> void:
 	for m in _with("after_shot"):
 		m.after_shot(w, mul)
+
+
+static func after_exp(w) -> void:
+	for m in _with("after_exp"):
+		m.after_exp(w)
 
 
 static func after_slash(w) -> void:

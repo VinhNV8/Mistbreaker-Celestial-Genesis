@@ -52,7 +52,7 @@ Ngoài ra: 1 kỹ năng Thiên phú (phím L, 20 Thiên phú — khác nhau mạ
 
 ### 4.1. Kỹ năng chủ động: mở theo cấp và chuyển chức (hướng B)
 
-Mỗi lớp **12 kỹ năng chủ động**, vẫn lắp **4 ô** (phím 1–4) như kịch bản. Đổi kỹ năng trong ô **miễn phí khi ở vùng an toàn** (làng, trại, thành).
+Mỗi lớp **12 kỹ năng chủ động**, vẫn lắp **4 ô** (phím 1–4) như kịch bản. *(SN12-02, 01/11/2026: nay **7 ô** — thêm ô 5 khi chuyển chức 1, ô 6 khi chuyển chức 2, ô Tuyệt kỹ G cấp 45; đổi ô cả khi ngoài giao tranh 5 giây; 2 bộ kỹ năng — xem [31](31-de-xuat-thanh-ky-nang.md).)* Đổi kỹ năng trong ô **miễn phí khi ở vùng an toàn** (làng, trại, thành).
 
 | Mốc | Kiếm Khách | Thợ Săn | Pháp Sư |
 | --- | --- | --- | --- |

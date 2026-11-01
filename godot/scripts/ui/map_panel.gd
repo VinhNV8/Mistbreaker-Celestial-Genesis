@@ -3,6 +3,7 @@ extends "res://scripts/ui/modal.gd"
 
 signal nest_started
 
+const Endgame = preload("res://scripts/core/endgame.gd")
 const Config = preload("res://scripts/core/config.gd")
 const Explore = preload("res://scripts/core/explore.gd")
 const HexMap = preload("res://scripts/ui/hex_map.gd")
@@ -84,6 +85,10 @@ func _buildings(info: VBoxContainer, p) -> void:
 		["forge", "chế trang bị (phím E ở làng)"], ["garden", "1 thảo dược mỗi 3 phút, cả khi offline"]]
 	if p.talent == "long-mach":
 		kinds.append(["dragon", "+10% Tấn công và HP cho nhân vật, đồng minh"])
+	# C9-52 (M12): Tái Thiết Lục Địa — công trình của vùng đang xem (sau kết thúc Hiến tế).
+	if str(p.ending) == "hien-te" and Explore.BUILDINGS.has("rebuild%d" % int(p.tiles_region)):
+		var rk := int(p.tiles_region)
+		kinds.append(["rebuild%d" % rk, "Tái Thiết: " + str(Endgame.REBUILD_TEXT[rk]) + (" · cần 2 Lõi Hư Vô" if rk >= 8 else "")])
 	for k in kinds:
 		var kind: String = k[0]
 		var def: Dictionary = Explore.BUILDINGS[kind]

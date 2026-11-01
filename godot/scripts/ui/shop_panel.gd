@@ -23,6 +23,7 @@ const KEEPERS := {
 	"6-1": "Thợ săn Lão Hàn · Trạm Tuyết Bạc",
 	"7-1": "Thuyền trưởng Phong Linh · Bến Mây",
 	"8-1": "Nữ tư tế Tuyết Nga · Tiền Đồn Tinh Quang",
+	"9-1": "Nữ tư tế Tuyết Nga · Thiên Thê Đài I",
 }
 
 ## "buy" | "merchant" | "sell"
@@ -44,7 +45,7 @@ func _render(content: VBoxContainer) -> void:
 	content.add_child(W.title_bar(SpriteLib.icon("res-gold"), "Cửa hàng", "%s · %s" % [str(world.map.safe.name), _keeper()], [
 		W.currency("res-gold", int(p.gold), "Vàng"),
 		W.currency("res-stone", int(p.stones), "Đá Cường Hoá"),
-		W.currency("res-potion", int(p.potions), "Bình máu (tối đa %d)" % GameWorld.POTION_MAX),
+		W.currency("res-potion", int(p.potions), "Bình máu"),
 		W.currency("res-mp_potion", int(p.mp_potions), "Bình MP"),
 	], close, "Đóng (E / Esc)"))
 	var body := UiTheme.hbox(12)
@@ -87,8 +88,8 @@ func _keeper() -> String:
 func _supply_rows(p) -> Array:
 	var region := int(world.map.get("region", 1))
 	var rows: Array = [
-		["potion", "res-potion", "Bình máu", GameWorld.SHOP_POTION, int(p.potions), GameWorld.POTION_MAX - int(p.potions),
-			"Phím Q hồi 35%% HP, hồi chiêu 8 giây. Mang tối đa %d bình." % GameWorld.POTION_MAX],
+		["potion", "res-potion", "Bình máu", GameWorld.SHOP_POTION, int(p.potions), 99,
+			"Phím Q hồi 35% HP, hồi chiêu 8 giây. Mang bao nhiêu cũng được. Đủ 2 thảo dược tự chế 1 bình."],
 		["mp_potion", "res-mp_potion", "Bình MP", GameWorld.SHOP_MP_POTION, int(p.mp_potions), 99,
 			"Phím F hồi 40% MP, hồi chiêu 8 giây (riêng với bình máu). Mang bao nhiêu cũng được. Cũng rơi từ quái, tinh anh và boss."],
 		["stone", "res-stone", "Đá Cường Hoá", GameWorld.SHOP_STONE, int(p.stones), 99,
@@ -108,7 +109,13 @@ func _supply_rows(p) -> Array:
 	if region == 7:
 		rows.append(["feather", "res-feather", "Lông Vũ Gió", GameWorld.Ch7.SHOP_FEATHER, int(p.feathers), 99,
 			"Phím Q: lơ lửng 2 giây — không rơi khi ra khỏi mép đảo, tốc chạy +20%."])
-	if region == 8:
+	# C9-40: Thiên Thê Đài I bán đồ tiêu hao của mọi chương.
+	if region == 9:
+		rows.append(["feather", "res-feather", "Lông Vũ Gió", GameWorld.Ch7.SHOP_FEATHER, int(p.feathers), 99,
+			"Phím Q ở vùng 7: lơ lửng 2 giây — không rơi khi ra khỏi mép đảo."])
+		rows.append(["ember", "res-ember", "Than Hồng", GameWorld.Ch6.SHOP_EMBER, int(p.embers), 99,
+			"Phím Q ở vùng 6 khi có từ 2 tầng băng giá: xoá hết và miễn băng giá 30 giây."])
+	if region == 8 or region == 9:
 		rows.append(["lantern", "res-lantern", "Đèn Lồng Tinh Quang", GameWorld.Ch8.SHOP_LANTERN, int(p.lanterns), 99,
 			"Phím Q khi Suy Thiên từ 20%: xoá Suy Thiên và miễn Suy Thiên 45 giây."])
 	return rows

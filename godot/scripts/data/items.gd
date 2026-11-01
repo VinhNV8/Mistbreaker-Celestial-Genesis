@@ -132,6 +132,16 @@ const SETS := {
 			{"count": 6, "text": "Mỗi 60 giây miễn 1 lần bị vô hiệu Thiên phú", "bonus": {}},
 		],
 	},
+	## C9-35 (M12): bộ vùng 9 — 4 và 6 món xử lý trong core/chapter9.gd.
+	"thien_dao": {
+		"name": "Bộ Thiên Đạo",
+		"suffix": "Thiên Đạo",
+		"tiers": [
+			{"count": 2, "text": "+5% HP và Tấn công", "bonus": {"max_hp_pct": 0.05, "atk_pct": 0.05}},
+			{"count": 4, "text": "Đòn khắc hệ +20%", "bonus": {}},
+			{"count": 6, "text": "Kỹ năng L hồi nhanh 30%", "bonus": {}},
+		],
+	},
 	## C3-35 (M6): bộ vùng 3.
 	"sa_hanh": {
 		"name": "Bộ Sa Hành Giả",
@@ -147,9 +157,9 @@ const SETS := {
 const SA_HANH := "sa_hanh"
 const REGION_SET := "frost_hunter"
 ## Đồ Tím rơi ở vùng nào thì thuộc bộ của vùng đó (M4.2).
-const REGION_SETS := {1: "frost_hunter", 2: "phong_hanh", 3: "sa_hanh", 4: "u_minh", 5: "hoa_nguc", 6: "cuc_quang", 7: "thien_phong", 8: "tinh_quang"}
+const REGION_SETS := {1: "frost_hunter", 2: "phong_hanh", 3: "sa_hanh", 4: "u_minh", 5: "hoa_nguc", 6: "cuc_quang", 7: "thien_phong", 8: "tinh_quang", 9: "thien_dao"}
 ## Đồ Cam của từng boss chương.
-const BOSS_UNIQUES := {"boss": "wolf_fang", "huyen-anh": "huyen_anh_mask", "sa-hoang": "sa_hoang_tail", "nu-vuong": "goi_mong", "vien-long": "long_tam", "ban-nga": "guong_ban_nga", "cu-than": "bua_cu_than", "giao-chu": "an_hu_vo"}
+const BOSS_UNIQUES := {"boss": "wolf_fang", "huyen-anh": "huyen_anh_mask", "sa-hoang": "sa_hoang_tail", "nu-vuong": "goi_mong", "vien-long": "long_tam", "ban-nga": "guong_ban_nga", "cu-than": "bua_cu_than", "giao-chu": "an_hu_vo", "ma-ton": "mat_na_vo_dien"}
 
 ## EQ-16: đồ Cam có hiệu ứng riêng.
 const UNIQUES := {
@@ -211,6 +221,12 @@ const UNIQUES := {
 		"name": "Nanh Hư Vô",
 		"slot": "weapon",
 		"text": "Đòn đánh bỏ qua 30% Phòng thủ quái.",
+	},
+	## C9-31 (M12): rơi từ Ma Tôn Vô Diện (lần đầu 100%, sau đó 15%).
+	"mat_na_vo_dien": {
+		"name": "Mặt Nạ Vô Diện",
+		"slot": "helm",
+		"text": "Mỗi 30 giây: 10 giây đòn đánh mang hệ khắc mục tiêu (+30%).",
 	},
 	## C6-34 (M9): rơi từ boss hiếm Long Băng Bắc Cực.
 	"vay_long_bang": {

@@ -28,6 +28,7 @@ const ShopPanel = preload("res://scripts/ui/shop_panel.gd")
 const ForgePanel = preload("res://scripts/ui/forge_panel.gd")
 const Job2Panel = preload("res://scripts/ui/job2_panel.gd")
 const Job3Panel = preload("res://scripts/ui/job3_panel.gd")
+const DivinePanel = preload("res://scripts/ui/divine_panel.gd")
 const PauseMenu = preload("res://scripts/ui/pause_menu.gd")
 const Settings = preload("res://scripts/core/settings.gd")
 const AudioManager = preload("res://scripts/audio/audio_manager.gd")
@@ -44,6 +45,11 @@ const KEY_ACTIONS := {
 	"skill_2": [KEY_2],
 	"skill_3": [KEY_3],
 	"skill_4": [KEY_4],
+	# SN12-02 (docs/31): ô 5 (chuyển chức 1), ô 6 (chuyển chức 2), ô Tuyệt kỹ G (cấp 45); X đổi Bộ kỹ năng 1 / 2.
+	"skill_5": [KEY_5],
+	"skill_6": [KEY_6],
+	"skill_7": [KEY_G],
+	"swap_loadout": [KEY_X],
 	"talent": [KEY_L],
 	"dodge": [KEY_SPACE],
 	"toggle_stats": [KEY_C],
@@ -88,6 +94,9 @@ var shop_panel: ShopPanel
 var forge_panel: ForgePanel
 var job2_panel: Job2Panel
 var job3_panel: Job3Panel
+var divine_panel: DivinePanel
+## M12 (C9-47): bảng tổng kết + danh đề chờ hết thoại kết thúc rồi mới hiện.
+var _pending_credits := false
 var audio: AudioManager
 var _pause: PauseMenu
 ## Sau khi đóng thoại, bỏ qua phím 0,2 giây (Space vừa dùng để tắt thoại không thành né lăn).
@@ -217,6 +226,8 @@ func _input(event: InputEvent) -> void:
 			job2_panel.close()
 		elif job3_panel.is_open():
 			job3_panel.close()
+		elif divine_panel.is_open():
+			divine_panel.close()
 		else:
 			act = world.talk(str(npc.id)) if not npc.is_empty() else ""
 			if act == "shop" or (npc.is_empty() and world.in_village()):
@@ -233,6 +244,10 @@ func _input(event: InputEvent) -> void:
 				for panel in _panels():
 					panel.close()
 				job3_panel.open(world)
+			elif act == "divine":
+				for panel in _panels():
+					panel.close()
+				divine_panel.open(world)
 			elif npc.is_empty():
 				hud.log_message("Cửa hàng ở Làng Thanh Thạch — đứng trong làng rồi bấm E.", "info")
 		get_viewport().set_input_as_handled()
@@ -290,7 +305,7 @@ func _open_forge(tab := "") -> void:
 
 
 func _panels() -> Array:
-	return [map_panel, inventory_panel, talent_panel, world_panel, shop_panel, forge_panel, job2_panel, job3_panel, skill_panel, help_panel]
+	return [map_panel, inventory_panel, talent_panel, world_panel, shop_panel, forge_panel, job2_panel, job3_panel, divine_panel, skill_panel, help_panel]
 
 
 func _any_panel_open() -> bool:
@@ -315,6 +330,10 @@ func _process(delta: float) -> void:
 		world.update(dt, bot.call(world) if bot.is_valid() else _read_input())
 	for ev in world.drain_events():
 		_handle_event(ev)
+	if _pending_credits and _victory == null and not dialog.is_open():
+		_pending_credits = false
+		_victory = Screens.credits(world, _after_credits)
+		_ui.add_child(_victory)
 	_camera.position = world.player.pos
 	_vignette.modulate.a = 0.45 + 0.35 * world.player.pos.x / world.world_size.x
 	_freeze_tint.visible = world.freeze_timer > 0.0
@@ -355,6 +374,10 @@ func _read_input() -> Dictionary:
 		"skill_2": Input.is_action_just_pressed("skill_2"),
 		"skill_3": Input.is_action_just_pressed("skill_3"),
 		"skill_4": Input.is_action_just_pressed("skill_4"),
+		"skill_5": Input.is_action_just_pressed("skill_5"),
+		"skill_6": Input.is_action_just_pressed("skill_6"),
+		"skill_7": Input.is_action_just_pressed("skill_7"),
+		"swap_loadout": Input.is_action_just_pressed("swap_loadout"),
 		"talent": Input.is_action_just_pressed("talent"),
 		"dodge": Input.is_action_just_pressed("dodge"),
 		"potion": Input.is_action_just_pressed("potion"),
@@ -391,6 +414,28 @@ func _handle_event(ev: Dictionary) -> void:
 			_persist()
 			_victory = Screens.victory(world, _after_victory, _go_title, str(ev.get("boss", "boss")))
 			_ui.add_child(_victory)
+		"ending_choice":
+			# C9-44: màn lựa chọn kết thúc (thay màn chiến thắng của Ma Tôn nếu đang mở)
+			_close_victory()
+			_victory = Screens.ending_choice(_pick_ending)
+			_ui.add_child(_victory)
+		"ending":
+			_persist()
+			_pending_credits = true
+
+
+## C9-47: sau danh đề về Thiên Thê Đài I.
+func _after_credits() -> void:
+	_close_victory()
+	if world.map_id != "9-1":
+		world._load_map("9-1")
+	world.player.pos = world.safe_pos + Vector2(60, 40)
+	_persist()
+
+
+func _pick_ending(id: String) -> void:
+	_close_victory()
+	world.Ch9.choose_ending(world, id)
 
 
 ## MP-06: cảnh kết chương — mở bản đồ lục địa, vùng tiếp theo sáng lên.
@@ -606,6 +651,8 @@ func _start_world(p: Profile) -> void:
 	_ui.add_child(job2_panel)
 	job3_panel = Job3Panel.new()
 	_ui.add_child(job3_panel)
+	divine_panel = DivinePanel.new()
+	_ui.add_child(divine_panel)
 	dialog = DialogBox.new()
 	_ui.add_child(dialog)
 	dialog.setup(p.name, p.class_id, p.look)
@@ -620,7 +667,7 @@ func _start_world(p: Profile) -> void:
 
 func _end_session() -> void:
 	_close_victory()
-	for n in [hud, map_panel, inventory_panel, talent_panel, world_panel, dialog, shop_panel, forge_panel, job2_panel, job3_panel, skill_panel, help_panel]:
+	for n in [hud, map_panel, inventory_panel, talent_panel, world_panel, dialog, shop_panel, forge_panel, job2_panel, job3_panel, divine_panel, skill_panel, help_panel]:
 		if n != null:
 			n.queue_free()
 	hud = null
@@ -635,6 +682,7 @@ func _end_session() -> void:
 	forge_panel = null
 	job2_panel = null
 	job3_panel = null
+	divine_panel = null
 	world = null
 	_view.world = null
 	_view.visible = false
@@ -1216,6 +1264,54 @@ func _run_smoke(dir: String) -> void:
 	await _wait(0.3)
 	await _shot(dir, "19d-giao-chu")
 	world.enemies = []
+	# M12: chương 9 Thiên Đạo Chi Môn — tầng + hệ tầng, Ma Tôn, màn lựa chọn, danh đề
+	p.bosses["giao-chu"] = true
+	p.job3 = str(GameWorld.Classes.job3_def(str(p.class_id)).id)
+	p.quest.ch8 = GameWorld.Story.DONE8
+	p.level = maxi(p.level, 97)
+	world._refresh_stats()
+	world._load_map("9-1")
+	world.player.pos = world.safe_pos + Vector2(60, 40)
+	await _wait(1.0)
+	_skip_dialog()
+	await _wait(0.3)
+	await _shot(dir, "21c-camp9")
+	world.player.pos = Vector2(1000, 1100) * Maps.MAP_SCALE
+	for k in ["thien-binh", "tan-hon", "thien-ma", "linh-thu-ngu-hanh"]:
+		world.spawn_with_hooks(k, 95, world.player.pos + Vector2(150 + randf() * 200, randf() * 200 - 100))
+	await _wait(1.4)
+	_skip_dialog()
+	await _wait(0.3)
+	await _shot(dir, "21-region9")
+	p.floors9 = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+	p.quest.ch9 = GameWorld.Ch9.S_BOSS
+	world._load_map("9-3")
+	world.player.pos = world.arena_pos - Vector2(120, 0)
+	await _wait(1.0)
+	var mt = world.boss()
+	if mt != null:
+		mt.hp = mt.max_hp * 0.3
+	await _wait(0.6)
+	_skip_dialog()
+	await _wait(0.3)
+	await _shot(dir, "21d-ma-ton")
+	if mt != null:
+		world._kill_enemy(mt)
+	world.enemies = []
+	world.Ch9.check_quest(world)
+	await _wait(0.8)
+	_skip_dialog()
+	await _wait(0.3)
+	await _shot(dir, "22-ending-choice")
+	_close_victory()
+	world.Ch9.choose_ending(world, "hien-te")
+	await _wait(0.5)
+	while dialog.is_open():
+		_skip_dialog()
+		await _wait(0.1)
+	await _wait(0.5)
+	await _shot(dir, "22d-credits")
+	_close_victory()
 	# SN9-02: màn Chọn nhân vật (ô 1 = nhân vật smoke, thêm 1 nhân vật mẫu ở ô 3)
 	_persist()
 	var p3 := Profile.new()

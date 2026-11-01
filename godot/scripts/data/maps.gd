@@ -16,7 +16,7 @@ const REGIONS := [
 	{"id": 6, "name": "Băng Nguyên Bắc Cực", "levels": [60, 72], "element": "thuy", "maps": ["6-1", "6-2", "6-3"], "unlock": "Chuyển chức 2 · hạ Viêm Long · cấp 59"},
 	{"id": 7, "name": "Quần Đảo Thiên Không", "levels": [72, 84], "element": "kim", "maps": ["7-1", "7-2", "7-3"], "unlock": "Hoàng Thành + Cảng Khí Cầu · hạ Bản Ngã · cấp 71"},
 	{"id": 8, "name": "Vực Hư Vô", "levels": [84, 95], "element": "", "maps": ["8-1", "8-2", "8-3"], "unlock": "Thiên phú tiến hoá 2 lần · hạ Cự Thần · cấp 83"},
-	{"id": 9, "name": "Cổng Thiên Đạo", "levels": [95, 100], "element": "", "maps": [], "unlock": "Chuyển chức 3 (Beta)"},
+	{"id": 9, "name": "Cổng Thiên Đạo", "levels": [95, 100], "element": "", "maps": ["9-1", "9-2", "9-3"], "unlock": "Chuyển chức 3 · hạ Giáo Chủ Hư Vô · cấp 94"},
 ]
 
 const MAPS := {
@@ -434,8 +434,10 @@ const MAPS := {
 		"trees": 90,
 		"decor": "sky_ruins",
 		"islands": [[Vector2(430, 1280), 450.0], [Vector2(1150, 700), 320.0], [Vector2(1150, 1860), 320.0], [Vector2(1900, 1280), 380.0],
-			[Vector2(2550, 700), 300.0], [Vector2(2550, 1860), 300.0], [Vector2(3150, 1280), 330.0], [Vector2(3872, 1280), 300.0]],
-		"bridges": [[0, 1], [0, 2], [1, 3], [2, 3], [3, 4], [3, 5], [4, 6], [5, 6], [6, 7]],
+			[Vector2(2550, 700), 300.0], [Vector2(2550, 1860), 300.0], [Vector2(3150, 1280), 330.0], [Vector2(3872, 1280), 300.0],
+			[Vector2(3500, 470), 230.0]],
+		## M11: đảo 8 = Bến Khe Vực (cổng "next" sang Vực Hư Vô 8-1), cầu 9 nối từ đảo 6.
+		"bridges": [[0, 1], [0, 2], [1, 3], [2, 3], [3, 4], [3, 5], [4, 6], [5, 6], [6, 7], [6, 8]],
 		"solid": [8],
 		"anchors": [Vector2(1900, 1280), Vector2(2550, 700), Vector2(3420, 1280)],
 		"void_anchors": [Vector2(1150, 700), Vector2(2550, 1860), Vector2(3150, 1100)],
@@ -517,6 +519,71 @@ const MAPS := {
 		"stones8": [[Vector2(1100, 1300), 30.0], [Vector2(1700, 1300), 28.0], [Vector2(1900, 2000), 30.0], [Vector2(2500, 900), 28.0],
 			[Vector2(2600, 1600), 32.0], [Vector2(3100, 1500), 28.0], [Vector2(3300, 2000), 30.0], [Vector2(3400, 600), 26.0]],
 	},
+	## ---------------------------------------------------------------- M12 chương 9 (docs/18 C9-02…12)
+	## Mỗi map 3 tầng theo chiều ngang, ngăn bởi Cửa Tầng (doors9: điểm có x = ranh giới tầng) · guards9: chỗ Thủ Tầng của 3 tầng
+	## (tầng thứ 3 canh lối sang map sau / cửa Thiên Đạo Chi Môn) · seals9: bệ Ấn Hệ của 3 tầng. Cấp quái theo tầng (zone_x = bề rộng tầng).
+	"9-1": {
+		"region": 9,
+		"name": "Thiên Thê · Tầng 1–3",
+		"size": Vector2(4480, 2560),
+		"levels": [95, 97],
+		"zone_x": [1493.0, 1494.0],
+		"safe": {"pos": Vector2(352, 1280), "r": 160.0, "name": "Thiên Thê Đài I", "kind": "camp"},
+		"npcs": [["van-hac-9", "npc-van-hac", Vector2(40, -40), "Vân Hạc · E"], ["tuyet-nga-9", "npc-tuyet-nga", Vector2(-80, 60), "Tuyết Nga · E"],
+			["lam-nhi-9", "npc-lam-nhi", Vector2(80, 80), "Lam Nhi · E"], ["than-vuc", "npc-to-su", Vector2(-40, -110), "Cổng Thần Vực · E"]],
+		"arena": null,
+		"gate": false,
+		"mobs": [["thien-binh", 95, 30], ["tan-hon", 95, 25], ["thien-ma", 95, 25], ["linh-thu-ngu-hanh", 96, 20]],
+		"ground": "tile-heaven",
+		"fog": 0.2,
+		"tint": Color(0.3, 0.26, 0.18),
+		"wind": 0.0,
+		"trees": 60,
+		"decor": "heaven",
+		"doors9": [Vector2(1493, 1280), Vector2(2987, 1280)],
+		"guards9": [Vector2(1330, 1280), Vector2(2820, 1280), Vector2(4080, 640)],
+		"seals9": [Vector2(900, 700), Vector2(2240, 1900), Vector2(3700, 1100)],
+	},
+	"9-2": {
+		"region": 9,
+		"name": "Thiên Thê · Tầng 4–6",
+		"size": Vector2(4480, 2560),
+		"levels": [97, 99],
+		"zone_x": [1493.0, 1494.0],
+		"safe": {"pos": Vector2(352, 1280), "r": 150.0, "name": "Thiên Thê Đài II", "kind": "camp"},
+		"arena": null,
+		"gate": false,
+		"mobs": [["thien-binh", 97, 25], ["tan-hon", 97, 25], ["thien-ma", 97, 25], ["linh-thu-ngu-hanh", 97, 25]],
+		"ground": "tile-heaven",
+		"fog": 0.25,
+		"tint": Color(0.28, 0.22, 0.2),
+		"wind": 0.0,
+		"trees": 50,
+		"decor": "heaven",
+		"doors9": [Vector2(1493, 1280), Vector2(2987, 1280)],
+		"guards9": [Vector2(1330, 1280), Vector2(2820, 1280), Vector2(4080, 640)],
+		"seals9": [Vector2(950, 1900), Vector2(2240, 700), Vector2(3700, 1700)],
+	},
+	"9-3": {
+		"region": 9,
+		"name": "Thiên Thê · Tầng 7–9",
+		"size": Vector2(4480, 2560),
+		"levels": [99, 100],
+		"zone_x": [2987.0, 1494.0],
+		"safe": {"pos": Vector2(352, 1280), "r": 150.0, "name": "Thiên Thê Đài III", "kind": "camp"},
+		"arena": {"pos": Vector2(3872, 1280), "r": 320.0, "boss": "ma-ton", "level": 100, "chapter": 9, "name": "Thiên Đạo Chi Môn"},
+		"gate": true,
+		"mobs": [["thien-binh", 99, 25], ["tan-hon", 99, 25], ["thien-ma", 99, 25], ["linh-thu-ngu-hanh", 99, 25]],
+		"ground": "tile-heaven",
+		"fog": 0.3,
+		"tint": Color(0.32, 0.24, 0.16),
+		"wind": 0.0,
+		"trees": 40,
+		"decor": "heaven",
+		"doors9": [Vector2(1493, 1280), Vector2(2987, 1280)],
+		"guards9": [Vector2(1330, 1280), Vector2(2820, 1280), Vector2(3330, 1280)],
+		"seals9": [Vector2(900, 1800), Vector2(2240, 900), Vector2(3300, 2100)],
+	},
 }
 
 ## Thứ tự để hiển thị và kiểm điều kiện "đã tới map trước".
@@ -544,7 +611,7 @@ static func safe_buildings(m: Dictionary) -> Array:
 ## đảo bay và vùng nước nhân theo (là địa hình). Số cây ×3 (mật độ giữ nguyên). Hang phụ không đổi.
 const MAP_SCALE := 1.7320508
 ## Khoá là mảng điểm tuyệt đối trên map.
-const POINT_LISTS := ["anchors", "beacons", "fires", "pillars", "pods", "void_anchors", "lamps", "cages", "seals"]
+const POINT_LISTS := ["anchors", "beacons", "fires", "pillars", "pods", "void_anchors", "lamps", "cages", "seals", "doors9", "guards9", "seals9"]
 ## Khoá là mảng [tâm, bán kính]; true = bán kính cũng nhân (địa hình), false = giữ bán kính.
 const CIRCLE_LISTS := {"islands": true, "crumble": false, "lava": false, "oases": false, "stones8": false}
 static var _scaled := {}
