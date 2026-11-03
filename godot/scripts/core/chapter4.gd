@@ -314,6 +314,11 @@ static func adjust_damage(w, e, dmg: int, by_player: bool) -> int:
 	if e.kind == "nu-vuong" and w.ch4.dream_t > 0.0:
 		return 0
 	if e.kind == "thuy-quai" and e.hp > 1.0:
+		# Spec_Notes 02/11: đánh vào thân thì báo rõ phải chặt đầu (mỗi 1,2 giây một lần).
+		if by_player and w.time - float(e.get_meta("immune_note", -99.0)) >= 1.2:
+			e.set_meta("immune_note", w.time)
+			var left: int = w.enemies.filter(func(h): return not h.dead and h.kind == "dau-thuy-quai").size()
+			w._text(e.pos + Vector2(0, -e.radius - 28.0), "Miễn sát thương — chặt %d đầu còn lại" % left, Color("#9ec8ff"), true)
 		return 0
 	return dmg
 
@@ -354,7 +359,13 @@ static func update_enemy(w, e, dt: float) -> bool:
 			e.phase = 3
 			w.ch4.light_ang = 0.0
 			w._message("Phệ mộng! Đứng trong vòng sáng để không bị hút máu.", "bad")
-	if e.kind == "mong-chau" or e.kind == "thuy-quai":
+	# Spec_Notes 02/11 ("Thủy quái thất đầu không lên damage, không chém được"): trả true ở đây làm GameWorld bỏ qua
+	# _update_rare → 7 đầu không bao giờ mọc, thân miễn sát thương mãi. Thân đứng yên nhưng vẫn chạy update_rare.
+	if e.kind == "thuy-quai":
+		if e.role == "rare":
+			update_rare(w, e, dt)
+		return true
+	if e.kind == "mong-chau":
 		return true
 	return false
 

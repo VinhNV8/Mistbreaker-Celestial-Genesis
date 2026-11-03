@@ -25,6 +25,12 @@ const TOWER_OFFSET := Vector2(700, 0)
 const TOWER_NEXT := 3.0
 const TOWER_HEAL := 0.30
 const TOWER_KINDS := ["thien-binh", "tan-hon", "thien-ma", "linh-thu-ngu-hanh"]
+## TL-B9b (01/11): cấp quái 100 + 2·tầng tăng quá chậm (bot leo 44–118 tầng) → thêm hệ số mỗi tầng (luỹ thừa) cho HP và
+## Tấn công quái tháp, để người chơi cấp 100 chưa có Điểm Thiên Đạo dừng ở tầng 10–20.
+const TOWER_HP_GROWTH := 1.14
+const TOWER_ATK_GROWTH := 1.05
+## Thần Tướng (cứ 5 tầng): HP × TOWER_GUARD_HP (spec ×8; TL-B9b: ×8 thành bức tường hết giờ với Triệu Hồi Sư).
+const TOWER_GUARD_HP := 3.0
 # ---------------------------------------------------------------- Tái Thiết
 const REBUILD_NAMES := {1: "Tháp Sương Tan", 2: "Phong Đài", 3: "Giếng Sa Mạc", 4: "Vườn Mộng", 5: "Lò Rèn Viêm Long", 6: "Đài Cực Quang",
 	7: "Cảng Thiên Không", 8: "Đèn Tinh Quang Vĩnh Cửu", 9: "Đền Thiên Đạo"}
@@ -247,16 +253,25 @@ static func _next_floor(w) -> void:
 	for i in n:
 		var kind: String = TOWER_KINDS[i % TOWER_KINDS.size()]
 		var e = w.spawn_enemy(kind, lv, st.center + Vector2.from_angle(i * TAU / n) * (TOWER_R - 60.0), {"role": "pack"})
+		_tower_scale(e, st.floor)
 		e.state = "chase"
 		st.ids.append(e.id)
 	if st.floor % 5 == 0:
 		var g = w.spawn_enemy("thien-binh", lv, st.center + Vector2(0, -TOWER_R + 80.0), {"role": "pack", "elite": true})
 		g.name = "Thần Tướng"
-		g.max_hp *= 8.0
+		_tower_scale(g, st.floor)
+		g.max_hp *= TOWER_GUARD_HP
 		g.hp = g.max_hp
 		g.state = "chase"
 		st.ids.append(g.id)
 	w._text(w.player.pos + Vector2(0, -60), "Thần Vực · Tầng %d" % st.floor, Color("#fff0b0"), true)
+
+
+## TL-B9b: quái tầng f mạnh thêm TOWER_HP_GROWTH^f (HP) và TOWER_ATK_GROWTH^f (Tấn công).
+static func _tower_scale(e, f: int) -> void:
+	e.max_hp *= pow(TOWER_HP_GROWTH, f)
+	e.hp = e.max_hp
+	e.atk *= pow(TOWER_ATK_GROWTH, f)
 
 
 static func _tick_tower(w, dt: float) -> void:

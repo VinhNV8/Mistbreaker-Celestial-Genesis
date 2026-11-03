@@ -34,6 +34,8 @@ func update_from(w) -> void:
 
 ## [tên loại, màu] như bảng tên quái (UI-15).
 static func tier_of(e) -> Array:
+	if e.gate_boss:
+		return ["Chúa Cổng", Color("#ff4d6a")]
 	if e.cave_boss:
 		return ["Chúa Hang", Color("#ff7a45")]
 	if e.role == "rare":

@@ -137,8 +137,8 @@ const DEFS := {
 			{"id": "khidoc", "unlock": 60, "job2": "tu-linh-su", "name": "Khí Độc Tử Vong", "cd": 12.0, "mp": 30, "mul": 0.25, "icon": "khidoc",
 				"text": "(Tử Linh Sư) Vùng khí độc 10 m tại điểm ngắm 5 giây, ×0,25 mỗi 0,5 giây + độc cộng dồn."},
 			# J3 (docs/23): Thần Kỹ — mở khi đã chuyển chức 3 (cấp 90)
-			{"id": "nguhanh", "unlock": 90, "job3": true, "name": "Ngũ Hành Luân Chuyển", "cd": 30.0, "mp": 40, "mul": 0.6, "icon": "nguhanh",
-				"text": "(Thần Kỹ · Hiền Giả) 6 giây: 5 cầu Kim, Mộc, Thủy, Hỏa, Thổ quay 5 m quanh quái gần điểm ngắm (30 m), chạm quái ×0,6 (mỗi quái 0,5 giây một lần); cầu khắc hệ quái +30%."},
+			{"id": "nguhanh", "unlock": 90, "job3": true, "name": "Ngũ Hành Luân Chuyển", "cd": 30.0, "mp": 40, "mul": 0.75, "icon": "nguhanh",
+				"text": "(Thần Kỹ · Hiền Giả) 6 giây: 5 cầu Kim, Mộc, Thủy, Hỏa, Thổ quay 5 m quanh quái gần điểm ngắm (30 m), chạm quái ×0,75 (mỗi quái 0,5 giây một lần); cầu khắc hệ quái +30%."},
 		],
 	},
 	## LH1 (docs/19 mục 2): kịch bản mục 4 — đỡ đòn, hỗ trợ, chỉ số chính Thể lực.

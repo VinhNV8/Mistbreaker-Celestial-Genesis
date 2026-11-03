@@ -5,10 +5,20 @@ Các PNG và GIF được sinh bởi `tools/art/export_skill_design_review.py`; 
 chạy `build_all.py` và không sửa `godot/assets`. GIF cho thấy ba pha `charge →
 cast → impact` để review nhịp kỹ năng.
 
+Phạm vi index là **70 kỹ năng chủ động** trong `classes.gd` (14 mỗi lớp). Năm
+đòn đánh thường (Chém, Bắn, Hỏa Cầu, Đập Khiên, Linh Cầu) là hành động cơ bản,
+không nằm trong danh mục review skill này.
+
 Quy ước nhãn trên ảnh:
 
 - `SOURCE ART - APPROVED REFERENCE`: cắt trực tiếp từ master sheet đã cung cấp.
 - `CONCEPT REVIEW - NOT FOR GAME`: storyboard tham khảo để duyệt ý tưởng; chưa đủ chất lượng để import runtime.
+
+**Đã vào game (02/11/2026, AR-45b — docs/07):** cả 14 kỹ năng Kiếm Khách. Trảm Phong, Kiếm Ý, Vạn Kiếm Quy Tông
+dùng hình cắt từ master sheet (`fx-sheet-*`); 11 kỹ năng còn lại dùng keyframe 32×32 `vfx-<id>` (khung giữa
+của storyboard, `tools/art/skill_vfx.py`) vẽ khi thi triển ở `godot/scripts/view/class_fx.gd`. Thợ Săn và
+Pháp Sư vẫn chỉ ở mức review. Chỉ các card có nhãn `SOURCE ART` được dùng làm chuẩn chất lượng artwork;
+các card `CONCEPT REVIEW` là bản phác hướng chuyển động, không phải artwork bàn giao.
 
 ## Kiếm Khách
 
@@ -27,6 +37,7 @@ Quy ước nhãn trên ảnh:
 | 11 | Kiếm Vực | [PNG](kiem-khach/11-kiemvuc.png) | [GIF](kiem-khach/11-kiemvuc.gif) |
 | 12 | Huyết Bạo | [PNG](kiem-khach/12-huyetbao.png) | [GIF](kiem-khach/12-huyetbao.gif) |
 | 13 | Huyết Ảnh | [PNG](kiem-khach/13-huyetanh.png) | [GIF](kiem-khach/13-huyetanh.gif) |
+| 14 | Nhất Kiếm Khai Thiên | [PNG](kiem-khach/14-nhatkiem.png) | [GIF](kiem-khach/14-nhatkiem.gif) |
 
 ## Thợ Săn
 
@@ -45,6 +56,7 @@ Quy ước nhãn trên ảnh:
 | 11 | Tam Liên Thần Tiễn | [PNG](tho-san/11-tamlien.png) | [GIF](tho-san/11-tamlien.gif) |
 | 12 | Bãi Mìn | [PNG](tho-san/12-baimin.png) | [GIF](tho-san/12-baimin.gif) |
 | 13 | Lưới Bẫy | [PNG](tho-san/13-luoibay.png) | [GIF](tho-san/13-luoibay.gif) |
+| 14 | Thiên Lạc Tinh Vũ | [PNG](tho-san/14-tinhvu.png) | [GIF](tho-san/14-tinhvu.gif) |
 
 ## Pháp Sư
 
@@ -63,3 +75,42 @@ Quy ước nhãn trên ảnh:
 | 11 | Băng Phong Thiên Hạ | [PNG](phap-su/11-bangphong.png) | [GIF](phap-su/11-bangphong.gif) |
 | 12 | Triệu Hồi Xương | [PNG](phap-su/12-trieuhoi.png) | [GIF](phap-su/12-trieuhoi.gif) |
 | 13 | Khí Độc Tử Vong | [PNG](phap-su/13-khidoc.png) | [GIF](phap-su/13-khidoc.gif) |
+| 14 | Ngũ Hành Luân Chuyển | [PNG](phap-su/14-nguhanh.png) | [GIF](phap-su/14-nguhanh.gif) |
+
+## Hộ Vệ
+
+| # | Kỹ năng | Trạng thái | Ảnh |
+| ---: | --- | --- | --- |
+| 1 | Khiên Chấn | Cần artwork | — |
+| 2 | Khiêu Khích | Source art tham chiếu | [PNG](ho-ve/02-khieukhich.png) · [GIF](ho-ve/02-khieukhich.gif) |
+| 3 | Lao Khiên | Cần artwork | — |
+| 4 | Khiên Thép | Source art tham chiếu | [PNG](ho-ve/04-khienthep.png) · [GIF](ho-ve/04-khienthep.gif) |
+| 5 | Chấn Địa | Source art tham chiếu | [PNG](ho-ve/05-chandia.png) · [GIF](ho-ve/05-chandia.gif) |
+| 6 | Phi Thuẫn | Cần artwork | — |
+| 7 | Phán Quyết | Cần artwork | — |
+| 8 | Xung Phong | Cần artwork | — |
+| 9 | Thành Bất Diệt | Source art tham chiếu | [PNG](ho-ve/09-thanhbatdiet.png) · [GIF](ho-ve/09-thanhbatdiet.gif) |
+| 10 | Thánh Quang Trảm | Cần artwork | — |
+| 11 | Thánh Vực | Cần artwork | — |
+| 12 | Thiết Chuỳ Phá Địa | Cần artwork | — |
+| 13 | Thành Đồng | Cần artwork | — |
+| 14 | Thiên Thuẫn Giáng Thế | Concept review, không dùng trong game | [PNG](ho-ve/14-thienthuan.png) · [GIF](ho-ve/14-thienthuan.gif) |
+
+## Triệu Hồi Sư
+
+| # | Kỹ năng | Trạng thái | Ảnh |
+| ---: | --- | --- | --- |
+| 1 | Triệu Hồi Sói Bóng | Source art tham chiếu | [PNG](trieu-hoi-su/01-soibong.png) · [GIF](trieu-hoi-su/01-soibong.gif) |
+| 2 | Linh Tiễn | Cần artwork | — |
+| 3 | Triệu Hồi Tiểu Quỷ | Source art tham chiếu | [PNG](trieu-hoi-su/03-tieuquy.png) · [GIF](trieu-hoi-su/03-tieuquy.gif) |
+| 4 | Liên Kết Linh Hồn | Source art tham chiếu | [PNG](trieu-hoi-su/04-lienket.png) · [GIF](trieu-hoi-su/04-lienket.gif) |
+| 5 | Gọi Thạch Quỷ | Cần artwork | — |
+| 6 | Hoả Điểu | Cần artwork | — |
+| 7 | Linh Trận | Cần artwork | — |
+| 8 | Gọi Linh Ưng | Cần artwork | — |
+| 9 | Quân Đoàn Linh Hồn | Source art tham chiếu | [PNG](trieu-hoi-su/09-quandoan.png) · [GIF](trieu-hoi-su/09-quandoan.gif) |
+| 10 | Gọi Ấu Long | Cần artwork | — |
+| 11 | Long Hống | Cần artwork | — |
+| 12 | Lôi Đồ Đằng | Cần artwork | — |
+| 13 | Phong Đồ Đằng | Cần artwork | — |
+| 14 | Kỳ Lân Giáng Thế | Concept review, không dùng trong game | [PNG](trieu-hoi-su/14-kylan.png) · [GIF](trieu-hoi-su/14-kylan.gif) |

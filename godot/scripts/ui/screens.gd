@@ -479,9 +479,9 @@ const VICTORY := {
 ## C9-44: 2 thẻ kết thúc — [id, tên, mô tả, hệ quả].
 const ENDINGS := [
 	["hop-nhat", "Hợp nhất", "Hấp thụ mảnh thứ hai, trở thành Thiên Đạo mới.",
-		"Sương mù còn, nhưng nghe lệnh bạn · Ám Khí thành Thiên Đạo Lực (đầy → Thần Hoá 10 giây: +30% Tấn công, +15% tốc đánh, đòn khắc hệ) · Endgame: Thần Vực (tháp vô tận) · Cấp sau 100: Thần Vực N"],
+		"Sương mù còn, nhưng nghe lệnh bạn · Ám Khí thành Thiên Đạo Lực (đầy → Thần Hoá 10 giây: +30% Tấn công, +15% tốc đánh, đòn khắc hệ) · Endgame: Thần Vực (tháp vô tận) · Cấp sau 100: Thần Vực 1, 2, 3…"],
 	["hien-te", "Hiến tế", "Trả mảnh thứ hai cho Bia Đá — sương mù tan.",
-		"Sương bản đồ vùng 1–9 mở hết, ô khai phá lộ sự kiện · Ám Khí biến mất · Thiên phú +20%, lãnh địa +30%, miễn Suy Thiên · Endgame: Tái Thiết Lục Địa (9 công trình) · Cấp sau 100: Khai Thế N"],
+		"Sương bản đồ vùng 1–9 mở hết, ô khai phá lộ sự kiện · Ám Khí biến mất · Thiên phú +20%, lãnh địa +30%, miễn Suy Thiên · Endgame: Tái Thiết Lục Địa (9 công trình) · Cấp sau 100: Khai Thế 1, 2, 3…"],
 ]
 
 

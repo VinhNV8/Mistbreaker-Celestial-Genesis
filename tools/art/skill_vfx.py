@@ -64,6 +64,70 @@ def _blood_burst(dash=False):
     return _finish(cv)
 
 
+def _heaven_split():
+    """Nhất Kiếm Khai Thiên: đường chém bạc xẻ trời, lõi trắng và mảnh vàng vỡ ở điểm chạm."""
+    cv = _new()
+    for offset, alpha, width in ((-3, 70, 5.0), (3, 100, 3.0), (0, 180, 2.0)):
+        cv.line(2, 28 + offset, 30, 4 + offset, hexc("#c4e4ff", alpha), width)
+    cv.line(2, 28, 30, 4, R["white"][3], 1.4)
+    cv.line(5, 28, 28, 6, hexc("#ffffff"), 0.9)
+    for x, y, dx, dy in ((26, 7, 4, -4), (25, 10, 5, 1), (22, 8, 1, -5), (28, 12, 3, 4)):
+        cv.line(x, y, x + dx, y + dy, R["gold"][3], 1.1)
+    return _finish(cv)
+
+
+def _starfall():
+    """Thiên Lạc Tinh Vũ: nhiều mũi tên sao rơi riêng lẻ, khác với vùng mưa tên."""
+    cv = _new()
+    for x, y, length in ((6, 8, 12), (15, 5, 15), (25, 10, 11), (10, 18, 8), (23, 21, 7)):
+        cv.line(x - 4, y - length, x, y, hexc("#c4e4ff", 135), 1.8)
+        cv.line(x - 2, y - length + 4, x, y, hexc("#ffffff"), 0.9)
+        cv.shade_ellipse(x, y, 2.2, 2.2, R["white"])
+        cv.line(x - 3, y, x + 3, y, R["gold"][3], 0.9)
+        cv.line(x, y - 3, x, y + 3, R["gold"][3], 0.9)
+    return _finish(cv)
+
+
+def _five_elements():
+    """Ngũ Hành Luân Chuyển: năm cầu nguyên tố quay trên một quỹ đạo bạc."""
+    cv = _new()
+    cv.arc(16, 16, 11, 0, math.tau, hexc("#dce6f2", 135), 1.0)
+    colors = (R["white"][3], R["leaf_light"][3], R["crystal"][3], R["fire"][3], R["sand"][3])
+    for index, color in enumerate(colors):
+        a = math.radians(-90 + index * 72)
+        x, y = 16 + math.cos(a) * 11, 16 + math.sin(a) * 11
+        glow(cv, x, y, 4, color, 70)
+        cv.shade_ellipse(x, y, 3.2, 3.2, [color, color, color, R["white"][3]])
+        cv.set(x - 1, y - 1, hexc("#ffffff"))
+    return _finish(cv)
+
+
+def _divine_shield():
+    """Thiên Thuẫn Giáng Thế: khiên thần hạ xuống cùng hai vòng sóng bảo hộ."""
+    cv = _new()
+    for r, alpha in ((14, 70), (10, 125)):
+        cv.arc(16, 23, r, math.radians(190), math.radians(350), hexc("#ffe9a0", alpha), 1.4)
+    glow(cv, 16, 14, 13, R["gold"][3], 90)
+    cv.shade_poly([(16, 3), (25, 8), (23, 21), (16, 28), (9, 21), (7, 8)], R["white"])
+    cv.shade_poly([(16, 6), (21, 10), (20, 19), (16, 24), (12, 19), (11, 10)], R["gold"])
+    cv.line(16, 0, 16, 5, hexc("#ffffff"), 1.2)
+    return _finish(cv)
+
+
+def _qilin_descent():
+    """Kỳ Lân Giáng Thế: kỳ lân trắng, sừng vàng và hỏa tinh rơi xuống."""
+    cv = _new()
+    glow(cv, 16, 18, 15, R["crystal"][3], 85)
+    cv.shade_ellipse(15, 19, 9, 7, R["white"])
+    cv.shade_poly([(18, 16), (29, 20), (20, 23)], R["white"])
+    cv.shade_poly([(11, 15), (14, 3), (17, 15)], R["gold"])
+    cv.line(10, 15, 6, 24, R["gold"][2], 1.5)
+    cv.set(18, 17, R["crystal"][3])
+    for x, y in ((5, 6), (25, 5), (28, 12)):
+        cv.line(x, y - 4, x, y + 2, hexc("#fff6a0", 170), 1.0)
+    return _finish(cv)
+
+
 def _arrow_fan(count=3, poison=False, beam=False):
     cv = _new()
     color = hexc("#7ae07a") if poison else R["white"][3]
@@ -189,16 +253,18 @@ SKILLS = {
     "kiemvu": lambda: _sword_arc(hexc("#c8e6ff"), 4, True), "phikiem": lambda: _sword_rain(),
     "vankiem": lambda: _sword_rain(True), "thanhkiem": lambda: _sword_arc(R["gold"][3], 1),
     "kiemvuc": lambda: _sword_rain(), "huyetbao": lambda: _blood_burst(), "huyetanh": lambda: _blood_burst(True),
+    "nhatkiem": _heaven_split,
     "rain": lambda: _arrow_rain(), "pierce": lambda: _arrow_fan(1), "lanban": lambda: _arrow_fan(3),
     "eagle": lambda: _arrow_fan(2, beam=True), "tennay": lambda: _arrow_fan(4), "trap": lambda: _trap(),
     "lienxa": lambda: _arrow_fan(5), "tendoc": lambda: _arrow_fan(1, poison=True), "thientien": lambda: _arrow_rain(True),
     "phakhong": lambda: _arrow_fan(1, beam=True), "tamlien": lambda: _arrow_fan(3), "baimin": lambda: _trap(field=True),
-    "luoibay": lambda: _trap(net=True),
+    "luoibay": lambda: _trap(net=True), "tinhvu": _starfall,
     "chain": lambda: _lightning(), "banglao": lambda: _ice(lance=True), "meteor": lambda: _fire(),
     "barrier": _barrier, "hoatuong": lambda: _fire("wall"), "nova": lambda: _ice(wave=True),
     "muabang": lambda: _ice(rain=True), "causam": lambda: _lightning(orb=True), "thienhoa": lambda: _fire(),
     "thienloi": lambda: _lightning(sky=True), "bangphong": lambda: _ice(wave=True),
-    "trieuhoi": _summon, "khidoc": lambda: _summon(poison=True),
+    "trieuhoi": _summon, "khidoc": lambda: _summon(poison=True), "nguhanh": _five_elements,
+    "thienthuan": _divine_shield, "kylan": _qilin_descent,
 }
 
 

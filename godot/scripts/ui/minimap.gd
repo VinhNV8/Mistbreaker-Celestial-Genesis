@@ -4,6 +4,7 @@ extends Control
 ## boss và boss hiếm, nhân vật (mũi tên theo hướng nhìn). Phím V: đổi cỡ nhỏ / lớn.
 ## SN5-01: chuột trái lên bản đồ → nhân vật tự chạy tới điểm đó; chuột phải → huỷ.
 
+const Gates = preload("res://scripts/core/gates.gd")
 const UiTheme = preload("res://scripts/ui/ui_theme.gd")
 const GameWorld = preload("res://scripts/core/game_world.gd")
 
@@ -125,8 +126,12 @@ func _draw() -> void:
 	for pt in w.portals:
 		var pc := _to_map(pt.pos, rect)
 		var pcol: Color = {"next": Color("#ffc940"), "back": Color("#6fb6ff"), "cave": Color("#e08a3c"), "exit": Color("#7fe0c0")}.get(pt.kind, Color("#b46bff"))
-		draw_circle(pc, 3.5, Color(0, 0, 0, 0.7))
-		draw_circle(pc, 2.5, pcol)
+		# BD-11: Cổng dungeon — chấm to hơn, màu theo hạng
+		var big := 1.5 if pt.kind == "dgate" else 0.0
+		if pt.kind == "dgate":
+			pcol = Gates.COLORS.get(str(pt.get("rank", "E")), pcol)
+		draw_circle(pc, 3.5 + big, Color(0, 0, 0, 0.7))
+		draw_circle(pc, 2.5 + big, pcol)
 	# SN9-06: bãi quái — vòng mờ + số cấp (chỉ bãi đã khám phá)
 	for c in w.camps:
 		if not w.fog.is_open_at(c.pos):

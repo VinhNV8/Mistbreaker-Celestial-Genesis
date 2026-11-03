@@ -61,6 +61,8 @@ Công thức hiệu ứng chính ở Lv n: `giá trị(n) = giá trị(1) × (1 
 
 ### 1.4. Cộng hưởng (kịch bản mục 3)
 
+*(Đã code 02/11/2026 cùng ô Thiên phú phụ và tẩy — [33](33-thien-phu-phu-cong-huong.md). Luyện Kim Sư đổi "5 thảo dược" → "2 bình máu".)*
+
 Cần có ô Thiên phú phụ (mở ở cấp nhân vật 30 và 60). Khi có 2 Thiên phú **cùng nhóm**:
 
 - **Cộng hưởng chung:** hiệu ứng chính của cả hai +10%.
@@ -92,7 +94,7 @@ Cột **Code**: ✅ đã có trong game (M2), 🟡 có nhưng khác thiết kế
 | 10 | Trái Tim Lãnh Chúa | B · Lãnh địa | Công trình xây nhanh 25% → 37,5% | **Hiệu Triệu** (300 → 200 giây): hoàn thành ngay 1 công trình đang xây | ✅ Lv1→10 (M3) |
 | 11 | Thuần Thú Sư | A · Triệu hồi | Đòn làm quái thường **hoặc quái Ổ quái** tụt dưới 10% → 15% HP thì thu phục (tối đa 2 thú); thú cưng +0% → +50% chỉ số | — | ✅ Lv1→10 (M3) |
 | 12 | Mắt Ưng | A · Khai phá | Nhìn xuyên sương mù 2 ô; +10% → +15% chí mạng | — | ✅ Lv1→10 (M3) |
-| 13 | Hấp Huyết | A · Chiến đấu | 8% → 12% sát thương thành máu; không dùng được bình máu | — | ✅ Lv1→10 (M3) |
+| 13 | Hấp Huyết | A · Chiến đấu | 8% → 12% sát thương thành máu *(SN14-01, 02/11/2026: bỏ hạn chế "không dùng được bình máu")* | — | ✅ Lv1→10 (M3) |
 | 14 | Bàn Tay Vàng | A · Kinh tế | Phân rã: 20% → 30% thêm 1 Tinh Kim | — | ✅ Lv1→10 (M3) |
 | 15 | Ngũ Hành Linh Căn | S · Phép thuật | Đòn đánh mang hệ; khắc hệ +30% → +40% *(ngoại lệ: ×1,33)* | **Đổi hệ** (0,5 giây). Xoáy Kiếm trong 2 giây sau khi đổi hệ = **Ngũ Hành Bộc Phá** +100% → +150%, bán kính 16 m | ✅ Lv1→10 (M3) |
 | 16 | Thời Gian Ngưng Đọng | S · Điều khiển | — | **Ngưng Đọng** (90 giây): quái và đạn đứng yên 3 → 4,5 giây | ✅ Lv1→10 (M3) |
@@ -117,7 +119,7 @@ Cột **Code**: ✅ đã có trong game (M2), 🟡 có nhưng khác thiết kế
 | 10 | Trái Tim Lãnh Chúa | Người thích xây lãnh địa | Không giúp chiến đấu | Có giá trị hơn khi có nhiều công trình (Alpha) |
 | 11 | Thuần Thú Sư | Người thích triệu hồi | Thú cưng yếu dần nếu không thay | Nên thay thú cấp cao hơn ở vùng mới |
 | 12 | Mắt Ưng | Khám phá + chí mạng | — | Chí mạng có trần 60% |
-| 13 | Hấp Huyết | Đánh lâu, không lùi | Không uống bình máu | Mạnh khi sát thương cao |
+| 13 | Hấp Huyết | Đánh lâu, không lùi | — *(trước SN14-01: không uống bình máu)* | Mạnh khi sát thương cao |
 | 14 | Bàn Tay Vàng | Người cường hoá +10 trở lên | Không giúp chiến đấu | Tinh Kim cần cho +10…+15 |
 | 15 | Ngũ Hành Linh Căn | Người thích chọn hệ | Phải đổi hệ đúng lúc | Mạnh nhất với Pháp Sư (mục 5) |
 | 16 | Thời Gian Ngưng Đọng | Né boss, đánh dồn | Hồi chiêu dài | Lv10 + hiệu ứng phụ Điều khiển = 5,5 giây |

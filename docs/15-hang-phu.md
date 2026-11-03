@@ -40,3 +40,5 @@ Mục đích: thêm trải nghiệm "đi hang" ngắn (3–5 phút), thưởng �
 | --- | --- |
 | SN6-T4 | Mỗi map có cửa hang trong map, tránh cổng khác; vào hang (1,5 giây), id `cave-…`, không vào `unlocked_maps`, có cổng ra, không có Cổng Dịch Chuyển; ra hang về map cha đứng cạnh cửa hang |
 | SN6-T5 | Hang có 3 khu, đúng số quái + tinh anh + 1 Chúa Hang (HP ×5); không sinh thêm quái; hạ Chúa Hang → món ≥ Xanh dương, cổng ra, hang đóng; vào lại bị chặn, sau 20 phút mở lại; save/load giữ `caves`, load khi đang trong hang → map cha |
+
+*(02/11/2026: Cổng dungeon ngẫu nhiên — [34](34-dungeon-cong-ngau-nhien.md) — dùng lại khung hang phụ: `Caves.is_cave` đúng cho cả bản đồ `gate-…`.)*

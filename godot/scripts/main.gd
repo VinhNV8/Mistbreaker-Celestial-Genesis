@@ -27,6 +27,8 @@ const GiftCode = preload("res://scripts/core/gift_code.gd")
 const ShopPanel = preload("res://scripts/ui/shop_panel.gd")
 const ForgePanel = preload("res://scripts/ui/forge_panel.gd")
 const Job2Panel = preload("res://scripts/ui/job2_panel.gd")
+## TP5-02 (docs/33): Lễ Thức Tỉnh ô Thiên phú phụ.
+const SubTalentPanel = preload("res://scripts/ui/sub_talent_panel.gd")
 const Job3Panel = preload("res://scripts/ui/job3_panel.gd")
 const DivinePanel = preload("res://scripts/ui/divine_panel.gd")
 const PauseMenu = preload("res://scripts/ui/pause_menu.gd")
@@ -93,6 +95,7 @@ var dialog: DialogBox
 var shop_panel: ShopPanel
 var forge_panel: ForgePanel
 var job2_panel: Job2Panel
+var sub_panel: SubTalentPanel
 var job3_panel: Job3Panel
 var divine_panel: DivinePanel
 ## M12 (C9-47): bảng tổng kết + danh đề chờ hết thoại kết thúc rồi mới hiện.
@@ -287,6 +290,8 @@ func _open_char_tab(id: String) -> void:
 	for panel in [inventory_panel, skill_panel, talent_panel]:
 		panel.close()
 	match id:
+		"sub_ritual":
+			sub_panel.open(world)
 		"skills":
 			skill_panel.open(world)
 		"talent":
@@ -305,7 +310,7 @@ func _open_forge(tab := "") -> void:
 
 
 func _panels() -> Array:
-	return [map_panel, inventory_panel, talent_panel, world_panel, shop_panel, forge_panel, job2_panel, job3_panel, divine_panel, skill_panel, help_panel]
+	return [map_panel, inventory_panel, talent_panel, world_panel, shop_panel, forge_panel, job2_panel, job3_panel, divine_panel, skill_panel, help_panel, sub_panel]
 
 
 func _any_panel_open() -> bool:
@@ -395,6 +400,9 @@ func _handle_event(ev: Dictionary) -> void:
 		"tile":
 			_persist()
 		"map":
+			# Rà soát 01/11: bảng lục địa mở từ Cổng Dịch Chuyển không ở lại với nội dung của map cũ.
+			if world_panel.is_open():
+				world_panel.close()
 			_fit_camera()
 			_camera.position = world.player.pos
 			_camera.reset_smoothing()
@@ -405,6 +413,11 @@ func _handle_event(ev: Dictionary) -> void:
 			dialog.push(str(ev.id))
 		"quest_done":
 			_persist()
+		"sub_ritual":
+			# TP5-02 (docs/33): chuyển chức xong → Lễ Thức Tỉnh ô Thiên phú phụ.
+			for panel in _panels():
+				panel.close()
+			sub_panel.open(world)
 		"waypoint":
 			# MP-09: bước vào Cổng Dịch Chuyển → bảng lục địa để chọn map đã mở.
 			for panel in _panels():
@@ -649,6 +662,8 @@ func _start_world(p: Profile) -> void:
 		panel.open_panel.connect(_open_char_tab)
 	job2_panel = Job2Panel.new()
 	_ui.add_child(job2_panel)
+	sub_panel = SubTalentPanel.new()
+	_ui.add_child(sub_panel)
 	job3_panel = Job3Panel.new()
 	_ui.add_child(job3_panel)
 	divine_panel = DivinePanel.new()
@@ -667,7 +682,7 @@ func _start_world(p: Profile) -> void:
 
 func _end_session() -> void:
 	_close_victory()
-	for n in [hud, map_panel, inventory_panel, talent_panel, world_panel, dialog, shop_panel, forge_panel, job2_panel, job3_panel, divine_panel, skill_panel, help_panel]:
+	for n in [hud, map_panel, inventory_panel, talent_panel, world_panel, dialog, shop_panel, forge_panel, job2_panel, job3_panel, divine_panel, skill_panel, help_panel, sub_panel]:
 		if n != null:
 			n.queue_free()
 	hud = null
@@ -681,6 +696,7 @@ func _end_session() -> void:
 	shop_panel = null
 	forge_panel = null
 	job2_panel = null
+	sub_panel = null
 	job3_panel = null
 	divine_panel = null
 	world = null
@@ -700,9 +716,29 @@ func _smoke_dir() -> String:
 
 
 func _shot(dir: String, file: String) -> void:
+	# Rà soát 01/11: smoke đặt nhân vật / nạp map trực tiếp có thể đứng trúng Cổng Dịch Chuyển → bảng lục địa tự mở và che
+	# mọi ảnh sau (không ảnh nào cố ý chụp bảng này).
+	if world_panel != null and world_panel.is_open():
+		world_panel.close()
+		await get_tree().process_frame
 	await RenderingServer.frame_post_draw
 	get_viewport().get_texture().get_image().save_png(dir.path_join(file + ".png"))
 	print("SMOKE shot ", file)
+
+
+## Smoke (rà soát 01/11): chỗ đứng trong làng / thành / trại tránh Cổng Dịch Chuyển — đứng trúng cổng là bảng lục địa
+## tự mở và che các ảnh sau.
+func _smoke_town_pos() -> Vector2:
+	var pos: Vector2 = world.safe_pos + Vector2(10, -10)
+	for _i in 8:
+		var near := false
+		for pt in world.portals:
+			if pos.distance_to(pt.pos) <= world.Portals.RADIUS + 40.0:
+				near = true
+		if not near:
+			break
+		pos += Vector2(70, 30)
+	return pos
 
 
 ## Smoke: đóng hết thoại đang chờ (ảnh chụp không bị hộp thoại che).
@@ -823,6 +859,21 @@ func _run_smoke(dir: String) -> void:
 	await _shot(dir, "03d-guard")
 	world.profile.class_id = "kiem-khach"
 	world._refresh_stats()
+	# AR-45b: hình thi triển Kiếm Khách — Xoáy Kiếm qua use_skill thật (world_view nhận ra lúc thi triển), Nhất Kiếm Khai Thiên ghi thẳng.
+	world.profile.loadout = []  # bộ đang lắp là của Hộ Vệ (ảnh trước) → về bộ mặc định Kiếm Khách
+	world.slot_skill(0)
+	await _wait(0.1)  # world_view ghi nhận bộ mới trước (đổi bộ cùng khung với thi triển thì không vẽ)
+	var spin_slot: int = world.profile.loadout.find("spin")
+	if spin_slot >= 0:
+		world.player.skill_cds[spin_slot] = 0.0
+		world.player.mp = world.stats.max_mp
+		world.use_skill(spin_slot)
+		await _wait(0.15)
+		await _shot(dir, "03e-kiem-vfx-spin")
+	world.player.facing = -0.4
+	_view.ClassFx.on_cast(_view._cast_fx, world, {"id": "nhatkiem"})
+	await _wait(0.6)
+	await _shot(dir, "03f-kiem-vfx-nhatkiem")
 
 	var first: Dictionary = world.profile.tiles.filter(func(t): return Explore.hex_distance(t, {"q": 0, "r": 0}) == 1)[0]
 	map_panel.open(world)
@@ -984,9 +1035,22 @@ func _run_smoke(dir: String) -> void:
 	await _wait(1.2)
 	await _shot(dir, "09a2-cave")
 	world._load_map("2-1")
+	# BD-11 (docs/34): Cổng dungeon hạng B trên Cửa Gió + bên trong cổng.
+	world.enemies = []
+	GameWorld.Gates.open_gate(world, "2-1", world._gate_rng, "B")
+	var gate_pt: Dictionary = world.portals.filter(func(pt): return pt.kind == "dgate")[0]
+	world.player.pos = gate_pt.pos + Vector2(-90, 40)
+	await _wait(0.8)
+	await _shot(dir, "09a3-gate")
+	world._load_map(str(gate_pt.to))
+	world.player.pos = Vector2(760, 550)
+	await _wait(1.2)
+	await _shot(dir, "09a4-gate-inside")
+	p.gates = {}
+	world._load_map("2-1")
 	# M4.3: Thành Biên Đài — NPC, nhiệm vụ chương 2, cửa hàng có thợ rèn
 	world.enemies = []
-	world.player.pos = world.safe_pos + Vector2(10, -10)
+	world.player.pos = _smoke_town_pos()
 	p.ore = 25.0
 	p.iron = 12.0
 	await _wait(1.0)
@@ -1003,7 +1067,7 @@ func _run_smoke(dir: String) -> void:
 	world._refresh_stats()
 	world._load_map("3-1")
 	p.play_seconds = 30.0
-	world.player.pos = world.safe_pos + Vector2(10, -10)
+	world.player.pos = _smoke_town_pos()
 	await _wait(1.0)
 	await _shot(dir, "10b-camp")
 	world.player.pos = world.safe_pos + Vector2(900, 0)
@@ -1036,7 +1100,7 @@ func _run_smoke(dir: String) -> void:
 	p.level = maxi(p.level, 34)
 	world._refresh_stats()
 	world._load_map("4-1")
-	world.player.pos = world.safe_pos + Vector2(10, -10)
+	world.player.pos = _smoke_town_pos()
 	await _wait(1.0)
 	await _shot(dir, "12b-village4")
 	world._load_map("4-2")
@@ -1128,6 +1192,19 @@ func _run_smoke(dir: String) -> void:
 	await _wait(0.3)
 	await _shot(dir, "14c-skills")
 	skill_panel.close()
+	# TP-05 (docs/33): Lễ Thức Tỉnh ô Thiên phú phụ (đã chuyển chức 1 + 2 → 2 ô chờ), rồi bảng Thiên phú có ô phụ.
+	sub_panel.open(world)
+	world.sub_ritual().roll()
+	world.sub_ritual().roll()
+	sub_panel.refresh()
+	await _wait(0.3)
+	await _shot(dir, "14d-sub-ritual")
+	world.accept_sub(str(world.sub_ritual().rolls[0].id))
+	sub_panel.close()
+	talent_panel.open(world)
+	await _wait(0.3)
+	await _shot(dir, "14e-talent-subs")
+	talent_panel.close()
 	p.quest.ch5 = 4
 	world.ch5.siege = false
 	GameWorld.Ch5.start_siege(world)
@@ -1334,16 +1411,20 @@ func _run_smoke(dir: String) -> void:
 # ------------------------------------------------------------------ C1-41, C1-42: nhạc nền, menu tạm dừng, cài đặt
 
 
+## Rà soát 01/11: nhạc theo vùng (tools/audio/music.py) — vùng 2–9 có bản riêng; boss vùng 7–9 dùng "boss_final";
+## hang phụ dùng "core" (u ám); vùng an toàn dùng "village".
+const REGION_MUSIC := {1: "forest", 2: "plains", 3: "desert", 4: "swamp", 5: "volcano", 6: "tundra", 7: "sky", 8: "void", 9: "heaven"}
+
+
 func _music_for(w: GameWorld) -> String:
+	var region := int(w.map.get("region", 1))
 	if w.big_enemy() != null:
-		return "boss"
-	if w.map_id == "1-3":
+		return "boss_final" if region >= 7 else "boss"
+	if w.map_id == "1-3" or w.in_cave():
 		return "core"
-	if int(w.map.get("region", 1)) == 3:
-		return "village" if w.player.pos.distance_to(w.safe_pos) < w.safe_r + 250.0 else "core"
 	if w.player.pos.distance_to(w.safe_pos) < w.safe_r + 250.0:
 		return "village"
-	return "forest"
+	return str(REGION_MUSIC.get(region, "forest"))
 
 
 func _open_pause(settings_only := false) -> void:

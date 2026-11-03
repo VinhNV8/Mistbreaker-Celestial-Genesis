@@ -400,4 +400,7 @@ def build_all():
     # M12: vùng 9 Cổng Thiên Đạo (region9.py)
     import region9
     region9.register_env(out)
+    # AR-45: keyframe VFX 32x32 khi thi triển kỹ năng (skill_vfx.py; duyệt ở docs/design/skills)
+    import skill_vfx
+    skill_vfx.register_env(out)
     return {k: (cv.to_image(), origin) for k, (cv, origin) in out.items()}

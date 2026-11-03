@@ -3,6 +3,8 @@ extends Node2D
 ## Chỉ đọc trạng thái GameWorld, không đổi logic (technical spec D2, D6).
 
 const Maps = preload("res://scripts/data/maps.gd")
+## BD-11 (docs/34): Cổng dungeon.
+const Gates = preload("res://scripts/core/gates.gd")
 const ElementIcon = preload("res://scripts/ui/element_icon.gd")
 const GameWorld = preload("res://scripts/core/game_world.gd")
 const Talents = preload("res://scripts/data/talents.gd")
@@ -43,6 +45,9 @@ var _art := false
 var _track: Dictionary = {}
 var _corpses: Array = []
 var _hit_fx: Array = []
+## AR-45b: keyframe thi triển kỹ năng (ClassFx.draw_casts); nhận ra lúc thi triển qua bước nhảy hồi chiêu của ô.
+var _cast_fx: Array = []
+var _cast_watch: Array = []  # [world, hồi chiêu từng ô, id từng ô] của khung trước
 var _fog_layer: FogLayer
 
 
@@ -176,7 +181,26 @@ func _process(delta: float) -> void:
 	for f in _hit_fx:
 		f.t += delta
 	_hit_fx = _hit_fx.filter(func(f): return f.t < HIT_FX_TIME)
+	_watch_casts(delta)
 	queue_redraw()
+
+
+func _watch_casts(delta: float) -> void:
+	for f in _cast_fx:
+		f.t += delta
+	_cast_fx = _cast_fx.filter(ClassFx.cast_alive)
+	if world == null:
+		return
+	var cds: Array = world.player.skill_cds.duplicate()
+	var ids: Array = []
+	for i in cds.size():
+		ids.append(str(world.slot_skill(i).get("id", "")))
+	# Cùng world, cùng kỹ năng trong ô, hồi chiêu tăng vọt = vừa thi triển (đổi bộ kỹ năng / nạp save thì bỏ qua).
+	if _cast_watch.size() == 3 and _cast_watch[0] == world and world.travel_timer <= 0.0:
+		for i in mini(cds.size(), _cast_watch[1].size()):
+			if ids[i] != "" and ids[i] == _cast_watch[2][i] and float(cds[i]) > float(_cast_watch[1][i]) + 0.05:
+				ClassFx.on_cast(_cast_fx, world, world.slot_skill(i))
+	_cast_watch = [world, cds, ids]
 
 
 func _view_rect() -> Rect2:
@@ -254,6 +278,7 @@ func _draw() -> void:
 	SK2View.draw(self, world)
 	if _art:
 		ClassFx.draw_over(self, world)
+		ClassFx.draw_casts(self, world, _cast_fx)
 	CL2View.draw(self, world)
 	J3View.draw(self, world)
 	R6View.draw_over(self, world, view, _art)
@@ -460,7 +485,9 @@ func _draw_arena() -> void:
 	draw_arc(c, r, 0.0, TAU, 96, Color(1.0, 0.33, 0.44, 0.7) if locked else Color(0.63, 0.51, 0.86, 0.35), 5.0 if locked else 3.0, true)
 	var name: String = world.map.arena.name
 	var title := ("%s (đã chinh phục)" % name) if world.is_boss_defeated(world.arena_boss()) else name
-	_label(title, c + Vector2(0, -r - 12.0), Color("#d8c8ff"), 16)
+	# Rà soát 01/11: đang đánh boss thì thanh máu boss (HUD) đã ghi tên — tên đấu trường ở mép trên trùng chỗ thanh máu, ẩn đi.
+	if not locked:
+		_label(title, c + Vector2(0, -r - 12.0), Color("#d8c8ff"), 16)
 
 
 func _draw_trees(view: Rect2) -> void:
@@ -1018,7 +1045,10 @@ func _enemy_nameplate(e, at: Vector2) -> void:
 		return
 	var tier := "Thường"
 	var tcol := Color(0.75, 0.77, 0.8)
-	if e.cave_boss:
+	if e.gate_boss:
+		tier = "Chúa Cổng"
+		tcol = Color("#ff4d6a")
+	elif e.cave_boss:
 		tier = "Chúa Hang"
 		tcol = Color("#ff7a45")
 	elif e.role == "rare":
@@ -1118,8 +1148,16 @@ const PORTAL_SQUASH := 0.42
 func _portal_style(pt: Dictionary) -> Dictionary:
 	if pt.kind == "waypoint":
 		return {"col": Color("#b46bff"), "title": "Cổng Dịch Chuyển", "sub": "Về nhanh map đã mở", "open": true}
+	# BD-11 (docs/34): Cổng dungeon — màu theo hạng, còn bao lâu.
+	if pt.kind == "dgate":
+		var gm: Dictionary = Maps.get_map(str(pt.to))
+		var gb: String = world.travel_blocker(str(pt.to))
+		var gl := ceili(Gates.left(world.profile, Gates.parent(str(pt.to))))
+		return {"col": Gates.COLORS.get(str(pt.rank), Color.WHITE) if gb == "" else Color(0.58, 0.52, 0.5),
+			"title": "Cổng hạng %s" % str(pt.rank),
+			"sub": ("Cấp %d · còn %d:%02d" % [int(gm.levels[0]), gl / 3600, (gl / 60) % 60]) if gb == "" else gb, "open": gb == ""}
 	if pt.kind == "exit":
-		return {"col": Color("#7fe0c0"), "title": "Ra khỏi hang", "sub": "Về " + str(Maps.get_map(str(pt.to)).name), "open": true}
+		return {"col": Color("#7fe0c0"), "title": "Ra khỏi cổng" if Gates.is_gate(world.map_id) else "Ra khỏi hang", "sub": "Về " + str(Maps.get_map(str(pt.to)).name), "open": true}
 	if pt.kind == "cave":
 		var cm: Dictionary = Maps.get_map(str(pt.to))
 		var cb: String = world.travel_blocker(str(pt.to))
@@ -1206,23 +1244,26 @@ func _draw_portal_labels() -> void:
 	for pt in world.portals:
 		var st := _portal_style(pt)
 		var col: Color = st.col
-		var c: Vector2 = pt.pos + Vector2(0, -104)
+		# Rà soát 01/11: Cổng Dịch Chuyển nằm giữa làng (NPC, nhân vật đứng gần) → bảng tên dưới cổng, không đè tên NPC.
+		var c: Vector2 = pt.pos + (Vector2(0, 54) if pt.kind == "waypoint" else Vector2(0, -104))
 		var title: String = st.title
-		var sub: String = st.sub
+		# Cổng Dịch Chuyển: bảng 1 dòng (gọn, ít đè tên NPC); dòng giải thích có ở bảng lục địa khi bước vào.
+		var sub: String = "" if pt.kind == "waypoint" else str(st.sub)
 		var tw := f.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, 14).x
 		var sw := _font.get_string_size(sub, HORIZONTAL_ALIGNMENT_LEFT, -1, 11).x
 		var w := maxf(tw, sw) + 28.0
-		var rect := Rect2(c - Vector2(w / 2.0, 14), Vector2(w, 34))
+		var rect := Rect2(c - Vector2(w / 2.0, 14), Vector2(w, 34 if sub != "" else 22))
 		var sb := StyleBoxFlat.new()
 		sb.bg_color = Color(0.07, 0.05, 0.1, 0.82)
 		sb.set_corner_radius_all(8)
 		sb.set_border_width_all(1)
 		sb.border_color = Color(col, 0.9)
 		draw_style_box(sb, rect)
-		_diamond_at(Vector2(rect.position.x, c.y + 3), 4.0, col)
-		_diamond_at(Vector2(rect.end.x, c.y + 3), 4.0, col)
+		_diamond_at(Vector2(rect.position.x, rect.get_center().y), 4.0, col)
+		_diamond_at(Vector2(rect.end.x, rect.get_center().y), 4.0, col)
 		_label(title, c + Vector2(0, 2), col.lightened(0.25), 14, true)
-		_label(sub, c + Vector2(0, 16), Color(0.88, 0.88, 0.9), 11)
+		if sub != "":
+			_label(sub, c + Vector2(0, 16), Color(0.88, 0.88, 0.9), 11)
 
 
 func _diamond_at(p: Vector2, s: float, col: Color) -> void:

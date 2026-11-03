@@ -19,6 +19,8 @@ COLS = {
     "kiem-khach": (8, 306),
     "tho-san": (314, 612),
     "phap-su": (620, 916),
+    "ho-ve": (924, 1222),
+    "trieu-hoi-su": (1228, 1528),
 }
 ROWS = {
     "skill-1": (378, 447),
@@ -30,11 +32,13 @@ SKILLS = {
     "kiem-khach": ["wave", "lientram", "kiemy", "vankiem"],
     "tho-san": ["pierce", "rain", "lanban", "thientien"],
     "phap-su": ["fireball", "banglao", "chain", "thienhoa"],
+    "ho-ve": ["khienthep", "khieukhich", "chandia", "thanhbatdiet"],
+    "trieu-hoi-su": ["soibong", "tieuquy", "lienket", "quandoan"],
 }
 ALL_SKILLS = {
-    "kiem-khach": ["spin", "dash", "wave", "kiemy", "lientram", "hongkiem", "kiemvu", "phikiem", "vankiem", "thanhkiem", "kiemvuc", "huyetbao", "huyetanh"],
-    "tho-san": ["rain", "pierce", "lanban", "eagle", "tennay", "trap", "lienxa", "tendoc", "thientien", "phakhong", "tamlien", "baimin", "luoibay"],
-    "phap-su": ["chain", "banglao", "meteor", "barrier", "hoatuong", "nova", "muabang", "causam", "thienhoa", "thienloi", "bangphong", "trieuhoi", "khidoc"],
+    "kiem-khach": ["spin", "dash", "wave", "kiemy", "lientram", "hongkiem", "kiemvu", "phikiem", "vankiem", "thanhkiem", "kiemvuc", "huyetbao", "huyetanh", "nhatkiem"],
+    "tho-san": ["rain", "pierce", "lanban", "eagle", "tennay", "trap", "lienxa", "tendoc", "thientien", "phakhong", "tamlien", "baimin", "luoibay", "tinhvu"],
+    "phap-su": ["chain", "banglao", "meteor", "barrier", "hoatuong", "nova", "muabang", "causam", "thienhoa", "thienloi", "bangphong", "trieuhoi", "khidoc", "nguhanh"],
 }
 
 

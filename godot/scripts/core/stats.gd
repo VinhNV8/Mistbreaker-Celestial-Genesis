@@ -148,18 +148,23 @@ static func derive(level: int, pts: Dictionary, talent: String, bonus := {}, tal
 	var tk: float = float(bonus.get("talent_k", 1.0))
 	# TL-10: mỗi cấp Thiên phú trên 1 → +2% Tấn công và HP.
 	var tl_pct := 0.02 * (tlv - 1) * tk
-	var dragon := Talents.lv_value(0.1, 0.15, tlv) * tk if bonus.get("dragon", false) else 0.0
-	var hp_pct: float = bonus.get("max_hp_pct", 0.0) + tl_pct + dragon \
-		+ (Talents.lv_value(0.08, 0.12, tlv) * tk if talent == "than-the" else 0.0)
+	# TP-05 (docs/33): GameWorld truyền sẵn giá trị Thiên phú chính + phụ (cấp riêng, cộng hưởng) qua bonus.talent_vals /
+	# dragon_val / combat_sub1/2; không có (trang Chỉ số, màn chọn lớp) thì tính theo Thiên phú chính như cũ.
+	var tvals: Dictionary = bonus.get("talent_vals", {})
+	var dragon: float = float(bonus.get("dragon_val", Talents.lv_value(0.1, 0.15, tlv))) * tk if bonus.get("dragon", false) else 0.0
+	var v_tough: float = float(tvals.get("than-the", Talents.lv_value(0.08, 0.12, tlv) if talent == "than-the" else 0.0))
+	var v_eagle: float = float(tvals.get("mat-ung", Talents.lv_value(0.1, 0.15, tlv) if talent == "mat-ung" else 0.0))
+	var v_quick: float = float(tvals.get("tay-nhanh", Talents.lv_value(0.05, 0.075, tlv) if talent == "tay-nhanh" else 0.0))
+	var hp_pct: float = bonus.get("max_hp_pct", 0.0) + tl_pct + dragon + v_tough * tk
 	var atk_pct: float = bonus.get("atk_pct", 0.0) + tl_pct + dragon
-	var crit_bonus := 0.05 if Talents.has_sub(talent, talent_level, "combat", 1) else 0.0
-	var crit_dmg_bonus := 0.15 if Talents.has_sub(talent, talent_level, "combat", 2) else 0.0
+	var crit_bonus := 0.05 if bool(bonus.get("combat_sub1", Talents.has_sub(talent, talent_level, "combat", 1))) else 0.0
+	var crit_dmg_bonus := 0.15 if bool(bonus.get("combat_sub2", Talents.has_sub(talent, talent_level, "combat", 2))) else 0.0
 	var atk_attr := 0.0
 	var per: Dictionary = c.atk
 	for k in per:
 		atk_attr += float(a[k]) * float(per[k])
 	var raw_crit: float = BASE_CRIT + float(c.crit) + a.agi * AGI_CRIT + a.luk * LUK_CRIT \
-		+ (Talents.lv_value(0.1, 0.15, tlv) * tk if talent == "mat-ung" else 0.0) + flat.get("crit", 0.0) + crit_bonus
+		+ v_eagle * tk + flat.get("crit", 0.0) + crit_bonus
 	var overcap := maxf(0.0, raw_crit - CRIT_CAP) * HUNTER_OVERCAP if cid == "tho-san" else 0.0
 	var res_wis: float = a.wis * WIS_RES
 	var cc: float = float(c.cc) + (a.wis * GUARD_WIS_CC if cid == "ho-ve" else 0.0)
@@ -169,7 +174,7 @@ static func derive(level: int, pts: Dictionary, talent: String, bonus := {}, tal
 		"max_hp": int(round((float(c.hp0) + float(c.hpg) * lv + a.vit * float(c.hp_vit) + flat.get("max_hp", 0.0)) * (1.0 + hp_pct))),
 		"atk": (base_atk(cid, level) + atk_attr + flat.get("atk", 0.0)) * (1.0 + atk_pct),
 		"def": (2.0 + float(c.defg) * lv + a.vit * VIT_DEF) * float(c.def_mult) + flat.get("def", 0.0),
-		"atk_speed": minf(SPEED_CAP, float(c.aspd) + a.agi * AGI_SPEED + (Talents.lv_value(0.05, 0.075, tlv) * tk if talent == "tay-nhanh" else 0.0)
+		"atk_speed": minf(SPEED_CAP, float(c.aspd) + a.agi * AGI_SPEED + v_quick * tk
 			+ flat.get("atk_speed", 0.0) + float(bonus.get("atk_speed_pct", 0.0))),
 		"crit": minf(CRIT_CAP, raw_crit),
 		## Chí mạng gây ×(1 + crit_dmg); gốc 0,5 → ×1,5.

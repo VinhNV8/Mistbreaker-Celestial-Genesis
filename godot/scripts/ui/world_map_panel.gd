@@ -5,6 +5,8 @@ extends "res://scripts/ui/modal.gd"
 
 const Maps = preload("res://scripts/data/maps.gd")
 const Monsters = preload("res://scripts/data/monsters.gd")
+## BD-11 (docs/34): dòng Cổng dungeon đang mở dưới map.
+const Gates = preload("res://scripts/core/gates.gd")
 
 const W := 760.0
 
@@ -22,6 +24,18 @@ func _render(content: VBoxContainer) -> void:
 	var here: Dictionary = Maps.get_map(world.map_id)
 	var how := "Đang đứng ở Cổng Dịch Chuyển — chọn một map đã mở để đi (mất %.1f giây)." % world.travel_seconds() if world.at_waypoint() 		else "Muốn đi: bước vào cổng ở rìa map (sang map kề bên), hoặc tới Cổng Dịch Chuyển trong vùng an toàn để về nhanh map đã mở."
 	content.add_child(UiTheme.label("Đang ở: %s · cấp %d–%d. %s" % [here.name, here.levels[0], here.levels[1], how], "Muted", W))
+	var gp = world.profile
+	var gtxt := "Cổng dungeon: chưa có cổng nào đang mở — cổng hạng E → S mở ngẫu nhiên trên map đã tới (tồn tại 2 giờ chơi), dọn sương ô khai phá cũng có thể lộ cổng."
+	if not gp.gates.is_empty():
+		var parts := PackedStringArray()
+		for gid in gp.gates:
+			var gl := ceili(Gates.left(gp, str(gid)))
+			parts.append("hạng %s ở %s (còn %d:%02d)" % [str(gp.gates[gid].rank), str(Maps.MAPS[str(gid)].name), gl / 3600, (gl / 60) % 60])
+		gtxt = "Cổng dungeon đang mở: " + ", ".join(parts) + "."
+	var gl_lbl := UiTheme.label(gtxt + (" Đã dọn %d cổng%s." % [int(gp.gates_cleared), (", cao nhất hạng " + str(gp.gate_best)) if str(gp.gate_best) != "" else ""] if int(gp.gates_cleared) > 0 else ""), "Small", W)
+	gl_lbl.name = "GateInfo"
+	gl_lbl.add_theme_color_override("font_color", UiTheme.GOLD if not gp.gates.is_empty() else UiTheme.MUTED)
+	content.add_child(gl_lbl)
 	var grid := GridContainer.new()
 	grid.columns = 3
 	grid.add_theme_constant_override("h_separation", 8)
@@ -63,8 +77,9 @@ func _region_card(r: Dictionary) -> Control:
 		var here: bool = m_id == world.map_id
 		var unlocked: bool = m_id in world.profile.unlocked_maps
 		var block: String = world.travel_blocker(m_id)
-		var name := UiTheme.label("%s%s (%d–%d)%s" % ["● " if here else ("◆ " if unlocked else ""), m.name, m.levels[0], m.levels[1],
-			(" · %d%%" % floori(world.explore_ratio(m_id) * 100.0)) if unlocked or here else ""], "Small", 150)
+		var name := UiTheme.label("%s%s (%d–%d)%s%s" % ["● " if here else ("◆ " if unlocked else ""), m.name, m.levels[0], m.levels[1],
+			(" · %d%%" % floori(world.explore_ratio(m_id) * 100.0)) if unlocked or here else "",
+			(" · ⚔ Cổng %s" % Gates.rank_of(world.profile, m_id)) if world.profile.gates.has(m_id) else ""], "Small", 150)
 		name.size_flags_horizontal = SIZE_EXPAND_FILL
 		row.add_child(name)
 		if not here:

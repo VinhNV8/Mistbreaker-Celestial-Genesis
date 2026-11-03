@@ -7,6 +7,7 @@ extends RefCounted
 const ItemData = preload("res://scripts/data/items.gd")
 const RngUtil = preload("res://scripts/core/rng_util.gd")
 const Talents = preload("res://scripts/data/talents.gd")
+const TalentSlots = preload("res://scripts/core/talent_slots.gd")
 
 ## TL-S5: cường hoá lên +10 trở lên cần thêm 1 Tinh Kim mỗi lần.
 const TINH_KIM_FROM_PLUS := 9
@@ -204,8 +205,8 @@ static func unequip(p, slot: String) -> Dictionary:
 static func talent_rate_bonus(p) -> float:
 	if p == null:
 		return 0.0
-	var b := Talents.lv_value(0.1, 0.15, p.talent_level) if p.talent == "tho-ren" else 0.0
-	if Talents.has_sub(p.talent, p.talent_level, "craft", 2):
+	var b := TalentSlots.value(p, "tho-ren", 0.1, 0.15) if TalentSlots.has(p, "tho-ren") else 0.0
+	if TalentSlots.has_group_sub(p, "craft", 2):
 		b += 0.05
 	return b
 
@@ -222,7 +223,7 @@ static func enhance_rate(item: Dictionary, p = null, extra := 0.0) -> float:
 static func enhance_cost(item: Dictionary, p = null) -> Dictionary:
 	var n: int = int(item.plus)
 	var gold := 10.0 * pow(n + 1, 1.6) * (1.0 + int(item.level) / 10.0)
-	if p != null and Talents.has_sub(p.talent, p.talent_level, "craft", 1):
+	if p != null and TalentSlots.has_group_sub(p, "craft", 1):
 		gold *= 0.9
 	return {
 		"gold": int(round(gold)),
@@ -267,7 +268,7 @@ static func enhance(p, id: int, rng: Callable, rate_bonus := 0.0) -> Dictionary:
 
 ## 3.6: đá theo phẩm chất + ⌊cấp cường hoá / 2⌋; nhóm Kinh tế cấp 10 +1.
 static func salvage_value(item: Dictionary, p = null) -> int:
-	var extra := 1 if p != null and Talents.has_sub(p.talent, p.talent_level, "economy", 2) else 0
+	var extra := 1 if p != null and TalentSlots.has_group_sub(p, "economy", 2) else 0
 	return int(ItemData.RARITIES[item.rarity].salvage) + int(int(item.plus) / 2.0) + extra
 
 
@@ -317,7 +318,7 @@ static func salvage(p, id: int, rng := Callable()) -> Dictionary:
 	p.inventory.remove_at(i)
 	p.stones += stones
 	var msg := "Phân rã %s: +%d Đá Cường Hoá." % [display_name(item), stones]
-	if p.talent == "ban-tay-vang" and rng.is_valid() and float(rng.call()) < Talents.lv_value(GOLDEN_HAND_CHANCE, 0.3, p.talent_level):
+	if TalentSlots.has(p, "ban-tay-vang") and rng.is_valid() and float(rng.call()) < TalentSlots.value(p, "ban-tay-vang", GOLDEN_HAND_CHANCE, 0.3):
 		p.tinh_kim += 1
 		msg += " Bàn Tay Vàng: +1 Tinh Kim!"
 	return _result(true, msg)

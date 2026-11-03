@@ -8,6 +8,9 @@ const Formulas = preload("res://scripts/core/formulas.gd")
 const Puzzle = preload("res://scripts/core/puzzle.gd")
 const Stats = preload("res://scripts/core/stats.gd")
 const Talents = preload("res://scripts/data/talents.gd")
+## TP-05/13/14 (docs/33): Thiên phú chính + phụ, cộng hưởng, tẩy.
+const TalentSlots = preload("res://scripts/core/talent_slots.gd")
+const Awakening = preload("res://scripts/core/awakening.gd")
 const Monsters = preload("res://scripts/data/monsters.gd")
 const Items = preload("res://scripts/core/items.gd")
 const ItemData = preload("res://scripts/data/items.gd")
@@ -18,6 +21,8 @@ const Story = preload("res://scripts/data/story.gd")
 const Fog = preload("res://scripts/core/fog.gd")
 const Portals = preload("res://scripts/core/portals.gd")
 const Caves = preload("res://scripts/core/caves.gd")
+## BD-11 / KP-10 / NV-23 (docs/34): Cổng dungeon ngẫu nhiên.
+const Gates = preload("res://scripts/core/gates.gd")
 ## M6: chương 3 Sa Mạc Lãng Quên (docs/10) — logic trong core/chapter3.gd.
 const Ch3 = preload("res://scripts/core/chapter3.gd")
 ## D38 (M7): mọi chương từ 3 trở đi gắn vào qua bộ điều phối — các dòng móc "Chapters.".
@@ -380,6 +385,8 @@ class Enemy:
 	var rush_timer := 0.0
 	## HP-06: Chúa Hang (docs/15).
 	var cave_boss := false
+	## BD-11: Chúa Cổng (docs/34) — luôn kèm cave_boss = true.
+	var gate_boss := false
 	var skill_cd := 4.0
 	var fuse := -1.0
 	## M4.2: hướng nhìn (khiên chặn); đứng yên khi đang vung đòn.
@@ -611,6 +618,9 @@ var _camp_rng := RandomNumberGenerator.new()
 var _loot_rng := RandomNumberGenerator.new()
 ## SN11-03: RNG riêng cho phần quái / thảo dược / rương sinh thêm vì map lớn hơn (xem _load_map).
 var _fill_rng := RandomNumberGenerator.new()
+## BD-11 (docs/34): RNG riêng cho Cổng dungeon (mở cổng, hạng, chỗ đặt, đồ Cam) — không đổi chuỗi _rng của trận đánh.
+var _gate_rng := RandomNumberGenerator.new()
+var _gate_clock := 0.0
 ## SN-31: sương che của map hiện tại.
 var fog = Fog.new()
 var ch3 = Ch3.State.new()
@@ -696,6 +706,7 @@ const AUTO_AIM_BEND := 1.0 / 3.0
 func _init(p, rng: Callable) -> void:
 	profile = p
 	_rng = rng
+	_gate_rng.seed = hash("gates:%d" % int(p.play_seconds))
 	stats = _derive()
 	player.hp = stats.max_hp
 	player.mp = stats.max_mp
@@ -762,6 +773,8 @@ func _load_map(id: String) -> void:
 	slowmo_timer = 0.0
 	player.pos = safe_pos + Vector2(60, 0)
 	portals = Portals.list(id)
+	if Maps.MAPS.has(id) and profile.gates.has(id) and Gates.left(profile, id) > 0.0:
+		portals.append(Gates.portal_of(profile, id))
 	portal_inside = -1
 	# SN-31: nạp sương của map; vùng an toàn luôn mở sẵn.
 	# HP-03: hang không lưu sương / không tính khai phá, không sinh quái ngoài đồng (Caves.populate sinh 3 khu).
@@ -863,6 +876,125 @@ func talent() -> Dictionary:
 	return Talents.get_talent(profile.talent)
 
 
+## TP5-05 (docs/33): Thiên phú dùng phím L — chính nếu có kỹ năng, không thì Thiên phú phụ đầu tiên có kỹ năng.
+func skill_talent() -> Dictionary:
+	var t := talent()
+	if Talents.has_skill(t):
+		return t
+	for sd in profile.subs:
+		var st := Talents.get_talent(str(sd.id))
+		if Talents.has_skill(st):
+			return st
+	return t
+
+
+# ------------------------------------------------------------------ TP-05 / TP-14 (docs/33): Thiên phú phụ, tẩy
+
+## Nước Thánh Tinh Quang: giá cửa hàng (vùng 4+), tỉ lệ rơi từ boss hiếm.
+const STARWATER_PRICE := 3000
+const STARWATER_DROP := 0.3
+## TP13 Bất Khuất: giữ 1 HP mỗi 60 giây.
+const UNYIELD_CD := 60.0
+var _unyield_at := -999.0
+## Lễ Thức Tỉnh ô phụ đang dở (lượt đã quay giữ tới khi nhận; không lưu save).
+var sub_aw = null
+
+
+## Bắt đầu / tiếp tục Lễ Thức Tỉnh cho ô phụ trống (null nếu không có ô chờ).
+func sub_ritual():
+	if TalentSlots.pending(profile) <= 0:
+		sub_aw = null
+		return null
+	if sub_aw == null:
+		sub_aw = Awakening.new(_loot_rng.randf, TalentSlots.sub_pool(profile))
+	return sub_aw
+
+
+func accept_sub(id: String) -> Dictionary:
+	if TalentSlots.pending(profile) <= 0:
+		return _skill_result(false, "Chưa có ô Thiên phú phụ trống (mở khi chuyển chức 1 / 2).")
+	if not TalentSlots.sub_pool(profile).any(func(t): return str(t.id) == id):
+		return _skill_result(false, "Không nhận được Thiên phú này.")
+	profile.subs.append({"id": id, "level": 1})
+	sub_aw = null
+	_refresh_stats()
+	var t := Talents.get_talent(id)
+	_text(player.pos + Vector2(0, -70), "Thiên phú phụ: %s" % t.name, Talents.rank_color(t.rank), true)
+	_sfx("unlock")
+	_check_resonance_seen()
+	return _skill_result(true, "Nhận Thiên phú phụ %s (%s · %s)." % [t.name, t.rank, Talents.group_name(t)])
+
+
+## Luyện cấp Thiên phú phụ thứ i ở Đền Thiên Phú (cùng bảng giá Tinh Hoa).
+func level_sub(i: int) -> Dictionary:
+	if i < 0 or i >= profile.subs.size():
+		return _skill_result(false, "Không có Thiên phú phụ này.")
+	var sd: Dictionary = profile.subs[i]
+	var lv := int(sd.level)
+	var cost := Talents.level_cost(lv)
+	if not Explore.is_built(profile, "temple"):
+		return _skill_result(false, "Cần xây Đền Thiên Phú trước (Bản đồ khai phá, phím M).")
+	if lv >= Talents.MAX_TALENT_LEVEL:
+		return _skill_result(false, "Thiên phú phụ đã đạt cấp tối đa.")
+	if profile.essence < cost:
+		return _skill_result(false, "Cần %d Thiên Phú Tinh Hoa (rơi từ boss)." % cost)
+	profile.essence -= cost
+	sd.level = lv + 1
+	_refresh_stats()
+	return _skill_result(true, "%s (phụ) lên cấp %d." % [Talents.get_talent(str(sd.id)).name, lv + 1])
+
+
+## TP14: tẩy Thiên phú — slot -1 = chính, 0 / 1 = phụ. 1 Nước Thánh, 1 lần quay, giữ 50% cấp luyện.
+func wash_talent(slot: int) -> Dictionary:
+	if int(profile.starwater) <= 0:
+		return _skill_result(false, "Cần Nước Thánh Tinh Quang (boss hiếm, cửa hàng làng từ vùng 4).")
+	var old := str(profile.talent) if slot < 0 else (str(profile.subs[slot].id) if slot < profile.subs.size() else "")
+	if old == "":
+		return _skill_result(false, "Không có Thiên phú ở ô này.")
+	if old in TalentSlots.NO_ROLL:
+		return _skill_result(false, "Không tẩy được Đạo Tặc.")
+	var pool := TalentSlots.sub_pool(profile)
+	var t: Dictionary = RngUtil.pick_weighted(pool, func(x): return Talents.roll_weight(x), _loot_rng.randf)
+	profile.starwater = int(profile.starwater) - 1
+	if slot < 0:
+		var keep := maxi(1, Ch4.stage_level(profile) / 2)
+		profile.talent = str(t.id)
+		profile.talent_level = keep
+		profile.evo = 0
+	else:
+		var sd: Dictionary = profile.subs[slot]
+		sd.id = str(t.id)
+		sd.level = maxi(1, int(sd.level) / 2)
+	_refresh_stats()
+	_text(player.pos + Vector2(0, -70), "Tẩy: %s → %s" % [Talents.get_talent(old).name, t.name], Talents.rank_color(t.rank), true)
+	_sfx("unlock")
+	_check_resonance_seen()
+	return _skill_result(true, "Nước Thánh Tinh Quang: %s → %s (%s), giữ 50%% cấp luyện." % [Talents.get_talent(old).name, t.name, t.rank])
+
+
+## TP44: cộng hưởng đặc biệt kích hoạt lần đầu → chữ vàng + nhật ký, ghi resonance_seen.
+func _check_resonance_seen() -> void:
+	var act := TalentSlots.specials(profile)
+	for sid in act:
+		if profile.resonance_seen.has(sid):
+			continue
+		profile.resonance_seen[sid] = true
+		_text(player.pos + Vector2(0, -96), "Cộng hưởng: %s!" % act[sid].name, Color("#ffc940"), true)
+		_message("Cộng hưởng đặc biệt mới: %s — %s" % [act[sid].name, act[sid].text], "good")
+
+
+## Lễ Thức Tỉnh ô phụ sau khi chuyển chức (main.gd mở bảng khi có sự kiện "sub_ritual").
+func _after_job_change() -> void:
+	if TalentSlots.pending(profile) > 0:
+		_message("Mở ô Thiên phú phụ! Lễ Thức Tỉnh: chạm Bia Đá để nhận Thiên phú thứ %d." % (profile.subs.size() + 2), "good")
+		_events.append({"type": "sub_ritual"})
+
+
+## Long Mạch (TL-S7): % Tấn công / HP của Long Mạch Đàn; TP13 Long Đế +5%.
+func dragon_value() -> float:
+	return tvt("long-mach", 0.1, 0.15) + (0.05 if TalentSlots.has_special(profile, "long-de") else 0.0)
+
+
 func class_def() -> Dictionary:
 	return Classes.get_class_def(profile.class_id)
 
@@ -888,7 +1020,17 @@ func is_guard() -> bool:
 ## TP-41: giá trị hiệu ứng chính theo cấp Thiên phú.
 ## C8-10 (D70): nhân hiệu lực Thiên phú k (Suy Thiên, Hút Thiên phú) — phần cộng thêm × k; hệ số nhân ≥ 1 chỉ phần vượt 1 × k.
 func tv(v1: float, v10: float) -> float:
-	var v := Talents.lv_value(v1, v10, profile.talent_level)
+	return tvt(str(profile.talent), v1, v10)
+
+
+## TP-05 (docs/33): có Thiên phú id (chính hoặc phụ).
+func has_talent(id: String) -> bool:
+	return TalentSlots.has(profile, id)
+
+
+## Giá trị hiệu ứng của Thiên phú id theo cấp của chính nó + cộng hưởng (TP13), nhân hiệu lực Thiên phú (C8-10).
+func tvt(id: String, v1: float, v10: float) -> float:
+	var v := TalentSlots.value(profile, id, v1, v10)
 	var k := Chapters.talent_mult(self)
 	if is_equal_approx(k, 1.0):
 		return v
@@ -982,7 +1124,7 @@ func in_combat() -> bool:
 
 func travel_seconds() -> float:
 	# TP-23: Chân Không Biết Mỏi đi đường nhanh hơn 10% → 15%.
-	return TRAVEL_TIME * ((1.0 - tv(0.1, 0.15)) if profile.talent == "chan-khong" else 1.0) * Endgame.travel_mult(profile)
+	return TRAVEL_TIME * ((1.0 - tvt("chan-khong", 0.1, 0.15)) if has_talent("chan-khong") else 1.0) * Endgame.travel_mult(profile)
 
 
 func travel(id: String, via_portal := false) -> Dictionary:
@@ -1024,6 +1166,7 @@ func _arrive() -> void:
 		fog.reveal(player.pos, Fog.REVEAL_R)
 		profile.fog[id] = fog.encode()
 	_events.append({"type": "map", "map_id": id, "first": first})
+	_sfx("portal")
 	if id == "1-3":
 		say("core")
 	_message("Đã tới %s (cấp %d–%d).%s" % [map.name, map.levels[0], map.levels[1], " Mở điểm dịch chuyển." if first else ""], "good")
@@ -1118,6 +1261,7 @@ func update(dt: float, input: Dictionary) -> void:
 		_snapshot_skills()
 	_check_new_skills()
 	profile.play_seconds += dt
+	Gates.tick(self, dt)
 	_tick_texts(dt)
 	_tick_steal_buffs(dt)
 	_tick_pickup_notes(dt)
@@ -1296,8 +1440,8 @@ func _move_player(dt: float, input: Dictionary) -> void:
 func move_speed() -> float:
 	var v := float(stats.move_speed)
 	v *= Chapters.move_mult(self)
-	if profile.talent == "chan-khong" and time - _last_combat > OUT_OF_COMBAT:
-		v *= 1.0 + tv(0.1, 0.15)
+	if has_talent("chan-khong") and time - _last_combat > OUT_OF_COMBAT:
+		v *= 1.0 + tvt("chan-khong", 0.1, 0.15)
 	return v
 
 
@@ -1421,16 +1565,17 @@ func _cast_fireball() -> void:
 func _basic_mul() -> Array:
 	var p := player
 	p.hits += 1
-	var double: bool = profile.talent == "kiem-tam" and p.hits % 5 == 0
+	# TP13 Liên Hoàn Kiếm (Tay Nhanh + Kiếm Tâm): đòn mạnh ở đòn thứ 4.
+	var double: bool = has_talent("kiem-tam") and p.hits % (4 if TalentSlots.has_special(profile, "lien-hoan") else 5) == 0
 	if double:
 		_text(p.pos + Vector2(0, -34), "Kiếm Tâm!", Color("#5bd16a"), true)
 	var fang: bool = has_unique("wolf_fang") and p.hits % FANG_EVERY == 0
-	var mul := (tv(2.0, 2.5) if double else 1.0) * (FANG_MUL if fang else 1.0)
+	var mul := (tvt("kiem-tam", 2.0, 2.5) if double else 1.0) * (FANG_MUL if fang else 1.0)
 	# Kiếm Tâm — Nhất Kiếm Đoạn: đòn kế tiếp ×3 (Lv10 ×3,5), chắc chắn chí mạng.
 	var empowered := _super_slash
 	_super_slash = false
 	if empowered:
-		mul *= tv(3.0, 3.5)
+		mul *= tvt("kiem-tam", 3.0, 3.5)
 	return [mul, empowered]
 
 
@@ -1631,7 +1776,7 @@ func _nova(mul: float) -> void:
 	var p := player
 	var burst := _consume_burst()
 	var radius := (maxf(BURST_RANGE, NOVA_RADIUS * 1.3) if burst else NOVA_RADIUS) * Job3.area(self)
-	var m := mul * ((1.0 + tv(1.0, 1.5)) if burst else 1.0)
+	var m := mul * ((1.0 + tvt("ngu-hanh", 1.0, 1.5)) if burst else 1.0)
 	_blast(p.pos, radius, Color("#9de0ff"))
 	Chapters.skill_trail(self, p.pos, radius)
 	_sfx("explode")
@@ -1814,8 +1959,19 @@ func use_skill(i: int) -> bool:
 	Job3.after_cast(self, free_cast)
 	skill_ctx = ""
 	quest_event("skill")
-	_sfx("skill")
+	_sfx(skill_sfx(sk))
 	return true
+
+
+## Âm thanh kỹ năng (rà soát 01/11, tools/audio): theo lớp; Tối thượng / Thần Kỹ dùng "ultimate".
+const SKILL_SFX := {"kiem-khach": "skill_blade", "tho-san": "skill_bow", "phap-su": "skill_magic", "ho-ve": "skill_shield",
+	"trieu-hoi-su": "skill_summon"}
+
+
+func skill_sfx(sk: Dictionary) -> String:
+	if Classes.is_ult(sk):
+		return "ultimate"
+	return str(SKILL_SFX.get(str(profile.class_id), "skill"))
 
 
 func skill_cd_of(i: int) -> float:
@@ -1905,11 +2061,12 @@ func slot_accepts(i: int, sk: Dictionary) -> bool:
 
 ## SN12-02: đổi ô / đổi bộ kỹ năng — ở vùng an toàn, hoặc ở bất cứ đâu khi đã COMBAT_LOCK giây không đánh trúng /
 ## bị đánh (mốc _last_combat, chung với in_combat()).
+## SN14-02: in_menu = thao tác từ bảng Kỹ năng (U) — game đang dừng nên đồng hồ giao tranh không chạy; luôn cho đổi.
 const COMBAT_LOCK := 5.0
 
 
-func can_change_loadout() -> bool:
-	return in_safe_zone() or time - _last_combat >= COMBAT_LOCK
+func can_change_loadout(in_menu := false) -> bool:
+	return in_menu or in_safe_zone() or time - _last_combat >= COMBAT_LOCK
 
 
 func _loadout_block_msg() -> String:
@@ -1931,8 +2088,8 @@ func _apply_loadout(lo: Array) -> void:
 
 
 ## SN12-02: đổi giữa Bộ 1 / Bộ 2 (phím X). Bộ 2 chưa có → chép Bộ 1 để chỉnh.
-func swap_loadout() -> Dictionary:
-	if not can_change_loadout():
+func swap_loadout(in_menu := false) -> Dictionary:
+	if not can_change_loadout(in_menu):
 		return _skill_result(false, _loadout_block_msg())
 	_ensure_loadout()
 	var other: Array = _valid_loadout(profile.loadout_alt) if not profile.loadout_alt.is_empty() else profile.loadout.duplicate()
@@ -1958,15 +2115,18 @@ func _check_new_skills() -> void:
 	if slots > _known_slots:
 		_message("Mở thêm ô kỹ năng! Thanh kỹ năng giờ có %d ô." % slots, "good")
 	_known_slots = slots
+	var n := 0
 	for sk in Classes.skills_of(profile.class_id):
 		var id := str(sk.id)
 		if _known_skills.has(id) or not skill_unlocked(sk):
 			continue
 		_known_skills[id] = true
-		_on_new_skill(sk)
+		_on_new_skill(sk, n)
+		n += 1
 
 
-func _on_new_skill(sk: Dictionary) -> void:
+## n: thứ tự trong các kỹ năng mở cùng lúc (chuyển chức mở 2 kỹ năng) — chữ nổi xếp chồng, không đè nhau.
+func _on_new_skill(sk: Dictionary, n := 0) -> void:
 	_ensure_loadout()
 	var lo: Array = profile.loadout
 	var id := str(sk.id)
@@ -1983,12 +2143,13 @@ func _on_new_skill(sk: Dictionary) -> void:
 				slot = i
 				break
 	var key: String = Classes.SLOT_KEYS[slot] if slot >= 0 else ""
-	_text(player.pos + Vector2(0, -78), "Kỹ năng mới: %s" % sk.name, Color("#ffc940"), true)
+	_text(player.pos + Vector2(0, -78 - 24 * n), "Kỹ năng mới: %s" % sk.name, Color("#ffc940"), true)
 	if slot >= 0:
 		_message("Mở kỹ năng mới: %s — ở ô phím %s." % [sk.name, key], "good")
 	else:
 		_message("Mở kỹ năng mới: %s! Thanh kỹ năng đã đầy — phím U, kéo kỹ năng vào ô để dùng." % sk.name, "good")
 	_events.append({"type": "skill_unlock", "id": id, "name": sk.name, "slot": slot})
+	_sfx("unlock")
 
 
 func skill_unlocked(sk: Dictionary) -> bool:
@@ -2059,8 +2220,8 @@ func passive_upgrade(id: String) -> Dictionary:
 
 ## Lắp kỹ năng id vào ô slot (id "" = bỏ trống ô); nếu kỹ năng đang ở ô khác thì 2 ô đổi chỗ.
 ## SN12-02: đổi được ở vùng an toàn hoặc khi ngoài giao tranh; 7 ô; hồi chiêu đi theo kỹ năng.
-func set_slot(slot: int, id: String) -> Dictionary:
-	if not can_change_loadout():
+func set_slot(slot: int, id: String, in_menu := false) -> Dictionary:
+	if not can_change_loadout(in_menu):
 		return _skill_result(false, _loadout_block_msg())
 	var sk := Classes.skill_by_id(profile.class_id, id)
 	if (id != "" and sk.is_empty()) or slot < 0 or slot >= Classes.SKILL_SLOTS:
@@ -2092,7 +2253,7 @@ func _skill_result(ok: bool, msg: String) -> Dictionary:
 
 ## Ngũ Hành Bộc Phá: kỹ năng 1 trong 2 giây sau khi đổi hệ (+100%, Lv10 +150%). Trả về true nếu kích hoạt.
 func _consume_burst() -> bool:
-	var burst: bool = profile.talent == "ngu-hanh" and time - _element_switch_at <= BURST_WINDOW
+	var burst: bool = has_talent("ngu-hanh") and time - _element_switch_at <= BURST_WINDOW
 	if burst:
 		_element_switch_at = -99.0
 		_text(player.pos + Vector2(0, -40), "Ngũ Hành Bộc Phá!", Color(Monsters.ELEMENT_HEX[profile.element]), true)
@@ -2107,7 +2268,7 @@ func _spin(mul := SPIN_MUL) -> void:
 	var radius := (BURST_RANGE if burst else SPIN_RANGE) * Chapters.spin_mult(self)
 	for e in enemies:
 		if not e.dead and e.pos.distance_to(p.pos) <= radius + e.radius:
-			_hit_enemy(e, mul * ((1.0 + tv(1.0, 1.5)) if burst else 1.0))
+			_hit_enemy(e, mul * ((1.0 + tvt("ngu-hanh", 1.0, 1.5)) if burst else 1.0))
 	Chapters.skill_trail(self, p.pos, radius)
 
 
@@ -2146,7 +2307,7 @@ func _rain(mul: float) -> void:
 		z.pos = nearest_pos
 	z.radius = BURST_RANGE if burst else RAIN_RADIUS
 	# M6 (TL-B2): Bộc Phá cộng vào mỗi đợt của 5 đợt ×0,6 → tổng thêm bằng Xoáy Kiếm (×1,8) thì hệ số 0,6.
-	z.mul = mul * ((1.0 + tv(1.0, 1.5) * RAIN_BURST_K) if burst else 1.0)
+	z.mul = mul * ((1.0 + tvt("ngu-hanh", 1.0, 1.5) * RAIN_BURST_K) if burst else 1.0)
 	z.ticks = RAIN_TICKS
 	z.timer = 0.0
 	rains.append(z)
@@ -2204,7 +2365,7 @@ func _blast(pos: Vector2, radius: float, color: Color) -> void:
 
 
 func _use_talent() -> void:
-	var t := talent()
+	var t := skill_talent()
 	if not Talents.has_skill(t):
 		if _passive_msg_cd <= 0.0:
 			_message("%s là Thiên phú bị động — luôn có hiệu lực." % t.name, "info")
@@ -2225,7 +2386,7 @@ func _use_talent() -> void:
 			_super_slash = true
 			_text(p.pos + Vector2(0, -40), "Nhất Kiếm Đoạn!", Color("#5bd16a"), true)
 		"thao-duoc":
-			var heal := float(stats.max_hp) * tv(0.3, 0.45)
+			var heal := float(stats.max_hp) * tvt("thao-duoc", 0.3, 0.45)
 			p.hp = minf(float(stats.max_hp), p.hp + heal)
 			_text(p.pos + Vector2(0, -40), "Linh Dược +%d HP" % roundi(heal), Color("#5bd16a"), true)
 		"trai-tim":
@@ -2242,11 +2403,11 @@ func _use_talent() -> void:
 			_element_switch_at = time
 			_text(p.pos + Vector2(0, -40), "Hệ %s" % Monsters.ELEMENT_NAMES[profile.element], Color(Monsters.ELEMENT_HEX[profile.element]), true)
 		"thoi-gian-ngung-dong":
-			freeze_timer = tv(FREEZE_TIME, 4.5) + (1.0 if Talents.has_sub(profile.talent, profile.talent_level, "control", 2) else 0.0)
+			freeze_timer = tvt("thoi-gian-ngung-dong", FREEZE_TIME, 4.5) + (1.0 if TalentSlots.has_group_sub(profile, "control", 2) else 0.0)
 			_text(p.pos + Vector2(0, -40), "Thời Gian Ngưng Đọng!", Color("#b36bff"), true)
 		"bay-dan":
 			var n := 0
-			for i in roundi(tv(3.0, 5.0)):
+			for i in roundi(tvt("bay-dan", 3.0, 5.0)):
 				if _ally_count("shadow") < ally_cap("shadow"):
 					_add_ally("shadow", "wolf", profile.level, p.pos + Vector2.from_angle(i / 3.0 * TAU) * 50.0)
 					n += 1
@@ -2270,13 +2431,13 @@ func _use_talent() -> void:
 
 ## Hồi chiêu kỹ năng L sau các hiệu ứng phụ (Điều khiển/Phép thuật/Đặc biệt).
 func talent_skill_cd() -> float:
-	var t := talent()
+	var t := skill_talent()
 	if not Talents.has_skill(t):
 		return 0.0
 	var cd := float(t.skill.cd)
+	var lv: int = TalentSlots.level_of(profile, str(t.id))
 	if t.id == "trai-tim":
-		cd = Talents.lv_value(300.0, 200.0, profile.talent_level)
-	var lv: int = profile.talent_level
+		cd = Talents.lv_value(300.0, 200.0, lv)
 	if Talents.has_sub(t.id, lv, "control", 1):
 		cd *= 0.85
 	if Talents.has_sub(t.id, lv, "magic", 2):
@@ -2289,7 +2450,7 @@ func talent_skill_cd() -> float:
 
 ## Tên kỹ năng L hiển thị trên HUD.
 func talent_skill_name() -> String:
-	var t := talent()
+	var t := skill_talent()
 	if not Talents.has_skill(t):
 		return ""
 	if t.id == "dao-tac":
@@ -2307,7 +2468,7 @@ func _leap() -> void:
 	_enforce_gate()
 	p.swing = 0.3
 	p.swing_kind = "spin"
-	var mul := LEAP_MUL * (1.0 + tv(0.0, 0.3)) * (1.2 if Talents.has_sub(profile.talent, profile.talent_level, "special", 1) else 1.0)
+	var mul := LEAP_MUL * (1.0 + tv(0.0, 0.3)) * (1.2 if TalentSlots.has_group_sub(profile, "special", 1) else 1.0)
 	_text(p.pos + Vector2(0, -40), "Vồ Mồi!", Color("#ff5470"), true)
 	for e in enemies:
 		if not e.dead and e.pos.distance_to(p.pos) <= LEAP_RADIUS + e.radius:
@@ -2319,11 +2480,7 @@ func drink_potion() -> void:
 	var p := player
 	if Chapters.drink(self):
 		return
-	if profile.talent == "hap-huyet":
-		if _passive_msg_cd <= 0.0:
-			_message("Hấp Huyết: không dùng được bình máu.", "bad")
-			_passive_msg_cd = 3.0
-		return
+	# SN14-01: Hấp Huyết không còn bị khoá bình máu.
 	if p.potion_cd > 0.0 or p.hp >= float(stats.max_hp):
 		return
 	if profile.potions <= 0:
@@ -2362,7 +2519,7 @@ func mp_potion_restore() -> float:
 
 
 func potion_heal() -> float:
-	return float(stats.max_hp) * POTION_HEAL * ((1.0 + tv(0.3, 0.45)) if profile.talent == "thao-duoc" else 1.0) * Chapters.heal_mult(self) * Endgame.potion_mult(profile)
+	return float(stats.max_hp) * POTION_HEAL * ((1.0 + tvt("thao-duoc", 0.3, 0.45)) if has_talent("thao-duoc") else 1.0) * Chapters.heal_mult(self) * Endgame.potion_mult(profile)
 
 
 ## Đền Thiên Phú: luyện cấp Thiên phú bằng Tinh Hoa (TL-10…13).
@@ -2416,11 +2573,21 @@ func _derive(equipment = null) -> Dictionary:
 	# KP-06: Bến Cá +3% HP tối đa mỗi cái (tối đa +15%).
 	bonus.max_hp_pct += Explore.fishery_hp_pct(profile)
 	# TB-05: bộ cộng hưởng Thiên phú ("Người Khai Hoang") — ≥ 4 món của bộ + Thiên phú đúng nhóm.
-	var group := str(talent().group)
-	if int(bonus.sets.get("frost_hunter", 0)) >= 4 and group == "combat":
+	# TP-05: nhóm của bất kỳ Thiên phú nào đang có (chính hoặc phụ).
+	var groups: Array = TalentSlots.ids(profile).map(func(id): return str(Talents.get_talent(id).group))
+	if int(bonus.sets.get("frost_hunter", 0)) >= 4 and "combat" in groups:
 		bonus.flat["crit"] = float(bonus.flat.get("crit", 0.0)) + 0.05
-	if int(bonus.sets.get("phong_hanh", 0)) >= 4 and group == "explore":
+	if int(bonus.sets.get("phong_hanh", 0)) >= 4 and "explore" in groups:
 		bonus.move_pct += 0.10
+	# TP-05 (docs/33): hiệu ứng chính chạm chỉ số của Thiên phú chính + phụ (cấp riêng, cộng hưởng) — Stats.derive dùng thay
+	# cho phép tính chỉ theo Thiên phú chính.
+	var tvals := {}
+	for pair in [["than-the", 0.08, 0.12], ["mat-ung", 0.1, 0.15], ["tay-nhanh", 0.05, 0.075]]:
+		tvals[pair[0]] = TalentSlots.value(profile, pair[0], pair[1], pair[2]) if has_talent(pair[0]) else 0.0
+	bonus["talent_vals"] = tvals
+	bonus["dragon_val"] = TalentSlots.value(profile, "long-mach", 0.1, 0.15) + (0.05 if TalentSlots.has_special(profile, "long-de") else 0.0)
+	bonus["combat_sub1"] = TalentSlots.has_group_sub(profile, "combat", 1)
+	bonus["combat_sub2"] = TalentSlots.has_group_sub(profile, "combat", 2)
 	Chapters.derive_bonus(self, bonus)
 	var st := Stats.derive(profile.level, profile.points, profile.talent, bonus, profile.talent_level, profile.class_id, profile.stolen + steal_buff_points())
 	Chapters.derive_after(self, bonus, st)
@@ -2429,7 +2596,7 @@ func _derive(equipment = null) -> Dictionary:
 
 ## Long Mạch Đàn đã xây xong (TL-S7).
 func dragon_active() -> bool:
-	return profile.talent == "long-mach" and Explore.is_built(profile, "dragon")
+	return has_talent("long-mach") and Explore.is_built(profile, "dragon")
 
 
 ## EQ-11: đổi chỉ số giữ nguyên tỉ lệ HP hiện tại.
@@ -2622,6 +2789,11 @@ func _damage_player(atk: float, mul: float) -> bool:
 	_sfx("player_hurt")
 	combo = 0
 	_text(p.pos + Vector2(0, -26), "-%d" % dmg, Color("#ff5470"), false)
+	# TP13 Bất Khuất (Thân Thể Cường Tráng + Huyết Chiến): mỗi 60 giây, lần đầu HP về 0 thì giữ 1 HP.
+	if p.hp <= 0.0 and TalentSlots.has_special(profile, "bat-khuat") and time - _unyield_at >= UNYIELD_CD:
+		_unyield_at = time
+		p.hp = 1.0
+		_text(p.pos + Vector2(0, -60), "Bất Khuất!", Color("#ffc940"), true)
 	if p.hp <= 0.0:
 		_die()
 	return true
@@ -2665,7 +2837,7 @@ func _respawn() -> void:
 
 ## aoe: đòn phép diện rộng của Pháp Sư — Hấp Huyết chỉ hút 50% (SN-05, 05 mục 5).
 func _hit_enemy(e: Enemy, skill_mul: float, force_crit := false, aoe := false) -> void:
-	var talent_bonus := tv(0.2, 0.3) if profile.talent == "huyet-chien" and player.hp < float(stats.max_hp) * 0.3 else 0.0
+	var talent_bonus := tvt("huyet-chien", 0.2, 0.3) if has_talent("huyet-chien") and player.hp < float(stats.max_hp) * 0.3 else 0.0
 	var sid := Skills2.source(self)
 	var crit := force_crit or _r() < float(stats.crit) + (EAGLE_CRIT if player.eagle_time > 0.0 else 0.0) + Skills2.crit_bonus(self, sid) 		+ Job3.crit_bonus(self, e)
 	var mul := skill_mul * ((1.0 + float(stats.crit_dmg)) if crit else 1.0) * (1.5 if e.broken else 1.0) * Chapters.hit_mult(self, e, crit) \
@@ -2683,11 +2855,13 @@ func _hit_enemy(e: Enemy, skill_mul: float, force_crit := false, aoe := false) -
 	combo += 1
 	_combo_timer = COMBO_TIMEOUT
 	# Hấp Huyết: 8% sát thương thành máu.
-	if profile.talent == "hap-huyet":
-		player.hp = minf(float(stats.max_hp), player.hp + dmg * tv(LIFESTEAL, 0.12) * (AOE_LIFESTEAL if aoe else 1.0) * Chapters.heal_mult(self))
+	if has_talent("hap-huyet"):
+		# TP13 Huyết Chiến Thần (Huyết Chiến + Hấp Huyết): HP < 30% → hút máu ×2.
+		var hk := 2.0 if TalentSlots.has_special(profile, "huyet-than") and player.hp < float(stats.max_hp) * 0.3 else 1.0
+		player.hp = minf(float(stats.max_hp), player.hp + dmg * tvt("hap-huyet", LIFESTEAL, 0.12) * hk * (AOE_LIFESTEAL if aoe else 1.0) * Chapters.heal_mult(self))
 	# Thuần Thú Sư: đòn làm quái thường hoặc quái Ổ quái (TP-30) tụt dưới 10% (Lv10 15%) HP thì thu phục.
-	if profile.talent == "thuan-thu" and e.role in ["field", "nestMinion"] and not e.elite and e.kind != "nam-con" \
-			and e.hp - dmg > 0.0 and e.hp - dmg < e.max_hp * tv(TAME_HP, 0.15) and _ally_count("pet") < ally_cap("pet"):
+	if has_talent("thuan-thu") and e.role in ["field", "nestMinion"] and not e.elite and e.kind != "nam-con" \
+			and e.hp - dmg > 0.0 and e.hp - dmg < e.max_hp * tvt("thuan-thu", TAME_HP, 0.15) and _ally_count("pet") < ally_cap("pet"):
 		_tame(e)
 		return
 	var el_sk := Skills2.element_of(self, sid)
@@ -2712,11 +2886,11 @@ func el_of(e: Enemy) -> String:
 
 ## TL-S6: Ngũ Hành Linh Căn đánh hệ khắc +30% (Phép thuật cấp 5: +40%).
 func element_bonus(e: Enemy) -> float:
-	if profile.talent != "ngu-hanh":
+	if not has_talent("ngu-hanh"):
 		return 0.0
 	if not Monsters.counters(profile.element, el_of(e)):
 		return 0.0
-	return tv(Monsters.COUNTER_BONUS, 0.4) + (0.1 if Talents.has_sub(profile.talent, profile.talent_level, "magic", 1) else 0.0)
+	return tvt("ngu-hanh", Monsters.COUNTER_BONUS, 0.4) + (0.1 if TalentSlots.has_group_sub(profile, "magic", 1) else 0.0)
 
 
 ## SN9-03: màu số sát thương theo loại đòn (không chí mạng). kind "" = thường (trắng) / đồng minh (tím).
@@ -2838,6 +3012,10 @@ func _kill_enemy(e: Enemy) -> void:
 		hazards.append(hz)
 	if e.role == "rare":
 		_on_rare_killed(e)
+	# TP13 Phú Quý (May Mắn Nhỏ + Bàn Tay Vàng): tinh anh 5% rơi Tinh Kim (RNG riêng — không đổi chuỗi trận đánh).
+	if e.elite and TalentSlots.has_special(profile, "phu-quy") and _loot_rng.randf() < 0.05:
+		profile.tinh_kim += 1
+		_pickup_note("phu_quy", "+%d Tinh Kim (Phú Quý)", 1.0, Color("#e8e2c8"), true)
 	pickups.append(pk)
 	if e.elite or _r() < 0.15:
 		var orb := Pickup.new()
@@ -2851,7 +3029,7 @@ func _kill_enemy(e: Enemy) -> void:
 	# Bầy Đàn Bóng Tối: 15% quái bị hạ đứng dậy làm lính bóng tối.
 	if profile.talent == "dao-tac":
 		_try_steal(e)
-	if profile.talent == "bay-dan" and not is_boss and _r() < tv(SHADOW_CHANCE, 0.225) and _ally_count("shadow") < ally_cap("shadow"):
+	if has_talent("bay-dan") and not is_boss and _r() < tvt("bay-dan", SHADOW_CHANCE, 0.225) and _ally_count("shadow") < ally_cap("shadow"):
 		_add_ally("shadow", e.kind, e.level, e.pos)
 	if e.elite and profile.torches < Explore.torch_max(profile):
 		profile.torches += 1
@@ -3063,7 +3241,7 @@ func _drop_loot(e: Enemy) -> void:
 		_drop_item(e.pos, e.level, Items.roll_rarity("elite", _rng))
 		return
 	# May Mắn Nhỏ: +5 điểm % rơi đồ và rơi đá (Q7).
-	var luck := tv(0.05, 0.075) if profile.talent == "may-man" else 0.0
+	var luck := tvt("may-man", 0.05, 0.075) if has_talent("may-man") else 0.0
 	# ST-02: LUK cộng tỉ lệ rơi đồ.
 	if _r() < ItemData.FIELD_ITEM_CHANCE + luck + float(stats.drop_bonus):
 		_drop_item(e.pos, e.level, Items.roll_rarity("field", _rng))
@@ -3469,7 +3647,7 @@ func _update_pickups(dt: float) -> void:
 		if d < 22.0:
 			pk.ttl = 0.0
 			if pk.kind == "gold":
-				var gold: float = pk.value * (1.1 if Talents.has_sub(profile.talent, profile.talent_level, "economy", 1) else 1.0) * Endgame.gold_mult(profile)
+				var gold: float = pk.value * (1.1 if TalentSlots.has_group_sub(profile, "economy", 1) else 1.0) * Endgame.gold_mult(profile)
 				profile.gold += gold
 				_pickup_note("gold", "+%d vàng", gold, Color("#ffc940"))
 				_sfx("pickup_gold")
@@ -3779,6 +3957,8 @@ func reveal_tile(id: int) -> Dictionary:
 	if res.ok and res.exp > 0:
 		add_exp(res.exp, false)
 	_message(res.message, "good" if res.ok else "bad")
+	if res.ok:
+		Gates.on_reveal(self)
 	return res
 
 
@@ -3889,8 +4069,17 @@ func unequip(slot: String) -> Dictionary:
 	return _item_action(Items.unequip(profile, slot), true)
 
 
+## TP13 Luyện Kim Sư (Thợ Rèn + Nhà Thảo Dược): Dầu Rèn từ 2 bình máu (thảo dược tự chế thành bình từ SN12-01) → +10%.
+const OIL_POTIONS := 2
+const OIL_BONUS := 0.1
+
+
 func enhance(item_id: int) -> Dictionary:
-	var res := Items.enhance(profile, item_id, _rng, Endgame.enhance_bonus(profile))
+	var oil: bool = TalentSlots.has_special(profile, "luyen-kim") and int(profile.potions) >= OIL_POTIONS
+	var res := Items.enhance(profile, item_id, _rng, Endgame.enhance_bonus(profile) + (OIL_BONUS if oil else 0.0))
+	if oil and res.ok:
+		profile.potions = int(profile.potions) - OIL_POTIONS
+		res.message += " Luyện Kim Sư: Dầu Rèn +10%% (−%d bình máu)." % OIL_POTIONS
 	_message(res.message, "good" if res.get("success", false) else "bad")
 	if res.ok:
 		_refresh_stats()
@@ -4095,7 +4284,7 @@ func _tick_texts(dt: float) -> void:
 
 func ally_cap(kind: String) -> int:
 	var base := PET_MAX if kind == "pet" else SHADOW_MAX
-	return base + (1 if Talents.has_sub(profile.talent, profile.talent_level, "summon", 2) else 0)
+	return base + (1 if TalentSlots.has_group_sub(profile, "summon", 2) else 0)
 
 
 func _ally_count(kind: String) -> int:
@@ -4115,10 +4304,10 @@ func _add_ally(kind: String, monster: String, level: int, pos: Vector2) -> Ally:
 	a.pos = pos
 	a.radius = float(def.radius)
 	if kind == "pet":
-		a.atk = float(Formulas.mob_stats(level, "thuong", def.arch).atk) * tv(1.0, 1.5)
+		a.atk = float(Formulas.mob_stats(level, "thuong", def.arch).atk) * tvt("thuan-thu", 1.0, 1.5)
 		a.color = Color(def.color)
 	else:
-		a.atk = float(stats.atk) * tv(SHADOW_ATK, 0.45)
+		a.atk = float(stats.atk) * tvt("bay-dan", SHADOW_ATK, 0.45)
 		a.ttl = SHADOW_TTL
 		a.color = Color("#3a2a5a")
 	allies.append(a)
@@ -4135,15 +4324,16 @@ func _tame(e: Enemy) -> void:
 
 
 func ally_damage_mult() -> float:
-	var m := 1.2 if Talents.has_sub(profile.talent, profile.talent_level, "summon", 1) else 1.0
-	return m * ((1.0 + tv(0.1, 0.15)) if dragon_active() else 1.0)
+	var m := 1.2 if TalentSlots.has_group_sub(profile, "summon", 1) else 1.0
+	return m * ((1.0 + dragon_value()) if dragon_active() else 1.0)
 
 
 func _update_allies(dt: float) -> void:
 	for a in allies:
 		if a.dead:
 			continue
-		if a.ttl > 0.0:
+		# TP13 Chúa Tể Bầy Đàn: lính bóng tối không hết thời gian khi còn thú cưng sống.
+		if a.ttl > 0.0 and not (a.kind == "shadow" and TalentSlots.has_special(profile, "chua-te") and _ally_count("pet") > 0):
 			a.ttl -= dt
 			if a.ttl <= 0.0:
 				a.dead = true
@@ -4194,7 +4384,7 @@ func _update_herbs(dt: float) -> void:
 				h.pos = _random_field_pos()
 			continue
 		if h.pos.distance_to(player.pos) < 22.0:
-			var gain := 2 if profile.talent == "thao-duoc" else 1
+			var gain := 2 if has_talent("thao-duoc") else 1
 			profile.herbs += gain
 			h.respawn = HERB_RESPAWN
 			_text(player.pos + Vector2(0, -30), "+%d Thảo dược" % gain, Color("#5bd16a"), false)
@@ -4209,7 +4399,7 @@ func _brew_potions() -> void:
 
 
 func chest_visible(c: Chest) -> bool:
-	return not c.opened and profile.talent == "khuu-giac" and c.pos.distance_to(player.pos) <= CHEST_SENSE_R * tv(1.0, 1.5)
+	return not c.opened and has_talent("khuu-giac") and c.pos.distance_to(player.pos) <= CHEST_SENSE_R * tvt("khuu-giac", 1.0, 1.5)
 
 
 func _update_chests() -> void:
@@ -4437,6 +4627,10 @@ func _on_rare_killed(e: Enemy) -> void:
 	profile.rare_at[e.kind] = now_unix() + Config.RARE_BOSS_PERIOD
 	profile.essence += 5
 	profile.evo_essence += 1
+	# TP14 (docs/33): Nước Thánh Tinh Quang 30%.
+	if _loot_rng.randf() < STARWATER_DROP:
+		profile.starwater = int(profile.starwater) + 1
+		_message("Rơi Nước Thánh Tinh Quang — dùng ở bảng Thiên phú để tẩy 1 Thiên phú (giữ 50% cấp).", "good")
 	for m in enemies:
 		if m.role == "rareMinion":
 			m.dead = true
@@ -4504,6 +4698,14 @@ func shop_buy(kind: String) -> Dictionary:
 			profile.gold -= SHOP_POTION
 			profile.potions += 1
 			return _shop_result(true, "Mua 1 bình máu (đang có %d)." % profile.potions)
+		"starwater":
+			if int(map.get("region", 1)) < 4:
+				return _shop_result(false, "Nước Thánh Tinh Quang bán từ vùng 4 (Thánh Đường Tinh Quang).")
+			if profile.gold < STARWATER_PRICE:
+				return _shop_result(false, "Cần %d vàng." % STARWATER_PRICE)
+			profile.gold -= STARWATER_PRICE
+			profile.starwater = int(profile.starwater) + 1
+			return _shop_result(true, "Mua 1 Nước Thánh Tinh Quang (đang có %d)." % profile.starwater)
 		"mp_potion":
 			if profile.gold < SHOP_MP_POTION:
 				return _shop_result(false, "Cần %d vàng." % SHOP_MP_POTION)

@@ -432,7 +432,7 @@ func update_from(w: GameWorld) -> void:
 	if not w.allies.is_empty():
 		extra.append("Đồng minh %d" % w.allies.size())
 	# UI-13: hệ ngũ hành hiện bằng biểu tượng trên hoa sen Thiên phú (không ghi chữ).
-	frame.element = str(p.element) if p.talent == "ngu-hanh" else ""
+	frame.element = str(p.element) if w.has_talent("ngu-hanh") else ""
 	_auto.on = w.auto_fight
 	frame.extra = " · ".join(extra)
 	_tl.set_data(frame)
@@ -466,7 +466,8 @@ func update_from(w: GameWorld) -> void:
 		# HP (docs/15): hang không tính khai phá — hiện số quái còn lại / Chúa Hang.
 		var left := w.enemies.filter(func(e): return not e.dead).size()
 		var boss_alive := w.enemies.any(func(e): return e.cave_boss and not e.dead)
-		_map_name.text = "%s · cấp %d–%d · còn %d quái · %s" % [m.name, m.levels[0], m.levels[1], left, "Chúa Hang đang chờ" if boss_alive else "đã dọn ✓"]
+		var boss_name := "Chúa Cổng" if m.has("gate_rank") else "Chúa Hang"
+		_map_name.text = "%s · cấp %d–%d · còn %d quái · %s" % [m.name, m.levels[0], m.levels[1], left, (boss_name + " đang chờ") if boss_alive else "đã dọn ✓"]
 	if w.challenge_warning(w.map_id) != "":
 		_map_name.text += " · Vượt ải: EXP ×2"
 		_map_name.add_theme_color_override("font_color", UiTheme.BAD)
@@ -504,6 +505,11 @@ func _update_skill_bar(w: GameWorld, t: Dictionary, rank_color: Color) -> void:
 			"dim": low or locked, "big": big})
 	_skills.set_slot(SLOT_DODGE, {"key": "Space", "name": "Né lăn", "icon": SpriteLib.icon("skill-dodge"),
 		"cd": pl.dodge_cd / GameWorld.DODGE_CD, "cd_text": ("%.1f" % pl.dodge_cd) if pl.dodge_cd > 0.0 else ""})
+	# TP5-05 (docs/33): ô L theo Thiên phú có kỹ năng (chính, hoặc phụ khi chính bị động).
+	var lt: Dictionary = w.skill_talent()
+	if lt.id != t.id:
+		t = lt
+		rank_color = Talents.rank_color(lt.rank)
 	var tal := {"key": "L", "icon": SpriteLib.talent_icon(t.id), "ring": rank_color}
 	if Talents.has_skill(t):
 		tal.name = w.talent_skill_name()
@@ -513,14 +519,10 @@ func _update_skill_bar(w: GameWorld, t: Dictionary, rank_color: Color) -> void:
 		tal.name = t.name
 	_skills.set_slot(SLOT_TALENT, tal)
 	var pot := {"key": "Q", "name": "Bình máu", "icon": SpriteLib.icon("skill-potion")}
-	if p.talent == "hap-huyet":
-		pot.lock = "Khoá"
-		pot.locked = true
-	else:
-		pot.badge = str(p.potions)
-		pot.cd = pl.potion_cd / GameWorld.POTION_CD
-		pot.cd_text = str(ceili(pl.potion_cd)) if pl.potion_cd > 0.0 else ""
-		pot.dim = p.potions <= 0
+	pot.badge = str(p.potions)
+	pot.cd = pl.potion_cd / GameWorld.POTION_CD
+	pot.cd_text = str(ceili(pl.potion_cd)) if pl.potion_cd > 0.0 else ""
+	pot.dim = p.potions <= 0
 	_skills.set_slot(SLOT_POTION, pot)
 	_skills.set_slot(SLOT_MP_POTION, {"key": "F", "name": "Bình MP", "icon": SpriteLib.icon("skill-mp_potion"),
 		"badge": str(int(p.mp_potions)), "cd": pl.mp_potion_cd / GameWorld.MP_POTION_CD,
@@ -544,7 +546,7 @@ func _accept_drop(bar_index: int, data: Dictionary) -> bool:
 func _on_skill_dropped(bar_index: int, id: String) -> void:
 	var i := loadout_slot(bar_index)
 	if i >= 0 and _world != null:
-		_world.set_slot(i, id)
+		_world.set_slot(i, id, true)  # kéo từ cây kỹ năng — bảng U đang mở (SN14-02)
 
 
 ## Chuột phải ô kỹ năng: danh sách kỹ năng đã mở lắp được vào ô đó (đang lắp ở ô khác thì 2 ô đổi chỗ) + "Bỏ trống ô".

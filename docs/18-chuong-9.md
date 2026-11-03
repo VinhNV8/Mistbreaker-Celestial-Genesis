@@ -161,6 +161,7 @@ Hệ tầng, Ấn Hệ, giai đoạn Ma Tôn là trạng thái trong trận (kh�
 | C9-T8 | Cấp sau 100 (EXP công thức, Điểm Thiên Đạo, tẩy điểm, `exp_bank` cộng vào); Thần Vực (90 giây, cấp quái 100 + 2·tầng, boss mỗi 5 tầng, kỷ lục); Tái Thiết (giá theo vùng, Lõi Hư Vô từ vùng 8, 9 buff, Triều tàn dư); save v26 + chuyển đổi v25 |
 | TL-B9 | **5 lớp** *(rà 31/10)* × 20 Thiên phú (chức 3, bộ kỹ năng mặc định cấp 99 có Thần Kỹ docs/23, tiến hoá 2 lần Lv10) hạ Ma Tôn (bot cấp 99, bộ đồ chuẩn cấp 99): F/S ≤ 25%, các lớp ≤ 25%, 0 lần chết. Bot: **tự đảo hướng khi Giấc mơ** (mô phỏng người biết cơ chế), lên Đá Nổi, đứng vòng đèn khi bị hút, đánh bản có bóng khi phân thân |
 | TL-B9b | Thần Vực: bot mỗi lớp trong **5 lớp** (cấp 100, chưa có Điểm Thiên Đạo) đạt **tầng 10–20**; các lớp chênh ≤ 25% số tầng |
+| | *(02/11/2026, [32](32-ra-soat-01-11.md) mục 4)* Đã làm: thêm hệ số quái tháp mỗi tầng (HP ×1,14, Tấn công ×1,05 luỹ thừa), Thần Tướng HP ×3 (thay ×8); kết quả tầng 14–19, chênh ≤ 5 tầng (25% của mốc 20) |
 | PACE-T6 | (`--only=PACE`) bot cày vùng 9 cấp 95 → 100: phút, số lần chết |
 
 Smoke mới: `21-region9`, `21b-floor-element`, `21c-camp9`, `21d-ma-ton`, `22-ending-choice`, `22b-ending-hop-nhat`, `22c-ending-hien-te`, `22d-credits`, `23-than-vuc`, `23b-tai-thiet`.
@@ -237,4 +238,4 @@ TL-B9 (bot cấp 99, chức 3 + Thần Kỹ ô 4, tiến hoá 2 lần Lv10, đ�
 
 ![Màn lựa chọn kết thúc](images/m12/22-ending-choice.png)
 
-**Chưa làm:** TL-B9b (bot leo Thần Vực), PACE-T6, smoke `21b`, `22b/22c` (cảnh kết riêng), `23-than-vuc`, `23b-tai-thiet`; test riêng từng cơ chế Thiên Đạo Hư Ảnh; tên Thiên phú của Tàn Hồn trên bảng tên.
+**Chưa làm:** PACE-T6, smoke `21b`, `22b/22c` (cảnh kết riêng), `23-than-vuc`, `23b-tai-thiet`; test riêng từng cơ chế Thiên Đạo Hư Ảnh; tên Thiên phú của Tàn Hồn trên bảng tên.

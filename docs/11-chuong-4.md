@@ -46,6 +46,7 @@
 | C4-32 | **Đạo Tặc — Mộng Cảnh**: quái trong 10 m đánh nhau 4 giây (không đánh người chơi; đánh quái gần nhất) | C4-T4 |
 | C4-33 | **Boss hiếm Thuỷ Quái Thất Đầu** ở 4-3 (cấp 45, Lì, Thủy, 200 đòn): thân bất tử, **7 đầu** quanh thân (mỗi đầu 1/7 HP boss, có thanh máu riêng). Đầu bị chặt **mọc lại sau 20 giây** trừ khi trúng đòn **hệ Hỏa** trong 5 giây sau khi chặt (Hỏa Cầu / Thiên Thạch của Pháp Sư, Ngũ Hành hệ Hỏa, hoặc **Đuốc Lửa** — vật phẩm cửa hàng 60 vàng, ném bằng phím Q khi có đầu vừa bị chặt). Chặt hết 7 đầu cùng lúc → Thuỷ Quái gục. Mỗi đầu: **Phun nước** (thẳng 15 m, ×1,2) | C4-T4 |
 | C4-34 | Thất Đầu rơi: **Vảy Thất Đầu** (áo Cam: hồi 1% HP/giây, +20% kháng Thủy) · 1 Tinh Hoa Tiến Hoá · 5 Tinh Hoa | C4-T4 |
+| | *(Sửa lỗi 02/11/2026, Spec_Notes)*: 7 đầu không mọc (update_enemy chặn update_rare) → thân bất tử mãi; đã sửa + đánh vào thân hiện "Miễn sát thương — chặt N đầu còn lại" — [32](32-ra-soat-01-11.md) mục 5 | C4-T4, RB-T1 |
 | C4-35 | **Bộ U Minh** (đồ Tím vùng 4): 2 — độc tích luỹ chậm 50% · 4 — +12% HP · 6 — đòn đánh 15% gây 1 tầng độc lên quái (quái mất 0,3% HP tối đa/giây mỗi tầng, tối đa 10) | C4-T4 |
 
 ## 5. Cốt truyện và tiến hoá (M7.3)

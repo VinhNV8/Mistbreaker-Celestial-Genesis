@@ -895,6 +895,7 @@ static func do_job2(w, id: String) -> bool:
 	w._message("Chuyển chức lần 2: %s! +10%% HP và Tấn công. %s" % [j.name, j.text], "good")
 	w._text(w.player.pos + Vector2(0, -50), str(j.name) + "!", Color(j.color), true)
 	w._sfx("levelup")
+	w._after_job_change()  # TP-05 (docs/33): mở ô Thiên phú phụ thứ 3
 	return true
 
 

@@ -7,6 +7,8 @@ const Config = preload("res://scripts/core/config.gd")
 const Formulas = preload("res://scripts/core/formulas.gd")
 const RngUtil = preload("res://scripts/core/rng_util.gd")
 const Talents = preload("res://scripts/data/talents.gd")
+## TP-05 (docs/33): Thiên phú chính + phụ, cộng hưởng.
+const TalentSlots = preload("res://scripts/core/talent_slots.gd")
 
 const EVENT_INFO := {
 	"camp": {"name": "Trại Khai Giới", "short": "Trại", "desc": "Trung tâm lãnh địa của bạn.", "color": "#c9a45c"},
@@ -323,6 +325,15 @@ static func is_event_visible(tiles: Array, tile: Dictionary, talent: String) -> 
 	return talent == "mat-ung" and distance_to_owned(tiles, tile) <= 2
 
 
+## TP-05 (docs/33): như is_event_visible nhưng theo mọi Thiên phú của hồ sơ; TP13 Thợ Săn Di Tích → mọi ô Di tích hiện.
+static func event_visible(p, tile: Dictionary) -> bool:
+	if tile.status != "fog":
+		return true
+	if tile.event == "relic" and TalentSlots.has_special(p, "di-tich"):
+		return true
+	return TalentSlots.has(p, "mat-ung") and distance_to_owned(p.tiles, tile) <= 2
+
+
 # ------------------------------------------------------------------ Đuốc
 
 
@@ -333,15 +344,17 @@ static func torch_max(p) -> int:
 		if str(p.equipment[slot].get("set", "")) == "phong_hanh":
 			n += 1
 	# TB-05: Bộ Phong Hành ≥ 4 món + Thiên phú nhóm Khai phá → +1 Đuốc tối đa.
-	var resonance := 1 if n >= 4 and str(Talents.get_talent(p.talent).group) == "explore" else 0
+	var resonance := 1 if n >= 4 and TalentSlots.ids(p).any(func(id): return str(Talents.get_talent(id).group) == "explore") else 0
+	# TP13 Lữ Khách Thiên Mệnh (Chân Không Biết Mỏi + Thiên Mệnh Khai Giới): +3 Đuốc tối đa.
+	var traveler := 3 if TalentSlots.has_special(p, "lu-khach") else 0
 	# C9-52: Giếng Sa Mạc (Tái Thiết vùng 3) +1 Đuốc tối đa.
 	var well := 1 if is_built(p, "rebuild3") else 0
-	return Config.TORCH_MAX + (1 if Talents.has_sub(p.talent, p.talent_level, "explore", 1) else 0) + resonance + well
+	return Config.TORCH_MAX + (1 if TalentSlots.has_group_sub(p, "explore", 1) else 0) + resonance + well + traveler
 
 
 ## Khai phá cấp 10: Đuốc hồi nhanh hơn 20%.
 static func torch_regen_sec(p) -> float:
-	return Config.TORCH_REGEN_SEC * (0.8 if Talents.has_sub(p.talent, p.talent_level, "explore", 2) else 1.0) * (0.8 if is_built(p, "rebuild3") else 1.0)
+	return Config.TORCH_REGEN_SEC * (0.8 if TalentSlots.has_group_sub(p, "explore", 2) else 1.0) * (0.8 if is_built(p, "rebuild3") else 1.0)
 
 
 ## Lý do không thể dùng Đuốc lên ô này, hoặc chuỗi rỗng nếu được phép.
@@ -398,7 +411,7 @@ static func reveal_tile(p, id: int) -> Dictionary:
 	tile.status = "revealed"
 	var names := [EVENT_INFO[tile.event].name]
 	# Thiên Mệnh Khai Giới: dọn thêm tối đa 2 ô sương kề ô vừa dọn.
-	if p.talent == "thien-menh":
+	if TalentSlots.has(p, "thien-menh"):
 		var extra := 0
 		for t in p.tiles:
 			if extra >= 2:
@@ -493,7 +506,10 @@ static func _kind(key: String) -> String:
 
 
 static func build_time(p, kind: String) -> float:
-	return float(BUILDINGS[kind].time) * ((1.0 - Talents.lv_value(0.25, 0.375, p.talent_level)) if p.talent == "trai-tim" else 1.0)
+	# TP13 Long Đế (Trái Tim Lãnh Chúa + Long Mạch): Long Mạch Đàn xây xong ngay.
+	if kind == "dragon" and TalentSlots.has_special(p, "long-de"):
+		return 0.0
+	return float(BUILDINGS[kind].time) * ((1.0 - TalentSlots.value(p, "trai-tim", 0.25, 0.375)) if TalentSlots.has(p, "trai-tim") else 1.0)
 
 
 static func start_building(p, key: String) -> void:
@@ -596,7 +612,7 @@ static func finish_now(p) -> String:
 static func build(p, kind: String) -> Dictionary:
 	if is_started(p, kind):
 		return _result(false, "%s đã xây hoặc đang xây." % BUILDINGS[kind].name)
-	if kind == "dragon" and p.talent != "long-mach":
+	if kind == "dragon" and not TalentSlots.has(p, "long-mach"):
 		return _result(false, "Chỉ người mang Thiên phú Long Mạch mới xây được Long Mạch Đàn.")
 	var def: Dictionary = BUILDINGS[kind]
 	var block := build_blocker(p, kind)
@@ -640,9 +656,9 @@ static func production_per_minute(p) -> Dictionary:
 		survivors += count_owned(rg[1], "survivor")
 	# C7-02: Thôn +20%, Trấn +30%, Thành +40%, Hoàng Thành +50%.
 	var mult: float = 1.0 + 0.1 * survivors + float(CAMP_BONUS[clampi(int(p.camp_level), 1, 5)])
-	if p.talent == "thien-menh":
-		mult += Talents.lv_value(0.2, 0.3, p.talent_level)
-	if Talents.has_sub(p.talent, p.talent_level, "territory", 1):
+	if TalentSlots.has(p, "thien-menh"):
+		mult += TalentSlots.value(p, "thien-menh", 0.2, 0.3)
+	if TalentSlots.has_group_sub(p, "territory", 1):
 		mult += 0.1
 	# C9-50 / C9-46 (M12): Điểm Thiên Đạo nhánh lãnh địa +1%/điểm; kết thúc Hiến tế +30% (Endgame.territory_bonus).
 	mult += int(p.divine_points.get("terr", 0)) * 0.01 + (0.3 if str(p.ending) == "hien-te" else 0.0)
@@ -689,7 +705,7 @@ static func tick_garden(p, seconds: float) -> int:
 
 ## Lãnh địa cấp 10: thu hoạch offline tối đa 16 giờ.
 static func offline_cap(p) -> float:
-	return 16.0 * 3600.0 if Talents.has_sub(p.talent, p.talent_level, "territory", 2) else Config.OFFLINE_CAP_SEC
+	return 16.0 * 3600.0 if TalentSlots.has_group_sub(p, "territory", 2) else Config.OFFLINE_CAP_SEC
 
 
 ## Hồi Đuốc theo thời gian; trả về số Đuốc vừa hồi.

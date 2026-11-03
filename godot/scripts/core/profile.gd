@@ -34,7 +34,11 @@ const RngUtil = preload("res://scripts/core/rng_util.gd")
 ## quest.ch9/kills9/souls9 (docs/18 mục 7). EXP tích luỹ ở cấp 100 dùng chính profile.xp (thay trường exp_bank của spec).
 ## v27: SN12-02 — 7 ô kỹ năng (loadout 7 phần tử, "" = trống; save cũ 4 ô được thêm 3 ô trống), bộ kỹ năng thứ 2
 ## (loadout_alt), bộ đang dùng (loadout_set 0 / 1) (docs/31).
-const VERSION := 27
+## v28: TP-05/13/14 (docs/33) — Thiên phú phụ (subs [{id, level}]), Nước Thánh Tinh Quang (starwater),
+## cộng hưởng đặc biệt đã kích hoạt (resonance_seen). Save cũ: chưa có Thiên phú phụ (ô đã mở theo chuyển chức).
+## v29: BD-11 (docs/34) — Cổng dungeon đang mở gates {map cha: {rank, until (giây chơi), x, y}}, số cổng đã dọn
+## (gates_cleared), hạng cao nhất đã dọn (gate_best). Save cũ: chưa có cổng nào.
+const VERSION := 29
 
 var talent := ""
 var level := 1
@@ -152,6 +156,14 @@ var caves := {}
 var secret_books := {}
 var crystal := 0.0
 var holy_water := 0
+## v28 (docs/33): Thiên phú phụ [{"id", "level"}] (tối đa 2), Nước Thánh Tinh Quang (tẩy Thiên phú), cộng hưởng đã thấy {id: true}.
+var subs: Array = []
+var starwater := 0
+var resonance_seen := {}
+## v29 (docs/34): Cổng dungeon.
+var gates := {}
+var gates_cleared := 0
+var gate_best := ""
 var raid_play := 0.0
 var raid_penalty_until := 0.0
 ## M9: Than Hồng (phím Q xoá băng giá).
@@ -267,6 +279,12 @@ func to_dict() -> Dictionary:
 		"secret_books": secret_books,
 		"crystal": crystal,
 		"holy_water": holy_water,
+		"subs": subs,
+		"starwater": starwater,
+		"resonance_seen": resonance_seen,
+		"gates": gates,
+		"gates_cleared": gates_cleared,
+		"gate_best": gate_best,
 		"raid_play": raid_play,
 		"raid_penalty_until": raid_penalty_until,
 		"embers": embers,
@@ -466,6 +484,23 @@ func load_dict(d: Dictionary) -> bool:
 		skill_points += ceili(int(d.get("book_shards", 0)) / 5.0)
 	crystal = float(d.get("crystal", 0.0))
 	holy_water = int(d.get("holy_water", 0))
+	subs = []
+	for sd in d.get("subs", []):
+		if sd is Dictionary and str(sd.get("id", "")) != "":
+			subs.append({"id": str(sd.id), "level": clampi(int(sd.get("level", 1)), 1, 10)})
+	starwater = int(d.get("starwater", 0))
+	resonance_seen = {}
+	var rs: Dictionary = d.get("resonance_seen", {})
+	for k in rs:
+		resonance_seen[str(k)] = true
+	gates = {}
+	var gd: Dictionary = d.get("gates", {})
+	for k in gd:
+		var gv = gd[k]
+		if gv is Dictionary and str(gv.get("rank", "")) in ["E", "D", "C", "B", "A", "S"]:
+			gates[str(k)] = {"rank": str(gv.rank), "until": float(gv.get("until", 0.0)), "x": float(gv.get("x", 0.0)), "y": float(gv.get("y", 0.0))}
+	gates_cleared = int(d.get("gates_cleared", 0))
+	gate_best = str(d.get("gate_best", ""))
 	raid_play = float(d.get("raid_play", 0.0))
 	raid_penalty_until = float(d.get("raid_penalty_until", 0.0))
 	# v12 — save v11 trở xuống: chưa tới vùng 6.

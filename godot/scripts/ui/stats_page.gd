@@ -276,11 +276,13 @@ static func build(content: VBoxContainer, world, refresh: Callable) -> void:
 	Ornate.button(pick, "dark")
 	pick.custom_minimum_size.y = 34
 	pick.clip_text = true
+	# Rà soát 01/11: tên mẫu dài ("Mặc định (3 STR : 1 VIT : 1 AGI)") bị cắt ở cỡ chữ mặc định.
+	pick.add_theme_font_size_override("font_size", UiTheme.fs(13))
 	for e in list:
 		pick.add_item(str(e[0]))
 	pick.select(cur)
 	var job2 := str(list[cur][2])
-	pick.tooltip_text = "Mẫu phân bổ tự động" + ((" — hợp nhánh chức 2: " + str(Classes.job2_def(str(p.class_id), job2).get("name", job2))) if job2 != "" else "")
+	pick.tooltip_text = str(list[cur][0]) + " · Mẫu phân bổ tự động" + ((" — hợp nhánh chức 2: " + str(Classes.job2_def(str(p.class_id), job2).get("name", job2))) if job2 != "" else "")
 	pick.item_selected.connect(func(i: int):
 		preset[p.class_id] = i
 		refresh.call())

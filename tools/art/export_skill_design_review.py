@@ -19,22 +19,37 @@ CLASS_NAMES = {
     "kiem-khach": "Kiem Khach",
     "tho-san": "Tho San",
     "phap-su": "Phap Su",
+    "ho-ve": "Ho Ve",
+    "trieu-hoi-su": "Trieu Hoi Su",
 }
 SKILL_NAMES = {
     "spin": "Xoay Kiem", "dash": "Dot Kich", "wave": "Tram Phong", "kiemy": "Kiem Y",
     "lientram": "Nguyet Anh Lien Tram", "hongkiem": "Hong Kiem", "kiemvu": "Kiem Vu",
     "phikiem": "Phi Kiem", "vankiem": "Van Kiem Quy Tong", "thanhkiem": "Thanh Kiem Tram",
-    "kiemvuc": "Kiem Vuc", "huyetbao": "Huyet Bao", "huyetanh": "Huyet Anh",
+    "kiemvuc": "Kiem Vuc", "huyetbao": "Huyet Bao", "huyetanh": "Huyet Anh", "nhatkiem": "Nhat Kiem Khai Thien",
     "rain": "Vu Tien", "pierce": "Xuyen Tam Tien", "lanban": "Lon Nhao", "eagle": "Ung Nhan",
     "tennay": "Ten Nay", "trap": "Bay Gai", "lienxa": "Lien Xa", "tendoc": "Ten Doc",
     "thientien": "Thien Tien Vu", "phakhong": "Pha Khong Tien", "tamlien": "Tam Lien Than Tien",
-    "baimin": "Bai Min", "luoibay": "Luoi Bay", "chain": "Set Chuoi", "banglao": "Bang Lao",
+    "baimin": "Bai Min", "luoibay": "Luoi Bay", "tinhvu": "Thien Lac Tinh Vu", "chain": "Set Chuoi", "banglao": "Bang Lao",
     "meteor": "Thien Thach", "barrier": "Phap Thuan", "hoatuong": "Hoa Tuong", "nova": "Bang Nguc",
     "muabang": "Mua Bang", "causam": "Cau Sam", "thienhoa": "Thien Tai Nguyen To",
     "thienloi": "Thien Loi", "bangphong": "Bang Phong Thien Ha", "trieuhoi": "Trieu Hoi Xuong",
-    "khidoc": "Khi Doc Tu Vong",
+    "khidoc": "Khi Doc Tu Vong", "nguhanh": "Ngu Hanh Luan Chuyen", "thienthuan": "Thien Thuan Giang The",
+    "kylan": "Ky Lan Giang The", "khienthep": "Khien Thep", "khieukhich": "Khieu Khich",
+    "chandia": "Chan Dia", "thanhbatdiet": "Thanh Bat Diet", "soibong": "Trieu Hoi Soi Bong",
+    "tieuquy": "Trieu Hoi Tieu Quy", "lienket": "Lien Ket Linh Hon", "quandoan": "Quan Doan Linh Hon",
 }
 SOURCE_ART = {skill_id for skills in class_skill_actions.SKILLS.values() for skill_id in skills if skill_id != "fireball"}
+REVIEW_SKILLS = dict(class_skill_actions.ALL_SKILLS)
+REVIEW_SKILLS.update({
+    "ho-ve": ["khienchan", "khieukhich", "laokhien", "khienthep", "chandia", "phanthuan", "phanquyet", "xungphong", "thanhbatdiet", "thanhquang", "thanhvuc", "thietchuy", "thanhdong", "thienthuan"],
+    "trieu-hoi-su": ["soibong", "linhtien", "tieuquy", "lienket", "thachquy", "hoadieu", "linhtran", "linhung", "quandoan", "aulong", "longhong", "loidodang", "phongdodang", "kylan"],
+})
+EXPORT_SKILLS = dict(class_skill_actions.ALL_SKILLS)
+EXPORT_SKILLS.update({
+    "ho-ve": class_skill_actions.SKILLS["ho-ve"],
+    "trieu-hoi-su": class_skill_actions.SKILLS["trieu-hoi-su"],
+})
 
 
 def _review_card(class_id, skill_id, image):
@@ -47,7 +62,7 @@ def _review_card(class_id, skill_id, image):
     status = "SOURCE ART - APPROVED REFERENCE" if source else "CONCEPT REVIEW - NOT FOR GAME"
     draw.rectangle((0, 0, width - 1, height - 1), outline=accent, width=3)
     draw.rectangle((10, 10, width - 10, 48), fill=(24, 28, 46, 255), outline=(56, 64, 92, 255), width=1)
-    draw.text((20, 17), "%s / %02d / %s" % (CLASS_NAMES[class_id], class_skill_actions.ALL_SKILLS[class_id].index(skill_id) + 1, SKILL_NAMES[skill_id]), fill=(245, 245, 250, 255))
+    draw.text((20, 17), "%s / %02d / %s" % (CLASS_NAMES[class_id], REVIEW_SKILLS[class_id].index(skill_id) + 1, SKILL_NAMES[skill_id]), fill=(245, 245, 250, 255))
     draw.text((20, 34), status, fill=accent)
     scale = min((width - 32) / image.width, (height - 72) / image.height)
     scaled = image.resize((max(1, round(image.width * scale)), max(1, round(image.height * scale))), Image.NEAREST)
@@ -78,12 +93,18 @@ def _animation_frames(class_id, skill_id, image):
 def build():
     assets = class_skill_actions.build_all()
     count = 0
-    for class_id, skill_ids in class_skill_actions.ALL_SKILLS.items():
+    for class_id, skill_ids in EXPORT_SKILLS.items():
         folder = os.path.join(OUT, class_id)
         os.makedirs(folder, exist_ok=True)
         for index, skill_id in enumerate(skill_ids, 1):
             image, _origin = assets["skill-action-" + skill_id]
-            stem = "%02d-%s" % (index, skill_id)
+            stem = "%02d-%s" % (REVIEW_SKILLS[class_id].index(skill_id) + 1, skill_id)
+            legacy_stem = "%02d-%s" % (index, skill_id)
+            if legacy_stem != stem:
+                for ext in (".png", ".gif"):
+                    legacy_path = os.path.join(folder, legacy_stem + ext)
+                    if os.path.exists(legacy_path):
+                        os.remove(legacy_path)
             _review_card(class_id, skill_id, image).save(os.path.join(folder, stem + ".png"))
             frames = _animation_frames(class_id, skill_id, image)
             frames[0].save(os.path.join(folder, stem + ".gif"), save_all=True, append_images=frames[1:], duration=[500, 300, 650], loop=0, disposal=2)

@@ -640,7 +640,6 @@ func _num(x: float) -> String:
 
 
 func _slots(id: String) -> Control:
-	var can: bool = world.can_change_loadout()
 	var sk := Classes.skill_by_id(str(world.profile.class_id), id)
 	var v := UiTheme.vbox(4)
 	var row := UiTheme.hbox(4)
@@ -659,15 +658,13 @@ func _slots(id: String) -> Control:
 			b.tooltip_text = "Ô Tuyệt kỹ (G) chỉ lắp Tối thượng hoặc Thần Kỹ."
 		else:
 			b.tooltip_text = "Lắp vào ô %s (phím %s)" % [key, key]
-		b.disabled = not can or slot == i or not accepts
+		b.disabled = slot == i or not accepts
 		var si: int = i
 		b.pressed.connect(func():
-			world.set_slot(si, id)
+			world.set_slot(si, id, true)
 			refresh())
 		row.add_child(b)
 	v.add_child(row)
-	if not can:
-		v.add_child(UiTheme.label("Đang giao tranh — đổi ô sau 5 giây không đánh / bị đánh. Biến thể: ở vùng an toàn.", "Small", DETAIL_W - 14))
 	return v
 
 
@@ -704,7 +701,7 @@ func _loadout_bar() -> Control:
 			var d := Classes.skill_by_id(str(p.class_id), id)
 			return not d.is_empty() and world.skill_unlocked(d) and world.slot_accepts(si, d)
 		ls.on_drop = func(id: String):
-			world.set_slot(si, id)
+			world.set_slot(si, id, true)
 			_sel = id
 			refresh()
 		ls.on_click = func():
@@ -713,16 +710,15 @@ func _loadout_bar() -> Control:
 				refresh()
 		ls.on_clear = func():
 			if not world.slot_skill(si).is_empty():
-				world.set_slot(si, "")
+				world.set_slot(si, "", true)
 				refresh()
 		row.add_child(ls)
 	var sw := UiTheme.button("⇄ Bộ %d (X)" % (2 - int(p.loadout_set)))
 	sw.name = "SwapLoadout"
 	sw.custom_minimum_size = Vector2(0, 38)
-	sw.tooltip_text = "Đổi giữa Bộ kỹ năng 1 và 2 (ví dụ bộ đánh quái / bộ đánh boss). Ngoài giao tranh hoặc ở vùng an toàn."
-	sw.disabled = not world.can_change_loadout()
+	sw.tooltip_text = "Đổi giữa Bộ kỹ năng 1 và 2 (ví dụ bộ đánh quái / bộ đánh boss). Phím X ngoài bảng: ngoài giao tranh hoặc ở vùng an toàn."
 	sw.pressed.connect(func():
-		world.swap_loadout()
+		world.swap_loadout(true)
 		refresh())
 	row.add_child(sw)
 	return row

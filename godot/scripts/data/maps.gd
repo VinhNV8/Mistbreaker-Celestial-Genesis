@@ -621,6 +621,9 @@ static func get_map(map_id: String) -> Dictionary:
 	# HP (docs/15): bản đồ hang "cave-<map cha>" sinh từ map cha (nạp muộn để tránh preload vòng).
 	if map_id.begins_with("cave-"):
 		return load("res://scripts/core/caves.gd").build_map(map_id)
+	# BD-11 (docs/34): bản đồ trong Cổng dungeon "gate-<hạng>-<map cha>".
+	if map_id.begins_with("gate-"):
+		return load("res://scripts/core/gates.gd").build_map(map_id)
 	var id := map_id if MAPS.has(map_id) else "1-1"
 	if not _scaled.has(id):
 		_scaled[id] = scaled(MAPS[id], MAP_SCALE)

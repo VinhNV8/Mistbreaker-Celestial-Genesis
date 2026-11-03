@@ -75,7 +75,7 @@ const LIST := [
 	{"id": "mat-ung", "name": "Mắt Ưng", "rank": "A", "group": "explore",
 		"description": "Nhìn xuyên sương mù 2 ô trên bản đồ khai phá; thấy điểm yếu của quái (+10% chí mạng)."},
 	{"id": "hap-huyet", "name": "Hấp Huyết", "rank": "A", "group": "combat",
-		"description": "8% sát thương gây ra chuyển thành máu; không dùng được bình máu."},
+		"description": "8% sát thương gây ra chuyển thành máu."},
 	{"id": "ban-tay-vang", "name": "Bàn Tay Vàng", "rank": "A", "group": "economy",
 		"description": "Phân rã trang bị có 20% nhận thêm 1 Tinh Kim (nguyên liệu hiếm)."},
 	{"id": "ngu-hanh", "name": "Ngũ Hành Linh Căn", "rank": "S", "group": "magic",

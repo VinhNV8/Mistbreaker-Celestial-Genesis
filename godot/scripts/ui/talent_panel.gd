@@ -6,6 +6,8 @@ const Ch7 = preload("res://scripts/core/chapter7.gd")
 const Explore = preload("res://scripts/core/explore.gd")
 const Monsters = preload("res://scripts/data/monsters.gd")
 const Talents = preload("res://scripts/data/talents.gd")
+## TP-05 / 13 / 14 (docs/33): Thiên phú phụ, cộng hưởng, tẩy.
+const TalentSlots = preload("res://scripts/core/talent_slots.gd")
 
 ## UI-28c: bề rộng chữ trong mỗi cột (3 cột vừa một màn hình, không cuộn).
 const W := 330.0
@@ -104,6 +106,8 @@ func _render(outer: VBoxContainer) -> void:
 	cv.add_child(UiTheme.label(t.description, "", W - 20))
 	card.add_child(cv)
 	left.add_child(card)
+	if int(p.starwater) > 0:
+		left.add_child(_wash_button(p, -1))
 	if Talents.has_skill(t):
 		left.add_child(UiTheme.label("KỸ NĂNG (PHÍM L)", "Eyebrow"))
 		left.add_child(UiTheme.label("%s — %s Hồi chiêu %.1f giây." % [world.talent_skill_name(), t.skill.text, world.talent_skill_cd()], "Small", W))
@@ -172,6 +176,85 @@ func _render(outer: VBoxContainer) -> void:
 
 	# ---- cột phải: cây tiến hoá
 	_evolution(_column(body, "Cây tiến hoá", "TalentEvolution"), t)
+	_subs_row(outer, p)
+
+
+## TP-05 / TP-13 / TP-14 (docs/33): hàng Thiên phú phụ (2 ô) + Nước Thánh + cộng hưởng dưới 3 cột.
+func _subs_row(outer: VBoxContainer, p) -> void:
+	var box := PanelContainer.new()
+	box.name = "SubTalents"
+	box.add_theme_stylebox_override("panel", UiTheme.inset(Color("#140d08"), Color("#5a4220"), 10, 8))
+	var row := UiTheme.hbox(12)
+	box.add_child(row)
+	var open_n := TalentSlots.sub_slots_open(p)
+	for i in TalentSlots.MAX_SUBS:
+		var cell := UiTheme.vbox(4)
+		cell.name = "SubSlot_%d" % i
+		cell.custom_minimum_size.x = 250
+		if i < p.subs.size():
+			var sd: Dictionary = p.subs[i]
+			var st := Talents.get_talent(str(sd.id))
+			var c := Talents.rank_color(st.rank)
+			var top := UiTheme.hbox(8)
+			top.add_child(UiTheme.icon_rect(preload("res://scripts/view/sprite_lib.gd").talent_icon(str(st.id)), 34))
+			top.add_child(UiTheme.strong("%s · %s" % [st.rank, st.name], 15, c))
+			cell.add_child(top)
+			var eff := Talents.main_effect_text(str(st.id), int(sd.level))
+			cell.add_child(UiTheme.label("%s · Cấp %d%s" % [Talents.group_name(st), int(sd.level), (" · " + eff) if eff != "" else ""], "Small", 245))
+			var btns := UiTheme.hbox(6)
+			if int(sd.level) < Talents.MAX_TALENT_LEVEL:
+				var cost := Talents.level_cost(int(sd.level))
+				var lb := UiTheme.button("Luyện cấp (%d Tinh Hoa)" % cost)
+				lb.name = "SubLevel_%d" % i
+				lb.disabled = not Explore.is_built(p, "temple") or p.essence < cost
+				lb.tooltip_text = "Luyện ở Đền Thiên Phú, cùng bảng giá Tinh Hoa với Thiên phú chính."
+				var si: int = i
+				lb.pressed.connect(func():
+					world.level_sub(si)
+					refresh())
+				btns.add_child(lb)
+			btns.add_child(_wash_button(p, i))
+			cell.add_child(btns)
+		elif i < open_n:
+			cell.add_child(UiTheme.strong("Ô Thiên phú phụ %d" % (i + 1), 15, UiTheme.GOLD))
+			cell.add_child(UiTheme.label("Ô đã mở — chạm Bia Đá để nhận Thiên phú.", "Small", 245))
+			var rb := UiTheme.button("Lễ Thức Tỉnh", true)
+			rb.name = "SubRitual_%d" % i
+			rb.pressed.connect(func(): open_panel.emit("sub_ritual"))
+			cell.add_child(rb)
+		else:
+			cell.add_child(UiTheme.strong("🔒 Ô Thiên phú phụ %d" % (i + 1), 15, UiTheme.MUTED))
+			cell.add_child(UiTheme.label("Mở khi chuyển chức %d (cấp %d)." % [i + 1, 30 if i == 0 else 60], "Small", 245))
+		row.add_child(cell)
+	row.add_child(VSeparator.new())
+	var res := UiTheme.vbox(3)
+	res.name = "Resonances"
+	res.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	res.add_child(UiTheme.strong("Cộng hưởng", 15, UiTheme.GOLD))
+	var rows: Array = TalentSlots.resonance_rows(p)
+	if rows.is_empty():
+		res.add_child(UiTheme.label("2 Thiên phú cùng nhóm → hiệu ứng chính +10%; một số cặp có cộng hưởng đặc biệt.", "Small", 320))
+	for r in rows:
+		var l := UiTheme.label("%s %s — %s" % ["✦" if r[2] else "○", r[0], r[1]], "Small", 320)
+		l.add_theme_color_override("font_color", UiTheme.GOOD if r[2] else UiTheme.MUTED)
+		res.add_child(l)
+	res.add_child(UiTheme.label("Nước Thánh Tinh Quang: %d (tẩy 1 Thiên phú, giữ 50%% cấp)" % int(p.starwater), "Small", 320))
+	row.add_child(res)
+	outer.add_child(box)
+
+
+## TP14: nút Tẩy cho Thiên phú chính (slot −1) hoặc phụ (0 / 1).
+func _wash_button(p, slot: int) -> Button:
+	var b := UiTheme.button("Tẩy")
+	b.name = "Wash_%d" % slot
+	var id := str(p.talent) if slot < 0 else str(p.subs[slot].id)
+	b.disabled = int(p.starwater) <= 0 or id in TalentSlots.NO_ROLL
+	b.tooltip_text = ("Không tẩy được Đạo Tặc." if id in TalentSlots.NO_ROLL else
+		"Dùng 1 Nước Thánh Tinh Quang: quay 1 lần ra Thiên phú khác, giữ 50%% cấp luyện%s." % (" (mất tiến hoá)" if slot < 0 and int(p.evo) > 0 else ""))
+	b.pressed.connect(func():
+		world.wash_talent(slot)
+		refresh())
+	return b
 
 
 ## Trạng thái riêng của từng Thiên phú (hệ, thú cưng, kỹ năng sao chép…).

@@ -37,3 +37,9 @@ Khi focus vào đánh quái, cần hiển thị là đang focus vào quái nào 
 - (Đợt 12 — [31](31-de-xuat-thanh-ky-nang.md), **done 01/11/2026**) Bình HP đang bị giới hạn 5 Bình, bỏ giới hạn đi giống MP.
 
 - (Đợt 12 — [31](31-de-xuat-thanh-ky-nang.md), **done 01/11/2026**) Các kỹ năng mở mới thì làm thế nào để sử dụng, trong khi thanh kỹ năng ở màn hình game đang chỉ có giới hạn vài skills? - Đề xuất giải pháp
+
+- (Đợt 13 — [32](32-ra-soat-01-11.md) mục 5, **done 02/11/2026**) Boss - Thủy quái thất đầu, bị lỗi không lên damage, ko chém dược.
+
+- (Đợt 14 — [31](31-de-xuat-thanh-ky-nang.md) mục SN14, **done 02/11/2026**) Thiên phú hút máu - đang bị cấm sử dụng bình máu -> bỏ hạn chế cấm này.
+
+- (Đợt 14 — [31](31-de-xuat-thanh-ky-nang.md) mục SN14, **done 02/11/2026**) Kỹ năng đang sử dụng - Không thay đổi được kỹ năng đang sử dụng thành kỹ năng mới.

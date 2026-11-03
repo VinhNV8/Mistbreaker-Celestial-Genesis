@@ -8600,6 +8600,366 @@
     49
    ]
   },
+  "vfx-spin": {
+   "path": "res://assets/env/vfx-spin.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-dash": {
+   "path": "res://assets/env/vfx-dash.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-wave": {
+   "path": "res://assets/env/vfx-wave.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-kiemy": {
+   "path": "res://assets/env/vfx-kiemy.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-lientram": {
+   "path": "res://assets/env/vfx-lientram.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-hongkiem": {
+   "path": "res://assets/env/vfx-hongkiem.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-kiemvu": {
+   "path": "res://assets/env/vfx-kiemvu.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-phikiem": {
+   "path": "res://assets/env/vfx-phikiem.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-vankiem": {
+   "path": "res://assets/env/vfx-vankiem.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-thanhkiem": {
+   "path": "res://assets/env/vfx-thanhkiem.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-kiemvuc": {
+   "path": "res://assets/env/vfx-kiemvuc.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-huyetbao": {
+   "path": "res://assets/env/vfx-huyetbao.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-huyetanh": {
+   "path": "res://assets/env/vfx-huyetanh.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-nhatkiem": {
+   "path": "res://assets/env/vfx-nhatkiem.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-rain": {
+   "path": "res://assets/env/vfx-rain.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-pierce": {
+   "path": "res://assets/env/vfx-pierce.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-lanban": {
+   "path": "res://assets/env/vfx-lanban.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-eagle": {
+   "path": "res://assets/env/vfx-eagle.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-tennay": {
+   "path": "res://assets/env/vfx-tennay.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-trap": {
+   "path": "res://assets/env/vfx-trap.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-lienxa": {
+   "path": "res://assets/env/vfx-lienxa.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-tendoc": {
+   "path": "res://assets/env/vfx-tendoc.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-thientien": {
+   "path": "res://assets/env/vfx-thientien.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-phakhong": {
+   "path": "res://assets/env/vfx-phakhong.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-tamlien": {
+   "path": "res://assets/env/vfx-tamlien.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-baimin": {
+   "path": "res://assets/env/vfx-baimin.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-luoibay": {
+   "path": "res://assets/env/vfx-luoibay.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-chain": {
+   "path": "res://assets/env/vfx-chain.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-banglao": {
+   "path": "res://assets/env/vfx-banglao.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-meteor": {
+   "path": "res://assets/env/vfx-meteor.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-barrier": {
+   "path": "res://assets/env/vfx-barrier.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-hoatuong": {
+   "path": "res://assets/env/vfx-hoatuong.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-nova": {
+   "path": "res://assets/env/vfx-nova.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-muabang": {
+   "path": "res://assets/env/vfx-muabang.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-causam": {
+   "path": "res://assets/env/vfx-causam.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-thienhoa": {
+   "path": "res://assets/env/vfx-thienhoa.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-thienloi": {
+   "path": "res://assets/env/vfx-thienloi.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-bangphong": {
+   "path": "res://assets/env/vfx-bangphong.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-trieuhoi": {
+   "path": "res://assets/env/vfx-trieuhoi.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-khidoc": {
+   "path": "res://assets/env/vfx-khidoc.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
   "fx-sheet-fireball": {
    "path": "res://assets/env/fx-sheet-fireball.png",
    "w": 31,

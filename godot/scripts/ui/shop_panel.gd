@@ -95,6 +95,10 @@ func _supply_rows(p) -> Array:
 		["stone", "res-stone", "Đá Cường Hoá", GameWorld.SHOP_STONE, int(p.stones), 99,
 			"Nguyên liệu cường hoá trang bị ở Lò Rèn (phím R). Cũng rơi từ quái, rương và khi phân rã đồ."],
 	]
+	# TP14 (docs/33): Nước Thánh Tinh Quang — tẩy 1 Thiên phú, bán từ vùng 4 (Thánh Đường Tinh Quang).
+	if region >= 4:
+		rows.append(["starwater", "res-holy_water", "Nước Thánh Tinh Quang", GameWorld.STARWATER_PRICE, int(p.starwater), 99,
+			"Bảng Thiên phú (T) → Tẩy: quay lại 1 Thiên phú (chính hoặc phụ) ra Thiên phú khác, giữ 50% cấp luyện. Cũng rơi từ boss hiếm (30%)."])
 	if region == 4:
 		rows.append(["antidote", "res-herb", "Thuốc Giải", GameWorld.Ch4.SHOP_ANTIDOTE, int(p.antidotes), 99,
 			"Phím Q khi có từ 3 tầng độc: xoá hết độc (ưu tiên hơn bình máu)."])

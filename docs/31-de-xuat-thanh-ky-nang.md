@@ -72,13 +72,30 @@ Vấn đề: người chơi không biết có kỹ năng mới; chỉ dùng đư
 | --- | --- |
 | A | **7 ô**: 1–4 (như cũ) · **5** mở khi chuyển chức 1 · **6** mở khi chuyển chức 2 · **Tuyệt kỹ (G)** mở ở cấp 45, chỉ lắp Tối thượng / Thần Kỹ. Ô chưa mở **ẩn** trên thanh (đầu game thanh giữ nguyên 4 ô); ô đã mở mà trống hiện "+"; ô G to hơn, viền vàng sáng. Bộ mặc định: 4 kỹ năng đầu + 3 ô trống |
 | Q1 | Kỹ năng vừa mở (lên cấp, chuyển chức 1 / 2 / 3, cấp 45): chữ vàng lớn "Kỹ năng mới: …" trên đầu nhân vật + nhật ký. Chưa lắp thì **tự lắp** vào ô trống (Tối thượng / Thần Kỹ ưu tiên ô G); hết ô thì nhắc "phím U, kéo kỹ năng vào ô". Mở thêm ô cũng báo. Lúc nạp save không báo lại |
-| Q2 | Đổi ô / đổi bộ ở **vùng an toàn** hoặc **bất cứ đâu khi 5 giây không đánh trúng / bị đánh** (đòn né được không tính). Tẩy điểm và biến thể vẫn chỉ ở vùng an toàn |
+| Q2 | Đổi ô / đổi bộ ở **vùng an toàn** hoặc **bất cứ đâu khi 5 giây không đánh trúng / bị đánh** (đòn né được không tính). Tẩy điểm và biến thể vẫn chỉ ở vùng an toàn. *SN14-02 (02/11): trong bảng Kỹ năng (game dừng) luôn đổi được; khoá 5 giây chỉ cho phím X / menu chuột phải trên HUD* |
 | Q3 | Bảng Kỹ năng: **kéo** ô kỹ năng trên cây **thả** vào hàng "Thanh kỹ năng" ở chân bảng (7 ô; nhấp trái chọn kỹ năng, chuột phải bỏ trống). Thanh kỹ năng HUD: **chuột phải** một ô → menu chọn nhanh (kỹ năng đã mở lắp được vào ô đó, "Bỏ trống ô"); cũng nhận thả kỹ năng. Nút "Lắp vào ô" trong cột chi tiết có đủ 7 nút (ô khoá có tooltip lý do) |
 | Q4 | **2 bộ kỹ năng**: phím **X** hoặc nút "⇄ Bộ 2 (X)" ở chân bảng. Lần đầu đổi: Bộ 2 chép Bộ 1 để chỉnh. Mỗi bộ nhớ riêng 7 ô |
 | — | Hồi chiêu **đi theo kỹ năng**: rời ô (đổi ô, bỏ trống, đổi bộ) rồi lắp lại vẫn còn đúng thời gian — không lách hồi chiêu bằng cách đổi |
 
 **Phím:** 5, 6, G, X (bảng Trợ giúp có thêm 2 dòng). **Save v27:** `loadout` 7 phần tử ("" = trống; save cũ 4 ô được thêm 3 ô trống), `loadout_alt`, `loadout_set`.
 
-**Cân bằng:** đầu game không đổi. Từ chuyển chức 1 người chơi có thêm kỹ năng cùng lúc (tối đa 7) → mạnh hơn trước. Các test cân bằng dựng sẵn bộ lắp 4 ô nên số đo không đổi; khi chơi thật cấp 30+ sẽ dễ hơn một chút — cần theo dõi khi chơi thử, có thể tăng máu boss chương 3+ nếu quá dễ.
+**Cân bằng:** đầu game không đổi. Đo SN12-T3 (01/11/2026) — Viêm Long cấp 60, 2 seed, bộ 4 ô so với bộ 7 ô (thêm chuyển chức 1, nhánh chuyển chức 2, Tối thượng):
+
+| Lớp | 4 ô | 7 ô | Nhanh hơn |
+| --- | --- | --- | --- |
+| Kiếm Khách | 35,4 giây | 35,3 giây | 0% |
+| Thợ Săn | 32,8 | 31,7 | 3% |
+| Pháp Sư | 25,4 | 28,9 | −12% (chậm hơn: MP chia cho kỹ năng yếu hơn) |
+| Hộ Vệ | 35,0 | 34,3 | 2% |
+| Triệu Hồi Sư | 37,0 | 31,1 | 19% |
+
+MP là giới hạn chính → thêm ô **không làm trận dễ hẳn**, không cần tăng máu boss. Lợi ích chính của 7 ô là linh hoạt (đổi bộ, dùng kỹ năng hỗ trợ / né). Test SN12-T3 giữ: 7 ô không chết, không nhanh hơn 4 ô quá 25%.
 
 Code: `Classes.SKILL_SLOTS` 7, `BASE_SLOTS`, `SLOT_ULT`, `ULT_SLOT_LEVEL`, `SLOT_KEYS`, `is_ult()`, `default_loadout()`; `GameWorld.slot_open / open_slot_count / slot_accepts / can_change_loadout / swap_loadout / _valid_loadout / _apply_loadout / _snapshot_skills / _check_new_skills / _on_new_skill`, hằng `COMBAT_LOCK` 5 (dùng mốc `_last_combat` có sẵn); `Profile.loadout_alt / loadout_set` (v27); `SkillBar` khoá `hidden / big / empty`, tín hiệu `slot_menu / skill_dropped`, `accept_drop`; `Hud.SLOT_SKILL0 / BAR_COUNT / loadout_slot`, `PopupMenu` "SlotMenu"; `SkillPanel.LoadoutSlot`, `_loadout_bar`, `SkillNode.drag_id`; `main.gd` hành động `skill_5 / skill_6 / skill_7 / swap_loadout`.
+
+## SN14 — Spec_Notes 02/11/2026 (done 02/11/2026)
+
+| Mã | Ghi chú | Nguyên nhân / đã làm |
+| --- | --- | --- |
+| SN14-01 | "Thiên phú hút máu đang bị cấm sử dụng bình máu → bỏ hạn chế" | Bỏ khoá ở `GameWorld.drink_potion` và ô Q "Khoá" trên HUD; mô tả Thiên phú bỏ vế "không dùng được bình máu". Áp dụng cả khi Hấp Huyết là Thiên phú phụ. Test TL-C, TP5-T2 sửa theo |
+| SN14-02 | "Không thay đổi được kỹ năng đang sử dụng thành kỹ năng mới" | **Nguyên nhân:** khoá đổi ô khi giao tranh (Q2: 5 giây không đánh / bị đánh) — nhưng mở bảng Kỹ năng (U) thì game **dừng**, đồng hồ giao tranh không chạy → mở bảng trong 5 giây sau trận thì nút "Lắp vào ô", kéo-thả, đổi bộ bị khoá suốt. **Sửa:** mọi thao tác trong bảng Kỹ năng (nút Lắp vào ô, kéo vào hàng Thanh kỹ năng / thanh HUD, chuột phải bỏ trống, nút đổi bộ) **luôn được** — `can_change_loadout(in_menu)`, `set_slot(…, in_menu)`, `swap_loadout(in_menu)`. Khoá 5 giây chỉ còn cho phím X và menu chuột phải trên thanh HUD lúc game đang chạy. Hồi chiêu vẫn đi theo kỹ năng nên không lách được. Bỏ dòng nhắc viết nhầm "Biến thể: ở vùng an toàn". Test SN12-T1 thêm 2 kiểm |

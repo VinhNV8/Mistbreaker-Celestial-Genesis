@@ -24,6 +24,8 @@ const LIST := [
 		"desc": "Mỏ Tinh Thạch ở vùng 5 sản xuất. Cần 30 để chuyển chức 2; Kim Phú / Tiểu Hoả đổi 5 Tinh Thạch → 1 Tinh Kim."},
 	{"id": "potions", "icon": "potion", "name": "Bình máu",
 		"desc": "Phím Q hồi 35% HP, hồi chiêu 8 giây, không giới hạn số bình. Mua ở cửa hàng làng (phím E); đủ 2 thảo dược tự chế 1 bình."},
+	{"id": "starwater", "icon": "holy_water", "name": "Nước Thánh Tinh Quang",
+		"desc": "Tẩy 1 Thiên phú (chính hoặc phụ) ở bảng Thiên phú (T): quay lại 1 lần, giữ 50% cấp luyện. Rơi từ boss hiếm (30%), bán ở cửa hàng làng từ vùng 4 (3.000 vàng)."},
 	{"id": "mp_potions", "icon": "mp_potion", "name": "Bình MP",
 		"desc": "Phím F hồi 40% MP, hồi chiêu 8 giây, không giới hạn số bình. Mua ở cửa hàng làng; rơi từ quái (3%), tinh anh (25%), boss."},
 ]

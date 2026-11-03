@@ -83,7 +83,7 @@ func _buildings(info: VBoxContainer, p) -> void:
 		kinds.append(["port", "mở Bến Khí Cầu tới Quần Đảo Thiên Không"])
 	kinds += [["temple", "luyện cấp Thiên phú (phím T)"],
 		["forge", "chế trang bị (phím E ở làng)"], ["garden", "1 thảo dược mỗi 3 phút, cả khi offline"]]
-	if p.talent == "long-mach":
+	if Explore.TalentSlots.has(p, "long-mach"):
 		kinds.append(["dragon", "+10% Tấn công và HP cho nhân vật, đồng minh"])
 	# C9-52 (M12): Tái Thiết Lục Địa — công trình của vùng đang xem (sau kết thúc Hiến tế).
 	if str(p.ending) == "hien-te" and Explore.BUILDINGS.has("rebuild%d" % int(p.tiles_region)):
@@ -137,7 +137,7 @@ func _tile_info(info: VBoxContainer, t: Dictionary) -> void:
 		info.add_child(UiTheme.label(zname.to_upper(), "Eyebrow"))
 	if t.status == "fog":
 		info.add_child(UiTheme.label("Ô đất bị sương mù che", "Heading"))
-		if Explore.is_event_visible(p.tiles, t, p.talent):
+		if Explore.event_visible(p, t):
 			var eagle := UiTheme.label("Mắt Ưng nhìn thấy: %s" % ev.name, "", 330)
 			eagle.add_theme_color_override("font_color", Color("#9ec8ff"))
 			info.add_child(eagle)

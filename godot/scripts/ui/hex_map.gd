@@ -61,7 +61,7 @@ func _draw() -> void:
 		var c := _center(t)
 		var pts := _points(c, _hex - 2.0)
 		var info: Dictionary = Explore.EVENT_INFO[t.event]
-		var seen := Explore.is_event_visible(profile.tiles, t, profile.talent)
+		var seen := Explore.event_visible(profile, t)
 		var zone := Explore.zone_of(t)
 		var locked: bool = zone == 3 and not profile.boss_defeated and t.status == "fog"
 		var revealable: bool = t.status == "fog" and Explore.reveal_blocker(profile, t) == ""

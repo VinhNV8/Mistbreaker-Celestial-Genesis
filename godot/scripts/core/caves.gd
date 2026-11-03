@@ -5,6 +5,8 @@ extends RefCounted
 
 const Maps = preload("res://scripts/data/maps.gd")
 const Monsters = preload("res://scripts/data/monsters.gd")
+## BD-11 (docs/34): bản đồ trong Cổng dungeon dùng chung khung hang (is_cave đúng cho cả `gate-…`).
+const Gates = preload("res://scripts/core/gates.gd")
 
 const PREFIX := "cave-"
 const SIZE := Vector2(2600, 1100)
@@ -25,10 +27,12 @@ static var _cache := {}
 
 
 static func is_cave(id: String) -> bool:
-	return id.begins_with(PREFIX)
+	return id.begins_with(PREFIX) or Gates.is_gate(id)
 
 
 static func parent(id: String) -> String:
+	if Gates.is_gate(id):
+		return Gates.parent(id)
 	return id.substr(PREFIX.length()) if is_cave(id) else id
 
 
@@ -95,6 +99,8 @@ static func reopen_in(w, parent_id: String) -> float:
 
 ## Lý do không vào được hang; "" nếu được.
 static func blocker(w, id: String) -> String:
+	if Gates.is_gate(id):
+		return Gates.blocker(w, id)
 	var pid := parent(id)
 	if not Maps.MAPS.has(pid):
 		return "Hang này chưa mở."
@@ -109,6 +115,9 @@ static func blocker(w, id: String) -> String:
 
 ## Sinh quái 3 khu khi vào hang (gọi cuối _load_map).
 static func populate(w) -> void:
+	if Gates.is_gate(w.map_id):
+		Gates.populate(w)
+		return
 	var lv := int(w.map.levels[0])
 	for z in ZONES:
 		var cx: float = z[0]
@@ -141,6 +150,9 @@ static func _spawn(w, kind: String, level: int, pos: Vector2, elite: bool):
 
 ## Hạ Chúa Hang: thưởng, cổng ra tại chỗ, đóng hang.
 static func on_kill(w, e) -> void:
+	if e.gate_boss:
+		Gates.on_kill(w, e)
+		return
 	if not e.cave_boss:
 		return
 	var pid := parent(w.map_id)
