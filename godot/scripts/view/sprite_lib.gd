@@ -1,23 +1,60 @@
 extends RefCounted
 ## AR-30: nạp hình do tools/art/build_all.py sinh ra (assets/art_manifest.json) và vẽ frame.
 ## Logic game không phụ thuộc file này; thiếu hình thì world_view vẽ hình khối tạm như cũ.
+## UI-40 (docs/35): lớp phủ HD — manifest["hd"] {sprites, env, icons} đè lên mục cùng id khi bật Đồ hoạ HD
+## (Settings "hd_art"). Mục HD có "px" (px ảnh / px logic): vẽ chia tỉ lệ cho px nên kích thước trong game giữ
+## nguyên; texture HD nạp kèm mipmap, lọc Linear (CanvasTexture) — hình pixel cũ vẫn lọc Nearest như trước.
 
 const MANIFEST := "res://assets/art_manifest.json"
 
 static var _data: Dictionary = {}
 static var _loaded := false
 static var _tex: Dictionary = {}
+static var _hd := true
 
 
 static func data() -> Dictionary:
 	if not _loaded:
 		_loaded = true
+		_data = {}
 		var f := FileAccess.open(MANIFEST, FileAccess.READ)
 		if f:
 			var parsed = JSON.parse_string(f.get_as_text())
 			if parsed is Dictionary:
 				_data = parsed
+				if _hd and parsed.has("hd"):
+					_data = parsed.duplicate(true)
+					for sec in ["sprites", "env", "icons"]:
+						var over: Dictionary = parsed.hd.get(sec, {})
+						for id in over:
+							_data[sec][id] = over[id]
 	return _data
+
+
+## UI-40: bật / tắt hình HD (Cài đặt) — nạp lại manifest.
+static func set_hd(on: bool) -> void:
+	if on == _hd and _loaded:
+		return
+	_hd = on
+	_loaded = false
+	_tex = {}
+
+
+static func hd_enabled() -> bool:
+	return _hd
+
+
+## px ảnh trên 1 px logic của mục sprite / env (1 = hình pixel).
+static func px_of(entry: Dictionary) -> float:
+	return maxf(1.0, float(entry.get("px", 1.0)))
+
+
+## Kích thước logic (px pixel art) của sprite id — ô chân dung, khung mục tiêu… tính như hình pixel.
+static func logical_size(id: String) -> Vector2:
+	var s: Dictionary = data().get("sprites", {}).get(id, {})
+	if s.is_empty():
+		return Vector2.ZERO
+	return Vector2(float(s.w), float(s.h)) / px_of(s)
 
 
 static func scale() -> float:
@@ -35,8 +72,24 @@ static func texture(path: String) -> Texture2D:
 		var img := Image.load_from_file(ProjectSettings.globalize_path(path))
 		if img:
 			t = ImageTexture.create_from_image(img)
+	if t != null and path.begins_with("res://assets/hd/"):
+		t = _smooth(t)
 	_tex[path] = t
 	return t
+
+
+## UI-40: hình HD thu nhỏ nhiều lần khi vẽ → mipmap + lọc Linear (không phụ thuộc lọc Nearest của node vẽ).
+static func _smooth(t: Texture2D) -> Texture2D:
+	var img := t.get_image()
+	if img == null:
+		return t
+	if img.is_compressed():
+		img.decompress()
+	img.generate_mipmaps()
+	var ct := CanvasTexture.new()
+	ct.diffuse_texture = ImageTexture.create_from_image(img)
+	ct.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	return ct
 
 
 static func has_sprite(id: String) -> bool:
@@ -87,7 +140,7 @@ static func draw_frame(ci: CanvasItem, id: String, anim: String, frame: int, pos
 	var w := float(s.w)
 	var h := float(s.h)
 	var region := Rect2(frame * w, float(a.row) * h, w, h)
-	var k := scale() * size_mul * float(s.get("size_mul", 1.0))
+	var k := scale() * size_mul * float(s.get("size_mul", 1.0)) / px_of(s)
 	ci.draw_set_transform(pos, 0.0, Vector2(-k if flip else k, k))
 	ci.draw_texture_rect_region(tex, Rect2(-Vector2(s.origin[0], s.origin[1]), Vector2(w, h)), region, modulate)
 	ci.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
@@ -139,7 +192,7 @@ static func draw_env(ci: CanvasItem, id: String, pos: Vector2, modulate := Color
 	var tex := texture(e.path)
 	if tex == null:
 		return
-	var k := scale() * size_mul
+	var k := scale() * size_mul / px_of(e)
 	ci.draw_set_transform(pos, rotation, Vector2(-k if flip else k, k))
 	ci.draw_texture(tex, -Vector2(e.origin[0], e.origin[1]), modulate)
 	ci.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
@@ -150,7 +203,7 @@ static func fill_polygon(ci: CanvasItem, points: PackedVector2Array, tile_id: St
 	var tex := env_texture(tile_id)
 	if tex == null:
 		return false
-	var span := float(tex.get_width()) * scale()
+	var span := float(tex.get_width()) / px_of(data().env[tile_id]) * scale()
 	var uvs := PackedVector2Array()
 	for p in points:
 		uvs.append(p / span)

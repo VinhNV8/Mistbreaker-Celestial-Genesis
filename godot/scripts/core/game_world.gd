@@ -451,6 +451,8 @@ class Meteor:
 class Bolt:
 	var points := PackedVector2Array()
 	var ttl := 0.3
+	## ID visual của chuỗi đòn; rỗng giữ renderer bolt mặc định.
+	var skill := ""
 
 
 ## Mưa Tên.

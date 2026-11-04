@@ -156,6 +156,7 @@ func _ready() -> void:
 	_ui = Control.new()
 	# M5-05: cỡ chữ người chơi chọn (settings.cfg) áp ngay từ đầu.
 	Settings.load_settings()
+	preload("res://scripts/view/sprite_lib.gd").set_hd(bool(Settings.values.get("hd_art", true)))
 	_ui.theme = UiTheme.set_font_scale(float(Settings.values.get("font_scale", 1.0)))
 	_ui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_ui.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -361,12 +362,17 @@ func _read_input() -> Dictionary:
 	# C1-01: chuột không di chuyển trong 1,5 giây = chơi bàn phím → đánh theo hướng di chuyển cuối cùng,
 	# kể cả khi đã dừng (trước đây dừng lại thì hướng nhảy về chỗ con trỏ chuột).
 	var kb_aim := Time.get_ticks_msec() - _last_mouse_move > 1500
+	# UI-41: chuột / chạm trên cụm nút góc phải (nút Đánh, Né…) → ngắm theo hướng di chuyển, vẫn đánh được.
+	var hovered := get_viewport().gui_get_hovered_control()
+	var on_pad := hovered != null and hovered.has_meta("hud_action")
+	if on_pad:
+		kb_aim = true
 	# SN9-09: quái dưới con trỏ chuột thành mục tiêu của khung mục tiêu
 	world.hover_pos = Vector2.INF if kb_aim else aim
 	if kb_aim:
 		aim = world.player.pos + _kb_dir * 100.0
 	# SN5-01: chuột đang ở trên giao diện nhận chuột (bản đồ nhỏ…) thì nút chuột không đánh / không dùng kỹ năng.
-	var over_ui := get_viewport().gui_get_hovered_control() != null
+	var over_ui := hovered != null and not on_pad
 	var mouse_attack := Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and not Input.is_physical_key_pressed(KEY_J)
 	var mouse_skill := Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT) and not Input.is_physical_key_pressed(KEY_K)
 	return {
@@ -839,6 +845,36 @@ func _run_smoke(dir: String) -> void:
 	world.player.pos.x = 600.0
 	await _wait(5.0)
 	await _shot(dir, "03-combat")
+	# UI-40 (docs/35) G0: cùng một cảnh Rừng Sương — hình HD rồi hình pixel cũ để so sánh.
+	var keep_bot = bot
+	bot = Callable()
+	world.enemies = []
+	world.player.pos = world.safe_pos + Vector2(world.safe_r + 260.0, 120.0)
+	var g0 := world.player.pos
+	world.fog.reveal(g0, 900.0)
+	for i in 3:
+		world.spawn_enemy("wolf", 2, g0 + Vector2(-210 + i * 70, 110 + (i % 2) * 40))
+	world.spawn_enemy("boss", 6, g0 + Vector2(230, 20))
+	for e in world.enemies:
+		e.state = "idle"
+		e.atk = 0.0
+	await _wait(0.6)
+	await _shot(dir, "03g-hd-scene")
+	_view.SpriteLib.set_hd(false)
+	await _wait(0.3)
+	await _shot(dir, "03g2-pixel-scene")
+	_view.SpriteLib.set_hd(true)
+	# UI-40b (docs/35 §9): Làng Thanh Thạch HD.
+	world.enemies = []
+	world.player.pos = world.safe_pos + Vector2(60, 0)
+	world.fog.reveal(world.player.pos, 900.0)
+	await _wait(0.6)
+	await _shot(dir, "03h-village")
+	_view.SpriteLib.set_hd(false)
+	await _wait(0.3)
+	await _shot(dir, "03h2-village-pixel")
+	_view.SpriteLib.set_hd(true)
+	bot = keep_bot
 	# M3: chụp Thợ Săn (đổi lớp tạm thời chỉ trong smoke test).
 	world.profile.class_id = "tho-san"
 	world._refresh_stats()
@@ -874,6 +910,44 @@ func _run_smoke(dir: String) -> void:
 	_view.ClassFx.on_cast(_view._cast_fx, world, {"id": "nhatkiem"})
 	await _wait(0.6)
 	await _shot(dir, "03f-kiem-vfx-nhatkiem")
+	# AR-45c: hình 3 pha cắt từ bộ review — Huyết Ảnh quay trái ở pha impact, Kiếm Vực đang kéo dài, Hống Kiếm pha charge.
+	# Tắt bot + xoá hiệu ứng khác để mỗi ảnh chỉ có đúng 1 kỹ năng.
+	var vfx_bot = bot
+	bot = Callable()
+	world.enemies = []
+	_view._cast_fx.clear()
+	# AR-45d: dàn dựng chuyển động — Huyết Ảnh lao sang trái (đường lao thật), Kiếm Vực (vùng), Huyết Bạo nổ, Xoáy Kiếm, Kiếm Vũ.
+	world.player.facing = PI
+	_view.ClassFx.on_cast(_view._cast_fx, world, {"id": "huyetanh"})
+	for _i in 12:
+		world.player.pos += Vector2(-14, 3)
+		await get_tree().process_frame
+	await _shot(dir, "03f2-kiem-vfx-huyetanh-left")
+	world.player.facing = 0.0
+	_view._cast_fx.clear()
+	_view.ClassFx.on_cast(_view._cast_fx, world, {"id": "kiemvuc"})
+	world.sk2.ice.append({"pos": world.player.pos, "r": 100.0, "ticks": 8, "timer": 0.0, "mul": 0.0, "skill": "kiemvuc", "gap": 0.5, "follow": true})
+	await _wait(1.2)
+	await _shot(dir, "03f3-kiem-vfx-kiemvuc")
+	world.sk2.ice.clear()
+	_view._cast_fx.clear()
+	_view.ClassFx.on_cast(_view._cast_fx, world, {"id": "huyetbao"})
+	await _wait(0.28)
+	await _shot(dir, "03f4-kiem-vfx-huyetbao")
+	_view._cast_fx.clear()
+	_view.ClassFx.on_cast(_view._cast_fx, world, {"id": "spin"})
+	await _wait(0.22)
+	await _shot(dir, "03f5-kiem-vfx-spin")
+	_view._cast_fx.clear()
+	_view.ClassFx.on_cast(_view._cast_fx, world, {"id": "kiemvu"})
+	await _wait(0.6)
+	await _shot(dir, "03f6-kiem-vfx-kiemvu")
+	_view._cast_fx.clear()
+	world.player.facing = -0.3
+	_view.ClassFx.on_cast(_view._cast_fx, world, {"id": "nhatkiem"})
+	await _wait(0.72)
+	await _shot(dir, "03f7-kiem-vfx-nhatkiem-beam")
+	bot = vfx_bot
 
 	var first: Dictionary = world.profile.tiles.filter(func(t): return Explore.hex_distance(t, {"q": 0, "r": 0}) == 1)[0]
 	map_panel.open(world)

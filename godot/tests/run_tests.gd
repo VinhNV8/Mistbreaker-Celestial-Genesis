@@ -248,6 +248,9 @@ func _init() -> void:
 	_run("BD11-T1 Cổng dungeon: mở cổng, vào cổng, quái theo hạng + Chúa Cổng, dọn → thưởng EXP / đồ, cổng đóng", _test_bd11_clear)
 	_run("BD11-T2 Cổng dungeon: mở ngẫu nhiên mỗi 5 phút (tối đa 2), tỉ lệ hạng, hết 2 giờ đóng, dọn sương lộ cổng 7%", _test_bd11_spawn)
 	_run("BD11-T3 Cổng dungeon: hạng cao mạnh hơn, save v29, giao diện (bản đồ lục địa, cổng trên map)", _test_bd11_save_ui)
+	_run("UI40-T1 đồ hoạ HD (docs/35 G0): lớp phủ manifest, kích thước logic giữ nguyên, mipmap + Linear, bật / tắt", _test_ui40_hd)
+	_run("UI41-T1 giao diện đồng chạm khắc (docs/35 §11): khung, cụm nút góc phải, thanh EXP, cuộn nhiệm vụ", _test_ui41_hud)
+	_run("UI40b-T1 khu an toàn HD (docs/35 §9–10): làng + trại 9 vùng, đủ hình, chỗ Cổng Dịch Chuyển", _test_ui41_village)
 	_run("SK3-T4 cân bằng: bộ kỹ năng nhánh hạ Viêm Long không chậm quá 30% bộ mặc định", _test_sk3_balance)
 	# LH1 — Hộ Vệ (docs/19)
 	_run("HV-T1 Hộ Vệ: chỉ số VIT, Khiên −15% sát thương nhận, 13 kỹ năng, Chùy, tự cộng điểm", _test_hv_class)
@@ -281,6 +284,9 @@ func _init() -> void:
 	_run("UI-25 Lò Rèn tách khỏi Cửa hàng: chi phí cường hoá cần / có, bảng chi phí mọi cấp, chế tạo, Thiết Ngưu mở Lò Rèn", _test_ui25_forge)
 	_run("CL1 thiết kế lại 3 lớp (docs/21): Kiếm Ý, Nguyệt Ảnh, Xuyên Tâm Tiễn, Lộn Nhào, Băng Lao, Thiên Tai Nguyên Tố, chỉ số nền, chuyển điểm save cũ", _test_cl1_redesign)
 	_run("AR-45b hình thi triển 14 kỹ năng Kiếm Khách (docs/design/skills/kiem-khach): vfx-<id> / fx-sheet, ghi hiệu ứng khi thi triển", _test_ar45b_kiem_khach_vfx)
+	_run("AR45d-T1 10 kỹ năng Kiếm Khách dàn dựng chuyển động bằng mảnh hình gốc (Trảm Phong / Kiếm Ý / Vạn Kiếm); 4 kỹ năng giữ hình cũ", _test_ar45c_phases)
+	_run("FX1-T1 hiệu ứng kỹ năng FX-1 (docs/36): đủ 70 kỹ năng, chính sách song song, mọi dàn cảnh / lớp phủ vẽ được (Painter headless)", _test_fx1)
+	_run("IC1-T1 icon kỹ năng IC-1 (docs/37): 51 icon chủ động + 20 bị động HD qua lớp phủ, 19 icon vẽ tay giữ nguyên, tắt HD về icon cũ", _test_ic1)
 	print("")
 	if _failed.is_empty():
 		print("TẤT CẢ %d TEST QUA" % _total)
@@ -3011,7 +3017,16 @@ func _test_m5_minimap() -> void:
 	var mm = Minimap.new()
 	mm.update_from(w)
 	_check(mm._fog_tex != null and mm._fog_tex.get_width() == w.fog.w and mm._fog_tex.get_height() == w.fog.h, "ảnh sương 1 pixel/ô (%d × %d)" % [w.fog.w, w.fog.h])
-	_check(is_equal_approx(mm.size.x, Minimap.SMALL_W) and absf((mm.size.y - Minimap.HEADER) / mm.size.x - w.world_size.y / w.world_size.x) < 0.01, "cỡ nhỏ đúng tỉ lệ map")
+	# UI-41: cỡ nhỏ là la bàn tròn lấy nhân vật làm tâm
+	_check(is_equal_approx(mm.size.x, Minimap.SMALL_W) and mm.round_center().distance_to(Vector2(mm.size.x / 2.0, Minimap.ROUND_R + Minimap.RING + 2.0)) < 0.1, "cỡ nhỏ: la bàn tròn")
+	_check(mm.world_at(mm.round_center()).distance_to(w.player.pos) < 1.0, "tâm la bàn = vị trí nhân vật")
+	var z0: int = mm.zoom
+	var ev := InputEventMouseButton.new()
+	ev.button_index = MOUSE_BUTTON_LEFT
+	ev.pressed = true
+	ev.position = mm.zoom_button(false)
+	mm._gui_input(ev)
+	_check(mm.zoom == z0 + 1 and not w.has_move_target(), "nút −: nhìn xa hơn (không tính là bấm bản đồ)")
 	var v0: int = mm._fog_version
 	w.fog.reveal(w.player.pos + Vector2(900, 0), 300.0)
 	mm.update_from(w)
@@ -4528,9 +4543,12 @@ func _test_sn5_travel() -> void:
 	var Minimap = load("res://scripts/ui/minimap.gd")
 	var mm = Minimap.new()
 	mm.update_from(w)
+	mm.toggle_size()  # UI-41: cỡ lớn (V) = toàn map chữ nhật
 	var mid: Vector2 = mm.world_at(Vector2(mm.size.x / 2.0, Minimap.HEADER + (mm.size.y - Minimap.HEADER) / 2.0))
-	_check(mid.distance_to(w.world_size / 2.0) < 30.0, "giữa bản đồ nhỏ = giữa map")
+	_check(mid.distance_to(w.world_size / 2.0) < 30.0, "giữa bản đồ lớn = giữa map")
 	_check(mm.world_at(Vector2(10, 5)) == Vector2.INF, "bấm vào dòng tiêu đề không tính")
+	mm.toggle_size()
+	_check(mm.world_at(Vector2(2, 2)) == Vector2.INF, "la bàn: ngoài vòng tròn không tính")
 	mm.free()
 
 
@@ -9721,3 +9739,349 @@ func _test_bd11_save_ui() -> void:
 	_check(str(st.title) == "Cổng hạng B" and bool(st.open), "cổng trên map: tên theo hạng, đang mở")
 	view.free()
 
+func _test_ui40_hd() -> void:
+	const SL = preload("res://scripts/view/sprite_lib.gd")
+	const Settings = preload("res://scripts/core/settings.gd")
+	_check(bool(Settings.DEFAULTS.hd_art), "Cài đặt: Đồ hoạ HD bật mặc định")
+	SL.set_hd(false)
+	var pix_wolf := SL.logical_size("wolf")
+	var pix_icon := SL.icon("item-weapon")
+	_check(SL.px_of(SL.data().sprites["wolf"]) == 1.0, "tắt HD: hình pixel (px 1)")
+	SL.set_hd(true)
+	var hd: Dictionary = SL.data().sprites["wolf"]
+	_check(SL.px_of(hd) == 4.0 and str(hd.path).begins_with("res://assets/hd/"), "bật HD: Sói Sương dùng hình HD (px 4)")
+	_check(SL.logical_size("wolf").is_equal_approx(pix_wolf), "kích thước logic HD = hình pixel (%s / %s)" % [SL.logical_size("wolf"), pix_wolf])
+	# 03/11: nhân vật người chơi + hình / hiệu ứng kỹ năng giữ nguyên bộ hình chủ dự án cung cấp (không có bản HD)
+	var keep := true
+	for id in SL.data().sprites:
+		if (str(id).begins_with("pc-") or str(id).begins_with("hero-")) and str(SL.data().sprites[id].path).begins_with("res://assets/hd/"):
+			keep = false
+	for id in SL.data().icons:
+		if str(id).begins_with("skill-") and str(SL.data().icons[id]).begins_with("res://assets/hd/"):
+			keep = false
+	_check(keep, "nhân vật (pc-*, hero-*) và icon kỹ năng không bị thay bằng hình HD")
+	for id in ["wolf", "boss"]:
+		var s: Dictionary = SL.data().sprites[id]
+		var tex := SL.texture(str(s.path))
+		var ok: bool = tex is CanvasTexture and (tex as CanvasTexture).texture_filter == CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		ok = ok and (tex as CanvasTexture).diffuse_texture.get_image().has_mipmaps()
+		for a in s.anims:
+			ok = ok and int(s.anims[a].frames) >= 1 and (int(s.anims[a].row) + 1) * int(s.h) <= tex.get_height()
+		_check(ok, "%s: texture HD mipmap + Linear, đủ hàng hoạt ảnh" % id)
+	for id in ["tile-grass-0", "tree-0", "tree-pine", "bush", "rock-0", "tall-grass"]:
+		var e: Dictionary = SL.data().env[id]
+		_check(SL.px_of(e) == 4.0 and SL.env_texture(id) != null, "cảnh %s: HD" % id)
+	var icon := SL.icon("item-weapon")
+	_check(icon != null and icon != pix_icon and icon.get_width() == 128, "icon HD 128 px")
+	_check(SL.icon("item-wolf_fang") != null, "icon chưa có bản HD vẫn dùng hình pixel")
+	# vẽ được (không lỗi) với cả 2 chế độ
+	var w := _world("tay-nhanh")
+	var view = load("res://scripts/view/world_view.gd").new()
+	view.world = w
+	SL.set_hd(false)
+	SL.set_hd(true)
+	_check(SL.hd_enabled(), "bật lại HD")
+	view.free()
+
+func _test_ar45c_phases() -> void:
+	var ClassFx = load("res://scripts/view/class_fx.gd")
+	var keep := ["wave", "kiemy", "lientram", "vankiem"]
+	for id in ["fx-sheet-tramphong", "fx-sheet-kiemy", "fx-sheet-vankiem"]:
+		_check(SpriteLib.has_env(id), "mảnh hình gốc %s" % id)
+	_check(ClassFx.CHOREO.size() == 9 and not ("dash" in ClassFx.CHOREO), "9 kỹ năng dàn dựng chuyển động (Đột Kích chuyển sang AR-46 SOURCE_PHASED)")
+	for id in keep:
+		_check(not (id in ClassFx.CHOREO), "%s giữ hình cũ" % id)
+	var w := _world("", 5)
+	var list: Array = []
+	w.player.facing = PI
+	for id in ClassFx.CHOREO:
+		ClassFx.on_cast(list, w, {"id": id})
+	_check(list.size() == ClassFx.CHOREO.size() and list.all(func(f): return f.has("start") and f.path.size() == 1), "ghi hiệu ứng + điểm bắt đầu / đường lao khi thi triển")
+	var kv: Dictionary = ClassFx.CAST_FX.kiemvuc
+	_check(float(kv.dur) < 1.0 and not kv.get("aura", false), "Kiếm Vực: chỉ loé mở vực, vùng 4 giây vẽ riêng (draw_domain)")
+	_check(float(ClassFx.CAST_FX.nhatkiem.charge) == 0.5, "Nhất Kiếm: tụ lực 0,5 giây như NK_WINDUP")
+
+
+func _test_ui41_village() -> void:
+	const SL = preload("res://scripts/view/sprite_lib.gd")
+	const Portals = preload("res://scripts/core/portals.gd")
+	var m := MapsData.get_map("1-1")
+	_check(MapsData.safe_buildings(m).size() == 4 and MapsData.safe_props(m).size() >= 6, "làng có 4 nhà + đồ trang trí")
+	SL.set_hd(false)
+	_check(not SL.has_env("house-village-0") and SL.has_env("hut"), "tắt HD: nhà làng vẽ bằng hình pixel \"hut\"")
+	SL.set_hd(true)
+	# UI-40c: mọi map có khu an toàn — đủ hình HD, Cổng Dịch Chuyển ở khoảng trống
+	var missing: Array = []
+	var blocked: Array = []
+	for id in MapsData.MAPS:
+		var mm := MapsData.get_map(id)
+		var th := MapsData.safe_theme(mm)
+		if th.is_empty():
+			continue
+		for key in ["yard", "post"]:
+			if not SL.has_env(str(th[key])):
+				missing.append("%s:%s" % [id, th[key]])
+		if str(th.get("plaza", "")) != "" and not SL.has_env(str(th.plaza)):
+			missing.append("%s:%s" % [id, th.plaza])
+		for b in th.buildings:
+			if not SL.has_env(str(b[1])) or float(SL.data().env[b[1]].get("px", 1)) != 4.0:
+				missing.append("%s:%s" % [id, b[1]])
+		for pr in th.props:
+			if not SL.has_env(str(pr[1])):
+				missing.append("%s:%s" % [id, pr[1]])
+		var wp := Portals.waypoint_offset(mm)
+		var clear := wp.length() < float(mm.safe.r)
+		for b in th.buildings:
+			# nhà ~120 px rộng, mái cao ~120 px phía trên chân (b[0] + 16)
+			var feet: Vector2 = b[0] + Vector2(0, 16)
+			clear = clear and not (absf(wp.x - feet.x) < 90.0 and wp.y < feet.y + 30.0 and wp.y > feet.y - 130.0)
+		for pr in th.props:
+			clear = clear and wp.distance_to(pr[0]) > 50.0
+		for n in mm.get("npcs", []):
+			clear = clear and wp.distance_to(n[2]) > 45.0
+		if not clear:
+			blocked.append("%s %s" % [id, wp])
+	_check(missing.is_empty(), "bật HD: đủ hình khu an toàn mọi vùng %s" % [missing])
+	_check(blocked.is_empty(), "Cổng Dịch Chuyển không bị nhà / đồ / NPC che %s" % [blocked])
+
+func _test_ui41_hud() -> void:
+	const Bronze = preload("res://scripts/ui/bronze.gd")
+	const Cluster = preload("res://scripts/ui/action_cluster.gd")
+	const HudS = preload("res://scripts/ui/hud.gd")
+	_check(ResourceLoader.exists(Bronze.FONT_TITLE) and Bronze.title_font() is FontFile, "chữ tiêu đề kiểu cổ (Cormorant SC, có dấu tiếng Việt)")
+	var c = Cluster.new()
+	c._ready()
+	var ok := c.button_at(Cluster.CENTER) == "attack"
+	for b in Cluster.BUTTONS:
+		var p: Vector2 = c.button_center(b[0])
+		ok = ok and c.button_at(p) == b[0] and Rect2(Vector2.ZERO, Cluster.SIZE).grow(-2.0).has_point(p)
+		for b2 in Cluster.BUTTONS:
+			if b2[0] != b[0]:
+				ok = ok and p.distance_to(c.button_center(b2[0])) > Cluster.SMALL_R * 2.0 + 4.0
+		# UI-41b: nhãn phím đặt hướng ra ngoài vòng cung — vẫn nằm trong khung, không đè nút Đánh
+		var kp: Vector2 = c.key_pos(b[0])
+		ok = ok and Rect2(Vector2.ZERO, Cluster.SIZE).grow(-10.0).has_point(kp) and kp.distance_to(Cluster.CENTER) > Cluster.RING_R + 10.0
+		ok = ok and Rect2(Vector2.ZERO, Cluster.SIZE).grow(-1.0).encloses(Rect2(p, Vector2.ZERO).grow(c.button_radius(b[0]) + 4.0))
+		ok = ok and p.distance_to(Cluster.CENTER) > Cluster.RING_R + c.button_radius(b[0]) + 8.0
+		for b3 in Cluster.BUTTONS:
+			if b3[0] != b[0]:
+				ok = ok and kp.distance_to(c.button_center(b3[0])) > c.button_radius(b3[0]) + 8.0
+	_check(ok, "cụm nút: nút Đánh giữa, 5 nút nhỏ không chồng nhau, nhãn phím không đè, nằm trong khung")
+	_check(c._get_tooltip(c.button_center("potion")).contains("(Q)"), "rê chuột lên nút → chú thích tên + phím")
+	# UI-41d: icon HD riêng của cụm nút — đủ đòn đánh thường 5 lớp + 4 nút
+	var miss := []
+	for cid in Classes.ORDER:
+		var nm := "act-" + str(Classes.get_class_def(cid).basic.icon)
+		if not ResourceLoader.exists(Cluster.ACT_DIR + nm + ".png"):
+			miss.append(nm)
+	for k in Cluster.ACT_ICON:
+		if not ResourceLoader.exists(Cluster.ACT_DIR + Cluster.ACT_ICON[k] + ".png"):
+			miss.append(Cluster.ACT_ICON[k])
+	_check(miss.is_empty() and c._icon("potion", {}) is CanvasTexture, "cụm nút: đủ icon HD riêng (thiếu %s)" % [miss])
+	var ev := InputEventMouseButton.new()
+	ev.button_index = MOUSE_BUTTON_LEFT
+	ev.pressed = true
+	ev.position = c.button_center("auto")
+	var got := []
+	c.auto_pressed.connect(func(): got.append(1))
+	c._gui_input(ev)
+	_check(got.size() == 1 and c.has_meta("hud_action"), "bấm nút Tự đánh → tín hiệu; cụm nút gắn nhãn hud_action (main vẫn cho đánh)")
+	c.free()
+	var w := _world("tay-nhanh")
+	_check(HudS.skill_ring(w, "spin", false) == Bronze.BR_MID and HudS.skill_ring(w, "spin", true) == Color("#f3d27a"), "viền ô kỹ năng chưa có hệ: đồng / Tuyệt kỹ vàng")
+	_check(HudS.parchment_ink(Color("#ffc940")) == Bronze.INK_RED, "chữ vàng HUD → mực đỏ trên giấy da")
+	var main_src := FileAccess.get_file_as_string("res://scripts/main.gd")
+	_check(main_src.contains("has_meta(\"hud_action\")"), "main: chuột trên cụm nút vẫn đánh được")
+
+
+func _test_fx1() -> void:
+	var Fx1 = load("res://scripts/view/fx1.gd")
+	var Kit = load("res://scripts/view/fx1_kit.gd")
+	_check(Fx1.SK.size() == 70, "70 kỹ năng có thiết kế FX-1 (có %d)" % Fx1.SK.size())
+	var missing: Array = []
+	for c in Classes.ORDER:
+		for sk in Classes.DEFS[c].skills:
+			if not Fx1.SK.has(str(sk.id)) and str(sk.id) not in ["fireball"]:
+				missing.append(sk.id)
+			elif Fx1.SK.has(str(sk.id)) and Fx1.SK[sk.id][0] != c:
+				missing.append("%s (sai lớp)" % sk.id)
+	_check(missing.is_empty(), "mọi kỹ năng trong classes.gd có FX-1 đúng lớp %s" % str(missing))
+	var bad_pal: Array = []
+	for id in Fx1.SK:
+		if not Fx1.P.has(Fx1.SK[id][1]):
+			bad_pal.append(id)
+	_check(bad_pal.is_empty(), "bảng màu tồn tại %s" % str(bad_pal))
+	# Q181: song song — "auto" giữ hình đã duyệt, "fx1" toàn bộ, "old" tắt
+	Fx1.set_mode("auto")
+	_check(not Fx1.active("spin") and not Fx1.active("meteor") and Fx1.active("chain") and Fx1.active("kylan"), "auto: giữ hình đã duyệt, kỹ năng khác dùng FX-1")
+	var n_auto: int = Fx1.SK.keys().filter(func(id): return Fx1.active(id)).size()
+	_check(n_auto == 70 - Fx1.APPROVED.size(), "auto: %d kỹ năng FX-1" % n_auto)
+	Fx1.set_mode("old")
+	_check(not Fx1.active("chain"), "old: tắt FX-1")
+	Fx1.set_mode("fx1")
+	_check(Fx1.SK.keys().all(func(id): return Fx1.active(id)), "fx1: cả 70 kỹ năng")
+	var St = load("res://scripts/core/settings.gd")
+	_check(St.DEFAULTS.get("skill_fx") == "fx1", "Cài đặt skill_fx mặc định fx1 (FX-1 cả 70 kỹ năng)")
+	var keep_vals: Dictionary = St.values.duplicate()
+	St.values["skill_fx"] = "auto"
+	St.migrate(0)
+	var mig_ok: bool = St.values.skill_fx == "fx1" and int(St.values.skill_fx_rev) == 1
+	St.values["skill_fx"] = "auto"
+	St.migrate(1)
+	mig_ok = mig_ok and St.values.skill_fx == "auto"
+	St.values["skill_fx"] = "old"
+	St.migrate(0)
+	mig_ok = mig_ok and St.values.skill_fx == "old"
+	St.values = keep_vals
+	_check(mig_ok, "cài đặt cũ: auto (mặc định cũ) → fx1 một lần; chọn lại auto / old được giữ")
+	Fx1.set_mode("")
+	_check(Fx1.active("spin") and Fx1.active("meteor"), "mặc định: Kiếm Khách / Thiên Thạch dùng FX-1")
+	# dàn cảnh thi triển: mọi kỹ năng vẽ được ở mọi khung, không có đa giác lỗi
+	var w := _world("", 5)
+	w.player.facing = 0.3
+	var empty: Array = []
+	var bad: Array = []
+	var glow := 0
+	var fixes := 0
+	var total := 0
+	for id in Fx1.SK:
+		Fx1.casts = []
+		Fx1.on_cast(w, {"id": id})
+		var n := 0
+		var dur: float = maxf(float(Fx1.SK[id][3]), 1.35)  # kiểu theo nhịp thiết kế (DESIGN_TIME) sống ~1 giây
+		for k in 14:
+			var pa = Kit.Painter.new()
+			for f in Fx1.casts:
+				f.t = dur * k / 14.0
+			Fx1.draw(pa, w)
+			n += pa.n
+			glow += pa.glow.size()
+			fixes += pa.tri_fix
+			total += pa.n
+			if pa.bad > 0:
+				bad.append("%s@%d" % [id, k])
+		if n == 0:
+			empty.append(id)
+	_check(empty.is_empty(), "mọi dàn cảnh có hình %s" % str(empty))
+	_check(bad.is_empty(), "không có đa giác lỗi %s" % str(bad))
+	_check(fixes * 100 <= total, "đa giác tự cắt phải thay bao lồi ≤ 1%% (%d / %d)" % [fixes, total])
+	_check(glow > 0, "có lớp glow cộng sáng")
+	# nhịp thiết kế: Xoáy Kiếm bắt đầu ở khung 3, khung va chạm (5) giữ 190 ms, hết ở khung 12 sau ~1,04 giây
+	var fs := {"id": "spin", "t": 0.0}
+	var f0: float = Fx1.frame_of(fs)
+	fs.t = 0.07 + 0.05 + 0.1
+	var f5: float = Fx1.frame_of(fs)
+	fs.t = 1.05
+	_check(is_equal_approx(f0, 3.0) and f5 >= 5.0 and f5 < 6.0 and Fx1.frame_of(fs) >= 12.0, "Xoáy Kiếm theo nhịp 12 khung thiết kế (%.2f / %.2f)" % [f0, f5])
+	_check(Kit.SQ == 0.55 and absf(Kit.ellipse(Vector2.ZERO, 100.0)[Kit.ellipse(Vector2.ZERO, 100.0).size() / 4].y - 55.0) < 1.0, "mặt đất 3/4 nén trục y 0,55 như bản thiết kế")
+	# lớp phủ vật thể gameplay
+	var shots_ok := true
+	for id in Fx1.SHOTS:
+		var s := GameWorld.PlayerShot.new()
+		s.pos = Vector2(300, 300)
+		s.vel = Vector2(400, -100)
+		s.skill = id
+		var pa2 = Kit.Painter.new()
+		shots_ok = shots_ok and Fx1.draw_shot(pa2, s) and pa2.n > 0 and pa2.bad == 0
+	_check(shots_ok, "đạn kỹ năng (%d loại) vẽ bằng FX-1" % Fx1.SHOTS.size())
+	var pa3 = Kit.Painter.new()
+	var ok := true
+	for id in Fx1.ZONES:
+		ok = ok and Fx1.draw_zone(pa3, w, {"pos": Vector2(200, 200), "r": 90.0, "skill": id, "ticks": 3, "timer": 0.2, "gap": 0.5})
+	ok = ok and Fx1.draw_wall(pa3, w, {"a": Vector2(100, 100), "b": Vector2(220, 100), "ttl": 2.0, "skill": "hoatuong"})
+	ok = ok and Fx1.draw_orb(pa3, w, {"pos": Vector2(150, 150), "skill": "causam"})
+	ok = ok and Fx1.draw_totem(pa3, w, {"pos": Vector2(150, 150), "kind": "loi"}) and Fx1.draw_totem(pa3, w, {"pos": Vector2(150, 150), "kind": "phong"})
+	var m := GameWorld.Meteor.new()
+	m.pos = Vector2(200, 200)
+	ok = ok and Fx1.draw_meteor(pa3, w, m)
+	var z := GameWorld.RainZone.new()
+	ok = ok and Fx1.draw_rain(pa3, w, z)
+	var tp := GameWorld.Trap.new()
+	tp.skill = "baimin"
+	ok = ok and Fx1.draw_trap(pa3, w, tp)
+	var b := GameWorld.Bolt.new()
+	b.points = PackedVector2Array([Vector2(0, 0), Vector2(100, 40), Vector2(160, 0)])
+	b.skill = "tennay"
+	ok = ok and Fx1.draw_bolt(pa3, w, b)
+	ok = ok and Fx1.draw_disk(pa3, w, {"pos": Vector2(100, 100)}) and Fx1.draw_slam(pa3, w, {"pos": Vector2(100, 100), "r": 80.0, "t": 0.3}, 0.8)
+	var tgt := w.spawn_enemy("wolf", 3, Vector2(260, 260))
+	ok = ok and Fx1.draw_star(pa3, w, {"t": 0.3, "target": tgt, "skill": "tinhvu"}, 0.6)
+	ok = ok and Fx1.draw_five(pa3, w, func(k): return Vector2(200, 200) + Vector2.from_angle(k * TAU / 5.0) * 60.0, Vector2(200, 200), 60.0)
+	w.enemies = []
+	_check(ok and pa3.bad == 0 and pa3.n > 100, "lớp phủ vùng / tường lửa / cầu sấm / đồ đằng / thiên thạch / mưa tên / bẫy / tia / khiên bay / búa / mũi tên sao / 5 cầu Ngũ Hành")
+	# thiên thạch biến mất → nổ
+	w.meteors = []
+	var pa4 = Kit.Painter.new()
+	Fx1.draw(pa4, w)
+	Fx1.tick(w, 0.1)
+	var pa5 = Kit.Painter.new()
+	Fx1.draw(pa5, w)
+	_check(pa5.n > 0, "Thiên Thạch nổ khi vật thể biến mất")
+	# §9.8 cảm giác đánh trúng: lực rung bắn đúng khung va chạm (5); tắt "Rung màn hình" thì không rung
+	var St2 = load("res://scripts/core/settings.gd")
+	Fx1.casts = []
+	Fx1.take_shake()
+	Fx1.on_cast(w, {"id": "spin"})
+	Fx1.tick(w, 0.05)
+	var early: float = Fx1.take_shake()
+	Fx1.tick(w, 0.2)
+	var hit: float = Fx1.take_shake()
+	St2.values["fx_shake"] = false
+	Fx1.on_cast(w, {"id": "bangphong"})
+	Fx1.tick(w, 0.3)
+	var off: float = Fx1.take_shake()
+	St2.values["fx_shake"] = true
+	_check(early == 0.0 and hit > 0.0 and off == 0.0, "rung ở khung va chạm, tắt cài đặt thì không rung (%.2f / %.2f / %.2f)" % [early, hit, off])
+	_check(St2.DEFAULTS.get("fx_shake") == true and St2.DEFAULTS.get("fx_soft") == false, "mặc định: có rung, không giảm chớp")
+	# §9.9 vòng cảnh báo đòn quái: đúng bán kính gameplay (tròn), "old" → kiểu cũ
+	var pd = Kit.Painter.new()
+	Fx1.set_mode("fx1")
+	var dz_ok: bool = Fx1.draw_danger(pd, w, [[Vector2(100, 100), 90.0, Fx1.P_DANGER]], 0.5) and pd.n > 8 and pd.bad == 0
+	Fx1.set_mode("old")
+	dz_ok = dz_ok and not Fx1.draw_danger(Kit.Painter.new(), w, [[Vector2(100, 100), 90.0, Fx1.P_DANGER]], 0.5)
+	_check(dz_ok, "vòng cảnh báo đòn quái FX-1; chế độ Hình cũ thì về kiểu cũ")
+	Fx1.set_mode("")
+	Fx1.casts = []
+
+
+func _test_ic1() -> void:
+	var SL = load("res://scripts/view/sprite_lib.gd")
+	var src := FileAccess.get_file_as_string("res://../tools/art/class_skill_icons.py")
+	SL.set_hd(true)
+	var hd_icons: Dictionary = SL.data().get("hd", {}).get("icons", {})
+	var redrawn := 0
+	var kept := 0
+	var bad: Array = []
+	for c in Classes.ORDER:
+		for sk in Classes.DEFS[c].skills:
+			var ic := str(sk.icon)
+			var tex: Texture2D = SL.icon("skill-" + ic)
+			if tex == null:
+				bad.append(ic)
+				continue
+			if src != "" and src.contains("\"%s\"" % ic):
+				kept += 1
+				if tex.get_width() > 64:
+					bad.append("%s (icon vẽ tay bị thay)" % ic)
+			else:
+				redrawn += 1
+				if tex.get_width() != 128:
+					bad.append("%s (%d px)" % [ic, tex.get_width()])
+	_check(bad.is_empty(), "icon kỹ năng đúng nguồn %s" % str(bad))
+	_check(redrawn == 51 and (src == "" or kept == 19), "51 icon IC-1 HD + 19 icon vẽ tay (%d / %d)" % [redrawn, kept])
+	# §6: 20 bị động + icon tab "Bị động"
+	var Pv = load("res://scripts/core/passives.gd")
+	var pv_bad: Array = []
+	var pv_n := 0
+	for c in Pv.DEFS:
+		for d in Pv.DEFS[c]:
+			pv_n += 1
+			var t: Texture2D = SL.icon(str(d.icon))
+			if t == null or t.get_width() != 128:
+				pv_bad.append(str(d.icon))
+	var tab: Texture2D = SL.icon("skill-pv-tab")
+	_check(pv_n == 20 and pv_bad.is_empty() and tab != null and tab.get_width() == 128, "20 icon bị động + tab IC-1 HD %s" % str(pv_bad))
+	SL.set_hd(false)
+	var old: Texture2D = SL.icon("skill-spin")
+	_check(old != null and old.get_width() <= 48, "tắt Đồ hoạ HD → icon cũ")
+	SL.set_hd(true)

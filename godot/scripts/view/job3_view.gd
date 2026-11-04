@@ -3,6 +3,7 @@ extends RefCounted
 ## mũi tên sao, 5 cầu Ngũ Hành, khiên Bất Khuất. SH: thanh máu linh thú khi bị mất máu (SH-06).
 
 const Job3 = preload("res://scripts/core/job3.gd")
+const Fx1 = preload("res://scripts/view/fx1.gd")
 
 const SILVER := Color("#f2f6ff")
 const ORB_COLORS := [Color("#dce6f2"), Color("#6fdc7a"), Color("#4a9df8"), Color("#ff7a3a"), Color("#c9a45c")]
@@ -24,17 +25,20 @@ static func draw(ci: CanvasItem, world) -> void:
 	var p = world.player
 	var t: float = world.time
 	# Nhất Kiếm: vệt báo trước khi vung, vệt chém sáng khi xong.
-	if not st.slash.is_empty():
+	var nk_fx1 := Fx1.active("nhatkiem")  # FX-1 vẽ Nhất Kiếm bằng dàn cảnh riêng (fx1.gd "cleave")
+	if not st.slash.is_empty() and not nk_fx1:
 		var to: Vector2 = p.pos + st.slash.dir * Job3.NK_LEN
 		var prog: float = 1.0 - float(st.slash.t) / Job3.NK_WINDUP
 		ci.draw_line(p.pos, to, Color(SILVER, 0.15 + 0.25 * prog), Job3.NK_HALF * 2.0, true)
 		ci.draw_line(p.pos, p.pos + st.slash.dir * Job3.NK_LEN * prog, Color(SILVER, 0.7), 2.0, true)
-	if not st.flash.is_empty():
+	if not st.flash.is_empty() and not nk_fx1:
 		var a: float = clampf(float(st.flash.t) / 0.3, 0.0, 1.0)
 		ci.draw_line(st.flash.from, st.flash.to, Color(SILVER, 0.35 * a), Job3.NK_HALF * 2.4, true)
 		ci.draw_line(st.flash.from, st.flash.to, Color(1, 1, 1, 0.95 * a), 6.0, true)
 	# Mũi tên sao đang rơi: vệt sáng từ trên xuống mục tiêu.
 	for s in st.stars:
+		if Fx1.painter and Fx1.draw_star(Fx1.painter, world, s, Job3.STAR_FALL):
+			continue
 		var e = s.target
 		if e == null or e.dead:
 			continue
@@ -43,7 +47,9 @@ static func draw(ci: CanvasItem, world) -> void:
 		ci.draw_line(head + Vector2(-14, -40), head, Color(0.77, 0.89, 1.0, 0.6), 2.0, true)
 		ci.draw_circle(head, 4.0, SILVER)
 	# Ngũ Hành Luân Chuyển
-	if st.orbs_t > 0.0:
+	if st.orbs_t > 0.0 and Fx1.painter and Fx1.draw_five(Fx1.painter, world, func(k): return Job3.orb_pos(world, k), Job3.orb_center(world), Job3.NH_R):
+		pass
+	elif st.orbs_t > 0.0:
 		ci.draw_arc(p.pos, Job3.NH_R, 0.0, TAU, 40, Color(SILVER, 0.25), 1.2, true)
 		for k in 5:
 			var at: Vector2 = Job3.orb_pos(world, k)

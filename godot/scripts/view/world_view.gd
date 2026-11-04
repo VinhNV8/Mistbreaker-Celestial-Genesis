@@ -22,6 +22,9 @@ const Ch4 = preload("res://scripts/core/chapter4.gd")
 const R5View = preload("res://scripts/view/region5_view.gd")
 const SK2View = preload("res://scripts/view/skills2_view.gd")
 const ClassFx = preload("res://scripts/view/class_fx.gd")
+## FX-1 (docs/36): hiệu ứng kỹ năng thiết kế lại, vẽ vector HD; lớp glow vẽ cộng sáng ở node con.
+const Fx1 = preload("res://scripts/view/fx1.gd")
+const Fx1Kit = preload("res://scripts/view/fx1_kit.gd")
 const CL2View = preload("res://scripts/view/classes2_view.gd")
 const J3View = preload("res://scripts/view/job3_view.gd")
 const R6View = preload("res://scripts/view/region6_view.gd")
@@ -49,6 +52,20 @@ var _hit_fx: Array = []
 var _cast_fx: Array = []
 var _cast_watch: Array = []  # [world, hồi chiêu từng ô, id từng ô] của khung trước
 var _fog_layer: FogLayer
+var _fx1_glow: Fx1Glow
+var _pa: Fx1Kit.Painter = Fx1Kit.Painter.new()
+## FX-1 §9.8: rung camera (camera.offset — vị trí camera vẫn do main điều khiển) + khựng đòn (Engine.time_scale ngắn).
+var _shake_t := 0.0
+var _shake_amp := 0.0
+var _stop_prev := -1.0
+
+
+## FX-1: lớp glow (BLEND_MODE_ADD) vẽ sau mọi thứ của world_view.
+class Fx1Glow extends Node2D:
+	var glow: Array = []
+
+	func _draw() -> void:
+		preload("res://scripts/view/fx1_kit.gd").flush_glow(self, glow)
 
 
 ## SN-31: lớp sương che vẽ trên cùng thế giới. Texture 1 điểm ảnh / ô, lọc tuyến tính nên mép sương mờ dần.
@@ -105,6 +122,11 @@ func _ready() -> void:
 	texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
 	_fog_layer = FogLayer.new()
 	add_child(_fog_layer)
+	_fx1_glow = Fx1Glow.new()
+	var mat := CanvasItemMaterial.new()
+	mat.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+	_fx1_glow.material = mat
+	add_child(_fx1_glow)
 
 
 ## M4: cây cối, mảng cỏ sinh lại theo từng map (cùng map luôn ra cùng một cảnh).
@@ -191,6 +213,8 @@ func _watch_casts(delta: float) -> void:
 	_cast_fx = _cast_fx.filter(ClassFx.cast_alive)
 	if world == null:
 		return
+	Fx1.tick(world, delta)
+	_update_shake(delta)
 	var cds: Array = world.player.skill_cds.duplicate()
 	var ids: Array = []
 	for i in cds.size():
@@ -199,8 +223,31 @@ func _watch_casts(delta: float) -> void:
 	if _cast_watch.size() == 3 and _cast_watch[0] == world and world.travel_timer <= 0.0:
 		for i in mini(cds.size(), _cast_watch[1].size()):
 			if ids[i] != "" and ids[i] == _cast_watch[2][i] and float(cds[i]) > float(_cast_watch[1][i]) + 0.05:
-				ClassFx.on_cast(_cast_fx, world, world.slot_skill(i))
+				if not Fx1.on_cast(world, world.slot_skill(i)):
+					ClassFx.on_cast(_cast_fx, world, world.slot_skill(i))
 	_cast_watch = [world, cds, ids]
+
+
+func _update_shake(delta: float) -> void:
+	var s := Fx1.take_shake()
+	if s > 0.0:
+		_shake_t = 0.22 + 0.1 * s
+		_shake_amp = maxf(_shake_amp if _shake_t > 0.0 else 0.0, 3.0 + 7.0 * s)
+		if s >= 0.6 and _stop_prev < 0.0 and Engine.time_scale > 0.2:
+			_stop_prev = Engine.time_scale  # smoke chạy ×3 → trả đúng giá trị cũ
+			Engine.time_scale = 0.08
+			get_tree().create_timer(0.045, true, false, true).timeout.connect(func():
+				Engine.time_scale = _stop_prev
+				_stop_prev = -1.0)
+	if camera == null:
+		return
+	if _shake_t > 0.0:
+		_shake_t -= delta / maxf(0.05, Engine.time_scale)
+		var k := clampf(_shake_t / 0.3, 0.0, 1.0)
+		camera.offset = Vector2(randf_range(-1, 1), randf_range(-1, 1)) * _shake_amp * k
+	elif camera.offset != Vector2.ZERO:
+		camera.offset = Vector2.ZERO
+		_shake_amp = 0.0
 
 
 func _view_rect() -> Rect2:
@@ -218,7 +265,11 @@ func _draw() -> void:
 		_build_decor()
 		_track = {}
 		_corpses = []
+	_pa = Fx1Kit.Painter.new(self)
+	Fx1.painter = _pa
 	if world.travel_timer > 0.0:
+		_fx1_glow.glow = []
+		_fx1_glow.queue_redraw()
 		return
 	var view := _view_rect().grow(120.0)
 	_draw_ground(view)
@@ -270,6 +321,8 @@ func _draw() -> void:
 	for e in world.enemies:
 		_draw_enemy_overlay(e)
 	for f in _hit_fx:
+		if Fx1.draw_hit(_pa, world, f.pos, f.t / HIT_FX_TIME):
+			continue
 		SpriteLib.draw_env(self, "fx-hit-%d" % mini(2, int(f.t / HIT_FX_TIME * 3.0)), f.pos)
 	if not world.boss_unlocked():
 		_draw_gate()
@@ -279,6 +332,7 @@ func _draw() -> void:
 	if _art:
 		ClassFx.draw_over(self, world)
 		ClassFx.draw_casts(self, world, _cast_fx)
+	Fx1.draw(_pa, world)
 	CL2View.draw(self, world)
 	J3View.draw(self, world)
 	R6View.draw_over(self, world, view, _art)
@@ -286,6 +340,9 @@ func _draw() -> void:
 	R8View.draw_over(self, world, view, _art)
 	R9View.draw_over(self, world, view, _art)
 	_draw_texts()
+	_fx1_glow.glow = _pa.glow
+	_fx1_glow.modulate.a = 0.55 if Fx1.soft() else 1.0  # §9.8 giảm chớp sáng
+	_fx1_glow.queue_redraw()
 	_update_tracking()
 
 
@@ -352,9 +409,15 @@ func _draw_ground(view: Rect2) -> void:
 	var whole := PackedVector2Array([Vector2.ZERO, Vector2(size.x, 0), size, Vector2(0, size.y)])
 	if not (_art and SpriteLib.fill_polygon(self, whole, str(world.map.get("ground", "tile-grass-0")))):
 		draw_rect(Rect2(Vector2.ZERO, size), Color("#1c3226"))
+	var soft := _art and SpriteLib.hd_enabled()
 	for p in _patches:
 		if view.has_point(p.pos):
-			if _art and bool(world.map.get("desert", false)):
+			if soft:
+				# UI-40c: mảng loang mềm (4 vòng đồng tâm mờ dần) thay cho vòng tròn mép cứng
+				var pc: Color = Color(1.0, 0.95, 0.8, 0.035) if p.shade > 0.5 else Color(0.0, 0.03, 0.02, 0.05)
+				for j in 4:
+					draw_circle(p.pos, p.r * (1.0 - j * 0.22), pc)
+			elif _art and bool(world.map.get("desert", false)):
 				# M6: sa mạc — gợn cát sáng/đỏ nhạt thay cho mảng cỏ tối
 				draw_circle(p.pos, p.r, Color(1.0, 0.9, 0.65, 0.07) if p.shade > 0.5 else Color(0.6, 0.3, 0.15, 0.07))
 			elif _art:
@@ -445,10 +508,85 @@ func _draw_village_ground() -> void:
 	var tile := "tile-town" if kind == "town" and SpriteLib.has_env("tile-town") else "tile-village"
 	if bool(world.map.get("desert", false)) and SpriteLib.has_env("tile-sand-red"):
 		tile = "tile-sand-red"
+	var theme := Maps.safe_theme(world.map)
+	if _art and _hd_safe(theme):
+		_draw_village_yard(c, r, theme)
+		_label(str(world.map.safe.name), c + Vector2(0, -r - 64.0), Color("#f3e3c3"), 16)
+		return
 	if not (_art and SpriteLib.fill_polygon(self, _circle_points(c, r), tile)):
 		draw_circle(c, r, Color("#4a3b2a"))
 	draw_arc(c, r, 0.0, TAU, 64, Color("#9aa0a6") if kind == "town" else Color("#7a5f3e"), 7.0 if kind == "town" else 5.0, true)
 	_label(str(world.map.safe.name), c + Vector2(0, -r - 12.0), Color("#f3e3c3"), 16)
+
+
+## UI-40c: khu an toàn vẽ kiểu HD khi có cọc rào HD của chủ đề (tắt HD → vòng tròn + nhà pixel như cũ).
+func _hd_safe(theme: Dictionary) -> bool:
+	return not theme.is_empty() and SpriteLib.has_env(str(theme.post)) and SpriteLib.hd_enabled()
+
+
+## Đồ trang trí nằm phẳng trên đất (vẽ cùng lớp nền, không sắp theo chiều sâu).
+const FLAT_PROPS := ["garden"]
+
+
+## UI-40b / UI-40c (docs/35 §9–10): sân khu an toàn HD — mép lượn tự nhiên (không còn vòng tròn cứng), viền mờ hoà
+## vào nền vùng, sân lát giữa, lối ra ruộng (làng). Ranh giới vùng an toàn là hàng rào cọc (_draw_sorted).
+func _draw_village_yard(c: Vector2, r: float, theme: Dictionary) -> void:
+	var tile: String = theme.yard if SpriteLib.has_env(str(theme.yard)) else "tile-village"
+	if world.map.safe.kind == "village":
+		var lane := PackedVector2Array([c + Vector2(-22, 40), c + Vector2(22, 40), c + Vector2(30, 250), c + Vector2(-14, 250)])
+		SpriteLib.fill_polygon(self, lane, "tile-dirt", Color(1, 1, 1, 0.75))
+	SpriteLib.fill_polygon(self, _blob_points(c, r + 34.0), tile, Color(1, 1, 1, 0.2))
+	SpriteLib.fill_polygon(self, _blob_points(c, r + 14.0), tile)
+	var plaza: String = str(theme.get("plaza", ""))
+	if plaza != "" and SpriteLib.has_env(plaza):
+		var pr_r := 66.0 if world.map.safe.kind == "village" else (r * 0.72 if world.map.safe.kind == "town" else 58.0)
+		SpriteLib.fill_polygon(self, _blob_points(c, pr_r, 0.04), plaza, Color(1, 1, 1, 0.92))
+	for pr in Maps.safe_props(world.map):
+		if pr[1] in FLAT_PROPS and SpriteLib.has_env(pr[1]):
+			SpriteLib.draw_env(self, pr[1], c + pr[0], Color.WHITE, float(pr[2]))
+
+
+## Vòng kín mép lượn (bán kính dao động ±amp) — cùng hình mỗi khung.
+func _blob_points(c: Vector2, r: float, amp := 0.07) -> PackedVector2Array:
+	var pts := PackedVector2Array()
+	for i in 72:
+		var a := TAU * i / 72.0
+		var k := 1.0 + amp * (0.6 * sin(3.0 * a + 1.3) + 0.4 * sin(7.0 * a + 0.4))
+		pts.append(c + Vector2.from_angle(a) * r * k)
+	return pts
+
+
+## UI-40b / UI-40c: cọc rào quanh khu an toàn (bán kính r + 2, ~22 px một cọc), chừa cổng đông (đường tới hang),
+## lối tây (cổng về map trước) và lối nam (ra ruộng, chỉ làng).
+func _village_fence() -> Array:
+	var c: Vector2 = world.safe_pos
+	var rr: float = world.safe_r + 2.0
+	var village: bool = world.map.safe.kind == "village"
+	var out: Array = []
+	var n := maxi(36, roundi(TAU * rr / 22.0))
+	for i in n:
+		var p := c + Vector2.from_angle(TAU * i / n) * rr
+		var gap := p.x > c.x and absf(p.y - c.y) < 56.0
+		if village:
+			gap = gap or (p.y > c.y and absf(p.x - c.x - 8.0) < 36.0)
+		else:
+			gap = gap or (p.x < c.x and absf(p.y - c.y) < 40.0)
+		out.append({"pos": p, "gap": gap})
+	return out
+
+
+func _draw_fence_post(posts: Array, i: int, theme: Dictionary) -> void:
+	var a: Dictionary = posts[i]
+	var b: Dictionary = posts[(i + 1) % posts.size()]
+	var rail: Color = theme.get("rail", Color("#9a6a40"))
+	var rails := int(theme.get("rails", 2))
+	if not a.gap and not b.gap:
+		for j in rails:
+			var h := 9.0 + j * (18.0 / maxf(1.0, rails - 1.0)) * (1.0 if rails <= 2 else 0.6)
+			draw_line(a.pos - Vector2(0, h), b.pos - Vector2(0, h), Color(rail.darkened(0.65), rail.a), 4.0, true)
+			draw_line(a.pos - Vector2(0, h + 0.5), b.pos - Vector2(0, h + 0.5), rail, 2.0, true)
+	if not a.gap:
+		SpriteLib.draw_env(self, str(theme.post), a.pos)
 
 
 ## Vị trí nhà trong vùng an toàn theo loại.
@@ -506,12 +644,24 @@ func _draw_sorted(view: Rect2) -> void:
 		if view.has_point(t.pos):
 			items.append([t.pos.y + t.r * 0.6, _draw_tree_sprite.bind(t)])
 	var c: Vector2 = world.safe_pos
+	var theme := Maps.safe_theme(world.map)
+	var hd_safe := _hd_safe(theme)
 	for b in _safe_buildings():
 		var at: Vector2 = c + b[0] + Vector2(0, 16)
-		var id: String = b[1] if SpriteLib.has_env(b[1]) else "hut"
+		var id: String = b[1] if hd_safe and SpriteLib.has_env(b[1]) else (str(b[2]) if b.size() > 2 else "hut")
+		if not SpriteLib.has_env(id):
+			id = "hut"
 		items.append([at.y, _draw_env_at.bind(id, at)])
 	if world.map.safe.kind == "village":
 		items.append([c.y + 16.0, _draw_stele.bind(c + Vector2(0, 16))])
+	# UI-40b / UI-40c: đồ trang trí + hàng rào khu an toàn (chỉ khi có bản HD)
+	if hd_safe:
+		for pr in Maps.safe_props(world.map):
+			if not (pr[1] in FLAT_PROPS) and SpriteLib.has_env(pr[1]) and view.has_point(c + pr[0]):
+				items.append([c.y + pr[0].y, _draw_env_scaled.bind(pr[1], c + pr[0], float(pr[2]), false)])
+		var posts := _village_fence()
+		for i in posts.size():
+			items.append([posts[i].pos.y, _draw_fence_post.bind(posts, i, theme)])
 	# M6: sa mạc
 	for d in _desert:
 		if view.has_point(d.pos):
@@ -886,12 +1036,16 @@ func _draw_wind() -> void:
 ## M3: tên bay, kiếm khí, mưa tên, bẫy, vòng nổ.
 func _draw_player_skills() -> void:
 	for t in world.traps:
+		if Fx1.draw_trap(_pa, world, t):
+			continue
 		if _art and SpriteLib.has_env("fx-trap"):
 			SpriteLib.draw_env(self, "fx-trap", t.pos)
 		else:
 			draw_circle(t.pos, 10.0, Color("#9ba8bc"))
 		draw_arc(t.pos, GameWorld.TRAP_TRIGGER, 0.0, TAU, 24, Color(1, 0.8, 0.3, 0.25), 1.5, true)
 	for z in world.rains:
+		if Fx1.draw_rain(_pa, world, z):
+			continue
 		var pulse := 0.5 + 0.5 * sin(world.time * 12.0)
 		draw_circle(z.pos, z.radius, Color(1, 0.33, 0.44, 0.10 + 0.05 * pulse))
 		draw_arc(z.pos, z.radius, 0.0, TAU, 40, Color(1, 0.5, 0.5, 0.6), 2.0, true)
@@ -908,6 +1062,10 @@ func _draw_player_skills() -> void:
 				draw_line(from, from + Vector2(4, 20), Color.WHITE, 2.0)
 	# SN-04: Thiên Thạch — vòng báo hiệu co dần, thiên thạch rơi chéo xuống
 	for m in world.meteors:
+		if Fx1.draw_meteor(_pa, world, m):
+			continue
+		if _art and ClassFx.draw_source_meteor(self, m):
+			continue
 		var k: float = 1.0 - m.timer / GameWorld.METEOR_DELAY
 		draw_circle(m.pos, m.radius, Color(1, 0.45, 0.15, 0.08 + 0.12 * k))
 		draw_arc(m.pos, m.radius, 0.0, TAU, 40, Color(1, 0.6, 0.25, 0.8), 2.0, true)
@@ -921,6 +1079,8 @@ func _draw_player_skills() -> void:
 		draw_circle(rock + Vector2(-3, -3), 4.0, Color("#ffe08a"))
 	# SN-04: Lôi Xích — tia sét gấp khúc
 	for b in world.bolts:
+		if Fx1.draw_bolt(_pa, world, b):
+			continue
 		var a: float = clampf(b.ttl / 0.3, 0.0, 1.0)
 		for i in b.points.size() - 1:
 			var p0: Vector2 = b.points[i]
@@ -933,7 +1093,11 @@ func _draw_player_skills() -> void:
 			draw_polyline(pts, Color(0.6, 0.8, 1.0, 0.5 * a), 7.0, true)
 			draw_polyline(pts, Color(1, 1, 1, a), 2.0, true)
 			draw_circle(p1, 10.0, Color(0.7, 0.85, 1.0, 0.4 * a))
+		if _art:
+			ClassFx.draw_bolt_accents(self, b)
 	for s in world.shots:
+		if Fx1.draw_shot(_pa, s):
+			continue
 		# LH2: Linh Cầu / Linh Tiễn (linh hồn ngọc lam), Hoả Điểu (chim lửa)
 		if s.kind == "spirit":
 			draw_circle(s.pos - s.vel.normalized() * 9.0, 7.0, Color(0.5, 0.85, 0.95, 0.3))
@@ -967,6 +1131,8 @@ func _draw_player_skills() -> void:
 		else:
 			draw_circle(s.pos, s.radius, Color("#c8e6ff"))
 	for b in world.blasts:
+		if Fx1.owns_burst(world):
+			break
 		var k: float = 1.0 - b.ttl / 0.35
 		draw_circle(b.pos, b.radius * (0.6 + 0.4 * k), Color(b.color, 0.35 * (1.0 - k)))
 		draw_arc(b.pos, b.radius * (0.6 + 0.4 * k), 0.0, TAU, 40, Color(b.color, 0.9 * (1.0 - k)), 3.0, true)
@@ -996,7 +1162,7 @@ func _draw_player_fx() -> void:
 		# CL1: vệt chém Kiếm Khách màu đỏ (charactors.md: "kiếm khí màu đỏ").
 		var sc := Color(1, 0.3, 0.25) if world.profile.class_id == "kiem-khach" else Color(1, 1, 1)
 		SpriteLib.poly(self, pts, Color(sc, 0.3 * minf(1.0, p.swing / _swing_len(p, 0.16))))
-	else:
+	elif not Fx1.owns_burst(world):
 		var r := GameWorld.SPIN_RANGE * (1.0 - p.swing / 0.6)
 		draw_arc(p.pos, r, 0.0, TAU, 48, Color(0.78, 0.9, 1.0, 0.7 * minf(1.0, p.swing / 0.3)), 10.0, true)
 
@@ -1298,6 +1464,8 @@ func _draw_telegraph(e: GameWorld.Enemy) -> void:
 	if e.state != "windup":
 		return
 	var progress := 1.0 - maxf(0.0, e.timer) / e.windup_total
+	if _fx1_telegraph(e, progress):
+		return
 	match e.attack_kind:
 		"pounce":
 			draw_circle(e.target, GameWorld.POUNCE_RADIUS, Color(1, 0.24, 0.31, 0.15))
@@ -1362,6 +1530,32 @@ func _draw_telegraph(e: GameWorld.Enemy) -> void:
 			SpriteLib.poly(self, gp, Color(0.3, 0.75, 1.0, 0.12 + progress * 0.25))
 		_:
 			draw_arc(e.pos, e.radius + e.attack_range * progress, 0.0, TAU, 40, Color(1, 0.24, 0.31, 0.2 + progress * 0.6), 3.0, true)
+
+
+## FX-1 §9.9: các đòn có vùng tròn vẽ bằng Fx1.draw_danger (đúng bán kính gameplay); nón / đường giữ kiểu cũ.
+func _fx1_telegraph(e: GameWorld.Enemy, progress: float) -> bool:
+	var zones: Array = []
+	match e.attack_kind:
+		"pounce":
+			zones = [[e.target, GameWorld.POUNCE_RADIUS, Fx1.P_DANGER]]
+		"dive":
+			zones = [[e.target, GameWorld.DIVE_R, Fx1.P_FROST]]
+		"tiger":
+			draw_line(e.pos, e.target, Color(0.95, 0.95, 0.9, 0.15 + progress * 0.3), 3.0, true)
+			zones = [[e.target, GameWorld.TIGER_R, Fx1.P_DANGER]]
+		"roar":
+			zones = [[e.pos, GameWorld.ROAR_R, Fx1.P_FROST]]
+		"roots":
+			for k in 3:
+				zones.append([e.target + Vector2.from_angle(k * TAU / 3.0) * GameWorld.ROOT_R * 0.9, GameWorld.ROOT_R, Fx1.P_SAND])
+		"stomp", "explode":
+			zones = [[e.pos, GameWorld.STOMP_R if e.attack_kind == "stomp" else GameWorld.EXPLODE_R, Fx1.P_DANGER]]
+		"emerge", "sdive", "tail", "sandvortex":
+			var rr: float = {"emerge": Ch3.BURROW_R, "sdive": Ch3.DIVE_R, "tail": Ch3.TAIL_R, "sandvortex": Ch3.VORTEX_R}[e.attack_kind]
+			zones = [[e.target, rr, Fx1.P_TOXIC if e.attack_kind == "tail" else Fx1.P_SAND]]
+		_:
+			return false
+	return Fx1.draw_danger(_pa, world, zones, progress)
 
 
 func _draw_enemy(e: GameWorld.Enemy) -> void:

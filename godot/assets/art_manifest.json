@@ -8843,6 +8843,15 @@
     16
    ]
   },
+  "vfx-tinhvu": {
+   "path": "res://assets/env/vfx-tinhvu.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
   "vfx-chain": {
    "path": "res://assets/env/vfx-chain.png",
    "w": 32,
@@ -8960,6 +8969,33 @@
     16
    ]
   },
+  "vfx-nguhanh": {
+   "path": "res://assets/env/vfx-nguhanh.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-thienthuan": {
+   "path": "res://assets/env/vfx-thienthuan.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
+  "vfx-kylan": {
+   "path": "res://assets/env/vfx-kylan.png",
+   "w": 32,
+   "h": 32,
+   "origin": [
+    16,
+    16
+   ]
+  },
   "fx-sheet-fireball": {
    "path": "res://assets/env/fx-sheet-fireball.png",
    "w": 31,
@@ -9049,6 +9085,1599 @@
     14,
     14
    ]
+  },
+  "fx-skill-dash-p0": {
+   "path": "res://assets/env/fx-skill-dash-p0.png",
+   "w": 64,
+   "h": 64,
+   "origin": [
+    32,
+    52
+   ]
+  },
+  "fx-skill-dash-p1": {
+   "path": "res://assets/env/fx-skill-dash-p1.png",
+   "w": 64,
+   "h": 64,
+   "origin": [
+    32,
+    52
+   ]
+  },
+  "fx-skill-dash-p2": {
+   "path": "res://assets/env/fx-skill-dash-p2.png",
+   "w": 64,
+   "h": 64,
+   "origin": [
+    32,
+    52
+   ]
+  },
+  "fx-skill-tennay-p0": {
+   "path": "res://assets/env/fx-skill-tennay-p0.png",
+   "w": 64,
+   "h": 64,
+   "origin": [
+    32,
+    52
+   ]
+  },
+  "fx-skill-tennay-p1": {
+   "path": "res://assets/env/fx-skill-tennay-p1.png",
+   "w": 64,
+   "h": 64,
+   "origin": [
+    32,
+    52
+   ]
+  },
+  "fx-skill-tennay-p2": {
+   "path": "res://assets/env/fx-skill-tennay-p2.png",
+   "w": 64,
+   "h": 64,
+   "origin": [
+    32,
+    52
+   ]
+  },
+  "fx-skill-meteor-p0": {
+   "path": "res://assets/env/fx-skill-meteor-p0.png",
+   "w": 64,
+   "h": 64,
+   "origin": [
+    32,
+    52
+   ]
+  },
+  "fx-skill-meteor-p1": {
+   "path": "res://assets/env/fx-skill-meteor-p1.png",
+   "w": 64,
+   "h": 64,
+   "origin": [
+    32,
+    52
+   ]
+  },
+  "fx-skill-meteor-p2": {
+   "path": "res://assets/env/fx-skill-meteor-p2.png",
+   "w": 64,
+   "h": 64,
+   "origin": [
+    32,
+    52
+   ]
+  },
+  "fx-skill-thietchuy-p0": {
+   "path": "res://assets/env/fx-skill-thietchuy-p0.png",
+   "w": 64,
+   "h": 64,
+   "origin": [
+    32,
+    52
+   ]
+  },
+  "fx-skill-thietchuy-p1": {
+   "path": "res://assets/env/fx-skill-thietchuy-p1.png",
+   "w": 64,
+   "h": 64,
+   "origin": [
+    32,
+    52
+   ]
+  },
+  "fx-skill-thietchuy-p2": {
+   "path": "res://assets/env/fx-skill-thietchuy-p2.png",
+   "w": 64,
+   "h": 64,
+   "origin": [
+    32,
+    52
+   ]
+  },
+  "fx-skill-aulong-p0": {
+   "path": "res://assets/env/fx-skill-aulong-p0.png",
+   "w": 64,
+   "h": 64,
+   "origin": [
+    32,
+    52
+   ]
+  },
+  "fx-skill-aulong-p1": {
+   "path": "res://assets/env/fx-skill-aulong-p1.png",
+   "w": 64,
+   "h": 64,
+   "origin": [
+    32,
+    52
+   ]
+  },
+  "fx-skill-aulong-p2": {
+   "path": "res://assets/env/fx-skill-aulong-p2.png",
+   "w": 64,
+   "h": 64,
+   "origin": [
+    32,
+    52
+   ]
+  }
+ },
+ "hd": {
+  "sprites": {
+   "wolf": {
+    "w": 96,
+    "h": 96,
+    "origin": [
+     48,
+     88
+    ],
+    "px": 4,
+    "name": "Sói Sương",
+    "size_mul": 1.35,
+    "anims": {
+     "idle": {
+      "row": 0,
+      "frames": 4,
+      "fps": 4,
+      "loop": true
+     },
+     "run": {
+      "row": 1,
+      "frames": 4,
+      "fps": 10,
+      "loop": true
+     },
+     "attack": {
+      "row": 2,
+      "frames": 3,
+      "fps": 10,
+      "loop": false
+     },
+     "hurt": {
+      "row": 3,
+      "frames": 2,
+      "fps": 8,
+      "loop": false
+     },
+     "death": {
+      "row": 4,
+      "frames": 3,
+      "fps": 6,
+      "loop": false
+     }
+    },
+    "path": "res://assets/hd/sprites/wolf.png"
+   },
+   "boss": {
+    "w": 192,
+    "h": 192,
+    "origin": [
+     96,
+     176
+    ],
+    "px": 4,
+    "name": "Sói Chúa Hư Vô",
+    "size_mul": 1.3,
+    "anims": {
+     "idle": {
+      "row": 0,
+      "frames": 4,
+      "fps": 4,
+      "loop": true
+     },
+     "run": {
+      "row": 1,
+      "frames": 4,
+      "fps": 10,
+      "loop": true
+     },
+     "attack": {
+      "row": 2,
+      "frames": 3,
+      "fps": 10,
+      "loop": false
+     },
+     "hurt": {
+      "row": 3,
+      "frames": 2,
+      "fps": 8,
+      "loop": false
+     },
+     "death": {
+      "row": 4,
+      "frames": 3,
+      "fps": 6,
+      "loop": false
+     }
+    },
+    "path": "res://assets/hd/sprites/boss.png"
+   }
+  },
+  "env": {
+   "tile-grass-0": {
+    "path": "res://assets/hd/env/tile-grass-0.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
+   },
+   "tile-grass-1": {
+    "path": "res://assets/hd/env/tile-grass-1.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
+   },
+   "tile-grass-2": {
+    "path": "res://assets/hd/env/tile-grass-2.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
+   },
+   "tile-dirt": {
+    "path": "res://assets/hd/env/tile-dirt.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
+   },
+   "tree-0": {
+    "path": "res://assets/hd/env/tree-0.png",
+    "w": 160,
+    "h": 208,
+    "origin": [
+     80,
+     192
+    ],
+    "px": 4
+   },
+   "tree-1": {
+    "path": "res://assets/hd/env/tree-1.png",
+    "w": 160,
+    "h": 208,
+    "origin": [
+     80,
+     192
+    ],
+    "px": 4
+   },
+   "tree-2": {
+    "path": "res://assets/hd/env/tree-2.png",
+    "w": 160,
+    "h": 208,
+    "origin": [
+     80,
+     192
+    ],
+    "px": 4
+   },
+   "tree-pine": {
+    "path": "res://assets/hd/env/tree-pine.png",
+    "w": 160,
+    "h": 208,
+    "origin": [
+     80,
+     192
+    ],
+    "px": 4
+   },
+   "bush": {
+    "path": "res://assets/hd/env/bush.png",
+    "w": 96,
+    "h": 72,
+    "origin": [
+     48,
+     60
+    ],
+    "px": 4
+   },
+   "rock-0": {
+    "path": "res://assets/hd/env/rock-0.png",
+    "w": 112,
+    "h": 80,
+    "origin": [
+     56,
+     64
+    ],
+    "px": 4
+   },
+   "rock-1": {
+    "path": "res://assets/hd/env/rock-1.png",
+    "w": 112,
+    "h": 80,
+    "origin": [
+     56,
+     64
+    ],
+    "px": 4
+   },
+   "tall-grass": {
+    "path": "res://assets/hd/env/tall-grass.png",
+    "w": 80,
+    "h": 72,
+    "origin": [
+     40,
+     60
+    ],
+    "px": 4
+   },
+   "house-village-0": {
+    "path": "res://assets/hd/env/house-village-0.png",
+    "w": 240,
+    "h": 232,
+    "origin": [
+     120,
+     218
+    ],
+    "px": 4
+   },
+   "house-village-1": {
+    "path": "res://assets/hd/env/house-village-1.png",
+    "w": 240,
+    "h": 232,
+    "origin": [
+     120,
+     218
+    ],
+    "px": 4
+   },
+   "house-village-2": {
+    "path": "res://assets/hd/env/house-village-2.png",
+    "w": 240,
+    "h": 232,
+    "origin": [
+     120,
+     218
+    ],
+    "px": 4
+   },
+   "village-well": {
+    "path": "res://assets/hd/env/village-well.png",
+    "w": 128,
+    "h": 152,
+    "origin": [
+     64,
+     140
+    ],
+    "px": 4
+   },
+   "haystack": {
+    "path": "res://assets/hd/env/haystack.png",
+    "w": 112,
+    "h": 104,
+    "origin": [
+     56,
+     94
+    ],
+    "px": 4
+   },
+   "crates": {
+    "path": "res://assets/hd/env/crates.png",
+    "w": 136,
+    "h": 112,
+    "origin": [
+     68,
+     100
+    ],
+    "px": 4
+   },
+   "lantern-post": {
+    "path": "res://assets/hd/env/lantern-post.png",
+    "w": 64,
+    "h": 152,
+    "origin": [
+     32,
+     142
+    ],
+    "px": 4
+   },
+   "fence-post": {
+    "path": "res://assets/hd/env/fence-post.png",
+    "w": 24,
+    "h": 56,
+    "origin": [
+     12,
+     50
+    ],
+    "px": 4
+   },
+   "garden": {
+    "path": "res://assets/hd/env/garden.png",
+    "w": 176,
+    "h": 104,
+    "origin": [
+     88,
+     52
+    ],
+    "px": 4
+   },
+   "stele": {
+    "path": "res://assets/hd/env/stele.png",
+    "w": 96,
+    "h": 160,
+    "origin": [
+     48,
+     144
+    ],
+    "px": 4
+   },
+   "tile-village": {
+    "path": "res://assets/hd/env/tile-village.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
+   },
+   "tile-plaza": {
+    "path": "res://assets/hd/env/tile-plaza.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
+   },
+   "tile-plain": {
+    "path": "res://assets/hd/env/tile-plain.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
+   },
+   "tile-town": {
+    "path": "res://assets/hd/env/tile-town.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
+   },
+   "tile-sand": {
+    "path": "res://assets/hd/env/tile-sand.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
+   },
+   "tile-sand-red": {
+    "path": "res://assets/hd/env/tile-sand-red.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
+   },
+   "tile-ruins": {
+    "path": "res://assets/hd/env/tile-ruins.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
+   },
+   "tile-swamp": {
+    "path": "res://assets/hd/env/tile-swamp.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
+   },
+   "tile-ash": {
+    "path": "res://assets/hd/env/tile-ash.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
+   },
+   "tile-basalt": {
+    "path": "res://assets/hd/env/tile-basalt.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
+   },
+   "tile-lava-0": {
+    "path": "res://assets/hd/env/tile-lava-0.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
+   },
+   "tile-lava-1": {
+    "path": "res://assets/hd/env/tile-lava-1.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
+   },
+   "tile-snow": {
+    "path": "res://assets/hd/env/tile-snow.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
+   },
+   "tile-ice": {
+    "path": "res://assets/hd/env/tile-ice.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
+   },
+   "tile-sky-grass": {
+    "path": "res://assets/hd/env/tile-sky-grass.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
+   },
+   "tile-marble": {
+    "path": "res://assets/hd/env/tile-marble.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
+   },
+   "tile-wind-bridge": {
+    "path": "res://assets/hd/env/tile-wind-bridge.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
+   },
+   "tile-abyss": {
+    "path": "res://assets/hd/env/tile-abyss.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
+   },
+   "tile-void": {
+    "path": "res://assets/hd/env/tile-void.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
+   },
+   "tile-heaven": {
+    "path": "res://assets/hd/env/tile-heaven.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
+   },
+   "rock-desert-0": {
+    "path": "res://assets/hd/env/rock-desert-0.png",
+    "w": 240,
+    "h": 200,
+    "origin": [
+     120,
+     180
+    ],
+    "px": 4
+   },
+   "cactus-0": {
+    "path": "res://assets/hd/env/cactus-0.png",
+    "w": 144,
+    "h": 192,
+    "origin": [
+     72,
+     180
+    ],
+    "px": 4
+   },
+   "pillar-0": {
+    "path": "res://assets/hd/env/pillar-0.png",
+    "w": 144,
+    "h": 256,
+    "origin": [
+     72,
+     240
+    ],
+    "px": 4
+   },
+   "rock-lava-0": {
+    "path": "res://assets/hd/env/rock-lava-0.png",
+    "w": 184,
+    "h": 152,
+    "origin": [
+     92,
+     136
+    ],
+    "px": 4
+   },
+   "tree-ash-0": {
+    "path": "res://assets/hd/env/tree-ash-0.png",
+    "w": 168,
+    "h": 224,
+    "origin": [
+     84,
+     212
+    ],
+    "px": 4
+   },
+   "dead-tree-0": {
+    "path": "res://assets/hd/env/dead-tree-0.png",
+    "w": 208,
+    "h": 256,
+    "origin": [
+     104,
+     240
+    ],
+    "px": 4
+   },
+   "reeds-0": {
+    "path": "res://assets/hd/env/reeds-0.png",
+    "w": 152,
+    "h": 168,
+    "origin": [
+     76,
+     156
+    ],
+    "px": 4
+   },
+   "tree-pine-snow-0": {
+    "path": "res://assets/hd/env/tree-pine-snow-0.png",
+    "w": 184,
+    "h": 248,
+    "origin": [
+     92,
+     236
+    ],
+    "px": 4
+   },
+   "rock-ice-0": {
+    "path": "res://assets/hd/env/rock-ice-0.png",
+    "w": 176,
+    "h": 152,
+    "origin": [
+     88,
+     136
+    ],
+    "px": 4
+   },
+   "cloud-puff-0": {
+    "path": "res://assets/hd/env/cloud-puff-0.png",
+    "w": 224,
+    "h": 152,
+    "origin": [
+     112,
+     120
+    ],
+    "px": 4
+   },
+   "tree-hanging-0": {
+    "path": "res://assets/hd/env/tree-hanging-0.png",
+    "w": 200,
+    "h": 256,
+    "origin": [
+     100,
+     244
+    ],
+    "px": 4
+   },
+   "sky-pillar-0": {
+    "path": "res://assets/hd/env/sky-pillar-0.png",
+    "w": 152,
+    "h": 264,
+    "origin": [
+     76,
+     252
+    ],
+    "px": 4
+   },
+   "heaven-pillar-0": {
+    "path": "res://assets/hd/env/heaven-pillar-0.png",
+    "w": 152,
+    "h": 272,
+    "origin": [
+     76,
+     260
+    ],
+    "px": 4
+   },
+   "rock-desert-1": {
+    "path": "res://assets/hd/env/rock-desert-1.png",
+    "w": 240,
+    "h": 200,
+    "origin": [
+     120,
+     180
+    ],
+    "px": 4
+   },
+   "cactus-1": {
+    "path": "res://assets/hd/env/cactus-1.png",
+    "w": 144,
+    "h": 192,
+    "origin": [
+     72,
+     180
+    ],
+    "px": 4
+   },
+   "pillar-1": {
+    "path": "res://assets/hd/env/pillar-1.png",
+    "w": 144,
+    "h": 256,
+    "origin": [
+     72,
+     240
+    ],
+    "px": 4
+   },
+   "rock-lava-1": {
+    "path": "res://assets/hd/env/rock-lava-1.png",
+    "w": 184,
+    "h": 152,
+    "origin": [
+     92,
+     136
+    ],
+    "px": 4
+   },
+   "tree-ash-1": {
+    "path": "res://assets/hd/env/tree-ash-1.png",
+    "w": 168,
+    "h": 224,
+    "origin": [
+     84,
+     212
+    ],
+    "px": 4
+   },
+   "dead-tree-1": {
+    "path": "res://assets/hd/env/dead-tree-1.png",
+    "w": 208,
+    "h": 256,
+    "origin": [
+     104,
+     240
+    ],
+    "px": 4
+   },
+   "reeds-1": {
+    "path": "res://assets/hd/env/reeds-1.png",
+    "w": 152,
+    "h": 168,
+    "origin": [
+     76,
+     156
+    ],
+    "px": 4
+   },
+   "tree-pine-snow-1": {
+    "path": "res://assets/hd/env/tree-pine-snow-1.png",
+    "w": 184,
+    "h": 248,
+    "origin": [
+     92,
+     236
+    ],
+    "px": 4
+   },
+   "rock-ice-1": {
+    "path": "res://assets/hd/env/rock-ice-1.png",
+    "w": 176,
+    "h": 152,
+    "origin": [
+     88,
+     136
+    ],
+    "px": 4
+   },
+   "cloud-puff-1": {
+    "path": "res://assets/hd/env/cloud-puff-1.png",
+    "w": 224,
+    "h": 152,
+    "origin": [
+     112,
+     120
+    ],
+    "px": 4
+   },
+   "tree-hanging-1": {
+    "path": "res://assets/hd/env/tree-hanging-1.png",
+    "w": 200,
+    "h": 256,
+    "origin": [
+     100,
+     244
+    ],
+    "px": 4
+   },
+   "sky-pillar-1": {
+    "path": "res://assets/hd/env/sky-pillar-1.png",
+    "w": 152,
+    "h": 264,
+    "origin": [
+     76,
+     252
+    ],
+    "px": 4
+   },
+   "heaven-pillar-1": {
+    "path": "res://assets/hd/env/heaven-pillar-1.png",
+    "w": 152,
+    "h": 272,
+    "origin": [
+     76,
+     260
+    ],
+    "px": 4
+   },
+   "palm": {
+    "path": "res://assets/hd/env/palm.png",
+    "w": 240,
+    "h": 288,
+    "origin": [
+     116,
+     272
+    ],
+    "px": 4
+   },
+   "oasis": {
+    "path": "res://assets/hd/env/oasis.png",
+    "w": 448,
+    "h": 288,
+    "origin": [
+     224,
+     176
+    ],
+    "px": 4
+   },
+   "lily": {
+    "path": "res://assets/hd/env/lily.png",
+    "w": 144,
+    "h": 112,
+    "origin": [
+     72,
+     88
+    ],
+    "px": 4
+   },
+   "dream-pod": {
+    "path": "res://assets/hd/env/dream-pod.png",
+    "w": 160,
+    "h": 176,
+    "origin": [
+     80,
+     164
+    ],
+    "px": 4
+   },
+   "floating-rock": {
+    "path": "res://assets/hd/env/floating-rock.png",
+    "w": 232,
+    "h": 160,
+    "origin": [
+     116,
+     112
+    ],
+    "px": 4
+   },
+   "vent": {
+    "path": "res://assets/hd/env/vent.png",
+    "w": 160,
+    "h": 136,
+    "origin": [
+     80,
+     112
+    ],
+    "px": 4
+   },
+   "forge": {
+    "path": "res://assets/hd/env/forge.png",
+    "w": 208,
+    "h": 200,
+    "origin": [
+     104,
+     188
+    ],
+    "px": 4
+   },
+   "snow-mound": {
+    "path": "res://assets/hd/env/snow-mound.png",
+    "w": 168,
+    "h": 120,
+    "origin": [
+     84,
+     108
+    ],
+    "px": 4
+   },
+   "beacon": {
+    "path": "res://assets/hd/env/beacon.png",
+    "w": 168,
+    "h": 264,
+    "origin": [
+     84,
+     252
+    ],
+    "px": 4
+   },
+   "beacon-lit": {
+    "path": "res://assets/hd/env/beacon-lit.png",
+    "w": 168,
+    "h": 264,
+    "origin": [
+     84,
+     252
+    ],
+    "px": 4
+   },
+   "anchor-stone": {
+    "path": "res://assets/hd/env/anchor-stone.png",
+    "w": 160,
+    "h": 240,
+    "origin": [
+     80,
+     228
+    ],
+    "px": 4
+   },
+   "anchor-stone-lit": {
+    "path": "res://assets/hd/env/anchor-stone-lit.png",
+    "w": 160,
+    "h": 240,
+    "origin": [
+     80,
+     228
+    ],
+    "px": 4
+   },
+   "wind-pillar": {
+    "path": "res://assets/hd/env/wind-pillar.png",
+    "w": 184,
+    "h": 288,
+    "origin": [
+     92,
+     276
+    ],
+    "px": 4
+   },
+   "wind-pillar-lit": {
+    "path": "res://assets/hd/env/wind-pillar-lit.png",
+    "w": 184,
+    "h": 288,
+    "origin": [
+     92,
+     276
+    ],
+    "px": 4
+   },
+   "stele-root": {
+    "path": "res://assets/hd/env/stele-root.png",
+    "w": 208,
+    "h": 288,
+    "origin": [
+     104,
+     276
+    ],
+    "px": 4
+   },
+   "void-stone": {
+    "path": "res://assets/hd/env/void-stone.png",
+    "w": 224,
+    "h": 288,
+    "origin": [
+     112,
+     272
+    ],
+    "px": 4
+   },
+   "lamp-tinh-quang": {
+    "path": "res://assets/hd/env/lamp-tinh-quang.png",
+    "w": 160,
+    "h": 288,
+    "origin": [
+     80,
+     276
+    ],
+    "px": 4
+   },
+   "lamp-tinh-quang-lit": {
+    "path": "res://assets/hd/env/lamp-tinh-quang-lit.png",
+    "w": 160,
+    "h": 288,
+    "origin": [
+     80,
+     276
+    ],
+    "px": 4
+   },
+   "airship-dock": {
+    "path": "res://assets/hd/env/airship-dock.png",
+    "w": 240,
+    "h": 300,
+    "origin": [
+     120,
+     288
+    ],
+    "px": 4
+   },
+   "house-stone": {
+    "path": "res://assets/hd/env/house-stone.png",
+    "w": 240,
+    "h": 232,
+    "origin": [
+     120,
+     218
+    ],
+    "px": 4
+   },
+   "house-stone-b": {
+    "path": "res://assets/hd/env/house-stone-b.png",
+    "w": 240,
+    "h": 232,
+    "origin": [
+     120,
+     218
+    ],
+    "px": 4
+   },
+   "tower": {
+    "path": "res://assets/hd/env/tower.png",
+    "w": 144,
+    "h": 320,
+    "origin": [
+     72,
+     308
+    ],
+    "px": 4
+   },
+   "watchtower": {
+    "path": "res://assets/hd/env/watchtower.png",
+    "w": 160,
+    "h": 300,
+    "origin": [
+     80,
+     288
+    ],
+    "px": 4
+   },
+   "tent-canvas": {
+    "path": "res://assets/hd/env/tent-canvas.png",
+    "w": 224,
+    "h": 168,
+    "origin": [
+     112,
+     156
+    ],
+    "px": 4
+   },
+   "tent-ash": {
+    "path": "res://assets/hd/env/tent-ash.png",
+    "w": 224,
+    "h": 168,
+    "origin": [
+     112,
+     156
+    ],
+    "px": 4
+   },
+   "tent-fur": {
+    "path": "res://assets/hd/env/tent-fur.png",
+    "w": 224,
+    "h": 168,
+    "origin": [
+     112,
+     156
+    ],
+    "px": 4
+   },
+   "tent-void": {
+    "path": "res://assets/hd/env/tent-void.png",
+    "w": 224,
+    "h": 168,
+    "origin": [
+     112,
+     156
+    ],
+    "px": 4
+   },
+   "tent": {
+    "path": "res://assets/hd/env/tent.png",
+    "w": 224,
+    "h": 184,
+    "origin": [
+     112,
+     172
+    ],
+    "px": 4
+   },
+   "tent-desert-b": {
+    "path": "res://assets/hd/env/tent-desert-b.png",
+    "w": 224,
+    "h": 184,
+    "origin": [
+     112,
+     172
+    ],
+    "px": 4
+   },
+   "stilt-house": {
+    "path": "res://assets/hd/env/stilt-house.png",
+    "w": 240,
+    "h": 292,
+    "origin": [
+     120,
+     278
+    ],
+    "px": 4
+   },
+   "stilt-house-b": {
+    "path": "res://assets/hd/env/stilt-house-b.png",
+    "w": 240,
+    "h": 292,
+    "origin": [
+     120,
+     278
+    ],
+    "px": 4
+   },
+   "hut-volcano": {
+    "path": "res://assets/hd/env/hut-volcano.png",
+    "w": 240,
+    "h": 232,
+    "origin": [
+     120,
+     218
+    ],
+    "px": 4
+   },
+   "forge-hall": {
+    "path": "res://assets/hd/env/forge-hall.png",
+    "w": 240,
+    "h": 250,
+    "origin": [
+     120,
+     236
+    ],
+    "px": 4
+   },
+   "cabin-snow": {
+    "path": "res://assets/hd/env/cabin-snow.png",
+    "w": 240,
+    "h": 232,
+    "origin": [
+     120,
+     218
+    ],
+    "px": 4
+   },
+   "cabin-snow-b": {
+    "path": "res://assets/hd/env/cabin-snow-b.png",
+    "w": 240,
+    "h": 232,
+    "origin": [
+     120,
+     218
+    ],
+    "px": 4
+   },
+   "pavilion-sky": {
+    "path": "res://assets/hd/env/pavilion-sky.png",
+    "w": 240,
+    "h": 240,
+    "origin": [
+     120,
+     226
+    ],
+    "px": 4
+   },
+   "pavilion-jade": {
+    "path": "res://assets/hd/env/pavilion-jade.png",
+    "w": 240,
+    "h": 240,
+    "origin": [
+     120,
+     226
+    ],
+    "px": 4
+   },
+   "pavilion-jade-b": {
+    "path": "res://assets/hd/env/pavilion-jade-b.png",
+    "w": 240,
+    "h": 240,
+    "origin": [
+     120,
+     226
+    ],
+    "px": 4
+   },
+   "void-shrine": {
+    "path": "res://assets/hd/env/void-shrine.png",
+    "w": 240,
+    "h": 240,
+    "origin": [
+     120,
+     226
+    ],
+    "px": 4
+   },
+   "campfire": {
+    "path": "res://assets/hd/env/campfire.png",
+    "w": 112,
+    "h": 128,
+    "origin": [
+     56,
+     104
+    ],
+    "px": 4
+   },
+   "torch-post": {
+    "path": "res://assets/hd/env/torch-post.png",
+    "w": 56,
+    "h": 168,
+    "origin": [
+     28,
+     158
+    ],
+    "px": 4
+   },
+   "brazier": {
+    "path": "res://assets/hd/env/brazier.png",
+    "w": 80,
+    "h": 140,
+    "origin": [
+     40,
+     130
+    ],
+    "px": 4
+   },
+   "jars": {
+    "path": "res://assets/hd/env/jars.png",
+    "w": 112,
+    "h": 88,
+    "origin": [
+     56,
+     80
+    ],
+    "px": 4
+   },
+   "net-rack": {
+    "path": "res://assets/hd/env/net-rack.png",
+    "w": 160,
+    "h": 128,
+    "origin": [
+     80,
+     118
+    ],
+    "px": 4
+   },
+   "boat": {
+    "path": "res://assets/hd/env/boat.png",
+    "w": 176,
+    "h": 72,
+    "origin": [
+     88,
+     60
+    ],
+    "px": 4
+   },
+   "ore-cart": {
+    "path": "res://assets/hd/env/ore-cart.png",
+    "w": 128,
+    "h": 96,
+    "origin": [
+     64,
+     86
+    ],
+    "px": 4
+   },
+   "woodpile": {
+    "path": "res://assets/hd/env/woodpile.png",
+    "w": 128,
+    "h": 88,
+    "origin": [
+     64,
+     80
+    ],
+    "px": 4
+   },
+   "sled": {
+    "path": "res://assets/hd/env/sled.png",
+    "w": 144,
+    "h": 72,
+    "origin": [
+     72,
+     64
+    ],
+    "px": 4
+   },
+   "incense-burner": {
+    "path": "res://assets/hd/env/incense-burner.png",
+    "w": 96,
+    "h": 144,
+    "origin": [
+     48,
+     134
+    ],
+    "px": 4
+   },
+   "tile-mud": {
+    "path": "res://assets/hd/env/tile-mud.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
+   },
+   "tile-boardwalk": {
+    "path": "res://assets/hd/env/tile-boardwalk.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
+   },
+   "tile-marble-dark": {
+    "path": "res://assets/hd/env/tile-marble-dark.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
+   },
+   "wall-post": {
+    "path": "res://assets/hd/env/wall-post.png",
+    "w": 32,
+    "h": 72,
+    "origin": [
+     16,
+     66
+    ],
+    "px": 4
+   },
+   "stake-post": {
+    "path": "res://assets/hd/env/stake-post.png",
+    "w": 32,
+    "h": 72,
+    "origin": [
+     16,
+     66
+    ],
+    "px": 4
+   },
+   "bamboo-post": {
+    "path": "res://assets/hd/env/bamboo-post.png",
+    "w": 32,
+    "h": 72,
+    "origin": [
+     16,
+     66
+    ],
+    "px": 4
+   },
+   "iron-post": {
+    "path": "res://assets/hd/env/iron-post.png",
+    "w": 32,
+    "h": 72,
+    "origin": [
+     16,
+     66
+    ],
+    "px": 4
+   },
+   "fence-post-snow": {
+    "path": "res://assets/hd/env/fence-post-snow.png",
+    "w": 32,
+    "h": 72,
+    "origin": [
+     16,
+     66
+    ],
+    "px": 4
+   },
+   "marble-post": {
+    "path": "res://assets/hd/env/marble-post.png",
+    "w": 32,
+    "h": 72,
+    "origin": [
+     16,
+     66
+    ],
+    "px": 4
+   },
+   "jade-post": {
+    "path": "res://assets/hd/env/jade-post.png",
+    "w": 32,
+    "h": 72,
+    "origin": [
+     16,
+     66
+    ],
+    "px": 4
+   },
+   "ward-post": {
+    "path": "res://assets/hd/env/ward-post.png",
+    "w": 32,
+    "h": 72,
+    "origin": [
+     16,
+     66
+    ],
+    "px": 4
+   }
+  },
+  "icons": {
+   "item-weapon": "res://assets/hd/icons/item-weapon.png",
+   "item-helm": "res://assets/hd/icons/item-helm.png",
+   "item-armor": "res://assets/hd/icons/item-armor.png",
+   "item-gloves": "res://assets/hd/icons/item-gloves.png",
+   "item-boots": "res://assets/hd/icons/item-boots.png",
+   "item-necklace": "res://assets/hd/icons/item-necklace.png",
+   "item-ring": "res://assets/hd/icons/item-ring.png",
+   "res-gold": "res://assets/hd/icons/res-gold.png",
+   "res-potion": "res://assets/hd/icons/res-potion.png",
+   "res-mp_potion": "res://assets/hd/icons/res-mp_potion.png",
+   "skill-spin": "res://assets/hd/icons/skill-spin.png",
+   "skill-dash": "res://assets/hd/icons/skill-dash.png",
+   "skill-hongkiem": "res://assets/hd/icons/skill-hongkiem.png",
+   "skill-kiemvu": "res://assets/hd/icons/skill-kiemvu.png",
+   "skill-phikiem": "res://assets/hd/icons/skill-phikiem.png",
+   "skill-thanhkiem": "res://assets/hd/icons/skill-thanhkiem.png",
+   "skill-kiemvuc": "res://assets/hd/icons/skill-kiemvuc.png",
+   "skill-huyetbao": "res://assets/hd/icons/skill-huyetbao.png",
+   "skill-huyetanh": "res://assets/hd/icons/skill-huyetanh.png",
+   "skill-nhatkiem": "res://assets/hd/icons/skill-nhatkiem.png",
+   "skill-eagle": "res://assets/hd/icons/skill-eagle.png",
+   "skill-tennay": "res://assets/hd/icons/skill-tennay.png",
+   "skill-trap": "res://assets/hd/icons/skill-trap.png",
+   "skill-lienxa": "res://assets/hd/icons/skill-lienxa.png",
+   "skill-tendoc": "res://assets/hd/icons/skill-tendoc.png",
+   "skill-phakhong": "res://assets/hd/icons/skill-phakhong.png",
+   "skill-tamlien": "res://assets/hd/icons/skill-tamlien.png",
+   "skill-baimin": "res://assets/hd/icons/skill-baimin.png",
+   "skill-luoibay": "res://assets/hd/icons/skill-luoibay.png",
+   "skill-tinhvu": "res://assets/hd/icons/skill-tinhvu.png",
+   "skill-meteor": "res://assets/hd/icons/skill-meteor.png",
+   "skill-barrier": "res://assets/hd/icons/skill-barrier.png",
+   "skill-hoatuong": "res://assets/hd/icons/skill-hoatuong.png",
+   "skill-nova": "res://assets/hd/icons/skill-nova.png",
+   "skill-muabang": "res://assets/hd/icons/skill-muabang.png",
+   "skill-causam": "res://assets/hd/icons/skill-causam.png",
+   "skill-thienloi": "res://assets/hd/icons/skill-thienloi.png",
+   "skill-bangphong": "res://assets/hd/icons/skill-bangphong.png",
+   "skill-trieuhoi": "res://assets/hd/icons/skill-trieuhoi.png",
+   "skill-khidoc": "res://assets/hd/icons/skill-khidoc.png",
+   "skill-nguhanh": "res://assets/hd/icons/skill-nguhanh.png",
+   "skill-khienchan": "res://assets/hd/icons/skill-khienchan.png",
+   "skill-laokhien": "res://assets/hd/icons/skill-laokhien.png",
+   "skill-phanthuan": "res://assets/hd/icons/skill-phanthuan.png",
+   "skill-phanquyet": "res://assets/hd/icons/skill-phanquyet.png",
+   "skill-xungphong": "res://assets/hd/icons/skill-xungphong.png",
+   "skill-thanhquang": "res://assets/hd/icons/skill-thanhquang.png",
+   "skill-thanhvuc": "res://assets/hd/icons/skill-thanhvuc.png",
+   "skill-thietchuy": "res://assets/hd/icons/skill-thietchuy.png",
+   "skill-thanhdong": "res://assets/hd/icons/skill-thanhdong.png",
+   "skill-thienthuan": "res://assets/hd/icons/skill-thienthuan.png",
+   "skill-linhtien": "res://assets/hd/icons/skill-linhtien.png",
+   "skill-thachquy": "res://assets/hd/icons/skill-thachquy.png",
+   "skill-hoadieu": "res://assets/hd/icons/skill-hoadieu.png",
+   "skill-linhtran": "res://assets/hd/icons/skill-linhtran.png",
+   "skill-linhung": "res://assets/hd/icons/skill-linhung.png",
+   "skill-aulong": "res://assets/hd/icons/skill-aulong.png",
+   "skill-longhong": "res://assets/hd/icons/skill-longhong.png",
+   "skill-loidodang": "res://assets/hd/icons/skill-loidodang.png",
+   "skill-phongdodang": "res://assets/hd/icons/skill-phongdodang.png",
+   "skill-kylan": "res://assets/hd/icons/skill-kylan.png",
+   "skill-pv-thietcot": "res://assets/hd/icons/skill-pv-thietcot.png",
+   "skill-pv-kiemtam": "res://assets/hd/icons/skill-pv-kiemtam.png",
+   "skill-pv-phankich": "res://assets/hd/icons/skill-pv-phankich.png",
+   "skill-pv-chieny": "res://assets/hd/icons/skill-pv-chieny.png",
+   "skill-pv-ungmuc": "res://assets/hd/icons/skill-pv-ungmuc.png",
+   "skill-pv-sanmoi": "res://assets/hd/icons/skill-pv-sanmoi.png",
+   "skill-pv-buocgio": "res://assets/hd/icons/skill-pv-buocgio.png",
+   "skill-pv-tamdoc": "res://assets/hd/icons/skill-pv-tamdoc.png",
+   "skill-pv-minhtuong": "res://assets/hd/icons/skill-pv-minhtuong.png",
+   "skill-pv-nguyento": "res://assets/hd/icons/skill-pv-nguyento.png",
+   "skill-pv-doidao": "res://assets/hd/icons/skill-pv-doidao.png",
+   "skill-pv-hothe": "res://assets/hd/icons/skill-pv-hothe.png",
+   "skill-pv-kienthu": "res://assets/hd/icons/skill-pv-kienthu.png",
+   "skill-pv-ychisat": "res://assets/hd/icons/skill-pv-ychisat.png",
+   "skill-pv-phanchan": "res://assets/hd/icons/skill-pv-phanchan.png",
+   "skill-pv-uyap": "res://assets/hd/icons/skill-pv-uyap.png",
+   "skill-pv-linhkhe": "res://assets/hd/icons/skill-pv-linhkhe.png",
+   "skill-pv-linhthe": "res://assets/hd/icons/skill-pv-linhthe.png",
+   "skill-pv-linhho": "res://assets/hd/icons/skill-pv-linhho.png",
+   "skill-pv-honluc": "res://assets/hd/icons/skill-pv-honluc.png",
+   "skill-pv-tab": "res://assets/hd/icons/skill-pv-tab.png"
   }
  }
 }

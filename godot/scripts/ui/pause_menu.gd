@@ -84,6 +84,43 @@ func show_settings() -> void:
 	fs.button_pressed = bool(Settings.values.fullscreen)
 	fs.toggled.connect(func(on): Settings.set_value("fullscreen", on))
 	_box.add_child(fs)
+	# UI-40 (docs/35): hình HD cel-shade (bản thử) / hình pixel cũ.
+	var hd := CheckBox.new()
+	hd.name = "HdArt"
+	hd.text = "Đồ hoạ HD (bản thử: sói, Rừng Sương, icon trang bị)"
+	hd.button_pressed = bool(Settings.values.get("hd_art", true))
+	hd.toggled.connect(func(on):
+		Settings.set_value("hd_art", on)
+		load("res://scripts/view/sprite_lib.gd").set_hd(on))
+	_box.add_child(hd)
+	# FX-1 (docs/36, Q181): hiệu ứng kỹ năng — FX-1 chạy song song với hình đã duyệt.
+	var xrow := UiTheme.hbox(6)
+	var xl := UiTheme.label("Hiệu ứng kỹ năng")
+	xl.custom_minimum_size.x = 150
+	xrow.add_child(xl)
+	var xcur := str(Settings.values.get("skill_fx", "fx1"))
+	for opt in preload("res://scripts/view/fx1.gd").MODES:
+		var xb := UiTheme.button(str(opt[1]), xcur == opt[0])
+		xb.name = "SkillFx_%s" % opt[0]
+		var xm: String = opt[0]
+		xb.pressed.connect(func():
+			Settings.set_value("skill_fx", xm)
+			show_settings())
+		xrow.add_child(xb)
+	_box.add_child(xrow)
+	# FX-1 §9.8: rung màn hình + khựng đòn; giảm chớp sáng (nhạy cảm ánh sáng / máy yếu).
+	var sh := CheckBox.new()
+	sh.name = "FxShake"
+	sh.text = "Rung màn hình khi chiêu mạnh va chạm"
+	sh.button_pressed = bool(Settings.values.get("fx_shake", true))
+	sh.toggled.connect(func(on): Settings.set_value("fx_shake", on))
+	_box.add_child(sh)
+	var so := CheckBox.new()
+	so.name = "FxSoft"
+	so.text = "Giảm chớp sáng hiệu ứng (nhạy cảm ánh sáng)"
+	so.button_pressed = bool(Settings.values.get("fx_soft", false))
+	so.toggled.connect(func(on): Settings.set_value("fx_soft", on))
+	_box.add_child(so)
 	var frow := UiTheme.hbox(6)
 	var fl := UiTheme.label("Cỡ chữ")
 	fl.custom_minimum_size.x = 150

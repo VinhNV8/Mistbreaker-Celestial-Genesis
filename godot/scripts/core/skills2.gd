@@ -395,6 +395,12 @@ static func migrate_replaced(p) -> void:
 				if not d.has(new_id):
 					d[new_id] = d[old]
 				d.erase(old)
+		# Ô đang lắp kỹ năng cũ (save cũ) → lắp kỹ năng thay thế; trước đây ô này thành trống (id lạ).
+		for list_name in ["loadout", "loadout_alt"]:
+			var lo: Array = p.get(list_name)
+			var at := lo.find(old)
+			if at >= 0 and not lo.has(new_id):
+				lo[at] = new_id
 
 
 static func hit_mult(w, e, id: String) -> float:
@@ -723,6 +729,7 @@ static func _bounce(w, id: String, mul: float) -> void:
 	if first == null:
 		first = w._nearest_enemy(p.pos, TN_RANGE)
 	var b = w.Bolt.new()
+	b.skill = id
 	b.points.append(p.pos)
 	if first == null:
 		return

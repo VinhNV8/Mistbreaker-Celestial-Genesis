@@ -25,6 +25,10 @@ const CharFrame = preload("res://scripts/ui/char_frame.gd")
 const AutoButton = preload("res://scripts/ui/auto_button.gd")
 const QuestBox = preload("res://scripts/ui/quest_box.gd")
 const LogBox = preload("res://scripts/ui/log_box.gd")
+const Bronze = preload("res://scripts/ui/bronze.gd")
+const ActionCluster = preload("res://scripts/ui/action_cluster.gd")
+const ExpBar = preload("res://scripts/ui/exp_bar.gd")
+const Skills2 = preload("res://scripts/core/skills2.gd")
 ## UI-20: nhật ký tối đa 5 dòng, mỗi dòng sống 6 giây rồi mờ dần.
 const LOG_MAX := 5
 const LOG_LIFE := 6.0
@@ -45,7 +49,9 @@ const OBJ_W := 240
 
 var _tl: CharFrame
 ## UI-12: nút bật/tắt Tự đánh (main nối tín hiệu auto_toggled → world.toggle_auto()).
-var _auto: AutoButton
+## UI-41: nằm trong cụm nút góc phải (ActionCluster) cùng nút Đánh, Né, Thiên phú, 2 bình thuốc.
+var _cluster: ActionCluster
+var _exp_bar: ExpBar
 signal auto_toggled
 
 var _tr: PanelContainer
@@ -55,6 +61,7 @@ var _res_slots: Array = []
 
 var _obj: PanelContainer
 var _objectives: Array[Label] = []
+var _obj_progress: Control
 
 var _boss_box: VBoxContainer
 var _boss_name: Label
@@ -132,22 +139,27 @@ func _ready() -> void:
 	_obj.add_theme_stylebox_override("panel", QuestBox.new())
 	var ov := UiTheme.vbox(3)
 	_obj.add_child(ov)
+	# UI-41 (docs/35 §11): cuộn giấy da — tiêu đề chữ cổ mực đỏ, nội dung mực nâu (không viền), thanh tiến độ "(a/b)".
 	_obj_title = UiTheme.label("CHƯƠNG 1 · THỨC TỈNH", "HudLabel")
-	_obj_title.add_theme_font_size_override("font_size", UiTheme.fs(11))
-	_obj_title.add_theme_font_override("font", UiTheme.bold_font())
-	_obj_title.add_theme_color_override("font_color", Color("#e8c77a"))
-	_obj_title.add_theme_constant_override("outline_size", 3)
+	_obj_title.add_theme_font_size_override("font_size", UiTheme.fs(15))
+	_obj_title.add_theme_font_override("font", Bronze.title_font())
+	_obj_title.add_theme_color_override("font_color", Bronze.INK_RED)
+	_obj_title.add_theme_constant_override("outline_size", 0)
 	_obj_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	ov.add_child(_obj_title)
 	ov.add_child(QuestBox.Divider.new())
 	for i in 3:
-		var l := UiTheme.label("", "HudLabel", OBJ_W - 22)
+		var l := UiTheme.label("", "HudLabel", OBJ_W - 46)
 		l.add_theme_font_size_override("font_size", UiTheme.fs([13, 12, 11][i]))
-		l.add_theme_constant_override("outline_size", 3)
+		l.add_theme_constant_override("outline_size", 0)
 		if i == 0:
 			l.add_theme_font_override("font", UiTheme.bold_font())
 		_objectives.append(l)
 		ov.add_child(l)
+		if i == 0:
+			_obj_progress = QuestBox.Progress.new()
+			_obj_progress.visible = false
+			ov.add_child(_obj_progress)
 	add_child(_obj)
 
 	_boss_box = UiTheme.vbox(4)
@@ -227,15 +239,18 @@ func _ready() -> void:
 	_travel.add_child(_travel_label)
 	add_child(_travel)
 
-	_auto = AutoButton.new()
-	add_child(_auto)
+	# UI-41 (docs/35 §11): thanh EXP tím dưới đáy + cụm nút góc phải (bấm / chạm được).
+	_exp_bar = ExpBar.new()
+	add_child(_exp_bar)
+	_cluster = ActionCluster.new()
+	add_child(_cluster)
 
 	_ignore_mouse(self)
 	# Ô tài nguyên nhận chuột để hiện chú thích (C1-03).
 	for cell in _res_slots:
 		cell.mouse_filter = MOUSE_FILTER_PASS
-	_auto.mouse_filter = MOUSE_FILTER_STOP
-	_auto.pressed.connect(func(): auto_toggled.emit())
+	_cluster.mouse_filter = MOUSE_FILTER_STOP
+	_cluster.auto_pressed.connect(func(): auto_toggled.emit())
 
 
 func _ignore_mouse(node: Node) -> void:
@@ -433,7 +448,8 @@ func update_from(w: GameWorld) -> void:
 		extra.append("Đồng minh %d" % w.allies.size())
 	# UI-13: hệ ngũ hành hiện bằng biểu tượng trên hoa sen Thiên phú (không ghi chữ).
 	frame.element = str(p.element) if w.has_talent("ngu-hanh") else ""
-	_auto.on = w.auto_fight
+	_cluster.auto_on = w.auto_fight
+	_exp_bar.set_exp(minf(1.0, float(p.xp) / need), int(p.level), maxi(0, need - int(p.xp)), int(p.level) >= Config.MAX_LEVEL)
 	frame.extra = " · ".join(extra)
 	_tl.set_data(frame)
 	_target.update_from(w)
@@ -481,7 +497,10 @@ func _update_skill_bar(w: GameWorld, t: Dictionary, rank_color: Color) -> void:
 	var p = w.profile
 	var c: Dictionary = Classes.get_class_def(p.class_id)
 	_world = w
-	_skills.set_slot(SLOT_BASIC, {"key": "J", "name": c.basic.name, "icon": SpriteLib.icon("skill-" + str(c.basic.icon))})
+	# UI-41: Đánh, Né, Thiên phú, 2 bình chuyển sang cụm nút góc phải — ô trên thanh ẩn (giữ chỉ số ô cho code cũ).
+	var basic := {"key": "J", "name": c.basic.name, "icon": SpriteLib.icon("skill-" + str(c.basic.icon)), "act": "act-" + str(c.basic.icon)}
+	_cluster.set_button("attack", basic)
+	_skills.set_slot(SLOT_BASIC, {"hidden": true, "key": "J", "name": c.basic.name})
 	for i in Classes.SKILL_SLOTS:
 		# SK1: ô kỹ năng theo bộ lắp; chưa mở thì mờ + ghi cấp mở. SN12-02: ô 5, 6, G chưa mở thì ẩn; đã mở mà trống thì "+".
 		var key: String = Classes.SLOT_KEYS[i]
@@ -502,9 +521,11 @@ func _update_skill_bar(w: GameWorld, t: Dictionary, rank_color: Color) -> void:
 		_skills.set_slot(SLOT_SKILL0 + i, {"key": key, "name": sk.name, "icon": SpriteLib.icon("skill-" + str(sk.icon)),
 			"cd": 0.0 if locked else cd_left / maxf(0.1, w.skill_cd_of(i)), "cd_text": "" if locked else (str(ceili(cd_left)) if cd_left > 0.0 else ""),
 			"badge": str(lv) if lv > 1 and not locked else "", "lock": ("Cấp %d" % int(sk.unlock)) if locked else "",
-			"dim": low or locked, "big": big})
-	_skills.set_slot(SLOT_DODGE, {"key": "Space", "name": "Né lăn", "icon": SpriteLib.icon("skill-dodge"),
-		"cd": pl.dodge_cd / GameWorld.DODGE_CD, "cd_text": ("%.1f" % pl.dodge_cd) if pl.dodge_cd > 0.0 else ""})
+			"dim": low or locked, "big": big, "ring": skill_ring(w, str(sk.id), big)})
+	var dodge := {"key": "Space", "name": "Né lăn", "icon": SpriteLib.icon("skill-dodge"),
+		"cd": pl.dodge_cd / GameWorld.DODGE_CD, "cd_text": ("%.1f" % pl.dodge_cd) if pl.dodge_cd > 0.0 else ""}
+	_cluster.set_button("dodge", dodge)
+	_skills.set_slot(SLOT_DODGE, {"hidden": true, "key": "Space", "name": "Né lăn"})
 	# TP5-05 (docs/33): ô L theo Thiên phú có kỹ năng (chính, hoặc phụ khi chính bị động).
 	var lt: Dictionary = w.skill_talent()
 	if lt.id != t.id:
@@ -517,16 +538,27 @@ func _update_skill_bar(w: GameWorld, t: Dictionary, rank_color: Color) -> void:
 		tal.cd_text = str(ceili(pl.talent_cd)) if pl.talent_cd > 0.0 else ""
 	else:
 		tal.name = t.name
-	_skills.set_slot(SLOT_TALENT, tal)
+	_cluster.set_button("talent", tal)
+	_skills.set_slot(SLOT_TALENT, {"hidden": true, "key": "L", "name": tal.name})
 	var pot := {"key": "Q", "name": "Bình máu", "icon": SpriteLib.icon("skill-potion")}
 	pot.badge = str(p.potions)
 	pot.cd = pl.potion_cd / GameWorld.POTION_CD
 	pot.cd_text = str(ceili(pl.potion_cd)) if pl.potion_cd > 0.0 else ""
 	pot.dim = p.potions <= 0
-	_skills.set_slot(SLOT_POTION, pot)
-	_skills.set_slot(SLOT_MP_POTION, {"key": "F", "name": "Bình MP", "icon": SpriteLib.icon("skill-mp_potion"),
+	_cluster.set_button("potion", pot)
+	_skills.set_slot(SLOT_POTION, {"hidden": true, "key": "Q", "name": "Bình máu"})
+	_cluster.set_button("mp_potion", {"key": "F", "name": "Bình MP", "icon": SpriteLib.icon("skill-mp_potion"),
 		"badge": str(int(p.mp_potions)), "cd": pl.mp_potion_cd / GameWorld.MP_POTION_CD,
 		"cd_text": str(ceili(pl.mp_potion_cd)) if pl.mp_potion_cd > 0.0 else "", "dim": int(p.mp_potions) <= 0})
+	_skills.set_slot(SLOT_MP_POTION, {"hidden": true, "key": "F", "name": "Bình MP"})
+
+
+## UI-41: viền ô kỹ năng theo hệ (biến thể ✦ đã chọn hệ) — chưa có hệ: đồng; Tuyệt kỹ: vàng.
+static func skill_ring(w: GameWorld, id: String, big: bool) -> Color:
+	var el := Skills2.element_of(w, id)
+	if el != "" and Monsters.ELEMENT_HEX.has(el):
+		return Color(Monsters.ELEMENT_HEX[el])
+	return Color("#f3d27a") if big else Bronze.BR_MID
 
 
 ## SN12-02: ô trên thanh (chỉ số thanh) → ô bộ lắp (0–6), -1 nếu không phải ô kỹ năng.
@@ -636,12 +668,33 @@ func _set_obj(i: int, text: String, color: Color) -> void:
 	text = group_numbers(text)
 	_objectives[i].text = text
 	_objectives[i].visible = text != ""
-	_objectives[i].add_theme_color_override("font_color", color)
+	_objectives[i].add_theme_color_override("font_color", parchment_ink(color))
+	if i == 0:
+		# UI-41: "(a/b)" ở mục tiêu → thanh tiến độ
+		var m := RegEx.create_from_string("[(]([0-9]+)/([0-9]+)[)]").search(text)
+		_obj_progress.visible = m != null and int(m.get_string(2)) > 1
+		if _obj_progress.visible:
+			_obj_progress.frac = float(m.get_string(1)) / float(m.get_string(2))
+			_obj_progress.text = "%s/%s" % [m.get_string(1), m.get_string(2)]
+			_obj_progress.queue_redraw()
+
+
+## UI-41: màu chữ HUD (vàng / thường / nhạt / tốt / xấu) → mực tương ứng trên giấy da.
+static func parchment_ink(c: Color) -> Color:
+	if c == UiTheme.GOLD:
+		return Bronze.INK_RED
+	if c == UiTheme.MUTED:
+		return Color("#6a5232")
+	if c == UiTheme.GOOD:
+		return Color("#2f6a24")
+	if c == UiTheme.BAD:
+		return Color("#9a1c14")
+	return Bronze.INK
 
 
 func _objective(i: int, done: bool, text: String) -> void:
 	_objectives[i].text = ("✓ " if done else "○ ") + text
-	_objectives[i].add_theme_color_override("font_color", UiTheme.GOOD if done else UiTheme.MUTED)
+	_objectives[i].add_theme_color_override("font_color", parchment_ink(UiTheme.GOOD if done else UiTheme.MUTED))
 
 
 func _layout() -> void:
@@ -669,11 +722,17 @@ func _layout() -> void:
 	_target.position = Vector2((sz.x - _target.size.x) / 2.0, target_y)
 	_combo.reset_size()
 	_combo.position = Vector2(sz.x - _combo.size.x - 24, maxf(sz.y / 2.0, _obj.position.y + _obj.size.y + 8.0))
+	# UI-41: thanh EXP sát đáy, thanh kỹ năng ngay trên, cụm nút góc phải dưới
+	# 03/11: đầu rồng phải của thanh EXP (nhô ~26 px ngoài khung) không được chạm cụm nút (bình máu Q) — rút ngắn thanh.
+	_cluster.position = sz - _cluster.size - Vector2(6, 4)
+	var exp_right := _cluster.position.x + _cluster.left_edge() - ExpBar.DRAGON_OUT - 8.0
+	var exp_w := minf(clampf(sz.x * 0.6, 460.0, 1000.0), maxf(320.0, 2.0 * (exp_right - sz.x / 2.0)))
+	_exp_bar.size = Vector2(exp_w, ExpBar.H + 8.0)
+	_exp_bar.position = Vector2((sz.x - exp_w) / 2.0, sz.y - _exp_bar.size.y - 4.0)
 	var sk_size: Vector2 = _skills.custom_minimum_size * _skills.scale
-	_skills.position = Vector2((sz.x - sk_size.x) / 2.0, sz.y - sk_size.y - 8)
-	_auto.position = Vector2(_skills.position.x + sk_size.x + 10.0, sz.y - _auto.size.y - 10.0)
+	_skills.position = Vector2((sz.x - sk_size.x) / 2.0, _exp_bar.position.y - sk_size.y - 4.0)
 	# UI-02: nhật ký nằm trên thanh kỹ năng.
 	_log.reset_size()
-	_log.position = Vector2(12, sz.y - sk_size.y - 8 - _log.size.y - 10)
+	_log.position = Vector2(12, _skills.position.y - _log.size.y - 12)
 	_banner.reset_size()
 	_banner.position = Vector2((sz.x - _banner.size.x) / 2.0, sz.y * 0.28)

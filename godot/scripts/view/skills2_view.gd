@@ -4,12 +4,16 @@ extends RefCounted
 
 const Skills2 = preload("res://scripts/core/skills2.gd")
 const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
+const ClassFx = preload("res://scripts/view/class_fx.gd")
+const Fx1 = preload("res://scripts/view/fx1.gd")
 
 
 static func draw(ci: CanvasItem, world) -> void:
 	var st = world.sk2
 	var t: float = world.time
 	for wl in st.walls:
+		if Fx1.painter and Fx1.draw_wall(Fx1.painter, world, wl):
+			continue
 		var a: float = clampf(float(wl.ttl) / Skills2.HT_TIME * 2.0, 0.0, 1.0)
 		var dir: Vector2 = (wl.b - wl.a).normalized()
 		var n := 7
@@ -21,6 +25,12 @@ static func draw(ci: CanvasItem, world) -> void:
 			SpriteLib.poly(ci, PackedVector2Array([p - side * 0.5, p + Vector2(0, -h * 0.55), p + side * 0.5]), Color(1.0, 0.9, 0.5, 0.8 * a))
 		ci.draw_line(wl.a, wl.b, Color(1.0, 0.4, 0.1, 0.35 * a), Skills2.HT_THICK, true)
 	for z in st.ice:
+		if Fx1.painter and Fx1.draw_zone(Fx1.painter, world, z):
+			continue
+		# AR-45d: Kiếm Vực — vòng vực + kiếm rơi (không vẽ thành mưa băng)
+		if str(z.get("skill", "")) == "kiemvuc":
+			ClassFx.draw_domain(ci, world, z)
+			continue
 		# LH1: vùng có màu riêng (Thánh Vực, Thiên Thần Hộ Mệnh) — vòng sáng, không rơi băng.
 		if z.has("color"):
 			var c := Color(str(z.color))
@@ -34,6 +44,8 @@ static func draw(ci: CanvasItem, world) -> void:
 			var p2: Vector2 = z.pos + Vector2(fposmod(i * 37.0 + t * 90.0, z.r * 2.0) - z.r, fposmod(i * 53.0 + t * 160.0, z.r * 2.0) - z.r) * 0.8
 			ci.draw_line(p2, p2 + Vector2(-2, 7), Color(0.85, 0.95, 1.0, 0.8), 1.5)
 	for o in st.orbs:
+		if Fx1.painter and Fx1.draw_orb(Fx1.painter, world, o):
+			continue
 		var k := 0.5 + 0.5 * sin(t * 18.0)
 		ci.draw_circle(o.pos, 14.0 + 3.0 * k, Color(0.7, 0.55, 1.0, 0.25))
 		ci.draw_circle(o.pos, 8.0, Color(0.85, 0.75, 1.0, 0.95))

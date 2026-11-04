@@ -15,6 +15,9 @@ signal slot_menu(i: int, at: Vector2)
 signal skill_dropped(i: int, id: String)
 
 const UiTheme = preload("res://scripts/ui/ui_theme.gd")
+const Bronze = preload("res://scripts/ui/bronze.gd")
+## UI-41 (docs/35 §11): ô vuông viền màu theo hệ, phím treo dưới ô, khung đồng có đầu rồng 2 bên + huy hiệu sư tử.
+const TAB_H := 16.0
 
 const R := 22.0                 # bán kính ô tròn
 const PITCH := 60.0             # khoảng cách tâm 2 ô
@@ -80,7 +83,7 @@ func _relayout() -> void:
 		var w := PITCH + (BIG_GAP * 2.0 if big else 0.0)
 		_xs.append(x + w / 2.0)
 		x += w
-	custom_minimum_size = Vector2(x + PAD.x, PAD.y * 2.0 + R * 2.0 + 6.0)
+	custom_minimum_size = Vector2(x + PAD.x, PAD.y * 2.0 + R * 2.0 + 6.0 + TAB_H)
 	size = custom_minimum_size
 
 
@@ -134,68 +137,61 @@ func slot_center(i: int) -> Vector2:
 
 
 func _draw() -> void:
-	_draw_frame(Rect2(Vector2.ZERO, size))
+	var ci := get_canvas_item()
+	var r := Rect2(Vector2.ZERO, size)
+	# UI-41: đầu rồng 2 đầu thanh (vẽ trước để cánh nằm sau khung), khung đồng, huy hiệu sư tử giữa cạnh trên
+	Bronze.dragon(ci, Vector2(r.position.x + 10.0, r.end.y - 8.0), 1.05, true)
+	Bronze.dragon(ci, Vector2(r.end.x - 10.0, r.end.y - 8.0), 1.05, false)
+	Bronze.frame(ci, r, 0.75, Color(Bronze.MOSS, 0.94), Bronze.GEM_BLUE)
+	Bronze.lion(ci, Vector2(r.get_center().x, r.position.y - 5.0), 16.0)
 	for i in _slots.size():
 		if is_slot_visible(i):
 			_draw_slot(i, slot_center(i), _slots[i])
 
 
-func _draw_frame(r: Rect2) -> void:
+## Ô vuông bo góc nửa cạnh rr quanh c.
+func _sq(c: Vector2, rr: float) -> Rect2:
+	return Rect2(c - Vector2(rr, rr), Vector2(rr, rr) * 2.0)
+
+
+func _box(rect: Rect2, bg: Color, border: float, bcol: Color, radius := 6) -> void:
 	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(WOOD, 0.94)
-	sb.set_corner_radius_all(16)
-	sb.set_border_width_all(3)
-	sb.border_color = GOLD_DARK
-	sb.shadow_color = Color(0, 0, 0, 0.45)
-	sb.shadow_size = 6
-	draw_style_box(sb, r)
-	# viền vàng sáng bên trong + vạch tối dưới đáy tạo khối
-	var inner := r.grow(-5)
-	var sb2 := StyleBoxFlat.new()
-	sb2.draw_center = false
-	sb2.set_corner_radius_all(12)
-	sb2.set_border_width_all(1)
-	sb2.border_color = Color(GOLD, 0.55)
-	draw_style_box(sb2, inner)
-	draw_line(Vector2(r.position.x + 18, r.end.y - 3), Vector2(r.end.x - 18, r.end.y - 3), Color(WOOD_DARK, 0.9), 2.0)
-	# hoa văn 4 góc: cung cuộn + hạt kim cương
-	for c in [[r.position + Vector2(10, 10), 0.0], [Vector2(r.end.x - 10, r.position.y + 10), PI * 0.5],
-			[r.end - Vector2(10, 10), PI], [Vector2(r.position.x + 10, r.end.y - 10), PI * 1.5]]:
-		var p: Vector2 = c[0]
-		var a: float = c[1]
-		draw_arc(p + Vector2(8, 8).rotated(a), 8.0, a + PI, a + PI * 1.5, 8, GOLD, 2.0)
-		_diamond(p, 4.0, GOLD_LIGHT)
-	# hạt trang trí giữa 2 cạnh bên
-	_diamond(Vector2(r.position.x + 4, r.get_center().y), 4.0, GOLD)
-	_diamond(Vector2(r.end.x - 4, r.get_center().y), 4.0, GOLD)
+	sb.bg_color = bg
+	sb.draw_center = bg.a > 0.0
+	sb.set_corner_radius_all(radius)
+	sb.set_border_width_all(int(border))
+	sb.border_color = bcol
+	sb.anti_aliasing = true
+	draw_style_box(sb, rect)
 
 
 func _draw_slot(i: int, c: Vector2, d: Dictionary) -> void:
 	var rr := _radius(i)  # SN12-02: ô Tuyệt kỹ to hơn
 	var big: bool = d.get("big", false)
-	var ring: Color = d.get("ring", GOLD_LIGHT if big else GOLD)
+	var ring: Color = d.get("ring", GOLD_LIGHT if big else Bronze.BR_MID)
 	var dim: bool = d.get("dim", false)
 	var locked: bool = d.get("locked", false)
 	var cd := clampf(float(d.get("cd", 0.0)), 0.0, 1.0)
-	if big:
-		draw_circle(c, rr + 9.0, Color(GOLD_LIGHT, 0.12))
+	var ci := get_canvas_item()
+	var f := UiTheme.bold_font()
+	var key := str(d.get("key", ""))
 	if bool(d.get("empty", false)):
 		# SN12-02: ô đã mở nhưng chưa lắp kỹ năng
-		draw_circle(c, rr + 4.0, WOOD_DARK)
-		draw_circle(c, rr, Color("#141a22"))
-		draw_arc(c, rr + 1.0, 0.0, TAU, 48, Color(ring, 0.55), 2.0, true)
-		var fe := UiTheme.bold_font()
-		_text_center(fe, c + Vector2(0, 7), "+", 22, Color(ring, 0.7))
-		_key_pill(fe, c, rr, str(d.get("key", "")))
+		_box(_sq(c, rr + 3.0), Bronze.BR_DARK, 0, Color.TRANSPARENT, 7)
+		_box(_sq(c, rr), Color("#141a1a"), 2, Color(ring, 0.55))
+		_text_center(f, c + Vector2(0, 7), "+", 22, Color(ring, 0.7))
+		Bronze.key_tab(ci, c + Vector2(0, rr + 3.0), key)
 		return
 	# hào quang sau ô khi sẵn sàng / lóe sáng khi vừa hồi xong
 	if _flash[i] > 0.0:
-		draw_circle(c, rr + 10.0, Color(GOLD_LIGHT, _flash[i] * 0.9))
+		_box(_sq(c, rr + 9.0), Color(GOLD_LIGHT, _flash[i] * 0.8), 0, Color.TRANSPARENT, 12)
 	elif cd <= 0.0 and not dim and not locked:
-		draw_circle(c, rr + 5.0, Color(ring, 0.16))
-	# nền + icon cắt tròn
-	draw_circle(c, rr + 4.0, WOOD_DARK)
-	draw_circle(c, rr, Color("#1d2430"))
+		_box(_sq(c, rr + 6.0), Color(ring, 0.22), 0, Color.TRANSPARENT, 10)
+	if big:
+		_box(_sq(c, rr + 8.0), Color(GOLD_LIGHT, 0.14), 0, Color.TRANSPARENT, 12)
+	# ổ đồng + nền + icon vuông
+	_box(_sq(c, rr + 4.0), Bronze.BR_DARK, 0, Color.TRANSPARENT, 8)
+	_box(_sq(c, rr), Color("#1a2026"), 0, Color.TRANSPARENT)
 	var tex: Texture2D = d.get("icon")
 	if tex != null:
 		var mod := Color.WHITE
@@ -203,35 +199,37 @@ func _draw_slot(i: int, c: Vector2, d: Dictionary) -> void:
 			mod = Color(0.35, 0.35, 0.35)
 		elif dim:
 			mod = Color(0.5, 0.62, 1.0)
-		_circle_texture(c, rr - 2.0, tex, mod)
-	# hồi chiêu: quạt tối quét theo chiều kim đồng hồ từ đỉnh
+		var ir := _sq(c, rr - 2.0)
+		draw_texture_rect(tex, ir, false, mod)
+	# hồi chiêu: quạt tối quét theo chiều kim đồng hồ từ đỉnh, cắt theo ô vuông
 	if cd > 0.0:
 		var pts := PackedVector2Array([c])
-		var steps := maxi(2, ceili(40.0 * cd))
-		for s in steps + 1:
-			var a := -PI / 2.0 + TAU * (1.0 - cd) + TAU * cd * float(s) / steps
-			pts.append(c + Vector2.from_angle(a) * rr)
+		var steps := maxi(2, ceili(48.0 * cd))
+		for st in steps + 1:
+			var a := -PI / 2.0 + TAU * (1.0 - cd) + TAU * cd * float(st) / steps
+			var v := Vector2.from_angle(a)
+			pts.append(c + v * (rr - 1.0) / maxf(absf(v.x), absf(v.y)))
 		draw_colored_polygon(pts, Color(0, 0, 0, 0.62))
-	# bóng đổ trong (đáy phải tối) cho ô có chiều sâu
-	draw_arc(c, rr - 2.0, PI * -0.15, PI * 0.85, 24, Color(0, 0, 0, 0.35), 4.0, true)
-	# viền: vòng tối ngoài, vòng màu, điểm sáng góc trên trái
+	# bóng trong đáy + viền: tối ngoài, màu hệ, gờ sáng trên
+	draw_line(c + Vector2(-rr + 3, rr - 2), c + Vector2(rr - 3, rr - 2), Color(0, 0, 0, 0.35), 3.0)
 	var rc := DIM if dim else ring
-	draw_arc(c, rr + 2.5, 0.0, TAU, 48, GOLD_DARK if not dim else DIM.darkened(0.5), 4.0, true)
-	draw_arc(c, rr + 1.0, 0.0, TAU, 48, rc, 2.0, true)
-	draw_arc(c, rr + 1.5, PI * 1.05, PI * 1.45, 12, Color(1, 1, 1, 0.55), 1.5, true)
-	var f := UiTheme.bold_font()
+	_box(_sq(c, rr + 2.0), Color.TRANSPARENT, 2, Bronze.BR_DARK, 7)
+	_box(_sq(c, rr + 0.5), Color.TRANSPARENT, 2, rc, 6)
+	draw_line(c + Vector2(-rr + 4, -rr + 1.5), c + Vector2(rr - 4, -rr + 1.5), Color(1, 1, 1, 0.45), 1.2, true)
+	if big:
+		Bronze.gem_at(ci, c + Vector2(0, -rr - 3.0), 3.4, Bronze.GEM_RED)
 	var cd_text: String = d.get("cd_text", "")
 	# số giây làm tròn về 0 ("0.0", "0") thì không hiện
 	if cd_text != "" and cd_text.to_float() > 0.0:
 		_text_center(f, c + Vector2(0, 6), cd_text, 18, Color.WHITE)
-	# nhãn phím: viên thuốc ở góc dưới phải
-	_key_pill(f, c, rr, str(d.get("key", "")))
+	# UI-41: phím treo dưới ô
+	Bronze.key_tab(ci, c + Vector2(0, rr + 3.0), key)
 	# UI-10: huy hiệu số góc trên phải (cấp kỹ năng, số bình máu)
 	var badge: String = d.get("badge", "")
 	if badge != "":
 		var bs := 11
 		var bw := maxf(16.0, f.get_string_size(badge, HORIZONTAL_ALIGNMENT_LEFT, -1, bs).x + 8.0)
-		var bc := c + Vector2(rr * 0.72, -rr * 0.78)
+		var bc := c + Vector2(rr * 0.8, -rr * 0.82)
 		var bsb := StyleBoxFlat.new()
 		bsb.bg_color = Color("#2a1638")
 		bsb.set_corner_radius_all(8)

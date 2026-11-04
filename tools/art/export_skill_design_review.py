@@ -10,6 +10,7 @@ from PIL import Image, ImageDraw
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 OUT = os.path.join(ROOT, "docs", "design", "skills")
+OUT_V2 = os.path.join(ROOT, "docs", "design", "skills-v2")
 
 sys.path.insert(0, HERE)
 import class_skill_actions  # noqa: E402
@@ -38,6 +39,12 @@ SKILL_NAMES = {
     "kylan": "Ky Lan Giang The", "khienthep": "Khien Thep", "khieukhich": "Khieu Khich",
     "chandia": "Chan Dia", "thanhbatdiet": "Thanh Bat Diet", "soibong": "Trieu Hoi Soi Bong",
     "tieuquy": "Trieu Hoi Tieu Quy", "lienket": "Lien Ket Linh Hon", "quandoan": "Quan Doan Linh Hon",
+    "khienchan": "Khien Chan", "laokhien": "Lao Khien", "phanthuan": "Phi Thuan",
+    "phanquyet": "Phan Quyet", "xungphong": "Xung Phong", "thanhquang": "Thanh Quang Tram",
+    "thanhvuc": "Thanh Vuc", "thietchuy": "Thiet Chuy Pha Dia", "thanhdong": "Thanh Dong",
+    "linhtien": "Linh Tien", "thachquy": "Goi Thach Quy", "hoadieu": "Hoa Dieu",
+    "linhtran": "Linh Tran", "linhung": "Goi Linh Ung", "aulong": "Goi Au Long",
+    "longhong": "Long Hong", "loidodang": "Loi Do Dang", "phongdodang": "Phong Do Dang",
 }
 SOURCE_ART = {skill_id for skills in class_skill_actions.SKILLS.values() for skill_id in skills if skill_id != "fireball"}
 REVIEW_SKILLS = dict(class_skill_actions.ALL_SKILLS)
@@ -46,20 +53,16 @@ REVIEW_SKILLS.update({
     "trieu-hoi-su": ["soibong", "linhtien", "tieuquy", "lienket", "thachquy", "hoadieu", "linhtran", "linhung", "quandoan", "aulong", "longhong", "loidodang", "phongdodang", "kylan"],
 })
 EXPORT_SKILLS = dict(class_skill_actions.ALL_SKILLS)
-EXPORT_SKILLS.update({
-    "ho-ve": class_skill_actions.SKILLS["ho-ve"],
-    "trieu-hoi-su": class_skill_actions.SKILLS["trieu-hoi-su"],
-})
 
 
-def _review_card(class_id, skill_id, image):
+def _review_card(class_id, skill_id, image, variant="v1"):
     """Đặt mỗi strip lên một canvas cùng kích cỡ, có tên và trạng thái review."""
     width, height = 576, 288
     card = Image.new("RGBA", (width, height), (14, 17, 29, 255))
     draw = ImageDraw.Draw(card)
     source = skill_id in SOURCE_ART
     accent = (255, 202, 92, 255) if source else (120, 173, 255, 255)
-    status = "SOURCE ART - APPROVED REFERENCE" if source else "CONCEPT REVIEW - NOT FOR GAME"
+    status = "SOURCE ART - APPROVED REFERENCE" if source else "CODE PIXEL ART %s - REVIEW REFERENCE" % variant.upper()
     draw.rectangle((0, 0, width - 1, height - 1), outline=accent, width=3)
     draw.rectangle((10, 10, width - 10, 48), fill=(24, 28, 46, 255), outline=(56, 64, 92, 255), width=1)
     draw.text((20, 17), "%s / %02d / %s" % (CLASS_NAMES[class_id], REVIEW_SKILLS[class_id].index(skill_id) + 1, SKILL_NAMES[skill_id]), fill=(245, 245, 250, 255))
@@ -70,7 +73,7 @@ def _review_card(class_id, skill_id, image):
     return card
 
 
-def _animation_frames(class_id, skill_id, image):
+def _animation_frames(class_id, skill_id, image, variant="v1"):
     """Tạo khung GIF theo nhịp charge → cast → impact từ storyboard/action strip."""
     phase_names = ("CHARGE", "CAST", "IMPACT")
     if skill_id in SOURCE_ART:
@@ -82,7 +85,7 @@ def _animation_frames(class_id, skill_id, image):
         source_frames = [image.crop((index * 48, 0, (index + 1) * 48, image.height)) for index in range(3)]
     frames = []
     for phase, source in zip(phase_names, source_frames):
-        card = _review_card(class_id, skill_id, source)
+        card = _review_card(class_id, skill_id, source, variant)
         draw = ImageDraw.Draw(card)
         draw.rectangle((390, 14, 555, 42), fill=(8, 10, 18, 220), outline=(110, 125, 160, 255), width=1)
         draw.text((402, 22), phase, fill=(255, 255, 255, 255))
@@ -90,11 +93,11 @@ def _animation_frames(class_id, skill_id, image):
     return frames
 
 
-def build():
-    assets = class_skill_actions.build_all()
+def build(out=OUT, variant="v1"):
+    assets = class_skill_actions.build_all(variant)
     count = 0
     for class_id, skill_ids in EXPORT_SKILLS.items():
-        folder = os.path.join(OUT, class_id)
+        folder = os.path.join(out, class_id)
         os.makedirs(folder, exist_ok=True)
         for index, skill_id in enumerate(skill_ids, 1):
             image, _origin = assets["skill-action-" + skill_id]
@@ -105,12 +108,14 @@ def build():
                     legacy_path = os.path.join(folder, legacy_stem + ext)
                     if os.path.exists(legacy_path):
                         os.remove(legacy_path)
-            _review_card(class_id, skill_id, image).save(os.path.join(folder, stem + ".png"))
-            frames = _animation_frames(class_id, skill_id, image)
+            _review_card(class_id, skill_id, image, variant).save(os.path.join(folder, stem + ".png"))
+            frames = _animation_frames(class_id, skill_id, image, variant)
             frames[0].save(os.path.join(folder, stem + ".gif"), save_all=True, append_images=frames[1:], duration=[500, 300, 650], loop=0, disposal=2)
             count += 1
     return count
 
 
 if __name__ == "__main__":
-    print("ok: %d review images in %s" % (build(), OUT))
+    variant = "v2" if "--v2" in sys.argv else "v1"
+    out = OUT_V2 if variant == "v2" else OUT
+    print("ok: %d review images in %s" % (build(out, variant), out))

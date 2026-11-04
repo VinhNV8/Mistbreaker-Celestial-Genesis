@@ -27,7 +27,7 @@ const MAPS := {
 		"size": Vector2(4160, 2560),
 		"levels": [1, 6],
 		"zone_x": [720.0, 416.0],
-		"safe": {"pos": Vector2(368, 1280), "r": 170.0, "name": "Làng Thanh Thạch", "kind": "village"},
+		"safe": {"pos": Vector2(368, 1280), "r": 170.0, "name": "Làng Thanh Thạch", "kind": "village", "waypoint": Vector2(105, 88)},
 		## NPC: [id, sprite, vị trí so với tâm vùng an toàn, tên hiển thị]
 		"npcs": [["elder", "npc-elder", Vector2(48, 30), "Thạch Lão"], ["merchant", "npc-merchant", Vector2(-70, 70), "Thương nhân · E"]],
 		"arena": {"pos": Vector2(3664, 1280), "r": 270.0, "boss": "boss", "level": 6, "chapter": 1, "name": "Hang Sói Chúa"},
@@ -590,19 +590,109 @@ const MAPS := {
 const ORDER := ["1-1", "1-3", "2-1", "2-2", "2-3", "3-1", "3-2", "3-3", "4-1", "4-2", "4-3", "5-1", "5-2", "5-3", "6-1", "6-2", "6-3"]
 
 
-## Vị trí nhà trong vùng an toàn theo loại: [[lệch so với tâm, id hình], ...] (world_view vẽ, portals tránh).
+## Vị trí nhà trong vùng an toàn: [[lệch so với tâm, id hình HD, id hình pixel dự phòng], ...] (world_view vẽ, portals tránh).
+## UI-40c (docs/35 §10): theo chủ đề vùng (safe_theme); tắt HD / thiếu hình HD thì world_view vẽ id pixel.
 static func safe_buildings(m: Dictionary) -> Array:
+	return safe_theme(m).get("buildings", [])
+
+
+## Đồ trang trí khu an toàn (chỉ bản HD): [lệch so với tâm (chân hình), id, tỉ lệ]. Không chặn đường đi;
+## cổng dịch chuyển tránh các món trong vùng an toàn. Món ngoài bán kính (ruộng, thuyền, cây cọ…) là cảnh quanh trại.
+static func safe_props(m: Dictionary) -> Array:
+	return safe_theme(m).get("props", [])
+
+
+## UI-40b / UI-40c: chủ đề khu an toàn HD theo vùng — nền sân (yard), sân lát giữa (plaza), cọc rào (post) + màu thanh
+## ngang (rail), nhà, đồ trang trí. {} = không vẽ kiểu HD (hang, cổng dungeon).
+static func safe_theme(m: Dictionary) -> Dictionary:
 	var kind: String = m.safe.kind
 	if kind == "cave":
-		return []
-	if bool(m.get("desert", false)) and kind == "camp":
-		return [[Vector2(-60, -50), "tent"], [Vector2(-110, 40), "tent"], [Vector2(20, -110), "tent"]]
-	if kind == "camp":
-		return [[Vector2(-50, -40), "hut"]]
+		return {}
+	var reg := int(m.get("region", 1))
+	var r := float(m.safe.r)
+	var k := clampf(r / 150.0, 0.93, 1.35)
+	if kind == "village":
+		return {"yard": "tile-village", "plaza": "tile-plaza", "post": "fence-post", "rail": Color("#9a6a40"),
+			"buildings": [[Vector2(-85, -95), "house-village-0", "hut"], [Vector2(55, -110), "house-village-1", "hut"],
+				[Vector2(-125, 25), "house-village-2", "hut"], [Vector2(10, 125), "house-village-2", "hut"]],
+			"props": [[Vector2(-52, -18), "village-well", 1.0], [Vector2(-118, 100), "crates", 1.0],
+				[Vector2(150, -52), "lantern-post", 1.0], [Vector2(150, 52), "lantern-post", 1.0],
+				[Vector2(-40, 225), "garden", 1.0], [Vector2(55, 225), "garden", 1.0], [Vector2(-225, -40), "garden", 1.0],
+				[Vector2(135, 205), "haystack", 0.9]]}
 	if kind == "town":
-		return [[Vector2(-150, -120), "house-stone"], [Vector2(-170, 30), "house-stone"], [Vector2(-60, 150), "house-stone"],
-			[Vector2(70, -170), "house-stone"], [Vector2(130, 120), "tower"], [Vector2(-40, -200), "tower"]]
-	return [[Vector2(-90, -70), "hut"], [Vector2(-110, 40), "hut"], [Vector2(-30, 100), "hut"], [Vector2(60, -105), "hut"]]
+		return {"yard": "tile-town", "plaza": "tile-plaza", "post": "wall-post", "rail": Color("#8d8a82"), "rails": 3, "waypoint": Vector2(55, 150),
+			"buildings": [[Vector2(-150, -120), "house-stone", "house-stone"], [Vector2(-175, 30), "house-stone-b", "house-stone"],
+				[Vector2(-60, 160), "house-stone", "house-stone"], [Vector2(70, -170), "house-stone-b", "house-stone"],
+				[Vector2(150, 120), "tower", "tower"], [Vector2(-40, -205), "tower", "tower"]],
+			"props": [[Vector2(-40, 20), "village-well", 1.0], [Vector2(205, -62), "lantern-post", 1.0], [Vector2(205, 62), "lantern-post", 1.0],
+				[Vector2(-160, 120), "crates", 1.0], [Vector2(120, -60), "crates", 0.9], [Vector2(20, -110), "lantern-post", 1.0]]}
+	# trại: 2–3 nhà quanh mép bắc / tây, đống lửa giữa, đèn 2 bên cổng đông, đồ đạc phía nam; cảnh quanh ngoài rào.
+	var t: Dictionary = CAMP_THEMES.get(reg, CAMP_THEMES[1])
+	if bool(m.get("desert", false)) and reg != 3:
+		t = CAMP_THEMES[3]
+	var bl: Array = t.buildings
+	# Cổng Dịch Chuyển cố định ở khoảng trống phía nam (nhà ở mép bắc / tây che mất nếu để tự tính).
+	var out := {"yard": t.yard, "plaza": t.get("plaza", ""), "post": t.post, "rail": t.rail, "rails": int(t.get("rails", 2)), "buildings": [], "props": [],
+		"waypoint": Vector2(4, 0.6 * r)}
+	var spots := [Vector2(-92, -80), Vector2(80, -112), Vector2(-128, 22)]
+	for i in mini(bl.size(), 3 if r >= 175.0 else 2):
+		out.buildings.append([spots[i] * k, bl[i][0], bl[i][1]])
+	if t.get("center", "") != "":
+		out.props.append([Vector2(-6, 4) * k, t.center, 1.0])
+	if t.get("light", "") != "":
+		out.props.append([Vector2(r - 18.0, -0.3 * r), t.light, 1.0])
+		out.props.append([Vector2(r - 18.0, 0.3 * r), t.light, 1.0])
+	for pr in t.get("props", []):
+		out.props.append([pr[0] * k, pr[1], float(pr[2])])
+	for pr in t.get("outside", []):
+		out.props.append([Vector2.from_angle(deg_to_rad(float(pr[0]))) * (r + float(pr[1])), pr[2], float(pr[3])])
+	# chỗ cổng mặc định có NPC / đồ đứng → thử chỗ trống khác
+	for cand in [Vector2(4, 0.6 * r), Vector2(0.62 * r, 0.4 * r), Vector2(-0.32 * r, 0.66 * r), Vector2(0.66 * r, -0.12 * r), Vector2(0.67 * r, 0.03 * r)]:
+		var ok := true
+		for n in m.get("npcs", []):
+			ok = ok and cand.distance_to(n[2]) > 55.0
+		for pr in out.props:
+			ok = ok and cand.distance_to(pr[0]) > 50.0
+		if ok:
+			out.waypoint = cand
+			break
+	return out
+
+
+## Chủ đề trại theo vùng. buildings: [id HD, id pixel]; props: [lệch (×bán kính/150), id, tỉ lệ];
+## outside: [góc (độ, 0 = đông, 90 = nam), cách mép rào (px), id, tỉ lệ].
+const CAMP_THEMES := {
+	1: {"yard": "tile-village", "post": "fence-post", "rail": Color("#9a6a40"), "center": "campfire", "light": "lantern-post",
+		"buildings": [["watchtower", "hut"], ["tent-canvas", "hut"], ["house-village-2", "hut"]],
+		"props": [[Vector2(-100, 85), "crates", 1.0]], "outside": [[200, 46, "haystack", 0.9], [120, 50, "garden", 1.0]]},
+	2: {"yard": "tile-village", "post": "fence-post", "rail": Color("#9a6a40"), "center": "campfire", "light": "lantern-post",
+		"buildings": [["tent-canvas", "hut"], ["watchtower", "hut"], ["house-village-1", "hut"]],
+		"props": [[Vector2(-100, 85), "crates", 1.0]], "outside": [[200, 46, "haystack", 1.0], [235, 40, "haystack", 0.8], [120, 50, "garden", 1.0]]},
+	3: {"yard": "tile-sand-red", "post": "stake-post", "rail": Color("#c9a774"), "center": "campfire", "light": "torch-post",
+		"buildings": [["tent", "tent"], ["tent-desert-b", "tent"], ["tent", "tent"]],
+		"props": [[Vector2(-100, 85), "jars", 1.0], [Vector2(-62, 118), "crates", 0.9]],
+		"outside": [[205, 40, "palm", 1.3], [250, 46, "palm", 1.1], [125, 44, "palm", 1.2]]},
+	4: {"yard": "tile-mud", "plaza": "tile-boardwalk", "post": "bamboo-post", "rail": Color("#a99a5a"), "center": "net-rack", "light": "lantern-post",
+		"buildings": [["stilt-house", "hut"], ["stilt-house-b", "hut"], ["stilt-house", "hut"]],
+		"props": [[Vector2(-100, 85), "crates", 1.0]], "outside": [[110, 40, "boat", 1.0], [200, 36, "reeds-0", 1.3], [240, 40, "reeds-1", 1.3]]},
+	5: {"yard": "tile-ash", "plaza": "tile-basalt", "post": "iron-post", "rail": Color("#5a4a46"), "center": "brazier", "light": "brazier",
+		"buildings": [["hut-volcano", "hut"], ["forge-hall", "hut"], ["tent-ash", "hut"]],
+		"props": [[Vector2(-100, 85), "ore-cart", 1.0], [Vector2(-62, 118), "crates", 0.9]],
+		"outside": [[200, 40, "rock-lava-0", 1.5], [125, 46, "rock-lava-1", 1.4]]},
+	6: {"yard": "tile-snow", "post": "fence-post-snow", "rail": Color("#8a6a50"), "center": "campfire", "light": "lantern-post",
+		"buildings": [["cabin-snow", "hut"], ["cabin-snow-b", "hut"], ["tent-fur", "hut"]],
+		"props": [[Vector2(-100, 85), "woodpile", 1.0], [Vector2(-62, 118), "sled", 1.0]],
+		"outside": [[200, 40, "tree-pine-snow-0", 1.3], [125, 44, "snow-mound", 1.4], [240, 46, "tree-pine-snow-1", 1.2]]},
+	7: {"yard": "tile-sky-grass", "plaza": "tile-marble", "post": "marble-post", "rail": Color("#e4ddd0"), "center": "", "light": "lantern-post",
+		"buildings": [["pavilion-sky", "hut"], ["airship-dock", "hut"], ["tent-canvas", "hut"]],
+		"props": [[Vector2(-100, 85), "crates", 1.0]], "outside": [[200, 44, "cloud-puff-0", 1.4], [130, 40, "cloud-puff-1", 1.3]]},
+	8: {"yard": "tile-abyss", "plaza": "tile-marble-dark", "post": "ward-post", "rail": Color(0.62, 0.52, 0.95, 0.75), "center": "", "light": "lamp-tinh-quang-lit",
+		"buildings": [["void-shrine", "hut"], ["tent-void", "hut"], ["tent-void", "hut"]],
+		"props": [[Vector2(-100, 85), "crates", 1.0]], "outside": [[200, 40, "void-stone", 1.2], [125, 44, "void-stone", 1.0]]},
+	9: {"yard": "tile-heaven", "plaza": "tile-marble", "post": "jade-post", "rail": Color("#c9e8d8"), "center": "incense-burner", "light": "lantern-post",
+		"buildings": [["pavilion-jade", "hut"], ["pavilion-jade-b", "hut"], ["pavilion-jade", "hut"]],
+		"props": [], "outside": [[200, 40, "heaven-pillar-0", 1.2], [125, 40, "heaven-pillar-1", 1.2]]},
+}
 
 
 ## SN11-03 (Spec_Notes đợt 11, chủ dự án 31/10: "bản đồ rộng gấp 3 lần"): diện tích ×3 → mỗi chiều ×√3.

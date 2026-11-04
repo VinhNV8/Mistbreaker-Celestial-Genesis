@@ -95,7 +95,7 @@ func _draw() -> void:
 			sid = es
 	if SpriteLib.has_sprite(sid):
 		var s: Dictionary = SpriteLib.data().sprites[sid]
-		var k := (PR * 1.5) / maxf(1.0, float(s.h) * SpriteLib.scale() * float(s.get("size_mul", 1.0)))
+		var k := (PR * 1.5) / maxf(1.0, SpriteLib.logical_size(sid).y * SpriteLib.scale() * float(s.get("size_mul", 1.0)))
 		SpriteLib.draw_frame(self, sid, "idle", 0, c + Vector2(0, PR * 0.7), false, Color.WHITE, k)
 	else:
 		draw_circle(c, PR * 0.5, e.color)

@@ -40,7 +40,7 @@ class Portrait:
 		if not hero.is_empty():
 			SpriteLib.draw_hero(self, hero.class_id, hero.look, "idle", int(t * 3.0) % 2, at, false, Color.WHITE, 1.4)
 		elif SpriteLib.has_sprite(sprite):
-			var big: bool = SpriteLib.data().sprites[sprite].w > 32
+			var big: bool = SpriteLib.logical_size(sprite).x > 32.0
 			SpriteLib.draw_frame(self, sprite, "idle", int(t * 3.0) % 2, at, true, Color.WHITE, 0.75 if big else 1.4)
 
 
@@ -60,7 +60,8 @@ var _auto_t := 0.0
 
 
 func _ready() -> void:
-	add_theme_stylebox_override("panel", UiTheme.box(Color(0.06, 0.07, 0.1, 0.96), 12, 2, UiTheme.GOLD, 14))
+	# UI-41: khung đồng chạm khắc như mọi khung khác (nền rêu đậm hơn để đọc thoại)
+	add_theme_stylebox_override("panel", load("res://scripts/ui/frame_box.gd").new().setup(Color(0.06, 0.07, 0.1, 0.97), 18, "large"))
 	var row := UiTheme.hbox(14)
 	add_child(row)
 	_portrait = Portrait.new()

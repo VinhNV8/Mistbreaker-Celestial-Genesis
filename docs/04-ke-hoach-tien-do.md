@@ -35,9 +35,9 @@ File này liệt kê **mọi hạng mục trong kịch bản**: trạng thái hi
 | Khai phá, lãnh địa (mục 7) | 22 | 17 | 2 | 3 | 0 |
 | Trang bị, kinh tế (mục 8) | 17 | 14 | 1 | 1 | 1 |
 | 30 phút đầu (mục 9) | 9 | 9 | 0 | 0 | 0 |
-| Đồ hoạ, âm thanh | 13 | 13 | 0 | 0 | 0 |
+| Đồ hoạ, âm thanh | 15 | 15 | 0 | 0 | 0 |
 | Kỹ thuật, phát hành | 10 | 5 | 2 | 3 | 0 |
-| **Tổng** | **190** | **154** (81%) | **17** (9%) | **17** (9%) | **2** |
+| **Tổng** | **192** | **156** (81%) | **17** (9%) | **17** (9%) | **2** |
 
 ### Các giai đoạn
 
@@ -292,7 +292,7 @@ Phong cách đã chốt: **pixel art góc trên xuống 3/4, sinh bằng code** 
 
 | Mã | Hạng mục | Trạng thái | Đợt | Ghi chú |
 | --- | --- | --- | --- | --- |
-| DH-01 | **Chốt phong cách đồ hoạ** | ✅ | G1 | Pixel art 3/4, frame 24/32/48 px, ×2, sinh bằng code (07 mục 1.2) |
+| DH-01 | **Chốt phong cách đồ hoạ** | ✅ | G1 | Pixel art 3/4, frame 24/32/48 px, ×2, sinh bằng code (07 mục 1.2). **03/11/2026: đổi sang HD vector cel-shade (Q176 = B) — UI-40…49, [35](35-de-xuat-giao-dien-moi.md)** |
 | DH-02 | Sprite nhân vật Kiếm Khách: đứng, chạy, chém, Xoáy Kiếm, né, trúng đòn, chết | ✅ | G1 | AR-10. Xoáy Kiếm = frame chém + nháy sáng + vòng vector; né = mờ |
 | DH-03 | Sprite nhân vật Thợ Săn | ✅ | G1 / M3 | AR-11: có trong game từ M3; thêm 8 icon kỹ năng, tên bay, kiếm khí, bẫy (AR-41) |
 | DH-04 | Sprite quái: Sói Sương, Nấm Độc, Tinh Linh Sương (+ biến thể tinh anh) | ✅ | G1 | AR-12, AR-13 (thêm Mộc Tinh). Tinh anh: cùng hình, to hơn, ánh vàng, vòng chân |
@@ -305,6 +305,16 @@ Phong cách đã chốt: **pixel art góc trên xuống 3/4, sinh bằng code** 
 | DH-11 | Giao diện có art (khung, nút, font chính thức) | ✅ | G | Thanh kỹ năng có khung trang trí (ô tròn viền vàng, hồi chiêu quét tròn); mọi bảng phủ + khung HUD dùng `ui/frame_box.gd` (nền gỗ, viền vàng 2 lớp, hoa văn góc); nút gỗ/vàng nổi khối; font chính thức **Be Vietnam Pro** (OFL) đóng gói ở `assets/fonts` |
 | DH-12 | Âm thanh: đánh, trúng đòn, nhặt đồ, lên cấp, giao diện | ✅ | C1 | 16 hiệu ứng sinh bằng code (`tools/audio`) |
 | DH-13 | Nhạc nền: làng, rừng, boss | ✅ | C1 | Làng, Rừng Sương, Lõi Sương, Boss — vòng lặp sinh bằng code |
+| DH-14 | **Thiết kế lại VFX 70 kỹ năng (FX-1)** theo board Pinterest "game skill effects": cel-shade 4 dải + glow cộng, bản sắc 5 lớp, nhịp 12 khung; bản duyệt HD `docs/design/skills-fx`; **trong game** vẽ vector HD (`view/fx1.gd`), mặc định FX-1 cả 70 kỹ năng, hình cũ vẫn chọn được (Cài đặt "Hiệu ứng kỹ năng") | ✅ | 03/11 | FX1-T1, smoke `tests/fx1_smoke.gd` 5 lớp — [36](36-thiet-ke-lai-vfx-ky-nang.md) (Q180–Q183 đã duyệt) |
+| DH-15 | **Icon kỹ năng IC-1**: vẽ lại 51 icon vẽ bằng code cùng phong cách 19 icon vẽ tay + FX-1, HD 128×128, đã vào game qua lớp phủ HD | ✅ | 03/11 | IC1-T1, `tests/ic1_bar.gd` — [37](37-icon-ky-nang.md) (Q184 đã duyệt) |
+| UI-40 | **G0 bản thử HD cel-shade**: bộ vẽ vector `tools/art/hd/`, Sói Sương, Sói Chúa, cảnh Rừng Sương, 10 icon (03/11: **gỡ Kiếm Khách HD** — nhân vật + kỹ năng giữ hình gốc); lớp phủ `hd` trong manifest, bật / tắt ở Cài đặt | ✅ | 03/11 | UI40-T1; ảnh so sánh `03g-hd-scene` / `03g2-pixel-scene` — **chờ chủ dự án duyệt** [35](35-de-xuat-giao-dien-moi.md) |
+| UI-40b | **Làng Thanh Thạch HD** (chủ dự án 03/11: "khu vực thôn xấu quá, cần giống thực tế"): 3 kiểu nhà gỗ mái ngói / mái tranh, sân đất nện mép lượn + sân lát đá, hàng rào cọc gỗ thay vòng viền, giếng, thùng hàng, đèn lồng, ruộng rau + đống rơm ngoài rào, bia đá HD; Cổng Dịch Chuyển đặt ở khoảng trống | ✅ | 03/11 | UI40b-T1; `03h-village` — [35 §9](35-de-xuat-giao-dien-moi.md) |
+| UI-40c | **Toàn bộ map 9 vùng HD** (chủ dự án 03/11: "các map khác cũng xấu, giả tạo"): khu an toàn theo chủ đề vùng (nhà / lều / nhà sàn / lò rèn / nhà gỗ tuyết / đình / miếu, rào riêng, đồ vật, cảnh quanh), Thành Biên Đài, 18 nền + ~40 cảnh vật HD, mảng loang mềm | ✅ | 03/11 | UI40b-T1 — [35 §10](35-de-xuat-giao-dien-moi.md) |
+| UI-41 | **Giao diện đồng chạm khắc theo ảnh mẫu** (chủ dự án 03/11 chọn 6 phần): khung đồng + ngọc + nền rêu + chữ cổ cho mọi khung, thanh kỹ năng ô vuông viền theo hệ + phím treo + rồng / sư tử, thanh EXP tím dưới đáy, cụm nút tròn góc phải bấm / chạm được, bản đồ nhỏ la bàn tròn N/E/S/W + nút +/−, cuộn nhiệm vụ giấy da + dấu sáp + thanh tiến độ | ✅ | 03/11 | UI41-T1, M5-T6 — [35 §11](35-de-xuat-giao-dien-moi.md) |
+| UI-42…45 | G1 còn lại: khung nhân vật góc trái, màn tiêu đề / tạo nhân vật có minh hoạ, bảng phủ bên trong, icon 128 px toàn bộ, chuyển cảnh | ⬜ | — | Chờ chủ dự án duyệt UI-41 |
+| UI-46 | G2: thú cưng, đồng minh, NPC (**không** vẽ lại 5 lớp nhân vật / kỹ năng — hình gốc của chủ dự án) | ⬜ | — | Cần chủ dự án đồng ý |
+| UI-47 | G3 quái 9 vùng, boss vùng, boss hiếm, boss cuối | ⬜ | — | |
+| UI-48, 49 | G4 cảnh 9 vùng + hiệu ứng kỹ năng cùng phong cách | ⬜ | — | |
 
 Khi có art, chỉ cần thay `scripts/view/world_view.gd` (vẽ) và theme UI; logic game không đổi (technical spec, quyết định D2, D6).
 
@@ -433,6 +443,17 @@ Mỗi đợt theo quy trình: **viết spec → duyệt → code → test → c�
 - [x] SN14-01/02 (Spec_Notes 02/11, [31](31-de-xuat-thanh-ky-nang.md) mục SN14): Hấp Huyết dùng được bình máu; đổi ô / đổi bộ trong bảng Kỹ năng luôn được (game dừng nên khoá giao tranh 5 giây làm kẹt nút)
 - [x] TP-05/13/14/44 (02/11, [33](33-thien-phu-phu-cong-huong.md)): Thiên phú phụ (ô 2 / 3 khi chuyển chức 1 / 2, Lễ Thức Tỉnh ô phụ, cấp riêng), cộng hưởng chung +10% + 9 cặp đặc biệt (??? tới khi kích hoạt), tẩy bằng Nước Thánh Tinh Quang; save v28
 - [x] BD-11 + KP-10 + NV-23 (02/11, [34](34-dungeon-cong-ngau-nhien.md)): Dungeon cổng ngẫu nhiên hạng E → S (mở ngẫu nhiên mỗi 5 phút trên map đã tới, tối đa 2, 2 giờ chơi, 3 khu quái + Chúa Cổng, thưởng EXP / đồ / Tinh Hoa theo hạng), dọn sương 7% lộ cổng; save v29
+- [x] UI-40 (03/11, [35](35-de-xuat-giao-dien-moi.md)): Spec_Notes "giao diện pixel quá" → đề xuất 3 hướng, chủ dự án chọn **B (HD vector, code vẽ) + cel-shade mobile**; làm bản thử G0 (Sói Sương, Sói Chúa, Rừng Sương, 10 icon; Kiếm Khách HD đã gỡ theo yêu cầu), bật / tắt ở Cài đặt — chờ duyệt ảnh
+- [x] UI-40b (03/11, [35 §9](35-de-xuat-giao-dien-moi.md)): Làng Thanh Thạch vẽ lại HD — nhà gỗ mái ngói / tranh, hàng rào, giếng, sân lát đá, ruộng; Cổng Dịch Chuyển ở khoảng trống (UI40b-T1)
+- [x] UI-40c (03/11, [35 §10](35-de-xuat-giao-dien-moi.md)): 8 vùng còn lại + Thành Biên Đài vẽ lại HD — khu an toàn theo chủ đề vùng, nền + cảnh vật HD
+- [x] UI-41 (03/11, [35 §11](35-de-xuat-giao-dien-moi.md)): giao diện đồng chạm khắc theo ảnh mẫu — khung, thanh kỹ năng, thanh EXP, cụm nút góc phải, la bàn, cuộn nhiệm vụ
+- [x] DH-14 / FX-1 (03/11, [36](36-thiet-ke-lai-vfx-ky-nang.md)): nghiên cứu board Pinterest game-skill-effects, thiết kế lại VFX 70 kỹ năng 5 lớp, bản duyệt `docs/design/skills-fx` (GIF 12 khung + PNG + bảng tổng lớp)
+- [x] FX-2…4 (03/11, [36 §9](36-thiet-ke-lai-vfx-ky-nang.md)): chủ dự án duyệt Q180–Q183; FX-1 vào game cho cả 70 kỹ năng, vẽ vector HD, chạy song song với hình đã duyệt; thứ tự Pháp Sư → Thợ Săn → Triệu Hồi Sư → Hộ Vệ → Kiếm Khách (FX1-T1, smoke `tests/fx1_smoke.gd`); AR45d-T1 cập nhật theo AR-46
+- [x] FX-1 khớp thiết kế (03/11, [36 §9.6](36-thiet-ke-lai-vfx-ky-nang.md)): chủ dự án thấy Xoáy Kiếm trong game khác bản thiết kế → sửa game theo thiết kế (mặt đất 3/4, nhịp 12 khung, độ dày, bỏ hình cũ chồng lên, Thiên Tai 3 pha, Triệu Hồi Xương); ảnh so sánh 70 kỹ năng `docs/design/skills-fx-ingame`
+- [x] DH-15 / IC-1 (03/11, [37](37-icon-ky-nang.md)): vẽ lại 51 icon kỹ năng (giữ 19 icon vẽ tay), chủ dự án duyệt → vào game qua lớp phủ HD `manifest.hd.icons` (IC1-T1, ảnh thanh kỹ năng thật); bổ sung 20 icon bị động + icon tab "Bị động" cho đồng bộ ([37 §6](37-icon-ky-nang.md))
+- [x] Theo đề xuất cải thiện (03/11): sửa lỗi save cũ — ô lắp kỹ năng đã thay (Thiết Bích → Kiếm Ý, Dịch Chuyển → Băng Lao) thành trống (`Skills2.migrate_replaced` đổi cả `loadout` / `loadout_alt`; test CL1 hết `SCRIPT ERROR`); FX-1 hiệu năng 1,65 ms/khung; rung + khựng đòn + âm nổ đúng khung va chạm; cài đặt rung / giảm chớp; vòng cảnh báo đòn quái FX-1; chỉnh Hoả Tường, cột sáng triệu hồi, icon Ấu Long / Linh Ưng ([36 §9.7–9.10](36-thiet-ke-lai-vfx-ky-nang.md))
+- [ ] Bước 8 lát tiếp: vòng cảnh báo của từng chương (region5–9), cảnh báo nón / đường, icon Thiên phú / trang bị (G1–G4)
+- [x] AR-45d (03/11, [07](07-do-hoa-ke-hoach.md)): **AR-45d (03/11/2026, thay AR-45c):** 10 kỹ năng Kiếm Khách (Xoáy Kiếm, Đột Kích, Hống Kiếm, Kiếm Vũ, Phi Kiếm, Thánh Kiếm Trảm, Kiếm Vực, Huyết Bạo, Huyết Ảnh, Nhất Kiếm Khai Thiên) **dàn dựng chuyển động theo cơ chế thật** bằng chính các mảnh hình gốc mà bộ review `docs/design/skills/kiem-khach` ghép từ master sheet (trăng khuyết Trảm Phong, vụ nổ Kiếm Ý, thanh kiếm Vạn Kiếm): Xoáy Kiếm 4 trăng khuyết xoay 2 vòng nở ra 12,5 m; Đột Kích / Huyết Ảnh vệt trăng khuyết theo đường lao thật; Hống Kiếm / Huyết Bạo tụ lực rồi nổ + 8 trăng khuyết toả ra đủ bán kính; Kiếm Vũ 4 kiếm bay quanh 2 giây + nhát chém mỗi nhịp; Phi Kiếm / Thánh Kiếm loé lực ở mũi kiếm (kiếm bay vẽ như đạn); Kiếm Vực vòng vực đi theo người, 8 kiếm cắm quanh mép, kiếm rơi cắm xuống mỗi nhịp 0,5 giây (trước đây bị vẽ nhầm thành Mưa Băng); Nhất Kiếm tụ lực 0,5 giây rồi chuỗi trăng khuyết chạy dọc vệt chém 40 m. AR-45c (3 ảnh tĩnh của storyboard dán cạnh nhân vật) đã gỡ vì chủ dự án thấy "không giống ra chiêu trong game". Trảm Phong, Kiếm Ý, Nguyệt Ảnh Liên Trảm, Vạn Kiếm Quy Tông giữ hình cũ
 - [x] UI-22: tạo nhân vật 2 bước — màn chọn lớp kiểu thẻ (5 thẻ, chân dung lớn theo lớp, chỉ số cấp 1, 4 kỹ năng, Hộ Vệ / Triệu Hồi Sư "Sắp ra mắt") rồi đặt tên + ngoại hình (nút Đổi lớp)
 - [x] UI-21: bảng Nhân vật kiểu mới theo ảnh thiết kế (27/10): tiêu đề + tab vàng, cột nhân vật (bệ đá, thẻ Thiên phú có sao, khung bộ đồ Xem set), trang Điểm thuộc tính dạng thẻ (tổng + điểm cộng), mẫu Tự cộng điểm theo lớp, cột Lực chiến + Chỉ số chiến đấu + lửa trại; Túi đồ / Tài nguyên cùng phong cách; 21 icon `stat-*`; UI-21b: kiếm chéo trên biển Lực chiến (không đè chữ), tab Chỉ số không lặp 8 chỉ số ở cột trái; UI-21c: khung bộ đồ hiện đủ mức thưởng, chỉ khi có mặc đồ bộ, bỏ nút Xem set; 3 tab cột trái không còn 8 chỉ số
 - [x] UI-19: chỉ số mặc định theo lớp (tổng 17), trang Chỉ số hiện "mặc định + điểm cộng" và chỉ số đó đang cho bao nhiêu — chỉ số cuối không đổi

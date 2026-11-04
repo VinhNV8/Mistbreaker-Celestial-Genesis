@@ -53,12 +53,21 @@ static func list(id: String) -> Array:
 ## Cổng Dịch Chuyển: chọn trong vài vị trí ứng viên (vòng 0,55 bán kính vùng an toàn) chỗ xa nhà, NPC,
 ## tâm (bia đá / lửa trại) và điểm xuất hiện (+60, 0) nhất.
 static func waypoint_offset(m: Dictionary) -> Vector2:
+	# UI-40b: làng HD đặt sẵn chỗ cổng (khoảng trống đông nam, không bị mái nhà che).
+	if m.safe.has("waypoint"):
+		return m.safe.waypoint
+	var th: Dictionary = Maps.safe_theme(m)
+	if th.has("waypoint"):
+		return th.waypoint
 	var r := float(m.safe.r)
 	var blocks: Array = [Vector2.ZERO, Vector2(60, 0)]
 	for b in Maps.safe_buildings(m):
 		blocks.append(b[0])
 	for n in m.get("npcs", []):
 		blocks.append(n[2])
+	for pr in Maps.safe_props(m):
+		if pr[0].length() < r:
+			blocks.append(pr[0])
 	var best := Vector2(0, r * 0.55)
 	var best_d := -1.0
 	for i in 16:

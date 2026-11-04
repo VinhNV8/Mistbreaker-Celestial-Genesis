@@ -18,16 +18,18 @@ Không thiết kế lại icon UI trong đợt này: icon, cây kỹ năng, tool
 
 ## 2. Trạng thái tổng quan
 
-| Lớp | Số kỹ năng chủ động | Source art tham chiếu | Concept review | Cần artwork |
+| Lớp | Số kỹ năng chủ động | Source art tham chiếu | Code pixel-art review | Cần source art |
 | --- | ---: | ---: | ---: | ---: |
 | Kiếm Khách | 14 | 4 | 10 | 10 |
 | Thợ Săn | 14 | 4 | 10 | 10 |
-| Pháp Sư | 14 | 4 | 10 | 10 |
-| Hộ Vệ | 14 | 4 | 1 | 10 |
-| Triệu Hồi Sư | 14 | 4 | 1 | 10 |
-| **Tổng** | **70** | **20** | **32** | **50** |
+| Pháp Sư | 14 | 3 | 11 | 11 |
+| Hộ Vệ | 14 | 4 | 10 | 10 |
+| Triệu Hồi Sư | 14 | 4 | 10 | 10 |
+| **Tổng** | **70** | **19** | **51** | **51** |
 
-`Source art tham chiếu` là ảnh cắt trực tiếp từ master sheet và là chuẩn chất lượng cho artwork mới. `Concept review` là storyboard sinh thủ tục để diễn đạt ý tưởng/chuyển động; không phải artwork bàn giao và phải được thay thế. Không cột nào mặc định đồng nghĩa với asset runtime đã import vào game.
+`Source art tham chiếu` là ảnh cắt trực tiếp từ master sheet và là chuẩn chất lượng cho artwork mới. `Code pixel-art review` là ba cảnh có pose source, địa hình theo lớp, VFX riêng và linh thú thật khi kỹ năng triệu hồi; dùng để duyệt chuyển động/silhouette, nhưng vẫn cần source art riêng trước khi thay thế asset runtime. Không cột nào mặc định đồng nghĩa với asset runtime đã import vào game.
+
+**AR-46, 03/11/2026:** một vertical slice đã được đưa vào runtime bằng asset ba pha độc quyền `fx-skill-<id>-p0/p1/p2`: Đột Kích (vệt lao và impact), Tên Nảy (mũi tên và marker từng điểm nảy), Thiên Thạch (telegraph, vật thể rơi, impact tại điểm ngắm), Thiết Chuỳ Phá Địa (wind-up, nện, đá vỡ) và Gọi Ấu Long (vòng gọi, xuất hiện linh thú). Đây là chuẩn implementation cho các đợt source art tiếp theo; các skill khác không tự động được nâng trạng thái runtime.
 
 ## 3. Danh sách theo lớp
 
@@ -50,7 +52,7 @@ Thư mục review hiện có: `docs/design/skills/kiem-khach/`. **Đã đưa và
 | 60, Kiếm Thánh | Kiếm Vực | Đã có | Vùng kiếm trường tồn tại 4 giây, có slow. |
 | 60, Huyết Kiếm | Huyết Bạo | Đã có | Vụ nổ máu, có nhịp hút máu trở lại. |
 | 60, Huyết Kiếm | Huyết Ảnh | Đã có | Hai cú lao liên tiếp, vệt máu/ảo ảnh. |
-| 90, Kiếm Thần | Nhất Kiếm Khai Thiên | Đã có concept review | Wind-up 0,5 giây -> một đường chém rộng 5 m, dài 40 m; cảm giác dồn sát thương đơn mục tiêu/boss. |
+| 90, Kiếm Thần | Nhất Kiếm Khai Thiên | Đã có code pixel-art review | Wind-up 0,5 giây -> một đường chém rộng 5 m, dài 40 m; cảm giác dồn sát thương đơn mục tiêu/boss. |
 
 ### Thợ Săn
 
@@ -71,7 +73,7 @@ Thư mục review hiện có: `docs/design/skills/tho-san/`.
 | 60, Thần Tiễn | Tam Liên Thần Tiễn | Đã có | Ba phát tên thần liên tiếp. |
 | 60, Thợ Bẫy | Bãi Mìn | Đã có | Rải 5 mìn quanh người, nhận diện từng vùng nổ. |
 | 60, Thợ Bẫy | Lưới Bẫy | Đã có | Lưới ném tới điểm ngắm, vùng trói 8 m. |
-| 90, Thiên Lạc Xạ Thủ | Thiên Lạc Tinh Vũ | Đã có concept review | 8 mũi tên sao rơi từ trên xuống, ưu tiên quái nhiều HP; cần phân biệt với Vũ Tiễn bằng quỹ đạo và điểm rơi riêng lẻ. |
+| 90, Thiên Lạc Xạ Thủ | Thiên Lạc Tinh Vũ | Đã có code pixel-art review | 8 mũi tên sao rơi từ trên xuống, ưu tiên quái nhiều HP; cần phân biệt với Vũ Tiễn bằng quỹ đạo và điểm rơi riêng lẻ. |
 
 ### Pháp Sư
 
@@ -92,11 +94,11 @@ Thư mục review hiện có: `docs/design/skills/phap-su/`.
 | 60, Đại Pháp Sư | Băng Phong Thiên Hạ | Đã có | Vụ nổ băng lớn quanh thân, trói 3 giây. |
 | 60, Tử Linh Sư | Triệu Hồi Xương | Đã có | Nghi thức gọi 3 Xương Nô, có hiệu ứng xuất hiện. |
 | 60, Tử Linh Sư | Khí Độc Tử Vong | Đã có | Vùng khí độc tồn tại 5 giây, độc cộng dồn. |
-| 90, Hiền Giả | Ngũ Hành Luân Chuyển | Đã có concept review | 5 cầu Kim/Mộc/Thủy/Hỏa/Thổ quay quanh điểm ngắm; màu và biểu tượng từng hệ phải phân biệt rõ. |
+| 90, Hiền Giả | Ngũ Hành Luân Chuyển | Đã có code pixel-art review | 5 cầu Kim/Mộc/Thủy/Hỏa/Thổ quay quanh điểm ngắm; màu và biểu tượng từng hệ phải phân biệt rõ. |
 
 ### Hộ Vệ
 
-Đã có source art tham chiếu cho Khiên Thép, Khiêu Khích, Chấn Địa, Thành Bất Diệt. Thiên Thuẫn Giáng Thế hiện chỉ có concept review; cần artwork cho 10 skill còn lại:
+Đã có source art tham chiếu cho Khiên Thép, Khiêu Khích, Chấn Địa, Thành Bất Diệt. Mười skill còn lại đã có code pixel-art review; vẫn cần source art riêng:
 
 | Cấp/mở khóa | Kỹ năng | Hướng thiết kế |
 | --- | --- | --- |
@@ -113,11 +115,11 @@ Thư mục review hiện có: `docs/design/skills/phap-su/`.
 | 60, Thánh Kỵ Sĩ | Thánh Vực | Vùng thánh quang đi theo nhân vật, hồi máu mỗi nhịp. |
 | 60, Thiết Vệ | Thiết Chùy Phá Địa | Đập đất vùng tròn 12 m, choáng. |
 | 60, Thiết Vệ | Thành Đồng | Nổ khiên và lớp khiên chắn sau nổ. |
-| 90, Thủ Hộ Thần | Thiên Thuẫn Giáng Thế | **Đã có concept review.** Khiên thần giáng xuống, choáng và tạo khiên lớn. |
+| 90, Thủ Hộ Thần | Thiên Thuẫn Giáng Thế | **Đã có code pixel-art review.** Khiên thần giáng xuống, choáng và tạo khiên lớn. |
 
 ### Triệu Hồi Sư
 
-Đã có source art tham chiếu cho Triệu Hồi Sói Bóng, Triệu Hồi Tiểu Quỷ, Liên Kết Linh Hồn, Quân Đoàn Linh Hồn. Kỳ Lân Giáng Thế hiện chỉ có concept review; cần artwork cho 10 skill còn lại:
+Đã có source art tham chiếu cho Triệu Hồi Sói Bóng, Triệu Hồi Tiểu Quỷ, Liên Kết Linh Hồn, Quân Đoàn Linh Hồn. Mười skill còn lại đã có code pixel-art review; vẫn cần source art riêng:
 
 | Cấp/mở khóa | Kỹ năng | Hướng thiết kế |
 | --- | --- | --- |
@@ -134,7 +136,7 @@ Thư mục review hiện có: `docs/design/skills/phap-su/`.
 | 60, Ngự Long Sư | Long Hống | Sóng âm rồng quanh người và quanh Ấu Long nếu đang tồn tại. |
 | 60, Đồ Đằng Sư | Lôi Đồ Đằng | Cột totem đặt tại điểm ngắm, sét lặp lại. |
 | 60, Đồ Đằng Sư | Phong Đồ Đằng | Totem gió tạo vùng slow, buff tốc đánh linh thú. |
-| 90, Vạn Linh Chi Chủ | Kỳ Lân Giáng Thế | **Đã có concept review.** Triệu hồi Kỳ Lân thần thú, hồi đầy máu cho linh thú và đánh nổ lan. |
+| 90, Vạn Linh Chi Chủ | Kỳ Lân Giáng Thế | **Đã có code pixel-art review.** Triệu hồi Kỳ Lân thần thú, hồi đầy máu cho linh thú và đánh nổ lan. |
 
 ## 4. Thứ tự ưu tiên để sản xuất
 

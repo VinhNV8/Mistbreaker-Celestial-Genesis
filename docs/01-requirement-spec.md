@@ -128,6 +128,7 @@ Cột **Trạng thái**: ✅ đã làm và có test tự động · 🟡 đã l�
 | NFR-04 | Thông số cân bằng (thời gian hồi, giá, điều kiện mở khoá) nằm tập trung ở `config.gd` và `data/`, sửa không cần đụng logic |
 | NFR-05 | Không mất tiến trình khi game đóng đột ngột quá 5 giây kể từ lần lưu gần nhất |
 | NFR-06 | Cửa sổ co giãn được, tối thiểu 1280 × 720 vẫn hiển thị đủ HUD |
+| NFR-07 | Hiệu ứng kỹ năng đọc được gameplay (FX-1, [36](36-thiet-ke-lai-vfx-ky-nang.md) §3.3): kỹ năng đặt điểm có vòng cảnh báo đúng bán kính trước khi gây sát thương; quái trúng đòn nháy trắng; choáng / trói / độc có ký hiệu trên đầu; màu xanh lá chỉ dùng cho hồi máu; mỗi lớp một bảng màu riêng (§4). Nghiệm thu: chủ dự án duyệt Q180–Q183 (03/11/2026: cả 70 kỹ năng, song song với hình đã duyệt, HD); test FX1-T1 + smoke `tests/fx1_smoke.gd` — ✅ |
 
 ## 5. Chỗ lệch so với kịch bản
 
@@ -171,3 +172,4 @@ Cho 3–5 người chơi thử từ đầu tới khi hạ boss, không hướng 
 - Nền tảng ra mắt đầu tiên: PC hay Mobile? Quyết định này ảnh hưởng điều khiển (NFR-06) và UI.
 - Phong cách đồ hoạ: pixel art, 2.5D anime hay 3D low-poly?
 - Sau playtest: có giữ tốc độ hồi Đuốc 2 phút cho bản chính không?
+- ~~Q180–Q183~~ đã trả lời 03/11/2026 — [36 §8](36-thiet-ke-lai-vfx-ky-nang.md).

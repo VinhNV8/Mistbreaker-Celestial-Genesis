@@ -24,6 +24,7 @@ from catalog import SPRITES, FPS, LOOP  # noqa: E402
 import icons  # noqa: E402
 import env  # noqa: E402
 import class_sheet  # noqa: E402
+import skill_source_vfx  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(HERE))
 ASSETS = os.path.join(ROOT, "godot", "assets")
@@ -101,7 +102,18 @@ def main():
     env_imgs.update(class_sheet.fx())  # AR-44: hiệu ứng kỹ năng cắt từ sprite sheet 5 lớp
     for eid, (img, origin) in class_sheet.fx().items():
         manifest["env"][eid] = {"path": _save(img, "env", eid + ".png"), "w": img.width, "h": img.height, "origin": origin}
+    env_imgs.update(skill_source_vfx.build_all())
+    for eid, (img, origin) in skill_source_vfx.build_all().items():
+        manifest["env"][eid] = {"path": _save(img, "env", eid + ".png"), "w": img.width, "h": img.height, "origin": origin}
     contact("env", [(k, v[0]) for k, v in env_imgs.items()], scale=3, cols=8)
+    # UI-40: giữ lớp phủ HD (tools/art/hd/build_hd.py) khi dựng lại toàn bộ.
+    try:
+        with open(os.path.join(ASSETS, "art_manifest.json"), encoding="utf-8") as f:
+            old = json.load(f)
+        if "hd" in old:
+            manifest["hd"] = old["hd"]
+    except (OSError, ValueError):
+        pass
     with open(os.path.join(ASSETS, "art_manifest.json"), "w", encoding="utf-8", newline=chr(10)) as f:
         json.dump(manifest, f, ensure_ascii=False, indent=1)
     print("ok: %d sprite, %d icon, %d env" % (len(manifest["sprites"]), len(manifest["icons"]), len(manifest["env"])))

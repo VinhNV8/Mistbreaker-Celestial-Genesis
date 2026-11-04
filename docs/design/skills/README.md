@@ -9,16 +9,22 @@ Phạm vi index là **70 kỹ năng chủ động** trong `classes.gd` (14 mỗi
 đòn đánh thường (Chém, Bắn, Hỏa Cầu, Đập Khiên, Linh Cầu) là hành động cơ bản,
 không nằm trong danh mục review skill này.
 
+**03/11/2026 (FX-1, đã duyệt và vào game):** bộ thiết kế lại VFX cả 70 kỹ năng theo ngôn ngữ cel-shade nằm riêng ở [`../skills-fx`](../skills-fx) — xem [docs/36](../../36-thiet-ke-lai-vfx-ky-nang.md). Trong game FX-1 là mặc định cho cả 70 kỹ năng; hình ở đây vẫn dùng được khi chọn "FX-1, giữ hình đã duyệt" hoặc "Hình cũ" trong Cài đặt. Ảnh trong thư mục này không bị thay.
+
 Quy ước nhãn trên ảnh:
 
 - `SOURCE ART - APPROVED REFERENCE`: cắt trực tiếp từ master sheet đã cung cấp.
-- `CONCEPT REVIEW - NOT FOR GAME`: storyboard tham khảo để duyệt ý tưởng; chưa đủ chất lượng để import runtime.
+- `CODE PIXEL ART - REVIEW REFERENCE`: ba cảnh pixel art có pose source, địa hình theo lớp, VFX riêng và linh thú thật cho kỹ năng triệu hồi; dùng để duyệt hướng hình ảnh, chưa thay thế source art runtime.
+
+**03/11/2026 (AR-46):** vertical slice runtime có asset nguồn riêng `fx-skill-<id>-p0/p1/p2` (64×64, ba pha) cho Đột Kích, Tên Nảy, Thiên Thạch, Thiết Chuỳ Phá Địa và Gọi Ấu Long. Asset sinh bởi `tools/art/skill_source_vfx.py`, được manifest quản lý qua `build_all.py` và render trong `view/class_fx.gd`; không dùng PNG/GIF review làm asset runtime. Các skill khác vẫn giữ trạng thái review/source art được nêu bên dưới.
+
+**03/11/2026 (AR-45d):** 10 kỹ năng Kiếm Khách (Xoáy Kiếm, Đột Kích, Hống Kiếm, Kiếm Vũ, Phi Kiếm, Thánh Kiếm Trảm, Kiếm Vực, Huyết Bạo, Huyết Ảnh, Nhất Kiếm Khai Thiên) **dàn dựng chuyển động theo cơ chế thật** bằng chính các mảnh hình gốc mà bộ review `docs/design/skills/kiem-khach` ghép từ master sheet (trăng khuyết Trảm Phong, vụ nổ Kiếm Ý, thanh kiếm Vạn Kiếm): Xoáy Kiếm 4 trăng khuyết xoay 2 vòng nở ra 12,5 m; Đột Kích / Huyết Ảnh vệt trăng khuyết theo đường lao thật; Hống Kiếm / Huyết Bạo tụ lực rồi nổ + 8 trăng khuyết toả ra đủ bán kính; Kiếm Vũ 4 kiếm bay quanh 2 giây + nhát chém mỗi nhịp; Phi Kiếm / Thánh Kiếm loé lực ở mũi kiếm (kiếm bay vẽ như đạn); Kiếm Vực vòng vực đi theo người, 8 kiếm cắm quanh mép, kiếm rơi cắm xuống mỗi nhịp 0,5 giây (trước đây bị vẽ nhầm thành Mưa Băng); Nhất Kiếm tụ lực 0,5 giây rồi chuỗi trăng khuyết chạy dọc vệt chém 40 m. AR-45c (3 ảnh tĩnh của storyboard dán cạnh nhân vật) đã gỡ vì chủ dự án thấy "không giống ra chiêu trong game". Trảm Phong, Kiếm Ý, Nguyệt Ảnh Liên Trảm, Vạn Kiếm Quy Tông giữ hình cũ.
 
 **Đã vào game (02/11/2026, AR-45b — docs/07):** cả 14 kỹ năng Kiếm Khách. Trảm Phong, Kiếm Ý, Vạn Kiếm Quy Tông
 dùng hình cắt từ master sheet (`fx-sheet-*`); 11 kỹ năng còn lại dùng keyframe 32×32 `vfx-<id>` (khung giữa
 của storyboard, `tools/art/skill_vfx.py`) vẽ khi thi triển ở `godot/scripts/view/class_fx.gd`. Thợ Săn và
 Pháp Sư vẫn chỉ ở mức review. Chỉ các card có nhãn `SOURCE ART` được dùng làm chuẩn chất lượng artwork;
-các card `CONCEPT REVIEW` là bản phác hướng chuyển động, không phải artwork bàn giao.
+các card `CODE PIXEL ART` là bản duyệt hướng hình ảnh, không phải artwork runtime bàn giao.
 
 ## Kiếm Khách
 
@@ -81,36 +87,36 @@ các card `CONCEPT REVIEW` là bản phác hướng chuyển động, không ph�
 
 | # | Kỹ năng | Trạng thái | Ảnh |
 | ---: | --- | --- | --- |
-| 1 | Khiên Chấn | Cần artwork | — |
+| 1 | Khiên Chấn | Code pixel-art review | [PNG](ho-ve/01-khienchan.png) · [GIF](ho-ve/01-khienchan.gif) |
 | 2 | Khiêu Khích | Source art tham chiếu | [PNG](ho-ve/02-khieukhich.png) · [GIF](ho-ve/02-khieukhich.gif) |
-| 3 | Lao Khiên | Cần artwork | — |
+| 3 | Lao Khiên | Code pixel-art review | [PNG](ho-ve/03-laokhien.png) · [GIF](ho-ve/03-laokhien.gif) |
 | 4 | Khiên Thép | Source art tham chiếu | [PNG](ho-ve/04-khienthep.png) · [GIF](ho-ve/04-khienthep.gif) |
 | 5 | Chấn Địa | Source art tham chiếu | [PNG](ho-ve/05-chandia.png) · [GIF](ho-ve/05-chandia.gif) |
-| 6 | Phi Thuẫn | Cần artwork | — |
-| 7 | Phán Quyết | Cần artwork | — |
-| 8 | Xung Phong | Cần artwork | — |
+| 6 | Phi Thuẫn | Code pixel-art review | [PNG](ho-ve/06-phanthuan.png) · [GIF](ho-ve/06-phanthuan.gif) |
+| 7 | Phán Quyết | Code pixel-art review | [PNG](ho-ve/07-phanquyet.png) · [GIF](ho-ve/07-phanquyet.gif) |
+| 8 | Xung Phong | Code pixel-art review | [PNG](ho-ve/08-xungphong.png) · [GIF](ho-ve/08-xungphong.gif) |
 | 9 | Thành Bất Diệt | Source art tham chiếu | [PNG](ho-ve/09-thanhbatdiet.png) · [GIF](ho-ve/09-thanhbatdiet.gif) |
-| 10 | Thánh Quang Trảm | Cần artwork | — |
-| 11 | Thánh Vực | Cần artwork | — |
-| 12 | Thiết Chuỳ Phá Địa | Cần artwork | — |
-| 13 | Thành Đồng | Cần artwork | — |
-| 14 | Thiên Thuẫn Giáng Thế | Concept review, không dùng trong game | [PNG](ho-ve/14-thienthuan.png) · [GIF](ho-ve/14-thienthuan.gif) |
+| 10 | Thánh Quang Trảm | Code pixel-art review | [PNG](ho-ve/10-thanhquang.png) · [GIF](ho-ve/10-thanhquang.gif) |
+| 11 | Thánh Vực | Code pixel-art review | [PNG](ho-ve/11-thanhvuc.png) · [GIF](ho-ve/11-thanhvuc.gif) |
+| 12 | Thiết Chuỳ Phá Địa | Code pixel-art review | [PNG](ho-ve/12-thietchuy.png) · [GIF](ho-ve/12-thietchuy.gif) |
+| 13 | Thành Đồng | Code pixel-art review | [PNG](ho-ve/13-thanhdong.png) · [GIF](ho-ve/13-thanhdong.gif) |
+| 14 | Thiên Thuẫn Giáng Thế | Code pixel-art review | [PNG](ho-ve/14-thienthuan.png) · [GIF](ho-ve/14-thienthuan.gif) |
 
 ## Triệu Hồi Sư
 
 | # | Kỹ năng | Trạng thái | Ảnh |
 | ---: | --- | --- | --- |
 | 1 | Triệu Hồi Sói Bóng | Source art tham chiếu | [PNG](trieu-hoi-su/01-soibong.png) · [GIF](trieu-hoi-su/01-soibong.gif) |
-| 2 | Linh Tiễn | Cần artwork | — |
+| 2 | Linh Tiễn | Code pixel-art review | [PNG](trieu-hoi-su/02-linhtien.png) · [GIF](trieu-hoi-su/02-linhtien.gif) |
 | 3 | Triệu Hồi Tiểu Quỷ | Source art tham chiếu | [PNG](trieu-hoi-su/03-tieuquy.png) · [GIF](trieu-hoi-su/03-tieuquy.gif) |
 | 4 | Liên Kết Linh Hồn | Source art tham chiếu | [PNG](trieu-hoi-su/04-lienket.png) · [GIF](trieu-hoi-su/04-lienket.gif) |
-| 5 | Gọi Thạch Quỷ | Cần artwork | — |
-| 6 | Hoả Điểu | Cần artwork | — |
-| 7 | Linh Trận | Cần artwork | — |
-| 8 | Gọi Linh Ưng | Cần artwork | — |
+| 5 | Gọi Thạch Quỷ | Code pixel-art review | [PNG](trieu-hoi-su/05-thachquy.png) · [GIF](trieu-hoi-su/05-thachquy.gif) |
+| 6 | Hoả Điểu | Code pixel-art review | [PNG](trieu-hoi-su/06-hoadieu.png) · [GIF](trieu-hoi-su/06-hoadieu.gif) |
+| 7 | Linh Trận | Code pixel-art review | [PNG](trieu-hoi-su/07-linhtran.png) · [GIF](trieu-hoi-su/07-linhtran.gif) |
+| 8 | Gọi Linh Ưng | Code pixel-art review | [PNG](trieu-hoi-su/08-linhung.png) · [GIF](trieu-hoi-su/08-linhung.gif) |
 | 9 | Quân Đoàn Linh Hồn | Source art tham chiếu | [PNG](trieu-hoi-su/09-quandoan.png) · [GIF](trieu-hoi-su/09-quandoan.gif) |
-| 10 | Gọi Ấu Long | Cần artwork | — |
-| 11 | Long Hống | Cần artwork | — |
-| 12 | Lôi Đồ Đằng | Cần artwork | — |
-| 13 | Phong Đồ Đằng | Cần artwork | — |
-| 14 | Kỳ Lân Giáng Thế | Concept review, không dùng trong game | [PNG](trieu-hoi-su/14-kylan.png) · [GIF](trieu-hoi-su/14-kylan.gif) |
+| 10 | Gọi Ấu Long | Code pixel-art review | [PNG](trieu-hoi-su/10-aulong.png) · [GIF](trieu-hoi-su/10-aulong.gif) |
+| 11 | Long Hống | Code pixel-art review | [PNG](trieu-hoi-su/11-longhong.png) · [GIF](trieu-hoi-su/11-longhong.gif) |
+| 12 | Lôi Đồ Đằng | Code pixel-art review | [PNG](trieu-hoi-su/12-loidodang.png) · [GIF](trieu-hoi-su/12-loidodang.gif) |
+| 13 | Phong Đồ Đằng | Code pixel-art review | [PNG](trieu-hoi-su/13-phongdodang.png) · [GIF](trieu-hoi-su/13-phongdodang.gif) |
+| 14 | Kỳ Lân Giáng Thế | Code pixel-art review | [PNG](trieu-hoi-su/14-kylan.png) · [GIF](trieu-hoi-su/14-kylan.gif) |
