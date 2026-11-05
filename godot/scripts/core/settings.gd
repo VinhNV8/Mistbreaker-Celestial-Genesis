@@ -6,7 +6,10 @@ const PATH := "user://settings.cfg"
 ## FX-1 (docs/36): skill_fx — "fx1" (mặc định: FX-1 cả 70 kỹ năng) / "auto" (FX-1, giữ hình đã duyệt) / "old" (hình cũ).
 ## skill_fx_rev: phiên bản mặc định; file cài đặt cũ (rev 0) đang "auto" = mặc định cũ → chuyển sang "fx1" một lần.
 const DEFAULTS := {"master": 0.8, "music": 0.6, "sfx": 0.8, "fullscreen": false, "font_scale": 1.0, "hd_art": true,
-	"skill_fx": "fx1", "skill_fx_rev": 1, "fx_shake": true, "fx_soft": false}
+	"skill_fx": "fx1", "skill_fx_rev": 1, "fx_shake": true, "fx_soft": false, "tele_style": "natural",
+	"nameplates": "smart", "low_hp_warn": true, "colorblind": false, "keybinds": {}}
+## UI-53 / 55 / 61 / 63 (docs/38): nameplates — "smart" / "always" / "off" (bảng tên quái); low_hp_warn — viền đỏ máu thấp;
+## colorblind — bảng màu cho người mù màu đỏ–lục; keybinds — {action: [mã phím vật lý…]} phím người chơi đổi.
 ## FX-1 §9.8: fx_shake — rung màn hình + khựng đòn ngắn khi chiêu mạnh va chạm; fx_soft — giảm chớp sáng (không làm tối nền,
 ## lớp glow 55%) cho người nhạy cảm ánh sáng / máy yếu.
 ## M5-05 (KT-07): các mức cỡ chữ trong Cài đặt. Theme dựng lại ở main.gd (UiTheme.set_font_scale).

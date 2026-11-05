@@ -5,6 +5,7 @@ extends RefCounted
 
 const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
 const Ch8 = preload("res://scripts/core/chapter8.gd")
+const Fx1 = preload("res://scripts/view/fx1.gd")
 
 const LAMP_GLOW := Color(1.0, 0.95, 0.65, 0.10)
 const LAMP_RING := Color(1.0, 0.92, 0.6, 0.45)
@@ -83,6 +84,8 @@ static func draw_over(ci: CanvasItem, world, view: Rect2, _art: bool) -> void:
 	var t: float = world.time
 	for mk in st.marks:
 		var k: float = 1.0 - mk.t / maxf(0.01, mk.total)
+		if Fx1.danger_zone(world, mk.pos, mk.r, Fx1.P_VOID, k):
+			continue
 		ci.draw_circle(mk.pos, mk.r, Color(VOID, 0.12 + 0.2 * k))
 		ci.draw_arc(mk.pos, mk.r * k, 0.0, TAU, 24, Color(0.9, 0.4, 1.0, 0.85), 2.0, true)
 	for b in st.beams:
@@ -92,7 +95,7 @@ static func draw_over(ci: CanvasItem, world, view: Rect2, _art: bool) -> void:
 			continue
 		if e.state == "windup":
 			var k2: float = 1.0 - e.timer / maxf(0.01, e.windup_total)
-			match e.attack_kind:
+			match "" if _fx1(world, e, k2) else e.attack_kind:
 				"seal":
 					ci.draw_circle(e.target, Ch8.SEAL_R, Color(VOID, 0.15 + 0.25 * k2))
 					ci.draw_arc(e.target, Ch8.SEAL_R * k2, 0.0, TAU, 32, Color(0.9, 0.4, 1.0, 0.95), 2.5, true)
@@ -149,3 +152,19 @@ static func _cone(ci: CanvasItem, c: Vector2, ang: float, half: float, r: float,
 static func decor_id(variant: int) -> String:
 	var id: String = ["dead-tree-0", "rock-0", "dead-tree-1", "rock-1"][variant % 4]
 	return id if SpriteLib.has_env(id) else "bush"
+
+
+## FX-1 §9.11: cảnh báo đòn riêng vùng 8 theo ngôn ngữ FX-1 (đúng kích thước gameplay); false → kiểu cũ.
+static func _fx1(world, e, k: float) -> bool:
+	match e.attack_kind:
+		"seal":
+			return Fx1.danger_zone(world, e.target, Ch8.SEAL_R, Fx1.P_VOID, k, e)
+		"voidbeam":
+			return Fx1.danger_line(world, e.pos, e.pos + (e.target - e.pos).normalized() * Ch8.BEAM_LEN, Ch8.BEAM_HALF, Fx1.P_VOID, k, e)
+		"heavycleave":
+			return Fx1.danger_cone(world, e.pos, e.face, Ch8.CLEAVE_ARC, Ch8.CLEAVE_R + e.radius, Fx1.P_DANGER, k, e)
+		"jaw":
+			return Fx1.danger_cone(world, e.pos, e.face, Ch8.JAW_ARC, Ch8.JAW_R + e.radius, Fx1.P_DANGER, k, e)
+		"sacrifice":
+			return Fx1.danger_zone(world, e.pos, Ch8.SACRIFICE_R, Fx1.P_DANGER, k, e)
+	return false

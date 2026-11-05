@@ -97,7 +97,7 @@ Chỉ số từ `Formulas.mob_stats` (06 vùng 5).
 | C5-T1 | Điều kiện mở vùng 5 (thiếu tiến hoá / thiếu Nữ Vương / thiếu cấp → khoá; Đạo Tặc không cần tiến hoá); 3 map đúng cấp/kích thước, đi 5-1 → 5-3 |
 | C5-T2 | Dung nham −5% HP/giây, né lăn qua không mất máu, quái không đuổi vào; núi lửa phun mỗi 45 giây, 8 thiên thạch, −25% HP, né được, không gục; nhiệt +10% tốc đánh trong 5 m; Kháng Hỏa giảm sát thương dung nham |
 | C5-T3 | Vệt lửa; Người Đá vỡ 3 mảnh; Linh Hồn Lửa tự nổ, tắt trong dung nham; Cột lửa 3 cột; Phun lửa quay chậm; Búa rèn + hào quang +20% |
-| C5-T4 | Viêm Long 3 giai đoạn (bất tử khi bay, ngập dung nham theo lượt, đá nổi an toàn, cuồng nộ); Long Tâm; Long Tức; Phượng Hoàng: Niết bàn hồi sinh 50%, trúng hệ Thủy 5 giây cuối thì không hồi sinh, Bình Nước Thánh; Lông Phượng; Bộ Hoả Ngục |
+| C5-T4 | Viêm Long 3 giai đoạn (bất tử khi bay, ngập dung nham theo lượt, đá nổi an toàn, cuồng nộ); Long Tâm; Long Tức; Phượng Hoàng: Niết bàn hồi sinh 50% (trứng nở qua vòng cập nhật thật — SN15-01), trúng hệ Thủy 5 giây cuối thì không hồi sinh, Bình Nước Thánh; Lông Phượng; Bộ Hoả Ngục |
 | C5-T5 | Nhiệm vụ chương 5 đủ 7 bước; thưởng EXP ≈ 25%; lưới vùng 5 45 ô, Mỏ Tinh Thạch +1/phút |
 | C5-T6 | Công Trại 3 đợt, cổng có thanh bền, thua đánh lại được, trại không an toàn khi đang công; đột kích mỗi 30 phút chơi, thắng có thưởng, bỏ qua thì công trình vùng 5 ngừng 30 phút |
 | C5-T7 | Chuyển chức 2: điều kiện, chọn nhánh, +20% tổng, 6 nhánh × 2 hiệu ứng, không đổi nhánh; save v11 + chuyển đổi v10 |

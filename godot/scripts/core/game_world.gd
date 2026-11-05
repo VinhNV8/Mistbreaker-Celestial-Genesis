@@ -1438,6 +1438,12 @@ func _move_player(dt: float, input: Dictionary) -> void:
 			say("boss")
 
 
+## Điểm trong mép bản đồ (chừa bán kính r) — cho vị trí quái sau đẩy lùi / di chuyển.
+func _in_world(pos: Vector2, r: float) -> Vector2:
+	var m := minf(r, minf(world_size.x, world_size.y) * 0.5 - 1.0)
+	return pos.clamp(Vector2.ONE * m, world_size - Vector2.ONE * m)
+
+
 ## Chân Không Biết Mỏi: +10% tốc chạy khi không giao chiến.
 func move_speed() -> float:
 	var v := float(stats.move_speed)
@@ -2932,7 +2938,8 @@ func _apply_damage(e: Enemy, dmg: int, crit: bool, by_player: bool, kind := "") 
 		_damage_poise(e, dmg * (GUARD_POISE if by_player and player.guard_time > 0.0 else 1.0) * (Chapters.poise_mult(self, e) if by_player else 1.0)
 			* ((1.0 + float(stats.get("poise_bonus", 0.0))) if by_player else 1.0))
 	if e.role != "boss" and by_player and e.state != "windup":
-		e.pos += (e.pos - player.pos).normalized() * 10.0
+		# BOSS-T1 (04/11): giữ trong mép bản đồ — trước đây đẩy lùi đưa Nấm Mẹ (Chúa Hang 1-1) ra ngoài mép hang, đánh không tới.
+		e.pos = _in_world(e.pos + (e.pos - player.pos).normalized() * 10.0, e.radius)
 
 	if e.hp <= 0.0:
 		_kill_enemy(e)
@@ -3592,7 +3599,7 @@ func _move_toward(e: Enemy, target: Vector2, speed: float, dt: float) -> void:
 		speed *= e.slow_mul if e.slow_mul > 0.0 else 0.6
 	elif e.slow_mul > 0.0:
 		e.slow_mul = 0.0
-	var next := e.pos.move_toward(target, speed * dt)
+	var next := _in_world(e.pos.move_toward(target, speed * dt), e.radius)
 	if Chapters.enemy_avoid(self, e, next):
 		return
 	e.pos = next
@@ -4193,7 +4200,8 @@ func chase_speed(e: Enemy) -> float:
 	return v
 
 
-const PICKUP_NOTE_TTL := 1.8
+## UI-52 (docs/38): dải nhặt đồ bên trái HUD — giữ lâu hơn (cũ 1,8 giây, nổi trên đầu nhân vật).
+const PICKUP_NOTE_TTL := 2.4
 const PICKUP_MERGE := 1.0
 const PICKUP_NOTES_MAX := 6
 

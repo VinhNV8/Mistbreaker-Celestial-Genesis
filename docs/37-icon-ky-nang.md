@@ -66,3 +66,26 @@ Bộ icon mới theo phong cách của 19 icon vẽ tay và của các bộ icon
 - Bản duyệt: `docs/design/skill-icons/bi-dong-so-sanh.png` (hàng trên icon cũ, hàng dưới IC-1) và `docs/design/skill-icons/bi-dong/`.
 - Đã vào game qua cùng lớp phủ HD (`--apply`); tắt "Đồ hoạ HD" thì về icon cũ.
 - Test: IC1-T1 kiểm tra đủ 20 icon bị động và icon tab, mỗi icon 128 px khi bật HD.
+
+## 7. IC-2: icon Thiên phú và icon trang bị (04/11/2026)
+
+Đây là phần còn lại của đề xuất cải thiện số 8. Chủ dự án bảo "triển khai luôn". Phiên giao diện (game-ca) xác nhận không làm phần này và đề nghị giữ nguyên 7 icon trang bị HD của UI-40, chỉ thêm khoá mới.
+
+| Nhóm | Số icon | Cách vẽ | Công cụ |
+| --- | --- | --- | --- |
+| Thiên phú | 20 | Giữ **cấu trúc huy hiệu tròn** của bộ cũ: nền theo nhóm (chiến đấu đỏ sẫm, kinh tế vàng đất, khám phá xanh biển…), **viền theo màu hạng** (F xám, C trắng, B xanh lá, A xanh lam, S tím, SS vàng, SSS hồng; SS / SSS thêm 8 sao trên viền). Biểu tượng giữa vẽ bằng bộ nguyên tố FX-1 như icon kỹ năng; đồ vật đặc (khiên, kiếm, búa, bàn tay vàng) dùng dải màu không lõi trắng để đọc ra chất liệu, glow chỉ điểm xuyết. Bầy Đàn Bóng Tối dùng bóng sói lấy từ sprite thật | `tools/art/talent_icons_fx.py` |
+| Trang bị | 18 | Bùa hộ mệnh (ô thứ 8) + 17 món độc nhất của boss (Nanh Sói Chúa … Mặt Nạ Vô Diện). **Cùng bộ vẽ và phong cách với 7 icon UI-40** (`tools/art/hd/vec.py`: cel-shade, viền `#1a1424` dày 3, nền trong suốt; giao diện vẽ khung theo phẩm chất). Hình giữ ý của icon cũ (Long Tâm: nhẫn đen + tim rồng lửa; Gương Bản Ngã: gương băng; Sừng Kỳ Lân: sừng xoắn + tia sét…) | `tools/art/hd/items_hd_more.py` |
+
+- **Không sửa** 7 icon `item-*` của UI-40 (`icons_hd.py`). `apply()` từ chối ghi đè các khoá đó.
+- Vào game qua lớp phủ `manifest.hd.icons` (`--apply`); cả hai bộ đã nối vào `tools/art/hd/build_hd.py`. Tắt "Đồ hoạ HD" thì về icon cũ.
+- Bản duyệt: `docs/design/skill-icons/thien-phu-so-sanh.png`, `trang-bi-so-sanh.png` (hàng trên icon cũ, hàng dưới IC-2). Ảnh trong game (qua `SpriteLib`, mipmap + Linear, 64 và 32 px): `thien-phu-trang-bi-trong-game.png`, chụp bằng `tests/ic2_grid.gd`.
+- Test: IC1-T1 kiểm tra đủ 20 Thiên phú và mọi khoá `item-*` (25 icon) ở bản HD 128 px.
+- Ban đầu §7 chưa gồm icon chỉ số và tài nguyên; phần này làm tiếp ở §8.
+
+## 8. IC-2: icon tài nguyên và chỉ số (04/11/2026)
+
+- **14 icon tài nguyên** (gỗ, đá, tinh hoa, tinh kim, đuốc, thảo dược, quặng, sắt, tinh thể, nước thánh, than hồng, lông vũ, đèn, lõi hư vô) và **24 icon chỉ số** (STR … Chỉ số chính) trong bảng Nhân vật / túi đồ. Cùng bộ vẽ `vec.py` và phong cách với icon trang bị; giữ ý của icon cũ 32 px. Công cụ: `tools/art/hd/res_stat_hd.py`, đã nối vào `build_hd.py`.
+- Không sửa `res-gold`, `res-potion`, `res-mp_potion` (UI-40). **Không vẽ lại 5 chân dung `portrait-*`**: đó là hình nhân vật của chủ dự án.
+- Bản duyệt: `docs/design/skill-icons/tai-nguyen-chi-so-so-sanh.png`. Ảnh trong game (64 / 32 px): `thien-phu-trang-bi-trong-game.png` (gồm cả 4 nhóm Thiên phú, trang bị, tài nguyên, chỉ số).
+- Test IC1-T1: mọi `res-*` / `stat-*` ở bản HD 128 px; chân dung không bị thay bằng hình HD.
+- Như vậy toàn bộ icon trong `manifest.icons` đã có bản HD, trừ 5 chân dung giữ nguyên.

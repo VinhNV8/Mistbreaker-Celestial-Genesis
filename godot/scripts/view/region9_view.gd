@@ -5,6 +5,7 @@ extends RefCounted
 
 const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
 const Ch9 = preload("res://scripts/core/chapter9.gd")
+const Fx1 = preload("res://scripts/view/fx1.gd")
 const Ch8 = preload("res://scripts/core/chapter8.gd")
 const Endgame = preload("res://scripts/core/endgame.gd")
 const Monsters = preload("res://scripts/data/monsters.gd")
@@ -100,6 +101,8 @@ static func draw_over(ci: CanvasItem, world, view: Rect2, _art: bool) -> void:
 	for mk in st.marks:
 		var k: float = 1.0 - mk.t / maxf(0.01, mk.total)
 		var col := Color(str(mk.get("color", "#fff0b0")))
+		if Fx1.danger_zone(world, mk.pos, mk.r, Fx1.pal_of(col), k):
+			continue
 		ci.draw_circle(mk.pos, mk.r, Color(col, 0.12 + 0.2 * k))
 		ci.draw_arc(mk.pos, mk.r * k, 0.0, TAU, 24, Color(1.0, 0.4, 0.3, 0.85), 2.0, true)
 		ci.draw_arc(mk.pos, mk.r, 0.0, TAU, 24, Color(col, 0.8), 1.5, true)
@@ -113,7 +116,7 @@ static func draw_over(ci: CanvasItem, world, view: Rect2, _art: bool) -> void:
 			ci.draw_arc(p.pos, 60.0 - 30.0 * k2, 0.0, TAU, 32, Color(0.7, 0.4, 1.0, 0.9), 3.0, true)
 		if st.chan_t > 0.0:
 			ci.draw_line(b.pos, p.pos, Color(0.85, 0.45, 1.0, 0.5 + 0.4 * sin(t * 20.0)), 5.0)
-		if b.state == "windup" and b.attack_kind == "pounce9":
+		if b.state == "windup" and b.attack_kind == "pounce9" and not Fx1.danger_zone(world, b.target, Ch9.POUNCE_R, Fx1.P_DANGER, 1.0 - b.timer / maxf(0.01, b.windup_total), b):
 			ci.draw_circle(b.target, Ch9.POUNCE_R, Color(1.0, 0.3, 0.2, 0.25))
 	if st.reverse_t > 0.0:
 		ci.draw_arc(p.pos, 26.0, 0.0, TAU, 24, Color(0.7, 0.4, 1.0, 0.9), 2.5, true)
@@ -122,7 +125,7 @@ static func draw_over(ci: CanvasItem, world, view: Rect2, _art: bool) -> void:
 			continue
 		if e.state == "windup":
 			var k3: float = 1.0 - e.timer / maxf(0.01, e.windup_total)
-			match e.attack_kind:
+			match "" if _fx1(world, e, k3) else e.attack_kind:
 				"elemlance", "gallop", "dash9":
 					var len: float = Ch9.GALLOP_LEN if e.attack_kind != "elemlance" else Ch9.LANCE_LEN + e.radius
 					ci.draw_line(e.pos, e.pos + (e.target - e.pos).normalized() * len, Color(1.0, 0.35, 0.3, 0.3 + 0.3 * k3), 20.0)
@@ -150,3 +153,14 @@ static func _ring_sector(ci: CanvasItem, c: Vector2, r0: float, r1: float, a0: f
 static func decor_id(variant: int) -> String:
 	var id: String = ["heaven-pillar-0", "cloud-puff-0", "heaven-pillar-1", "cloud-puff-1"][variant % 4]
 	return id if SpriteLib.has_env(id) else "bush"
+
+
+## FX-1 §9.11: cảnh báo đòn riêng vùng 9 theo ngôn ngữ FX-1 (đúng kích thước gameplay); false → kiểu cũ.
+static func _fx1(world, e, k: float) -> bool:
+	match e.attack_kind:
+		"elemlance", "gallop", "dash9":
+			var ln: float = Ch9.GALLOP_LEN if e.attack_kind != "elemlance" else Ch9.LANCE_LEN + e.radius
+			return Fx1.danger_line(world, e.pos, e.pos + (e.target - e.pos).normalized() * ln, Ch9.LANCE_HALF, Fx1.P_DANGER, k, e)
+		"roar9", "spin9":
+			return Fx1.danger_zone(world, e.pos, Ch9.ROAR_R if e.attack_kind == "roar9" else 90.0, Fx1.P_GOLD, k, e)
+	return false

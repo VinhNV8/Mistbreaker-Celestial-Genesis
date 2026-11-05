@@ -11,6 +11,7 @@ const UiTheme = preload("res://scripts/ui/ui_theme.gd")
 const GameWorld = preload("res://scripts/core/game_world.gd")
 
 const Bronze = preload("res://scripts/ui/bronze.gd")
+const DrawLayer = preload("res://scripts/ui/draw_layer.gd")
 const SMALL_W := 224.0
 const LARGE_W := 460.0
 const HEADER := 18.0
@@ -28,8 +29,11 @@ var zoom := 1
 var _clip: Control
 var _content: Control
 var _ring: Control
+## PF-01: vành la bàn / khung là lớp nướng, chỉ nướng lại khi tên map, % khám phá, cỡ hoặc tầm nhìn đổi.
+var _ring_sig := ""
 var _world: GameWorld
 var _fog_tex: ImageTexture
+var _fog_img: Image
 var _fog_version := -1
 var _fog_map := ""
 
@@ -41,7 +45,7 @@ func _init() -> void:
 	add_child(_clip)
 	_content = Layer.new(self, "content")
 	_clip.add_child(_content)
-	_ring = Layer.new(self, "ring")
+	_ring = DrawLayer.new(func(cv): _paint(cv, "ring"), false, true)
 	add_child(_ring)
 
 
@@ -140,9 +144,11 @@ func _resize() -> void:
 
 func _redraw() -> void:
 	queue_redraw()
-	for l in [_clip, _content, _ring]:
+	for l in [_clip, _content]:
 		if l != null:
 			l.queue_redraw()
+	if _ring != null:
+		_ring.rebake()
 
 
 func update_from(w: GameWorld) -> void:
@@ -152,22 +158,36 @@ func update_from(w: GameWorld) -> void:
 		_resize()
 	if map_changed or _fog_version != w.fog.version:
 		_rebuild_fog()
-	_redraw()
+	# nội dung (nhân vật, quái, sương) vẽ lại mỗi khung; vành chỉ khi chữ / cỡ đổi
+	_content.queue_redraw()
+	var sig := "%s|%d|%s|%d" % [str(w.map.name), roundi(w.fog.ratio() * 100.0), large, zoom]
+	if sig != _ring_sig:
+		_ring_sig = sig
+		_ring.rebake()
 
 
 ## Ảnh 1 pixel/ô sương: ô đã mở trong suốt, ô chưa mở tối.
 func _rebuild_fog() -> void:
 	var f = _world.fog
+	# PF-01: chỉ một lần reveal() kể từ lần trước (cùng map) → cập nhật vùng ô đó; còn lại dựng cả ảnh.
+	var partial: bool = _fog_tex != null and _fog_map == _world.map_id and f.dirty_version == f.version 		and _fog_version == f.version - 1 and _fog_img != null and _fog_img.get_width() == f.w and _fog_img.get_height() == f.h
 	_fog_version = f.version
 	_fog_map = _world.map_id
 	if f.w <= 0 or f.h <= 0:
 		_fog_tex = null
 		return
-	var img := Image.create(f.w, f.h, false, Image.FORMAT_RGBA8)
-	for cy in f.h:
-		for cx in f.w:
-			img.set_pixel(cx, cy, Color(0, 0, 0, 0) if f.cells[cy * f.w + cx] == 1 else FOG_COLOR)
-	_fog_tex = ImageTexture.create_from_image(img)
+	var area := Rect2i(0, 0, f.w, f.h)
+	if partial:
+		area = f.dirty
+	else:
+		_fog_img = Image.create(f.w, f.h, false, Image.FORMAT_RGBA8)
+	for cy in range(area.position.y, area.end.y):
+		for cx in range(area.position.x, area.end.x):
+			_fog_img.set_pixel(cx, cy, Color(0, 0, 0, 0) if f.cells[cy * f.w + cx] == 1 else FOG_COLOR)
+	if partial:
+		_fog_tex.update(_fog_img)
+	else:
+		_fog_tex = ImageTexture.create_from_image(_fog_img)
 
 
 ## Toạ độ thế giới → bản đồ nhỏ. rect = vùng toàn map (cỡ lớn: khung chữ nhật; cỡ nhỏ: toàn map quy theo tầm nhìn,
@@ -183,7 +203,7 @@ func _map_rect() -> Rect2:
 	return Rect2(round_center() - _world.player.pos * k, _world.world_size * k)
 
 
-func _paint(cv: Control, role: String) -> void:
+func _paint(cv: CanvasItem, role: String) -> void:
 	if _world == null:
 		return
 	match role:
@@ -199,7 +219,7 @@ func _paint(cv: Control, role: String) -> void:
 
 
 ## UI-41: vành la bàn đồng (cỡ nhỏ) hoặc khung đồng + tiêu đề (cỡ lớn).
-func _draw_ring(cv: Control) -> void:
+func _draw_ring(cv: CanvasItem) -> void:
 	var w := _world
 	var ci := cv.get_canvas_item()
 	var title := "%s · %d%%" % [str(w.map.name), roundi(w.fog.ratio() * 100.0)]
@@ -253,7 +273,12 @@ func _draw_ring(cv: Control) -> void:
 	cv.draw_string(UiTheme.bold_font(), Vector2(pr.end.x - 14, pr.position.y + 17), "V", HORIZONTAL_ALIGNMENT_LEFT, -1, 9, UiTheme.MUTED)
 
 
-func _draw_content(cv: Control) -> void:
+## PF-01 (04/11): cỡ nhỏ — chỉ vẽ chấm nằm trong vòng la bàn (phần ngoài bị lớp cắt che, trước đây vẫn vẽ cả map).
+func _shown(mp: Vector2, extra := 0.0) -> bool:
+	return large or mp.distance_to(round_center()) <= ROUND_R + 8.0 + extra
+
+
+func _draw_content(cv: CanvasItem) -> void:
 	var w := _world
 	var rect := _map_rect()
 	var k := rect.size.x / w.world_size.x
@@ -279,6 +304,8 @@ func _draw_content(cv: Control) -> void:
 	# MP-09: cổng dịch chuyển (vàng = sang map sau, xanh = về map trước, tím = Cổng Dịch Chuyển)
 	for pt in w.portals:
 		var pc := _to_map(pt.pos, rect)
+		if not _shown(pc):
+			continue
 		var pcol: Color = {"next": Color("#ffc940"), "back": Color("#6fb6ff"), "cave": Color("#e08a3c"), "exit": Color("#7fe0c0")}.get(pt.kind, Color("#b46bff"))
 		# BD-11: Cổng dungeon — chấm to hơn, màu theo hạng
 		var big := 1.5 if pt.kind == "dgate" else 0.0
@@ -291,17 +318,23 @@ func _draw_content(cv: Control) -> void:
 		if not w.fog.is_open_at(c.pos):
 			continue
 		var cc := _to_map(c.pos, rect)
+		if not _shown(cc, float(c.r) * k):
+			continue
 		cv.draw_arc(cc, maxf(4.0, float(c.r) * k), 0.0, TAU, 16, Color(0.95, 0.55, 0.4, 0.55), 1.0, true)
 		cv.draw_string(UiTheme.font(), cc + Vector2(-8, 4), str(int(c.level)), HORIZONTAL_ALIGNMENT_CENTER, 16, 9, Color(1, 0.85, 0.7, 0.9))
 	# NPC
 	for npc in w.npcs():
-		cv.draw_circle(_to_map(npc.pos, rect), 2.5, UiTheme.GOLD)
+		var np := _to_map(npc.pos, rect)
+		if _shown(np):
+			cv.draw_circle(np, 2.5, UiTheme.GOLD)
 	# quái: chỉ ở chỗ đã khám phá, không hiện quái đang tàng hình
 	var pulse := 0.5 + 0.5 * sin(Time.get_ticks_msec() / 160.0)
 	for e in w.enemies:
-		if e.dead or w.is_hidden(e) or not w.fog.is_open_at(e.pos):
+		if e.dead:
 			continue
 		var mp := _to_map(e.pos, rect)
+		if not _shown(mp) or w.is_hidden(e) or not w.fog.is_open_at(e.pos):
+			continue
 		if e.role == "boss" or e.role == "rare":
 			cv.draw_circle(mp, 4.5 + pulse * 1.5, Color(1, 0.25, 0.3, 0.9))
 			cv.draw_arc(mp, 7.0, 0.0, TAU, 16, Color(1, 0.85, 0.3, 0.6 + 0.4 * pulse), 1.2, true)

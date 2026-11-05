@@ -64,5 +64,34 @@ func _initialize() -> void:
 		w7 = maxf(w7, d7)
 		Fx1.tick(w, 1.0 / 60.0)
 	print("FX1 perf (7 ô 1 lớp + 10 linh thú + 4 vùng): avg %.2f ms, worst %.2f ms" % [t7 / frames, w7])
+	# §9.12 cảnh báo kiểu tự nhiên: 20 quái lấy đà cùng lúc (8 tinh anh / boss có vết + 12 quái thường), gồm vòng / dải / nón
+	var kinds := ["stomp", "pounce", "roar", "roots", "volley", "leaf", "explode", "dash", "tiger", "spore"]
+	var foes: Array = []
+	for i in 20:
+		var fe := w.spawn_enemy("wolf", 30, w.player.pos + Vector2(-400 + (i % 5) * 200, -300 + (i / 5) * 160))
+		fe.state = "windup"
+		fe.attack_kind = kinds[i % kinds.size()]
+		fe.elite = i < 8
+		fe.windup_total = 1.0
+		fe.timer = 0.3
+		fe.target = fe.pos + Vector2(120, 40)
+		foes.append(fe)
+	var tn := 0.0
+	var wn := 0.0
+	for k in frames:
+		var t2 := Time.get_ticks_usec()
+		var pn = Kit.Painter.new()
+		pn.strict = false
+		Fx1.painter = pn
+		Fx1.flush_ground(pn, w)
+		for fe in foes:
+			Fx1.windup_cue(pn, w, fe, 0.7)
+			Fx1.danger_zone(w, fe.target, 70.0, Fx1.P_DANGER, 0.7, fe)
+		Fx1.danger_line(w, w.player.pos, w.player.pos + Vector2(300, 0), 15.0, Fx1.P_FIRE, 0.7)
+		Fx1.danger_cone(w, w.player.pos, 0.5, 0.6, 180.0, Fx1.P_FIRE, 0.7)
+		var dn := float(Time.get_ticks_usec() - t2) / 1000.0
+		tn += dn
+		wn = maxf(wn, dn)
+	print("FX1 perf cảnh báo tự nhiên (20 quái lấy đà + dải + nón): avg %.2f ms, worst %.2f ms" % [tn / frames, wn])
 	print("FX1 perf: 70 casts + 10 summons + 4 zones — avg %.2f ms, worst %.2f ms, <= %d draw calls / frame" % [total / frames, worst, polys])
 	quit()

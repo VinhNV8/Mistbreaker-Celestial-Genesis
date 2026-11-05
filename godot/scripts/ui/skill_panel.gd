@@ -564,6 +564,8 @@ func _upgrade_block(sk: Dictionary) -> Control:
 	up.custom_minimum_size.y = 48
 	up.add_theme_font_size_override("font_size", UiTheme.fs(18))
 	up.disabled = not unlocked or maxed or int(p.skill_points) <= 0
+	if up.disabled:
+		up.tooltip_text = "Chưa mở kỹ năng" if not unlocked else ("Đã đạt cấp tối đa" if maxed else "Chưa có Điểm Kỹ Năng")  # UI-62
 	up.pressed.connect(func():
 		world.skill_upgrade(id)
 		refresh())
@@ -762,6 +764,8 @@ func _variants(sk: Dictionary) -> Control:
 				ex.name = "Book_%s_%d" % [id, t]
 				ex.tooltip_text = why if why != "" else "Dùng %d Điểm Kỹ Năng để mở %s." % [Skills2.STAR_COST, str(o[1])]
 				ex.disabled = why != ""
+				if why != "":
+					ex.tooltip_text = why  # UI-62: lý do khoá
 				ex.pressed.connect(func():
 					Skills2.unlock_star(world, id, tier)
 					refresh())
@@ -989,7 +993,8 @@ func _passive_upgrade() -> Control:
 	up.custom_minimum_size.y = 48
 	up.add_theme_font_size_override("font_size", UiTheme.fs(18))
 	up.disabled = why != ""
-	up.tooltip_text = why
+	if why != "":
+		up.tooltip_text = why  # UI-62: lý do khoá
 	up.pressed.connect(func():
 		world.passive_upgrade(id)
 		refresh())

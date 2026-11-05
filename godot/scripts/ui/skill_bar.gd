@@ -16,6 +16,8 @@ signal skill_dropped(i: int, id: String)
 
 const UiTheme = preload("res://scripts/ui/ui_theme.gd")
 const Bronze = preload("res://scripts/ui/bronze.gd")
+const DrawLayer = preload("res://scripts/ui/draw_layer.gd")
+const ElementIcon = preload("res://scripts/ui/element_icon.gd")
 ## UI-41 (docs/35 §11): ô vuông viền màu theo hệ, phím treo dưới ô, khung đồng có đầu rồng 2 bên + huy hiệu sư tử.
 const TAB_H := 16.0
 
@@ -39,12 +41,17 @@ var _xs: Array = []
 var _shape_key := ""
 ## (ô, {"skill_id"}) -> bool: ô nhận kỹ năng kéo thả không (HUD đặt).
 var accept_drop: Callable
+## PF-01: khung đồng + rồng + sư tử ở lớp tĩnh (chỉ vẽ lại khi đổi cỡ); các ô chỉ vẽ lại khi dữ liệu ô đổi / đang lóe.
+var _deco: Control
+var _dirty := true
 
 
 func _init() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	# SN12-02: nhận chuột phải + thả kỹ năng; vùng thanh nhỏ ở đáy màn hình nên không cản đánh thường.
 	mouse_filter = MOUSE_FILTER_PASS
+	_deco = DrawLayer.new(_paint_deco, true, true)
+	add_child(_deco)
 
 
 func set_count(n: int) -> void:
@@ -61,6 +68,8 @@ func set_slot(i: int, d: Dictionary) -> void:
 	var old_cd: float = float(_slots[i].get("cd", 0.0))
 	if old_cd > 0.0 and float(d.get("cd", 0.0)) <= 0.0:
 		_flash[i] = 0.45
+	if d != _slots[i]:
+		_dirty = true
 	_slots[i] = d
 	var key := ""
 	for s in _slots:
@@ -85,6 +94,9 @@ func _relayout() -> void:
 		x += w
 	custom_minimum_size = Vector2(x + PAD.x, PAD.y * 2.0 + R * 2.0 + 6.0 + TAB_H)
 	size = custom_minimum_size
+	_dirty = true
+	if _deco != null:
+		_deco.rebake()
 
 
 func is_slot_visible(i: int) -> bool:
@@ -123,9 +135,14 @@ func _drop_data(at: Vector2, data: Variant) -> void:
 
 
 func _process(delta: float) -> void:
+	var flashing := false
 	for i in _flash.size():
+		if _flash[i] > 0.0:
+			flashing = true
 		_flash[i] = maxf(0.0, _flash[i] - delta)
-	queue_redraw()
+	if _dirty or flashing:
+		_dirty = false
+		queue_redraw()
 
 
 ## Tâm ô thứ i (toạ độ cục bộ) — dùng cho test và chú thích. Ô ẩn: tâm của vị trí ô trước nó.
@@ -136,14 +153,17 @@ func slot_center(i: int) -> Vector2:
 	return Vector2(x, PAD.y + R + 2.0)
 
 
-func _draw() -> void:
-	var ci := get_canvas_item()
+## Lớp tĩnh sau lưng: UI-41 đầu rồng 2 đầu thanh (vẽ trước để cánh nằm sau khung), khung đồng, huy hiệu sư tử.
+func _paint_deco(cv: CanvasItem) -> void:
+	var ci := cv.get_canvas_item()
 	var r := Rect2(Vector2.ZERO, size)
-	# UI-41: đầu rồng 2 đầu thanh (vẽ trước để cánh nằm sau khung), khung đồng, huy hiệu sư tử giữa cạnh trên
 	Bronze.dragon(ci, Vector2(r.position.x + 10.0, r.end.y - 8.0), 1.05, true)
 	Bronze.dragon(ci, Vector2(r.end.x - 10.0, r.end.y - 8.0), 1.05, false)
 	Bronze.frame(ci, r, 0.75, Color(Bronze.MOSS, 0.94), Bronze.GEM_BLUE)
 	Bronze.lion(ci, Vector2(r.get_center().x, r.position.y - 5.0), 16.0)
+
+
+func _draw() -> void:
 	for i in _slots.size():
 		if is_slot_visible(i):
 			_draw_slot(i, slot_center(i), _slots[i])
@@ -237,6 +257,11 @@ func _draw_slot(i: int, c: Vector2, d: Dictionary) -> void:
 		bsb.border_color = Color("#b46bff")
 		draw_style_box(bsb, Rect2(bc - Vector2(bw / 2.0, 8), Vector2(bw, 16)))
 		_text_center(f, bc + Vector2(0, 4), badge, bs, Color.WHITE)
+	# UI-63 (docs/38): biểu tượng hệ góc trên trái — hệ không chỉ báo bằng màu viền (mù màu vẫn nhận ra)
+	var el: String = d.get("el", "")
+	if el != "":
+		draw_circle(c + Vector2(-rr * 0.78, -rr * 0.78), 7.5, Color(0, 0, 0, 0.75))
+		ElementIcon.draw(self, c + Vector2(-rr * 0.78, -rr * 0.78), el, 5.5, 1.0)
 	# UI-10: ô khoá ghi cấp mở ngay trên icon
 	var lock: String = d.get("lock", "")
 	if lock != "":

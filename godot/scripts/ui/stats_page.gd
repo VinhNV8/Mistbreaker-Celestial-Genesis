@@ -261,6 +261,8 @@ static func build(content: VBoxContainer, world, refresh: Callable) -> void:
 	auto.icon = SpriteLib.icon("stat-auto")
 	auto.add_theme_constant_override("icon_max_width", 30)
 	auto.disabled = p.unspent <= 0
+	if auto.disabled:
+		auto.tooltip_text = "Chưa có điểm thuộc tính — lên cấp để nhận thêm"  # UI-62
 	auto.custom_minimum_size = Vector2(0, 62)
 	auto.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	auto.tooltip_text = "Cộng hết điểm còn lại theo mẫu: " + str(list[cur][0])

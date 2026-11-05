@@ -10,6 +10,7 @@ extends Control
 signal auto_pressed
 
 const UiTheme = preload("res://scripts/ui/ui_theme.gd")
+const DrawLayer = preload("res://scripts/ui/draw_layer.gd")
 const Bronze = preload("res://scripts/ui/bronze.gd")
 
 ## Nút Đánh: đĩa icon BIG_R, vòng thép tới STEEL_R, vành đồng tới RING_R, gai tới RING_R + 8.
@@ -38,6 +39,10 @@ var _data := {}
 var _held := ""
 var _t := 0.0
 var _tex_cache := {}
+## PF-01: lớp tĩnh sau / trước (draw_layer.gd), vẽ lại khi _static_sig đổi.
+var _back: Control
+var _front: Control
+var _static_sig := ""
 
 
 func _ready() -> void:
@@ -47,6 +52,10 @@ func _ready() -> void:
 	# main.gd: chuột / chạm trên cụm nút không bị coi là "đang trỏ vào giao diện" (vẫn đánh được), ngắm theo hướng đi.
 	set_meta("hud_action", true)
 	tooltip_text = " "
+	_back = DrawLayer.new(_paint_back, true, true)
+	_front = DrawLayer.new(_paint_front, false, true)
+	add_child(_back)
+	add_child(_front)
 
 
 func _get_tooltip(at: Vector2) -> String:
@@ -174,31 +183,79 @@ func _notification(what: int) -> void:
 
 func _process(delta: float) -> void:
 	_t += delta
+	# PF-01: lớp tĩnh chỉ vẽ lại khi màu vành / nút đang giữ / Tự đánh đổi; phần động (icon, hồi chiêu, đốm sáng) mỗi khung.
+	var sig := "%s|%s" % [_held, auto_on]
+	for b in BUTTONS:
+		var d: Dictionary = _data.get(b[0], {})
+		sig += "|%s" % [d.get("ring", "")]
+	if sig != _static_sig:
+		_static_sig = sig
+		_back.rebake()
+		_front.rebake()
 	queue_redraw()
 
 
 func _draw() -> void:
-	var ci := get_canvas_item()
-	_draw_arm()
 	_draw_glints()
-	_draw_attack(ci)
+	_draw_attack_icon()
 	for b in BUTTONS:
 		if b[7] == "sub":
 			_draw_sub(b[0], button_center(b[0]), float(b[6]))
 		else:
 			_draw_main(b[0], button_center(b[0]), float(b[6]))
+
+
+## Lớp sau (tĩnh): cánh tay đồng, vành / gai / vòng thép nút Đánh, vành + nền các nút.
+func _paint_back(cv: CanvasItem) -> void:
+	_draw_arm(cv)
+	_attack_back(cv)
+	for b in BUTTONS:
+		var c := button_center(b[0])
+		var r := float(b[6])
+		if b[7] == "sub":
+			var on: bool = b[0] == "auto" and auto_on
+			cv.draw_circle(c + Vector2(0, 2.5), r + 5.5, Color(0, 0, 0, 0.42))
+			_bronze_rim(cv, c, r, 3.0)
+			cv.draw_circle(c, r, STONE if not on else STONE.lightened(0.12))
+			cv.draw_circle(c + Vector2(-2, -3), r * 0.75, Color(1, 1, 1, 0.05))
+			cv.draw_arc(c, r - 1.5, 0.0, TAU, 36, Color(0, 0, 0, 0.35), 2.5, true)
+		else:
+			var d: Dictionary = _data.get(b[0], {})
+			var ring: Color = d.get("ring", Bronze.BR_MID)
+			var pressed := _held != "" and _held == _action_of(b[0])
+			cv.draw_circle(c + Vector2(0, 2.5), r + 6.5, Color(0, 0, 0, 0.42))
+			_bronze_rim(cv, c, r)
+			cv.draw_circle(c, r, Color("#12161a") if not pressed else Color("#0a0c0e"))
+			if ring != Bronze.BR_MID:
+				cv.draw_circle(c, r * 0.8, Color(ring, 0.22))
+
+
+## Lớp trước (tĩnh): bóng trong / gờ sáng phủ lên icon, viền màu hệ, nhãn phím.
+func _paint_front(cv: CanvasItem) -> void:
+	cv.draw_arc(CENTER, BIG_R - 2.0, 0.0, TAU, 48, Color(0, 0, 0, 0.45), 3.5, true)
+	cv.draw_arc(CENTER, BIG_R - 5.0, PI * 1.15, PI * 1.55, 20, Color(1, 1, 1, 0.2), 2.0, true)
+	for b in BUTTONS:
+		if b[7] == "sub":
+			continue
+		var c := button_center(b[0])
+		var r := float(b[6])
+		var ring: Color = _data.get(b[0], {}).get("ring", Bronze.BR_MID)
+		cv.draw_arc(c, r - 1.5, 0.0, TAU, 40, Color(0, 0, 0, 0.45), 3.0, true)
+		cv.draw_arc(c, r - 4.0, PI * 1.15, PI * 1.55, 16, Color(1, 1, 1, 0.22), 1.6, true)
+		if ring != Bronze.BR_MID:
+			cv.draw_arc(c, r + 0.3, 0.0, TAU, 40, Color(ring, 0.9), 1.6, true)
 	for b in BUTTONS:
 		var key: String = b[3]
 		var col := Bronze.BR_LIGHT
 		if b[0] == "auto":
 			key = "Z · " + ("BẬT" if auto_on else "TẮT")
 			col = Bronze.BR_LIGHT if auto_on else Color(0.68, 0.65, 0.6)
-		_key_pill(key_pos(b[0]), key, col)
-	_key_pill(key_pos("attack"), "J", Bronze.BR_LIGHT)
+		_key_pill(cv, key_pos(b[0]), key, col)
+	_key_pill(cv, key_pos("attack"), "J", Bronze.BR_LIGHT)
 
 
 ## Cánh tay đồng cong nối vành nút Đánh tới nút phụ (Z), hai đầu có núm.
-func _draw_arm() -> void:
+func _draw_arm(cv: CanvasItem) -> void:
 	for b in BUTTONS:
 		if b[7] != "sub":
 			continue
@@ -206,15 +263,15 @@ func _draw_arm() -> void:
 		var r := float(b[5])
 		var a0 := a - 0.62
 		var a1 := a + 0.1
-		draw_arc(CENTER, r, a0, a1, 32, Color(0, 0, 0, 0.45), 11.0, true)
-		draw_arc(CENTER, r, a0, a1, 32, Bronze.BR_DARK, 9.0, true)
-		draw_arc(CENTER, r, a0, a1, 32, Bronze.BR, 6.0, true)
-		draw_arc(CENTER, r + 1.5, a0, a1, 32, Color(Bronze.BR_LIGHT, 0.65), 1.4, true)
+		cv.draw_arc(CENTER, r, a0, a1, 32, Color(0, 0, 0, 0.45), 11.0, true)
+		cv.draw_arc(CENTER, r, a0, a1, 32, Bronze.BR_DARK, 9.0, true)
+		cv.draw_arc(CENTER, r, a0, a1, 32, Bronze.BR, 6.0, true)
+		cv.draw_arc(CENTER, r + 1.5, a0, a1, 32, Color(Bronze.BR_LIGHT, 0.65), 1.4, true)
 		for e in [a0, a1]:
 			var p := CENTER + Vector2.from_angle(e) * r
-			draw_circle(p, 5.5, Bronze.BR_DARK)
-			draw_circle(p, 4.2, Bronze.BR)
-			draw_circle(p + Vector2(-1, -1), 1.6, Color(Bronze.BR_LIGHT, 0.9))
+			cv.draw_circle(p, 5.5, Bronze.BR_DARK)
+			cv.draw_circle(p, 4.2, Bronze.BR)
+			cv.draw_circle(p + Vector2(-1, -1), 1.6, Color(Bronze.BR_LIGHT, 0.9))
 
 
 ## Đốm sáng vàng nhấp nháy giữa các nút màu (như concept).
@@ -230,11 +287,11 @@ func _draw_glints() -> void:
 		draw_circle(p, 2.2, Color(1.0, 0.98, 0.85, k))
 
 
-func _draw_attack(ci: RID) -> void:
+func _attack_back(cv: CanvasItem) -> void:
+	var ci := cv.get_canvas_item()
 	var c := CENTER
-	var d: Dictionary = _data.get("attack", {})
 	var pressed := _held == "attack"
-	draw_circle(c + Vector2(0, 3), RING_R + 9.0, Color(0, 0, 0, 0.42))
+	cv.draw_circle(c + Vector2(0, 3), RING_R + 9.0, Color(0, 0, 0, 0.42))
 	# gai: 4 hướng chính (trừ hướng dưới — chỗ nhãn phím J) + 4 gai nhỏ chéo
 	for i in 8:
 		var a := -PI / 2.0 + TAU * i / 8.0
@@ -246,84 +303,72 @@ func _draw_attack(ci: RID) -> void:
 		var n := Vector2.from_angle(a).orthogonal()
 		var base := c + Vector2.from_angle(a) * (RING_R - 2.0)
 		var pts := PackedVector2Array([base + n * hw, tip, base - n * hw])
-		draw_colored_polygon(pts, Bronze.BR)
-		draw_colored_polygon(PackedVector2Array([base + n * hw, tip, base]), Bronze.BR_MID)
+		cv.draw_colored_polygon(pts, Bronze.BR)
+		cv.draw_colored_polygon(PackedVector2Array([base + n * hw, tip, base]), Bronze.BR_MID)
 		pts.append(pts[0])
-		draw_polyline(pts, Bronze.BR_DARK, 1.4, true)
+		cv.draw_polyline(pts, Bronze.BR_DARK, 1.4, true)
 	# vành đồng: tối ngoài – đồng – gờ sáng trên trái / tối dưới phải – đinh tán
-	draw_circle(c, RING_R + 1.0, Bronze.BR_DARK)
-	draw_circle(c, RING_R - 0.5, Bronze.BR)
-	draw_arc(c, RING_R - 2.5, PI * 0.95, PI * 1.75, 28, Color(Bronze.BR_LIGHT, 0.7), 2.4, true)
-	draw_arc(c, RING_R - 2.5, PI * 0.0, PI * 0.75, 28, Color(Bronze.BR_DARK, 0.55), 2.4, true)
+	cv.draw_circle(c, RING_R + 1.0, Bronze.BR_DARK)
+	cv.draw_circle(c, RING_R - 0.5, Bronze.BR)
+	cv.draw_arc(c, RING_R - 2.5, PI * 0.95, PI * 1.75, 28, Color(Bronze.BR_LIGHT, 0.7), 2.4, true)
+	cv.draw_arc(c, RING_R - 2.5, PI * 0.0, PI * 0.75, 28, Color(Bronze.BR_DARK, 0.55), 2.4, true)
 	for i in 8:
 		var p := c + Vector2.from_angle(TAU * (i + 0.5) / 8.0) * (RING_R - 4.0)
-		draw_circle(p, 1.9, Bronze.BR_DARK)
-		draw_circle(p + Vector2(-0.4, -0.4), 1.1, Bronze.BR_LIGHT)
+		cv.draw_circle(p, 1.9, Bronze.BR_DARK)
+		cv.draw_circle(p + Vector2(-0.4, -0.4), 1.1, Bronze.BR_LIGHT)
 	# vòng thép: viền tối, thân xám, nửa trên sáng, nửa dưới tối
-	draw_circle(c, STEEL_R + 0.8, Color("#1c1c1e"))
-	draw_circle(c, STEEL_R - 0.4, STEEL)
+	cv.draw_circle(c, STEEL_R + 0.8, Color("#1c1c1e"))
+	cv.draw_circle(c, STEEL_R - 0.4, STEEL)
 	var mid := (STEEL_R + BIG_R) / 2.0
 	var tw := STEEL_R - BIG_R - 1.5
-	draw_arc(c, mid, PI * 1.0, PI * 2.0, 40, Color("#c9ccd0", 0.75), tw * 0.6, true)
-	draw_arc(c, mid, PI * 0.1, PI * 0.9, 32, Color("#5d6166", 0.8), tw * 0.6, true)
-	draw_arc(c, STEEL_R - 1.5, PI * 1.1, PI * 1.6, 24, Color(1, 1, 1, 0.6), 1.2, true)
+	cv.draw_arc(c, mid, PI * 1.0, PI * 2.0, 40, Color("#c9ccd0", 0.75), tw * 0.6, true)
+	cv.draw_arc(c, mid, PI * 0.1, PI * 0.9, 32, Color("#5d6166", 0.8), tw * 0.6, true)
+	cv.draw_arc(c, STEEL_R - 1.5, PI * 1.1, PI * 1.6, 24, Color(1, 1, 1, 0.6), 1.2, true)
 	# đĩa icon
-	draw_circle(c, BIG_R + 0.8, Color("#151719"))
-	draw_circle(c, BIG_R, Color("#3e4044") if not pressed else Color("#2c2e31"))
-	var tex := _icon("attack", d)
-	if tex != null:
-		_circle_texture(c, BIG_R - 1.0, tex, Color(0.8, 0.8, 0.8) if pressed else Color.WHITE)
-	else:
-		_crossed_swords(c, 16.0, Color("#e8e4dc"))
-	draw_arc(c, BIG_R - 2.0, 0.0, TAU, 48, Color(0, 0, 0, 0.45), 3.5, true)
-	draw_arc(c, BIG_R - 5.0, PI * 1.15, PI * 1.55, 20, Color(1, 1, 1, 0.2), 2.0, true)
+	cv.draw_circle(c, BIG_R + 0.8, Color("#151719"))
+	cv.draw_circle(c, BIG_R, Color("#3e4044") if not pressed else Color("#2c2e31"))
 	# 4 ngọc xanh trên vòng thép (giữ nét đồng chạm khắc chung của UI-41)
 	for i in 4:
 		Bronze.gem_at(ci, c + Vector2.from_angle(PI / 4.0 + PI / 2.0 * i) * mid, 2.0, Bronze.GEM_BLUE)
 
 
-## Nút màu lớn trên vòng cung: vành đồng dày, nền tối có quầng màu theo hệ / bậc, icon cắt tròn.
+func _draw_attack_icon() -> void:
+	var d: Dictionary = _data.get("attack", {})
+	var tex := _icon("attack", d)
+	if tex != null:
+		_circle_texture(CENTER, BIG_R - 1.0, tex, Color(0.8, 0.8, 0.8) if _held == "attack" else Color.WHITE)
+	else:
+		_crossed_swords(self, CENTER, 16.0, Color("#e8e4dc"))
+
+
+## Nút màu lớn trên vòng cung — phần động: quầng màu khi sẵn sàng (dải ngoài vành), icon, hồi chiêu, số.
 func _draw_main(id: String, c: Vector2, r: float) -> void:
 	var d: Dictionary = _data.get(id, {})
 	var ring: Color = d.get("ring", Bronze.BR_MID)
 	var dim: bool = d.get("dim", false)
 	var cd := clampf(float(d.get("cd", 0.0)), 0.0, 1.0)
 	var pressed := _held != "" and _held == _action_of(id)
-	var tinted := ring != Bronze.BR_MID
-	draw_circle(c + Vector2(0, 2.5), r + 6.5, Color(0, 0, 0, 0.42))
-	if cd <= 0.0 and not dim and tinted:
-		draw_circle(c, r + 8.0, Color(ring, 0.10 + 0.05 * sin(_t * 3.0)))
-		draw_circle(c, r + 6.0, Color(ring, 0.16 + 0.06 * sin(_t * 3.0)))
-	_bronze_rim(c, r)
-	draw_circle(c, r, Color("#12161a") if not pressed else Color("#0a0c0e"))
-	if tinted:
-		draw_circle(c, r * 0.8, Color(ring, 0.22))
+	if cd <= 0.0 and not dim and ring != Bronze.BR_MID:
+		# quầng chỉ lộ ngoài vành đồng (r + 5,2 … r + 8) — vẽ thành dải để nằm trên lớp sau mà không phủ vành
+		draw_arc(c, r + 6.6, 0.0, TAU, 40, Color(ring, 0.10 + 0.05 * sin(_t * 3.0)), 2.8, true)
+		draw_arc(c, r + 5.9, 0.0, TAU, 40, Color(ring, 0.16 + 0.06 * sin(_t * 3.0)), 1.4, true)
 	var tex := _icon(id, d)
 	if tex != null:
 		_circle_texture(c, r - 1.0, tex, Color(0.4, 0.4, 0.42) if dim else (Color(0.8, 0.8, 0.8) if pressed else Color.WHITE))
 	_cooldown(c, r, cd)
-	draw_arc(c, r - 1.5, 0.0, TAU, 40, Color(0, 0, 0, 0.45), 3.0, true)
-	draw_arc(c, r - 4.0, PI * 1.15, PI * 1.55, 16, Color(1, 1, 1, 0.22), 1.6, true)
-	if tinted:
-		draw_arc(c, r + 0.3, 0.0, TAU, 40, Color(ring, 0.9), 1.6, true)
 	_cd_and_badge(c, r, d)
 
 
-## Nút phụ màu đá trầm (Z): vành đồng mảnh hơn, icon kiếm chéo màu ngà; bật = quầng vàng + 2 vệt quay.
+## Nút phụ màu đá trầm (Z) — phần động: quầng khi bật, icon, 2 vệt quay.
 func _draw_sub(id: String, c: Vector2, r: float) -> void:
 	var on := id == "auto" and auto_on
-	draw_circle(c + Vector2(0, 2.5), r + 5.5, Color(0, 0, 0, 0.42))
 	if on:
-		draw_circle(c, r + 7.0, Color(Bronze.BR_LIGHT, 0.16 + 0.08 * sin(_t * 4.0)))
-	_bronze_rim(c, r, 3.0)
-	draw_circle(c, r, STONE if not on else STONE.lightened(0.12))
-	draw_circle(c + Vector2(-2, -3), r * 0.75, Color(1, 1, 1, 0.05))
-	draw_arc(c, r - 1.5, 0.0, TAU, 36, Color(0, 0, 0, 0.35), 2.5, true)
+		draw_arc(c, r + 5.6, 0.0, TAU, 36, Color(Bronze.BR_LIGHT, 0.16 + 0.08 * sin(_t * 4.0)), 2.8, true)
 	var tex := _icon(id, {})
 	if tex != null:
 		_circle_texture(c, r - 1.0, tex, Color.WHITE if on else Color(0.86, 0.84, 0.8))
 	else:
-		_crossed_swords(c, r * 0.45, Color("#ece2c8") if on else Color("#c9bea4"))
+		_crossed_swords(self, c, r * 0.45, Color("#ece2c8") if on else Color("#c9bea4"))
 	if on:
 		var a0 := _t * 3.0
 		draw_arc(c, r - 3.5, a0, a0 + PI * 0.8, 16, Color(Bronze.BR_LIGHT, 0.9), 2.0, true)
@@ -331,12 +376,12 @@ func _draw_sub(id: String, c: Vector2, r: float) -> void:
 
 
 ## Vành đồng nút tròn: viền tối ngoài, thân đồng dày w, gờ sáng trên trái, bóng dưới phải, viền tối trong.
-func _bronze_rim(c: Vector2, r: float, w := 4.0) -> void:
-	draw_circle(c, r + w + 1.2, Bronze.BR_DARK)
-	draw_circle(c, r + w, Bronze.BR)
-	draw_arc(c, r + w * 0.55, PI * 0.95, PI * 1.75, 24, Color(Bronze.BR_LIGHT, 0.85), w * 0.45, true)
-	draw_arc(c, r + w * 0.55, PI * 0.05, PI * 0.8, 24, Color(Bronze.BR_DARK, 0.5), w * 0.45, true)
-	draw_circle(c, r + 0.8, Bronze.BR_DARK)
+func _bronze_rim(cv: CanvasItem, c: Vector2, r: float, w := 4.0) -> void:
+	cv.draw_circle(c, r + w + 1.2, Bronze.BR_DARK)
+	cv.draw_circle(c, r + w, Bronze.BR)
+	cv.draw_arc(c, r + w * 0.55, PI * 0.95, PI * 1.75, 24, Color(Bronze.BR_LIGHT, 0.85), w * 0.45, true)
+	cv.draw_arc(c, r + w * 0.55, PI * 0.05, PI * 0.8, 24, Color(Bronze.BR_DARK, 0.5), w * 0.45, true)
+	cv.draw_circle(c, r + 0.8, Bronze.BR_DARK)
 
 
 func _cooldown(c: Vector2, r: float, cd: float) -> void:
@@ -355,24 +400,24 @@ func _cd_and_badge(c: Vector2, r: float, d: Dictionary) -> void:
 	var f := UiTheme.bold_font()
 	var cd_text: String = d.get("cd_text", "")
 	if cd_text != "" and cd_text.to_float() > 0.0:
-		_text(f, c + Vector2(0, 5.5), cd_text, 15, Color.WHITE)
+		_text(self, f, c + Vector2(0, 5.5), cd_text, 15, Color.WHITE)
 	var badge: String = d.get("badge", "")
 	if badge != "":
 		var bc := c + Vector2(r * 0.6, r * 0.62)
 		var bw := maxf(15.0, f.get_string_size(badge, HORIZONTAL_ALIGNMENT_LEFT, -1, 10).x + 8.0)
-		_pill(Rect2(bc - Vector2(bw / 2.0, 7.5), Vector2(bw, 15.0)), Color("#1a1210") if badge != "0" else Color("#4a1616"))
-		_text(f, bc + Vector2(0, 4), badge, 10, Color.WHITE if badge != "0" else Color("#ff9a90"))
+		_pill(self, Rect2(bc - Vector2(bw / 2.0, 7.5), Vector2(bw, 15.0)), Color("#1a1210") if badge != "0" else Color("#4a1616"))
+		_text(self, f, bc + Vector2(0, 4), badge, 10, Color.WHITE if badge != "0" else Color("#ff9a90"))
 
 
 ## Nhãn phím dạng viên đồng nhỏ, tâm tại c.
-func _key_pill(c: Vector2, key: String, col: Color) -> void:
+func _key_pill(cv: CanvasItem, c: Vector2, key: String, col: Color) -> void:
 	var f := UiTheme.bold_font()
 	var w := maxf(16.0, f.get_string_size(key, HORIZONTAL_ALIGNMENT_LEFT, -1, 10).x + 9.0)
-	_pill(Rect2(c - Vector2(w / 2.0, 8.0), Vector2(w, 16.0)), Color("#241a10"))
-	_text(f, c + Vector2(0, 4.0), key, 10, col)
+	_pill(cv, Rect2(c - Vector2(w / 2.0, 8.0), Vector2(w, 16.0)), Color("#241a10"))
+	_text(cv, f, c + Vector2(0, 4.0), key, 10, col)
 
 
-func _pill(r: Rect2, bg: Color) -> void:
+func _pill(cv: CanvasItem, r: Rect2, bg: Color) -> void:
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = bg
 	sb.set_corner_radius_all(int(r.size.y / 2.0))
@@ -381,17 +426,17 @@ func _pill(r: Rect2, bg: Color) -> void:
 	sb.anti_aliasing = true
 	sb.shadow_color = Color(0, 0, 0, 0.5)
 	sb.shadow_size = 2
-	draw_style_box(sb, r)
+	cv.draw_style_box(sb, r)
 
 
-func _crossed_swords(c: Vector2, L: float, col: Color) -> void:
+func _crossed_swords(cv: CanvasItem, c: Vector2, L: float, col: Color) -> void:
 	for side in [-1.0, 1.0]:
 		var d := Vector2(side, -1.0).normalized()
 		var base := c - d * L
 		var tip := c + d * L
-		draw_line(base, tip, col, 3.0, true)
+		cv.draw_line(base, tip, col, 3.0, true)
 		var n := d.orthogonal()
-		draw_line(base + d * L * 0.35 + n * L * 0.35, base + d * L * 0.35 - n * L * 0.35, col, 2.0, true)
+		cv.draw_line(base + d * L * 0.35 + n * L * 0.35, base + d * L * 0.35 - n * L * 0.35, col, 2.0, true)
 
 
 ## Icon cắt tròn. Icon HD riêng (CanvasTexture, nền trong) vừa khít đường kính; icon ô vuông cũ phóng 112 % lấy giữa.
@@ -406,8 +451,8 @@ func _circle_texture(c: Vector2, r: float, tex: Texture2D, mod: Color) -> void:
 	draw_colored_polygon(pts, mod, uvs, tex)
 
 
-func _text(f: Font, base: Vector2, t: String, fs: int, col: Color) -> void:
+func _text(cv: CanvasItem, f: Font, base: Vector2, t: String, fs: int, col: Color) -> void:
 	var tw := f.get_string_size(t, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
 	var pos := base - Vector2(tw / 2.0, 0)
-	draw_string_outline(f, pos, t, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, 3, Color(0, 0, 0, 0.85))
-	draw_string(f, pos, t, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, col)
+	cv.draw_string_outline(f, pos, t, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, 3, Color(0, 0, 0, 0.85))
+	cv.draw_string(f, pos, t, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, col)

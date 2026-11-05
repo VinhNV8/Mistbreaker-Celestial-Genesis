@@ -10,6 +10,21 @@
 | Công cụ | `tools/art/skill_fx_kit.py` (nguyên tố vẽ), `tools/art/skill_fx_design.py` (70 kỹ năng + xuất) |
 | Trạng thái | ✅ **Đã duyệt và đưa vào game (03/11/2026)**: Q180 áp dụng cả 70 · Q181 song song · Q182 HD · Q183 theo thứ tự đề xuất (mục 8, 9) |
 
+## Trạng thái hiện tại (04/11/2026) — đọc mục này trước
+
+File này ghi theo dòng thời gian (§0–9.13), nhiều mục sau sửa mục trước. Trạng thái **đang chạy trong game**:
+
+| Phần | Hiện tại | Chi tiết |
+| --- | --- | --- |
+| Hiệu ứng 70 kỹ năng | FX-1 vẽ vector HD, **mặc định cho cả 70**; Cài đặt → Hiển thị → "Hiệu ứng kỹ năng": FX-1 / FX-1 giữ hình đã duyệt / Hình cũ | §9.1–9.6 |
+| Nguồn duyệt chính | **Ảnh chụp trong game** (`docs/design/skills-fx-ingame`, `tests/fx1_smoke.gd`); bản Python `docs/design/skills-fx` chỉ là phác ý tưởng | §9.10 |
+| Hiệu năng | 1,25 ms / khung tình huống thực tế khi máy rảnh (1,7–2,1 ms khi máy chạy tiến trình khác); cảnh báo tự nhiên 20 quái lấy đà 0,65 ms (`tests/fx1_perf.gd`) | §9.7, §9.13 |
+| Cảm giác đánh trúng | Rung + khựng đòn + âm nổ ở khung va chạm; cài đặt "Rung màn hình", "Giảm chớp sáng" (Trợ năng) | §9.8 |
+| Cảnh báo đòn quái | **Kiểu tự nhiên (mặc định)** như ARPG: quái thường báo bằng động tác (co người, ngả, run, ánh loé, vệt bụi), tinh anh / boss / cơ chế chương có vết đất theo chất liệu nằm dưới quái, boss đậm hơn + quầng mép; âm báo tinh anh / boss. Cài đặt "Cảnh báo đòn quái": Tự nhiên / Rõ ràng (kiểu vòng / dải / nón §9.9–9.11) | §9.12, §9.13 |
+| Vật che | Cây / đá che người chơi, boss, điểm rơi đòn tinh anh / boss hoặc thân quái lấy đà trong 300 px → mờ còn 40% | §9.13, §9.14 |
+| Mọi nền / mù màu | Vết có nét sẫm dưới nét sáng (đọc được trên cát, mây, đá trắng, hư vô); chế độ mù màu: đỏ → cam, xanh lá → lam ngọc | §9.14 |
+| Icon | Kỹ năng, bị động, Thiên phú, trang bị, tài nguyên, chỉ số: HD (chân dung giữ nguyên) | [37](37-icon-ky-nang.md) |
+
 ## 0. Tóm tắt
 
 - Board tham khảo có 618 pin. Đã tải và xem trực tiếp 50 pin mới nhất. Khoảng 60% là bộ icon kỹ năng, 40% là hiệu ứng 2D: vụ nổ, tia sét, vệt chém, vòng phép, cầu năng lượng, khói.
@@ -343,12 +358,9 @@ Lưu ý khi chụp: chạy 14 kỹ năng × 34 khung liền trong một lần, G
 
 `Fx1.draw_danger` + `world_view._fx1_telegraph`. Các đòn có vùng tròn (vồ, lao bổ, Hổ Vồ, gầm, rễ, nện, nổ, trồi cát, bổ nhào cát, đuôi độc, xoáy cát) vẽ theo ngôn ngữ FX-1: nền mờ, phần lấp đầy tăng theo tiến độ vung đòn, viền 3 dải + glow, 8 vạch chỉ vào tâm, gần lúc đánh thì sáng lên. Màu theo loại đòn: đỏ (vồ / nện / nổ), lam nhạt (gầm / lao bổ), vàng đất (rễ / cát), xanh độc (đuôi độc).
 
-**Vùng nguy hiểm giữ đúng hình tròn gameplay**, không nén 3/4, để người chơi né chính xác. Cảnh báo dạng nón và dạng đường (bắn loạt, lá, ánh nhìn, lao, lăn) vẫn giữ kiểu cũ. Chọn "Hình cũ" trong Cài đặt thì về kiểu cũ. Ảnh: `godot/tests/fx1_telegraph.gd`. Test FX1-T1.
+**Vùng nguy hiểm giữ đúng hình tròn gameplay**, không nén 3/4, để người chơi né chính xác. Dạng nón và dạng đường: xem §9.11. Chọn "Hình cũ" trong Cài đặt thì về kiểu cũ. Ảnh: `godot/tests/fx1_telegraph.gd`. Test FX1-T1.
 
-**Lát tiếp theo của bước 8 (chưa làm):**
-1. Vòng cảnh báo do view từng chương vẽ (region5–9 `draw_over`), vì mỗi chương tự vẽ.
-2. Cảnh báo dạng nón và dạng đường.
-3. Icon Thiên phú và icon trang bị (lộ trình G1–G4 ở [35](35-de-xuat-giao-dien-moi.md)).
+**Bước 8, lát 2:** cảnh báo của từng chương và cảnh báo dạng nón / đường, xem §9.11. Icon Thiên phú và trang bị nằm trong lộ trình G1 (UI-42…45, [35](35-de-xuat-giao-dien-moi.md)) của phiên giao diện, nên tách riêng.
 
 ### 9.10. Chỉnh hình (bước 9) và nguồn duyệt chính (bước 5)
 
@@ -357,3 +369,88 @@ Lưu ý khi chụp: chạy 14 kỹ năng × 34 khung liền trong một lần, G
 - Thiên Tai: ảnh so sánh chụp 44 khung (2,9 giây), nên có đủ 3 pha Hoả → Băng → Sét.
 - Icon Ấu Long thêm đôi cánh trăng khuyết, sừng và lửa phun; icon Linh Ưng dùng khung dang cánh của sprite.
 - **Nguồn duyệt chính (bước 5).** Từ nay **ảnh chụp trong game** (`docs/design/skills-fx-ingame`, `tests/fx1_smoke.gd --frames`) là bản duyệt chính của hiệu ứng kỹ năng. Bản thiết kế Python (`docs/design/skills-fx`) chỉ còn là bản phác ý tưởng. Mọi thay đổi FX-1 phải chụp lại ảnh so sánh trước khi báo xong. Bản thiết kế không vẽ lại theo đúng tầm đánh: ở tỉ lệ thật, vùng của Băng Phong (14 m) hay Thiên Tiễn (20 m) rộng hơn cả khung cảnh 192×112, nên ảnh phác sẽ không còn đọc được.
+
+### 9.11. Cảnh báo đòn quái: từng chương + dạng nón / đường (bước 8, lát 2, 04/11/2026)
+
+Ba hàm dùng chung trong `fx1.gd`, vẽ qua `Fx1.painter` (world_view gán ở đầu mỗi `_draw`), nên view từng chương gọi được mà không cần painter riêng. Hình **giữ đúng kích thước gameplay** (tâm, bán kính, độ dài, nửa bề rộng, nửa góc lấy từ hằng số của chương). Trả `false` khi chọn "Hình cũ" (hoặc chưa có painter) → nơi gọi vẽ kiểu cũ.
+
+| Hàm | Hình | Dùng cho |
+| --- | --- | --- |
+| `danger_zone` | Vòng tròn như §9.9 | Vòng báo của chương 6–9 (`marks`, màu theo dữ liệu qua `pal_of`), thiên thạch / cột lửa / lông lửa vùng 5, Nổ Lửa, Búa, Ném Tuyết, Cột Băng, Xoay Ma, Nện / Búa Cự Thần, Quất Rễ, Phong Ấn, Hiến Tế, Gầm / Xoay vùng 9, Vồ Ma Tôn, Hút (vùng 1–4) |
+| `danger_line` | Dải chữ nhật: nền mờ, lấp đầy chạy dọc theo tiến độ, hai mép 3 dải + glow, vạch chặn cuối, mũi tên chạy về phía trước | Bắn loạt / phi tiêu, bào tử, lao, lăn (vùng 1–4); bổ nhào / cột lửa vùng 5; nứt băng, lao / tia Ma vùng 6; Thương / Lướt Mây vùng 7; Tia Hư Vô vùng 8; Thương Nguyên Tố / Phi Ngựa / Lao vùng 9 |
+| `danger_cone` | Nón: nền mờ, lấp đầy lan ra theo tiến độ, vành 3 dải + glow, 2 cạnh, 5 vạch chỉ vào trong | Lá, ánh nhìn (vùng 1–4); Thở Lửa Rồng vùng 5 (trước là vòng tròn, nay đúng nón 35° như đòn thật); Thở Băng vùng 6; Chém Nặng, Hàm vùng 8 |
+
+Bảng màu mới: `P_FIRE` (lửa), `P_VOID` (hư vô), `P_GOLD` (vàng), `P_LEAF` (lá), `P_ICE` (băng đậm, riêng vùng 6 vì `P_FROST` nhạt chìm vào nền tuyết), cùng `pal_of(màu)` cho vòng báo có màu riêng.
+
+Giữ kiểu cũ (không phải vùng sát thương hoặc là chỉ báo trạng thái): Dịch Chuyển, đòn cận chiến mặc định (vòng nở quanh quái), Nuốt vùng 8, dây hút / tia nhìn đang khoá, khiên, mũi tên chỉ đèn.
+
+Mã: `world_view._fx1_telegraph`, `region5/6/8/9_view._fx1`, region7 ngay trong `draw_over`. Ảnh: `tests/fx1_telegraph.gd --set=lines` → [canh-bao-day-non.jpg](design/skills-fx-ingame/canh-bao-day-non.jpg); `tests/fx1_regions.gd --region=5…9` (map thật của vùng, quái đang vung từng đòn riêng + vòng báo) → [canh-bao-vung-5-9.jpg](design/skills-fx-ingame/canh-bao-vung-5-9.jpg).
+
+Sửa lỗi có từ trước: với các đòn riêng của vùng 5–9, `world_view._draw_telegraph` rơi vào nhánh mặc định và vẽ thêm vòng đỏ nhỏ quanh quái, chồng lên cảnh báo của chương. Nay nhánh mặc định bỏ qua các đòn trong `world_view.REGION_TELEGRAPHS` (đã kiểm tra không trùng tên đòn của vùng 1–4). Test FX1-T1: dải / nón / vòng vẽ được, không đa giác lỗi, "Hình cũ" và không có painter thì trả về kiểu cũ, mọi loại đòn của region5/6/8/9 đều vẽ qua FX-1.
+
+### 9.12. Cảnh báo kiểu tự nhiên — mặc định (04/11/2026)
+
+**Chủ dự án hỏi:** ARPG thực tế (Diablo…) có cảnh báo đòn quái không, có rõ như mình không; "đừng để người chơi nhìn thấy giả trân quá". **Trả lời:** có, nhưng chia cấp và vẽ như một phần của thế giới. Diablo 3/4, Path of Exile, Grim Dawn: quái thường gần như không có vòng, người chơi đọc động tác lấy đà; tinh anh có hiệu ứng tại chỗ; boss có vùng trên đất nhưng trông như lửa, đất nứt, bóng đổ. Vòng đỏ có vạch cho mọi đòn là kiểu MMO (Lost Ark). Bản §9.9–9.11 đi theo hướng đó, nên làm lại theo hướng ARPG. Chủ dự án duyệt: "làm như đề xuất, chú ý cảm nhận của người chơi".
+
+**Cài đặt mới "Cảnh báo đòn quái"** (`tele_style`, thẻ Hỗ trợ): **Tự nhiên** (mặc định) / **Rõ ràng** (kiểu §9.9–9.11, cho người mới hoặc khó quan sát). Chọn "Hình cũ" ở Hiệu ứng kỹ năng thì về kiểu cũ như trước.
+
+| Cấp | Kiểu tự nhiên |
+| --- | --- |
+| Quái thường, đòn lao / bắn / chém nón (`BODY_ONLY`: vồ, lao, bắn loạt, lá, ánh nhìn, lăn, thương…) | **Không vẽ vùng.** Chỉ động tác (`windup_cue`): bụi dưới chân, từ 60% thân loé ánh đỏ cam + ánh kim ở đầu, từ 45% vệt bụi mờ chỉ hướng đòn |
+| Quái thường, đòn vùng (nện, nổ, gầm, rễ…) | Vết mặt đất hiện dần từ 35% thời gian lấy đà |
+| Tinh anh, cơ chế chương (thiên thạch, vòng báo…) | Vết mặt đất hiện dần từ 10% |
+| Boss | Như tinh anh, đậm hơn ×1,6 + quầng sáng nhẹ ở đúng mép trên lớp glow (thấy xuyên tán cây) |
+
+**Vết theo chất liệu** (suy từ bảng màu của đòn), kích thước vẫn đúng gameplay, mép là viền nhạt chập chờn, không có vạch chia hay mũi tên:
+- Lửa: bóng cháy sẫm lớn dần, viền hơi nóng, than hồng rơi.
+- Đất (`P_DANGER`): đất nứt toả ra từ tâm, bụi bốc ở mép.
+- Băng: sương giá lan, gai băng.
+- Cát: cát xoáy, bụi.
+- Hư vô / vàng: vòng ấn xoay chậm.
+- Độc: vũng sủi bọt.
+- Lá: dây leo bò vào.
+- Màu riêng của vòng báo: bóng vật rơi.
+- Dải: rãnh mờ cày dọc đường đòn, bụi / than / sương trôi về phía trước.
+- Nón: hơi nóng / sương đặc ở gốc, nhạt dần ra xa, hạt trôi ra ngoài.
+
+**Nằm dưới quái.** Vết mặt đất ghi vào `Fx1.tele_queue`; `world_view` gọi `Fx1.flush_ground` trước lớp quái / cây ở khung sau (trễ 1 khung ≈ 16 ms, không nhận ra). Kiểu rõ ràng vẫn vẽ ngay, đè lên như trước.
+
+**Cảm nhận người chơi — đã chỉnh trong lúc làm (đo trên ảnh chụp):**
+1. Bản đầu, ánh loé và vệt bụi của quái thường quá mờ trên nền cỏ. Quái của mình nhỏ và đánh nhanh (lấy đà 0,4–1 giây) hơn Diablo, nên tăng một bậc: ánh kim to hơn, thân loé ánh đỏ cam, vệt bụi có nền sẫm để nổi trên cỏ.
+2. Vết nện của boss chìm dưới tán cây → boss đậm ×1,6 và có quầng sáng mép trên lớp glow.
+3. Quái thường đòn vùng hiện muộn hơn (35%) để màn hình không rối khi đánh bầy, nhưng vẫn đủ thời gian né.
+4. Theo dõi khi chơi thử: nếu quái thường khó né quá thì kéo dài thời gian lấy đà của quái thường 10–15% (chưa đổi gameplay).
+
+Mã: `fx1.gd` (`tele_natural`, `_nat_alpha`, `flush_ground`, `_nat_zone` / `_nat_line` / `_nat_cone`, `windup_cue`); `danger_zone` / `danger_line` / `danger_cone` nhận thêm tham số quái `e`. Ảnh so sánh: [canh-bao-tu-nhien.jpg](design/skills-fx-ingame/canh-bao-tu-nhien.jpg) (`tests/fx1_telegraph.gd`, `tests/fx1_regions.gd` thêm `--elite`, `--k=`). Test FX1-T1: mặc định tự nhiên; quái thường đòn lao không có vết; tinh anh / cơ chế có vết; vẽ dưới quái không có đa giác lỗi; động tác lấy đà vẽ được.
+
+### 9.13. Cảm giác chơi: vật che, tư thế lấy đà, âm báo, đo nguồn sát thương (04/11/2026)
+
+Chủ dự án duyệt đề xuất cải thiện tiếp (thứ tự 1 → 2 → 3 → 5 → 4 → 6).
+
+1. **Kiểm tra lại.** Chạy lại bộ test đầy đủ; ảnh thẻ Trợ năng có "Cảnh báo đòn quái" (`tests/settings_shot.gd`); đo hiệu năng thêm tình huống 20 quái lấy đà kiểu tự nhiên ≈ 1,0 ms (tối đa 1,5 ms).
+2. **Làm mờ vật che** (như Diablo). `world_view._occlusion_focus`: điểm cần thấy = thân người chơi, boss, điểm rơi đòn của tinh anh / boss đang lấy đà. `_tree_fade`: cây / đá / bụi có khung hình chứa một điểm đó (điểm nằm sau gốc) → mờ dần còn 40% (0,08 mỗi khung), hết che thì hiện lại dần. Áp cho mọi kiểu trang trí 9 vùng.
+3. **Tư thế lấy đà** (`Fx1.windup_pose`, mọi quái trừ "Hình cũ"): tới 75% thời gian lấy đà co người (cao −12%, rộng +8%) và ngả ngược hướng đòn 0,1 rad; 25% cuối run lên rồi bật ra. `SpriteLib.draw_frame` thêm tham số tuỳ chọn `squash` / `lean` (mặc định không đổi chỗ gọi cũ).
+4. **Đo nguồn sát thương** — `PACE-TELE` (chạy riêng `--only=PACE-TELE`). Bot không "nhìn" màn hình, nên đo phần sát thương đến từ đòn mất vết ở kiểu tự nhiên (bot chơi 240 giây, gán máu mất cho con quái ra đòn gần nhất trong 0,8 giây):
+
+   | Vùng | Mất vết (lao / bắn / cận chiến quái thường) | Đòn vùng quái thường | Tinh anh / boss | Theo đòn |
+   | --- | --- | --- | --- | --- |
+   | 1 (1-1, cấp 5) | 91% | 2% | 6% | **Sói lao 56%**, đánh thường 28%, bào tử 12% |
+   | 5 (5-1, cấp 47) | 57% (+ đấm 33% cũng chỉ báo bằng động tác) | 8% | 0% | Đánh thường 57%, đấm 33%, nổ lửa 8% |
+
+   **Quyết định:** đòn cận chiến (đánh thường, đấm) giữ chỉ báo bằng động tác (kiểu cũ cũng chỉ có vòng nở quanh quái; Diablo không có gì). **Sói lao** gây hơn nửa sát thương ở vùng 1 — vùng người mới học né — nên đưa `dash` ra khỏi `BODY_ONLY`: có rãnh bụi mờ từ 35% thời gian lấy đà. Chưa kéo dài thời gian lấy đà; chờ chơi thử.
+5. **Âm báo** (`Fx1._tele_audio` trong `Fx1.tick`): tinh anh / boss bắt đầu lấy đà trong 700 px quanh người chơi → `tele_elite` (gió vút + gầm gừ, 0,42 giây) / `tele_boss` (ầm trầm dâng, 0,75 giây), một lần mỗi đòn; "Hình cũ" thì không phát. Âm sinh bằng code (`tools/audio/sfx.py`).
+6. **Tài liệu:** mục "Trạng thái hiện tại" ở đầu file.
+
+Ảnh: `docs/design/skills-fx-ingame/che-cay-tu-the.jpg` (cây che boss trước / sau; sói đầu và 70% nhịp lấy đà; rãnh bụi Sói lao). Test FX1-T1 thêm âm báo (1 lần, quái xa không phát).
+
+### 9.14. Soát cảnh báo tự nhiên trên mọi nền, trong chuyển động, cho người mù màu (04/11/2026)
+
+1. **Mọi nền.** Chụp kiểu tự nhiên với quái tinh anh trên sa mạc (3), đầm lầy (4), trời mây (7), hư vô (8), Thiên Thê (9) (`fx1_telegraph.gd --map=`, `fx1_regions.gd`). Thấy vết chìm khi cùng tông với nền: cát xoáy trên cát, dải xám trên đá trắng, nón đỏ trên nền tím sẫm, rễ xanh trên cỏ xanh. Sửa chung cho mọi nền:
+   - Mọi viền, mép dải và vành nón có **nét sẫm mảnh nằm dưới nét màu**. Nét màu dùng tông **sáng** của chất liệu: nền sáng thì nét sẫm nổi, nền tối thì nét sáng nổi.
+   - Mép dải và nón đậm hơn (0,22 → 0,34; 0,3 → 0,38). Cát xoáy có bóng sẫm. Rễ đổi sang **nâu** (đúng chất "rễ", nổi trên cỏ).
+2. **Vật che.** Cây mờ cả khi che thân **mọi quái đang lấy đà trong 300 px** (trước chỉ tính điểm rơi đòn của tinh anh / boss; chuỗi khung cho thấy tinh anh nấp sau cây thông suốt cả nhịp lấy đà).
+3. **Chuyển động.** `fx1_telegraph.gd --seq`: chụp một nhịp lấy đà 1 giây (world.time chạy thật), mỗi 0,1 giây một ảnh. Vết hiện dần đều, run người và ánh loé không chớp giật.
+4. **Mù màu đỏ – lục** (Trợ năng → "Bảng màu cho người mù màu"): cảnh báo đỏ → cam, xanh lá (độc, lá) → lam ngọc, theo quy ước "tốt / xấu = lam / cam" của giao diện. Áp cho cả kiểu tự nhiên và kiểu rõ ràng; chất liệu không đổi. `Fx1._cb`.
+5. Sửa lỗi: đổi map thì xoá hàng đợi vết cảnh báo và danh sách âm báo (không còn vết của map cũ hiện 1 khung).
+
+Ảnh: [canh-bao-nen-chuyen-dong.jpg](design/skills-fx-ingame/canh-bao-nen-chuyen-dong.jpg). Test FX1-T1 thêm chế độ mù màu.

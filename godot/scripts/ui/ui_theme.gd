@@ -114,9 +114,38 @@ static func get_theme() -> Theme:
 	return t
 
 
-## Cỡ chữ đã nhân hệ số KT-07.
+## UI-51 (docs/38): cỡ chữ nhỏ nhất cho phép (px khung gốc 1366×768 ≈ 15 px ở 1080p) — chữ đặt cỡ nhỏ hơn qua fs()
+## được nâng lên mức này.
+const MIN_FONT := 11
+
+
+## Cỡ chữ đã nhân hệ số KT-07 (không dưới MIN_FONT).
 static func fs(size: int) -> int:
-	return maxi(8, roundi(size * font_scale))
+	return maxi(MIN_FONT, roundi(size * font_scale))
+
+
+## UI-63 (docs/38): bảng màu mù màu đỏ – lục — "tốt / xấu" đổi từ lục / đỏ sang lam / cam (phân biệt được với
+## mù màu đỏ – lục). Đổi biến tĩnh: phần giao diện vẽ lại sau đó dùng màu mới.
+const GOOD_DEFAULT := Color("#5bd16a")
+const BAD_DEFAULT := Color("#ff5470")
+const GOOD_CB := Color("#4aa8ff")
+const BAD_CB := Color("#ff9a3c")
+static var colorblind := false
+
+
+static func set_colorblind(on: bool) -> void:
+	colorblind = on
+	GOOD = GOOD_CB if on else GOOD_DEFAULT
+	BAD = BAD_CB if on else BAD_DEFAULT
+
+
+## Màu "tốt" / "xấu" theo bảng màu đang dùng (cho code vẽ tự đặt màu lục / đỏ).
+static func good() -> Color:
+	return GOOD
+
+
+static func bad() -> Color:
+	return BAD
 
 
 ## KT-07: đổi hệ số cỡ chữ (0,8–1,5); trả về theme mới — nơi gọi gán lại `theme` cho Control gốc.
@@ -135,13 +164,15 @@ static func _button_styles(t: Theme, type_name: String, normal: Color, hover: Co
 	pressed.content_margin_top = 11
 	pressed.content_margin_bottom = 9
 	t.set_stylebox("pressed", type_name, pressed)
-	t.set_stylebox("disabled", type_name, box(Color(normal.darkened(0.3), 0.55), 6, 1, Color(border, 0.35), 10))
+	# UI-62 (docs/38): nút khoá thấy rõ (nền đá xám, chữ xám sáng, tương phản ≈ 5:1) — cũ: nền mờ 55%, chữ 40% gần như
+	# vô hình. Lý do khoá nằm ở tooltip (nơi đặt disabled gán tooltip_text = lý do).
+	t.set_stylebox("disabled", type_name, box(Color("#26231e"), 6, 1, Color("#5a4c36"), 10))
 	t.set_stylebox("focus", type_name, StyleBoxEmpty.new())
 	t.set_color("font_color", type_name, text)
 	t.set_color("font_hover_color", type_name, text)
 	t.set_color("font_pressed_color", type_name, text)
 	t.set_color("font_focus_color", type_name, text)
-	t.set_color("font_disabled_color", type_name, Color(text, 0.4))
+	t.set_color("font_disabled_color", type_name, Color("#9c927e"))
 	t.set_font("font", type_name, bold_font())
 
 

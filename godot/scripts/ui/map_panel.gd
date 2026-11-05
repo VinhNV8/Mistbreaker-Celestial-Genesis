@@ -147,6 +147,8 @@ func _tile_info(info: VBoxContainer, t: Dictionary) -> void:
 		b.size_flags_horizontal = SIZE_SHRINK_BEGIN
 		b.disabled = blocker != ""
 		if blocker != "":
+			b.tooltip_text = blocker  # UI-62: lý do khoá
+		if blocker != "":
 			b.tooltip_text = blocker
 		var tid: int = int(t.id)
 		b.pressed.connect(func():
@@ -213,6 +215,8 @@ func _tile_info(info: VBoxContainer, t: Dictionary) -> void:
 	var claim := UiTheme.button(label, true)
 	claim.size_flags_horizontal = SIZE_SHRINK_BEGIN
 	claim.disabled = blocker != ""
+	if blocker != "":
+		claim.tooltip_text = blocker  # UI-62: lý do khoá
 	if blocker != "":
 		claim.tooltip_text = blocker
 	claim.pressed.connect(_on_claim)

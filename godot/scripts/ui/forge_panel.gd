@@ -201,6 +201,8 @@ func _enhance(body: HBoxContainer, p) -> void:
 	b.name = "EnhanceButton"
 	b.custom_minimum_size = Vector2(0, 46)
 	b.disabled = blocker != ""
+	if blocker != "":
+		b.tooltip_text = blocker  # UI-62: lý do khoá
 	var id := int(item.id)
 	b.pressed.connect(func():
 		var res: Dictionary = world.enhance(id)

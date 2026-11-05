@@ -32,6 +32,19 @@ var _fx := {}
 
 
 ## Spec_Notes N8: khung phát sáng theo cấp cường hoá + số "+N" trên ô đồ.
+## UI-63 (docs/38): chấm phẩm chất góc dưới trái ô đồ — Trắng 1 … Cam 5 chấm, để phẩm chất không chỉ báo bằng màu viền.
+class RarityPips:
+	extends Control
+	var n := 1
+	var col := Color.WHITE
+
+	func _draw() -> void:
+		for i in n:
+			var c := Vector2(7.0 + i * 6.0, size.y - 7.0)
+			draw_circle(c, 2.8, Color(0, 0, 0, 0.85))
+			draw_circle(c, 1.9, col)
+
+
 class PlusGlow:
 	extends Control
 	var plus := 0
@@ -421,6 +434,12 @@ func _item_button(item: Dictionary, text: String, doll := false, tip := "") -> B
 		var in_bag := tip == "bag"
 		b.mouse_entered.connect(func(): _show_tip(it, in_bag))
 		b.mouse_exited.connect(_hide_tip)
+	var pips := RarityPips.new()
+	pips.n = ItemData.RARITY_ORDER.find(str(item.rarity)) + 1
+	pips.col = c
+	pips.mouse_filter = MOUSE_FILTER_IGNORE
+	pips.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	b.add_child(pips)
 	var glow := PlusGlow.new()
 	glow.plus = int(item.plus)
 	glow.mouse_filter = MOUSE_FILTER_IGNORE
@@ -569,6 +588,8 @@ func _enhance_block(col: VBoxContainer, p, item: Dictionary) -> void:
 	var b := UiTheme.button("Cường hoá", true)
 	b.name = "EnhanceButton"
 	b.disabled = blocker != ""
+	if blocker != "":
+		b.tooltip_text = blocker  # UI-62: lý do khoá
 	b.pressed.connect(func():
 		var res: Dictionary = world.enhance(int(item.id))
 		refresh()

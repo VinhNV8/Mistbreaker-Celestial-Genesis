@@ -7,6 +7,8 @@ description: "Sinh hình pixel art cho game Thiên Phú Khai Giới bằng code 
 
 Mọi hình trong game được **sinh bằng code** từ tham số, không vẽ tay, không dùng AI tạo ảnh. Nhờ vậy cả game giữ một phong cách, chạy lại được, và thêm quái mới chỉ cần khai báo vài dòng.
 
+**Quái / boss bản HD** (lớp phủ "Đồ hoạ HD", phong cách cartoon docs/39): dùng skill **`monster-design`** sau khi đã có bản pixel ở đây — bản HD lấy id và hiệu chỉnh cỡ theo bản pixel.
+
 Kế hoạch và trạng thái: `docs/07-do-hoa-ke-hoach.md` (mã AR-xx). Phong cách đã chốt ở mục 1.2 của tài liệu đó — **không tự đổi** kích thước frame, tỉ lệ ×2, hướng nhìn hay số hoạt ảnh.
 
 ## Quy ước phong cách (bắt buộc)

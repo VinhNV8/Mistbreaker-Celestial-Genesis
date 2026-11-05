@@ -243,6 +243,8 @@ static func _reset(world) -> void:
 	_watch = []
 	_boom = []
 	last_id = ""
+	tele_queue = []  # §9.12: vết cảnh báo của map cũ không hiện ở map mới
+	_wind_heard = {}
 
 
 ## Gọi khi world_view nhận ra một lần thi triển (bước nhảy hồi chiêu). Trả true nếu FX-1 nhận vẽ kỹ năng này.
@@ -262,6 +264,7 @@ static func on_cast(world, sk: Dictionary) -> bool:
 static func tick(world, delta: float) -> void:
 	if world != _world:
 		_reset(world)
+	_tele_audio(world)
 	for f in casts:
 		var before := frame_of(f)
 		f.t += delta
@@ -1135,3 +1138,467 @@ static func draw_danger(pa: Kit.Painter, world, zones: Array, progress: float) -
 		if progress > 0.8:
 			pa.gcircle(c, r * 0.9, Color(p[2], 0.18 * (progress - 0.8) / 0.2))
 	return true
+
+
+## §9.11 (bước 8, lát 2): cảnh báo dùng chung cho world_view và region5–9 view, vẽ qua Fx1.painter (world_view gán
+## đầu mỗi _draw). Hình giữ ĐÚNG kích thước gameplay: vùng tròn, dải (lao / tia / lăn, nửa bề rộng = half), nón.
+## Trả false khi "Hình cũ" hoặc chưa có painter → nơi gọi vẽ kiểu cũ.
+static var P_FIRE := Kit.pal("#fff4d0", "#ffc070", "#ff6a1a", "#6a1a08")
+static var P_VOID := Kit.pal("#f6ecff", "#d8b0ff", "#9a5ae0", "#34144e")
+static var P_GOLD := Kit.pal("#fffbe8", "#ffe7a0", "#e8b040", "#5a3a10")
+static var P_LEAF := Kit.pal("#f0ffe8", "#b8f0a0", "#4cbf5a", "#14401c")
+## băng đậm cho nền tuyết vùng 6 (P_FROST nhạt chìm vào tuyết)
+static var P_ICE := Kit.pal("#ffffff", "#8cc6ff", "#2a78dc", "#0a2868")
+
+
+## Bảng màu 4 dải từ một màu dữ liệu (vòng báo có màu riêng theo đòn).
+static func pal_of(col: Color) -> Array:
+	return [col.lerp(Color.WHITE, 0.85), col.lerp(Color.WHITE, 0.45), Color(col, 1.0), col.darkened(0.65)]
+
+
+static func _danger_on() -> bool:
+	return painter != null and current_mode() != "old"
+
+
+## Vùng tròn nguy hiểm. e = quái đang vung (null = cơ chế của chương: thiên thạch, vòng báo…) để chia cấp ở kiểu tự nhiên.
+static func danger_zone(world, c: Vector2, r: float, p: Array, progress: float, e = null) -> bool:
+	if not _danger_on():
+		return false
+	if tele_natural():
+		_queue(["zone", c, r, p, clampf(progress, 0.0, 1.0), _nat_alpha(e, progress)])
+		return true
+	return draw_danger(painter, world, [[c, r, _cb(p)]], progress)
+
+
+static func danger_line(world, a: Vector2, b: Vector2, half: float, p: Array, progress: float, e = null) -> bool:
+	if not _danger_on():
+		return false
+	if tele_natural():
+		_queue(["line", a, b, half, p, clampf(progress, 0.0, 1.0), _nat_alpha(e, progress)])
+		return true
+	return _clear_line(world, a, b, half, _cb(p), progress)
+
+
+static func danger_cone(world, c: Vector2, ang: float, half: float, r: float, p: Array, progress: float, e = null) -> bool:
+	if not _danger_on():
+		return false
+	if tele_natural():
+		_queue(["cone", c, ang, half, r, p, clampf(progress, 0.0, 1.0), _nat_alpha(e, progress)])
+		return true
+	return _clear_cone(world, c, ang, half, r, _cb(p), progress)
+
+
+## Kiểu rõ ràng — dải a → b: nền mờ, phần lấp đầy chạy dọc theo tiến độ, hai mép 3 dải + glow, vạch chặn cuối, mũi tên chạy tới.
+static func _clear_line(world, a: Vector2, b: Vector2, half: float, p: Array, progress: float) -> bool:
+	var pa: Kit.Painter = painter
+	var d := b - a
+	var ln := d.length()
+	if ln < 2.0:
+		return true
+	var u := d / ln
+	var n := u.orthogonal() * maxf(half, 2.0)
+	var pr := clampf(progress, 0.0, 1.0)
+	var band := PackedVector2Array([a + n, b + n, b - n, a - n])
+	pa.poly(band, Color(p[2], 0.10))
+	var m := a + d * pr
+	pa.poly(PackedVector2Array([a + n, m + n, m - n, a - n]), Color(p[2], 0.22 + 0.1 * pr))
+	for sd in [1.0, -1.0]:
+		var e0: Vector2 = a + n * sd
+		var e1: Vector2 = b + n * sd
+		pa.gline(PackedVector2Array([e0, e1]), 7.0, Color(p[2], 0.22))
+		pa.line(e0, e1, Color(p[3], 0.85), 3.0)
+		pa.line(e0, e1, Color(p[1], 0.9), 1.2)
+	pa.line(b + n, b - n, Color(p[1], 0.9), 2.5)
+	var w := clampf(half, 4.0, 14.0)
+	var step := maxf(36.0, w * 4.0)
+	var x := fmod(float(world.time) * 140.0, step)
+	var on := u.orthogonal() * w * 0.75
+	while x < ln - 4.0:
+		var c := a + u * x
+		pa.polyline(PackedVector2Array([c - u * w * 0.6 + on, c, c - u * w * 0.6 - on]), Color(p[1], 0.8), 2.0)
+		x += step
+	if pr > 0.8:
+		pa.gpoly(band, Color(p[2], 0.16 * (pr - 0.8) / 0.2))
+	return true
+
+
+## Kiểu rõ ràng — nón (thở lửa / băng, chém nón, ánh nhìn): tâm c, hướng ang, nửa góc half, tầm r.
+static func _clear_cone(world, c: Vector2, ang: float, half: float, r: float, p: Array, progress: float) -> bool:
+	var pa: Kit.Painter = painter
+	var pr := clampf(progress, 0.0, 1.0)
+	var k := clampi(int(half * r / 10.0), 8, 28)
+	var rim := PackedVector2Array()
+	for i in k + 1:
+		rim.append(c + Vector2.from_angle(ang - half + 2.0 * half * i / k) * r)
+	var fan := PackedVector2Array([c])
+	fan.append_array(rim)
+	pa.poly(fan, Color(p[2], 0.10))
+	if pr > 0.02:
+		var inner := PackedVector2Array([c])
+		for q in rim:
+			inner.append(c + (q - c) * pr)
+		pa.poly(inner, Color(p[2], 0.22 + 0.1 * pr))
+	pa.gline(rim, 8.0, Color(p[2], 0.24))
+	pa.polyline(rim, Color(p[3], 0.85), 3.0)
+	pa.polyline(rim, Color(p[1], 0.9), 1.2)
+	for q in [rim[0], rim[k]]:
+		pa.line(c, q, Color(p[3], 0.7), 2.4)
+		pa.line(c, q, Color(p[1], 0.75), 1.0)
+	var pulse := 0.5 + 0.5 * sin(float(world.time) * 14.0)
+	for j in 5:
+		var a2 := ang - half + 2.0 * half * (j + 0.5) / 5.0
+		pa.line(c + Vector2.from_angle(a2) * r, c + Vector2.from_angle(a2) * r * (0.88 - 0.04 * pulse), Color(p[1], 0.9), 2.0)
+	if pr > 0.8:
+		pa.gpoly(fan, Color(p[2], 0.16 * (pr - 0.8) / 0.2))
+	return true
+
+
+# ================================================================ §9.12 cảnh báo kiểu tự nhiên (mặc định)
+## Như ARPG (Diablo / PoE): quái càng mạnh báo càng rõ, và báo bằng thứ có thật trong thế giới (đất nứt, bóng thiên thạch,
+## sương giá, hơi nóng, ký tự ấn) thay cho hình học có vạch. Kích thước vẫn ĐÚNG gameplay (mép mờ nhưng có viền nhạt ở
+## đúng bán kính / tầm). Vết mặt đất ghi vào tele_queue rồi world_view vẽ ở khung sau, TRƯỚC lớp quái / cây (nằm dưới quái).
+const TELE_STYLES := [["natural", "Tự nhiên"], ["clear", "Rõ ràng"]]
+## Quái thường: đòn lao / bắn / chém nón chỉ báo bằng động tác (windup_cue) + vệt bụi hướng đòn, không vẽ vùng.
+## "dash" (Sói lao) KHÔNG nằm ở đây: PACE-TELE đo được nó gây 56% sát thương ở vùng 1 (vùng người mới học né) → giữ rãnh
+## bụi mờ từ 35%. "punch" / "melee" cận chiến: kiểu cũ cũng chỉ có vòng nở quanh quái, Diablo không có gì.
+const BODY_ONLY := ["melee", "punch", "pounce", "volley", "darts", "dart1", "spore", "leaf", "gaze", "roll", "tiger", "dive",
+	"lance", "clouddash", "pdive", "m_dash", "m_bolt", "elemlance", "gallop", "dash9", "heavycleave", "jaw"]
+static var tele_queue: Array = []
+
+
+static func tele_natural() -> bool:
+	return str(_setting("tele_style", "natural")) != "clear"
+
+
+static func _major(e) -> bool:
+	return e == null or bool(e.elite) or str(e.role) == "boss"
+
+
+## Độ hiện của vết: cơ chế / tinh anh / boss hiện từ 10% thời gian lấy đà; quái thường từ 35% (đòn vùng) hoặc không vẽ
+## (đòn lao / bắn). Hiện dần, không bật phụt.
+static func _nat_alpha(e, progress: float) -> float:
+	if e != null and not _major(e) and str(e.attack_kind) in BODY_ONLY:
+		return 0.0
+	var start := 0.1 if _major(e) else 0.35
+	# boss: đòn nặng nhất → đậm hơn (đo trên ảnh chụp: vết nện của boss chìm dưới tán cây ở mức 1,0)
+	var boost := 1.6 if e != null and str(e.role) == "boss" else 1.0
+	return smoothstep(start, start + 0.3, progress) * boost
+
+
+static func _queue(item: Array) -> void:
+	if float(item[item.size() - 1]) <= 0.0:
+		return
+	if tele_queue.size() > 300:
+		tele_queue.clear()
+	tele_queue.append(item)
+
+
+## world_view gọi trước lớp quái / cây: vẽ vết ghi ở khung trước (trễ 1 khung ≈ 16 ms, không nhận ra).
+static func flush_ground(pa: Kit.Painter, world) -> void:
+	var q := tele_queue
+	tele_queue = []
+	var t: float = world.time
+	for it in q:
+		match it[0]:
+			"zone":
+				_nat_zone(pa, t, it[1], it[2], it[3], it[4], it[5])
+			"line":
+				_nat_line(pa, t, it[1], it[2], it[3], it[4], it[5], it[6])
+			"cone":
+				_nat_cone(pa, t, it[1], it[2], it[3], it[4], it[5], it[6], it[7])
+
+
+static func _mat(p: Array) -> String:
+	if p == P_FIRE:
+		return "fire"
+	if p == P_FROST or p == P_ICE:
+		return "frost"
+	if p == P_SAND:
+		return "dust"
+	if p == P_VOID or p == P_GOLD:
+		return "rune"
+	if p == P_TOXIC:
+		return "venom"
+	if p == P_LEAF:
+		return "leaf"
+	if p == P_DANGER:
+		return "crack"
+	return "shadow"
+
+
+static func _h(c: Vector2, i: int) -> float:
+	var v := sin(c.x * 12.9898 + c.y * 78.233 + i * 37.719) * 43758.5453
+	return v - floorf(v)
+
+
+## Viền nhạt ở đúng bán kính, chập chờn từng đoạn (không phải vòng kẻ đều).
+static func _rim(pa: Kit.Painter, t: float, c: Vector2, r: float, col: Color, alpha: float, w: float) -> void:
+	var n := 18
+	for i in n:
+		var f := 0.6 + 0.4 * sin(t * 5.0 + i * 1.7 + c.x * 0.01)
+		var a0 := TAU * i / n
+		# nét sẫm dưới nét màu: nền sáng (cát, mây, đá trắng) vẫn đọc được viền; nền tối thì nét màu nổi
+		pa.arc(c, r, a0, a0 + TAU / n * 0.9, Color(0.05, 0.03, 0.02, minf(0.5, alpha * f * 1.1)), w + 1.8)
+		pa.arc(c, r, a0, a0 + TAU / n * 0.9, Color(col.lerp(Color.WHITE, 0.35), alpha * f), w)
+
+
+static func _puffs(pa: Kit.Painter, t: float, c: Vector2, r: float, col: Color, alpha: float) -> void:
+	for i in 10:
+		var ph := fposmod(t * 1.1 + _h(c, i), 1.0)
+		var d := c + Vector2.from_angle(TAU * i / 10.0 + _h(c, i + 30)) * r
+		pa.circle(d + Vector2(0, -6.0 * ph), 3.0 + r * 0.05 * ph, Color(col, alpha * (1.0 - ph)))
+
+
+static func _nat_zone(pa: Kit.Painter, t: float, c: Vector2, r: float, p: Array, k: float, a: float) -> void:
+	var mat := _mat(p)
+	p = _cb(p)
+	var grow := 0.35 + 0.65 * k
+	if a > 1.0:
+		# boss: quầng sáng nhẹ ở đúng mép trên lớp glow (nằm trên tán cây) — vùng đòn nặng không bị cây che mất
+		pa.garc(c, r, 4.0, Color(p[2], 0.22 * k))
+	match mat:
+		"fire":  # bóng cháy sẫm lớn dần + viền hơi nóng + than hồng rơi
+			for j in 4:
+				pa.circle(c, r * (1.0 - j * 0.2) * grow, Color(0.12, 0.03, 0.0, 0.11 * a))
+			_rim(pa, t, c, r, Color(1.0, 0.5, 0.18), 0.32 * a * (0.4 + 0.6 * k), 2.0)
+			if k > 0.55:
+				pa.gcircle(c, r * 0.75, Color(1.0, 0.42, 0.1, 0.16 * a * (k - 0.55) / 0.45))
+			for i in 7:
+				var ph := fposmod(t * 0.9 + _h(c, i), 1.0)
+				var at := c + Vector2.from_angle(_h(c, i + 20) * TAU) * r * 0.85 * _h(c, i + 40)
+				pa.circle(at + Vector2(-10, -70) * (1.0 - ph), 1.4 + 1.2 * ph, Color(1.0, 0.6 + 0.35 * ph, 0.2, 0.75 * a * k))
+		"frost":  # sương giá lan trên đất + gai băng
+			for j in 4:
+				pa.circle(c, r * (1.0 - j * 0.22) * grow, Color(p[1], 0.08 * a))
+			var n := clampi(int(r / 7.0), 10, 26)
+			for i in n:
+				var ang := TAU * i / n + _h(c, i) * 0.3
+				var r0 := r * (0.5 + 0.4 * _h(c, i + 9)) * grow
+				var ln := r * (0.1 + 0.12 * _h(c, i + 3))
+				var base := c + Vector2.from_angle(ang) * r0
+				pa.line(base, c + Vector2.from_angle(ang) * minf(r0 + ln, r), Color(p[2], 0.6 * a), 2.0)
+				pa.line(base, base + Vector2.from_angle(ang + 0.6) * ln * 0.5, Color(p[1], 0.5 * a), 1.2)
+			_rim(pa, t, c, r, p[2], 0.34 * a * (0.4 + 0.6 * k), 1.6)
+		"dust":  # cát xoáy
+			for j in 3:
+				pa.circle(c, r * (1.0 - j * 0.25), Color(p[3], 0.08 * a))
+			for i in 3:
+				var a0 := t * 1.6 + i * TAU / 3.0
+				pa.arc(c, r * (0.35 + 0.2 * i) * grow, a0, a0 + 2.2, Color(p[3], 0.4 * a), 3.4)
+				pa.arc(c, r * (0.35 + 0.2 * i) * grow, a0, a0 + 2.2, Color(p[1], 0.35 * a), 2.0)
+			_puffs(pa, t, c, r, Color(p[1]), 0.25 * a * k)
+			_rim(pa, t, c, r, p[2], 0.26 * a * k, 1.4)
+		"rune":  # vòng ấn: các đoạn ký tự xoay chậm
+			pa.circle(c, r * grow, Color(p[3], 0.12 * a))
+			var rot := t * 0.4
+			for ring in [1.0, 0.8]:
+				var seg := 9 if ring == 1.0 else 6
+				for i in seg:
+					var a0: float = rot * (1.0 if ring == 1.0 else -1.3) + TAU * i / seg
+					pa.arc(c, r * ring, a0, a0 + TAU / seg * 0.62, Color(p[1], 0.4 * a * (0.5 + 0.5 * k)), 1.6)
+			for i in 6:
+				pa.circle(c + Vector2.from_angle(rot + i * TAU / 6.0 + 0.3) * r * 0.9, 2.2, Color(p[0], 0.5 * a))
+			if k > 0.6:
+				pa.gcircle(c, r * 0.8, Color(p[2], 0.16 * a * (k - 0.6) / 0.4))
+		"venom":  # vũng độc sủi bọt
+			for j in 4:
+				pa.circle(c, r * (1.0 - j * 0.2) * grow, Color(p[2], 0.09 * a))
+			for i in 6:
+				var ph := fposmod(t * 1.3 + _h(c, i), 1.0)
+				var bp := c + Vector2.from_angle(_h(c, i + 5) * TAU) * r * 0.7 * _h(c, i + 11)
+				pa.arc(bp, 2.0 + 4.0 * ph, 0.0, TAU, Color(p[1], 0.55 * a * (1.0 - ph)), 1.2)
+			_rim(pa, t, c, r, p[2], 0.28 * a * k, 1.6)
+		"leaf":  # bóng rễ + dây leo bò vào
+			for j in 3:
+				pa.circle(c, r * (1.0 - j * 0.25) * grow, Color(0.05, 0.12, 0.04, 0.11 * a))
+			for i in 8:
+				var ang := TAU * i / 8.0 + _h(c, i) * 0.4
+				var pts := PackedVector2Array()
+				for s2 in 5:
+					var rr := r * (1.0 - 0.5 * k * s2 / 4.0)
+					pts.append(c + Vector2.from_angle(ang + sin(s2 * 1.4 + i) * 0.12) * rr)
+				pa.polyline(pts, Color(0.06, 0.03, 0.01, 0.45 * a), 4.0)  # rễ nâu: nổi trên cỏ xanh (vùng 7)
+				pa.polyline(pts, Color(0.42, 0.27, 0.13, 0.75 * a), 2.2)
+			_rim(pa, t, c, r, p[2], 0.28 * a * k, 1.6)
+		_:  # "crack": đất nứt toả ra + bụi ở mép; "shadow": bóng vật rơi
+			for j in 3:
+				pa.circle(c, r * (1.0 - j * 0.25) * grow, Color(0.06, 0.04, 0.03, 0.10 * a))
+			if mat == "crack":
+				var n := clampi(int(r / 12.0), 6, 11)
+				for i in n:
+					var ang := TAU * i / n + _h(c, i) * 0.5
+					var pts := PackedVector2Array([c])
+					for s2 in range(1, 5):
+						var rr := r * s2 / 4.0 * clampf(k * 1.25, 0.0, 1.0)
+						pts.append(c + Vector2.from_angle(ang + (_h(c, i * 7 + s2) - 0.5) * 0.5) * rr)
+					pa.polyline(pts, Color(0.06, 0.03, 0.02, 0.6 * a), 2.6)
+					pa.polyline(pts, Color(p[2], 0.35 * a * k), 1.0)
+				_puffs(pa, t, c, r, Color(0.78, 0.7, 0.62), 0.2 * a * k)
+			_rim(pa, t, c, r, p[2], 0.28 * a * (0.4 + 0.6 * k), 1.8)
+
+
+static func _mat_col(mat: String, p: Array) -> Color:
+	match mat:
+		"fire":
+			return Color(0.14, 0.03, 0.0)
+		"frost", "venom":
+			return Color(p[1])
+		"rune":
+			return Color(p[3])
+	return Color(0.08, 0.05, 0.03)
+
+
+## Dải: rãnh mờ cày dọc đường đòn (lan tới theo tiến độ) + mép nhạt đúng bề rộng + bụi / than / sương trôi về phía trước.
+static func _nat_line(pa: Kit.Painter, t: float, a0: Vector2, b0: Vector2, half: float, p: Array, k: float, al: float) -> void:
+	var d := b0 - a0
+	var ln := d.length()
+	if ln < 2.0:
+		return
+	var u := d / ln
+	var n := u.orthogonal()
+	var mat := _mat(p)
+	p = _cb(p)
+	var hw := maxf(half, 3.0)
+	var reach := a0 + d * clampf(k * 1.15, 0.0, 1.0)
+	var base := _mat_col(mat, p)
+	for j in 3:
+		var w := hw * (1.0 - j * 0.3)
+		pa.poly(PackedVector2Array([a0 + n * w, reach + n * w, reach - n * w, a0 - n * w]), Color(base, 0.1 * al))
+	for sd in [1.0, -1.0]:
+		var ea := 0.34 * al * (0.4 + 0.6 * k)
+		pa.line(a0 + n * hw * sd, b0 + n * hw * sd, Color(0.05, 0.03, 0.02, minf(0.5, ea * 1.1)), 3.0)
+		pa.line(a0 + n * hw * sd, b0 + n * hw * sd, Color(p[1], ea), 1.4)
+	var cnt := clampi(int(ln / 24.0), 3, 16)
+	var col := Color(1.0, 0.6, 0.2) if mat == "fire" else (Color(p[1]) if mat in ["frost", "rune", "venom"] else Color(0.8, 0.72, 0.62))
+	for i in cnt:
+		var x := fposmod(t * 90.0 + i * ln / cnt, ln)
+		var side := (_h(a0, i) - 0.5) * 1.4 * hw
+		var ph := x / ln
+		pa.circle(a0 + u * x + n * side, 1.8 + 1.6 * ph, Color(col, 0.5 * al * (1.0 - ph * 0.6)))
+	if k > 0.75:
+		pa.gpoly(PackedVector2Array([a0 + n * hw, b0 + n * hw, b0 - n * hw, a0 - n * hw]), Color(p[2], 0.1 * al * (k - 0.75) / 0.25))
+
+
+## Nón: hơi nóng / sương / bụi đặc ở gốc, nhạt dần ra xa; viền nhạt chập chờn đúng tầm; hạt trôi ra ngoài.
+static func _nat_cone(pa: Kit.Painter, t: float, c: Vector2, ang: float, half: float, r: float, p: Array, k: float, al: float) -> void:
+	var mat := _mat(p)
+	p = _cb(p)
+	var base := Color(p[2]) if mat in ["fire", "frost", "rune", "venom"] else Color(0.1, 0.06, 0.05)
+	var nseg := clampi(int(half * r / 12.0), 8, 24)
+	for j in 4:
+		var rr := r * (1.0 - j * 0.22) * (0.4 + 0.6 * k)
+		var fan := PackedVector2Array([c])
+		for i in nseg + 1:
+			fan.append(c + Vector2.from_angle(ang - half + 2.0 * half * i / nseg) * rr)
+		pa.poly(fan, Color(base, 0.07 * al))
+	var segs := 7
+	for i in segs:
+		var f := 0.6 + 0.4 * sin(t * 5.0 + i * 1.9)
+		var a1 := ang - half + 2.0 * half * i / segs
+		var ra := 0.38 * al * f * (0.4 + 0.6 * k)
+		pa.arc(c, r, a1, a1 + 2.0 * half / segs * 0.9, Color(0.05, 0.03, 0.02, minf(0.5, ra * 1.1)), 3.4)
+		pa.arc(c, r, a1, a1 + 2.0 * half / segs * 0.9, Color(p[1], ra), 1.6)
+	for sd in [-1.0, 1.0]:
+		pa.line(c, c + Vector2.from_angle(ang + half * sd) * r, Color(0.05, 0.03, 0.02, minf(0.4, 0.24 * al)), 2.6)
+		pa.line(c, c + Vector2.from_angle(ang + half * sd) * r, Color(p[1], 0.26 * al), 1.2)
+	for i in 10:
+		var ph := fposmod(t * 0.8 + _h(c, i), 1.0)
+		var dir := ang + (_h(c, i + 13) - 0.5) * 2.0 * half * 0.9
+		pa.circle(c + Vector2.from_angle(dir) * r * ph, 1.8 + 2.4 * ph, Color(p[1], 0.5 * al * (1.0 - ph)))
+	if k > 0.7:
+		var fan2 := PackedVector2Array([c])
+		for i in nseg + 1:
+			fan2.append(c + Vector2.from_angle(ang - half + 2.0 * half * i / nseg) * r)
+		pa.gpoly(fan2, Color(p[2], 0.12 * al * (k - 0.7) / 0.3))
+
+
+## Động tác lấy đà (mọi quái, kiểu tự nhiên; vẽ đè lên quái): bụi dưới chân, thân loé ánh ở 30% cuối; quái thường dùng đòn
+## lao / bắn thì thêm vệt bụi mờ chỉ hướng đòn từ 45% — đủ để né mà không có hình học.
+static func windup_cue(pa: Kit.Painter, world, e, progress: float) -> bool:
+	if not _danger_on() or not tele_natural():
+		return false
+	var k := clampf(progress, 0.0, 1.0)
+	var t: float = world.time
+	var feet: Vector2 = e.pos + Vector2(0, e.radius * 0.7)
+	for i in 3:
+		var ph := fposmod(t * 2.2 + i / 3.0, 1.0)
+		pa.circle(feet + Vector2((i - 1) * e.radius * 0.6, -ph * 4.0), e.radius * (0.18 + 0.25 * ph), Color(0.8, 0.74, 0.66, 0.3 * k * (1.0 - ph)))
+	if k > 0.6:
+		# thân loé ánh đỏ cam + ánh kim loé ở đầu (quái nhỏ, đánh nhanh → cần rõ hơn Diablo một bậc)
+		var g := (k - 0.6) / 0.4
+		pa.gcircle(e.pos, e.radius * (1.1 + 0.3 * g), Color(1.0, 0.5, 0.35, 0.32 * g))
+		var gl: Vector2 = e.pos + Vector2(e.radius * 0.5, -e.radius * 0.9)
+		var sz := 5.0 + 8.0 * g
+		pa.line(gl - Vector2(sz, 0), gl + Vector2(sz, 0), Color(1.0, 1.0, 0.92, g), 2.0)
+		pa.line(gl - Vector2(0, sz), gl + Vector2(0, sz), Color(1.0, 1.0, 0.92, g), 2.0)
+		pa.gcircle(gl, sz * 0.9, Color(1.0, 0.9, 0.7, 0.5 * g))
+	var kind := str(e.attack_kind)
+	if not _major(e) and kind in BODY_ONLY and kind != "melee" and k > 0.45:
+		var d: Vector2 = (e.target - e.pos).limit_length(260.0)
+		if d.length() > 4.0:
+			var s := (k - 0.45) / 0.55
+			var u := d.normalized()
+			for i in 6:
+				var f := (i + 1) / 7.0
+				if f > s:
+					break
+				var ph := fposmod(t * 2.0 + i * 0.3, 1.0)
+				var at: Vector2 = e.pos + d * f + u.orthogonal() * (ph - 0.5) * 6.0
+				pa.circle(at + Vector2(0, 2), 4.5 + 2.0 * ph, Color(0.1, 0.07, 0.04, 0.22))
+				pa.circle(at, 3.2 + 2.4 * ph, Color(0.9, 0.84, 0.74, 0.55 * (1.0 - ph * 0.5)))
+	return true
+
+
+## §9.13 tư thế lấy đà (mọi quái, trừ "Hình cũ"): co người + ngả ngược hướng đòn tới 75% thời gian lấy đà, 25% cuối run lên
+## vì căng lực rồi mới bật ra — động tác là tín hiệu chính của ARPG. Trả [squash, lean (rad), lệch vị trí].
+static func windup_pose(world, e, progress: float) -> Array:
+	if current_mode() == "old":
+		return [Vector2.ONE, 0.0, Vector2.ZERO]
+	var k := clampf(progress, 0.0, 1.0)
+	var c := Kit.ease_out(minf(1.0, k / 0.75))
+	var dirx := signf(e.target.x - e.pos.x)
+	if dirx == 0.0:
+		dirx = 1.0
+	var off := Vector2.ZERO
+	if k > 0.75:
+		var tr := (k - 0.75) / 0.25
+		off = Vector2(sin(float(world.time) * 70.0 + e.id) * 1.2 * tr, 0.0)
+	return [Vector2(1.0 + 0.08 * c, 1.0 - 0.12 * c), -dirx * 0.1 * c, off]
+
+
+## §9.13 âm báo: tinh anh / boss BẮT ĐẦU lấy đà trong 700 px quanh người chơi → "tele_elite" / "tele_boss" (một lần mỗi đòn).
+## Diablo dựa nhiều vào âm thanh; người chơi nhận ra đòn nặng cả khi đang nhìn chỗ khác. "Hình cũ" thì không phát.
+static var _wind_heard := {}
+
+
+static func _tele_audio(world) -> void:
+	if current_mode() == "old":
+		return
+	var seen := {}
+	for e in world.enemies:
+		if e.dead or e.state != "windup" or not (e.elite or str(e.role) == "boss"):
+			continue
+		seen[e.id] = true
+		if _wind_heard.has(e.id) or e.pos.distance_to(world.player.pos) > 700.0:
+			continue
+		_wind_heard[e.id] = true
+		world._sfx("tele_boss" if str(e.role) == "boss" else "tele_elite")
+	for id in _wind_heard.keys():
+		if not seen.has(id):
+			_wind_heard.erase(id)
+
+
+## §9.14 người mù màu đỏ – lục (Cài đặt → Trợ năng, quy ước "tốt / xấu = lam / cam" của UiTheme): cảnh báo đỏ → cam,
+## xanh lá (độc, rễ) → lam ngọc. Chất liệu (_mat) vẫn tính từ bảng màu gốc, chỉ đổi màu vẽ.
+static var P_CB_RED := Kit.pal("#fff4e0", "#ffc88a", "#ff8a1a", "#5a2a06")
+static var P_CB_GREEN := Kit.pal("#e8fbff", "#9adcf0", "#2aa0c8", "#0a3a4e")
+
+
+static func _cb(p: Array) -> Array:
+	if not bool(_setting("colorblind", false)):
+		return p
+	if p == P_DANGER:
+		return P_CB_RED
+	if p == P_TOXIC or p == P_LEAF:
+		return P_CB_GREEN
+	return p

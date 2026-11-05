@@ -9,6 +9,7 @@ const ElementIcon = preload("res://scripts/ui/element_icon.gd")
 const GameWorld = preload("res://scripts/core/game_world.gd")
 const Talents = preload("res://scripts/data/talents.gd")
 const UiTheme = preload("res://scripts/ui/ui_theme.gd")
+const Settings = preload("res://scripts/core/settings.gd")
 const Items = preload("res://scripts/core/items.gd")
 const Monsters = preload("res://scripts/data/monsters.gd")
 const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
@@ -38,6 +39,7 @@ var world: GameWorld
 var camera: Camera2D
 
 var _trees: Array = []
+var _fade_focus: Array = []  # §9.13: điểm cần thấy, cây che thì mờ (khung hiện tại)
 var _patches: Array = []
 var _decor_map := ""
 ## M6: cảnh sa mạc [{pos, id, scale, flip}] (xương rồng, cọ quanh ốc đảo, cột di tích)
@@ -79,9 +81,31 @@ class FogLayer:
 	var _version := -1
 	var _fog = null
 
+	## V14 (docs/38): rìa sương mềm — làm mờ 5×5 trên GPU (ảnh sương 1 điểm / ô, lọc tuyến tính vẫn thấy
+	## bậc thang ô vuông).
+	const SOFT_SHADER := """
+shader_type canvas_item;
+uniform vec2 texel = vec2(0.01);
+void fragment() {
+	vec4 s = vec4(0.0);
+	for (int i = -2; i <= 2; i++) {
+		for (int j = -2; j <= 2; j++) {
+			s += texture(TEXTURE, UV + vec2(float(i), float(j)) * texel * 0.65);
+		}
+	}
+	COLOR = s / 25.0;
+}
+"""
+	var _mat: ShaderMaterial
+
 	func _ready() -> void:
 		texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 		z_index = 50
+		var sh := Shader.new()
+		sh.code = SOFT_SHADER
+		_mat = ShaderMaterial.new()
+		_mat.shader = sh
+		material = _mat
 
 	func _process(_delta: float) -> void:
 		if world == null:
@@ -92,18 +116,27 @@ class FogLayer:
 		queue_redraw()
 
 	func _rebuild(f) -> void:
-		_fog = f
-		_version = f.version
 		if f.w <= 0 or f.h <= 0:
+			_fog = f
+			_version = f.version
 			_tex = null
 			return
 		if _img == null or _img.get_width() != f.w or _img.get_height() != f.h:
 			_img = Image.create(f.w, f.h, false, Image.FORMAT_RGBA8)
+			_tex = null
 		var open := Color(COLOR, 0.0)
 		var shut := Color(COLOR, ALPHA)
-		for y in f.h:
-			for x in f.w:
+		# PF-01: chỉ một lần reveal() kể từ lần trước → cập nhật vùng ô đó; còn lại dựng cả ảnh.
+		var area := Rect2i(0, 0, f.w, f.h)
+		if f == _fog and _tex != null and f.dirty_version == f.version and _version == f.version - 1:
+			area = f.dirty
+		_version = f.version
+		for y in range(area.position.y, area.end.y):
+			for x in range(area.position.x, area.end.x):
 				_img.set_pixel(x, y, open if f.cells[y * f.w + x] == 1 else shut)
+		if _mat != null:
+			_mat.set_shader_parameter("texel", Vector2(1.0 / f.w, 1.0 / f.h))
+		_fog = f
 		if _tex == null or _tex.get_width() != f.w or _tex.get_height() != f.h:
 			_tex = ImageTexture.create_from_image(_img)
 		else:
@@ -282,6 +315,8 @@ func _draw() -> void:
 		R8View.draw_arena(self, world, _art)
 		R9View.draw_arena(self, world, _art)
 	_draw_portals()
+	# FX-1 §9.12: vết cảnh báo kiểu tự nhiên (ghi ở khung trước) nằm DƯỚI quái / cây
+	Fx1.flush_ground(_pa, world)
 	if _art:
 		_draw_sorted(view)
 	else:
@@ -319,7 +354,8 @@ func _draw() -> void:
 		_draw_player()
 	_draw_player_fx()
 	for e in world.enemies:
-		_draw_enemy_overlay(e)
+		if _in_view(view, e.pos, e.radius):
+			_draw_enemy_overlay(e)
 	for f in _hit_fx:
 		if Fx1.draw_hit(_pa, world, f.pos, f.t / HIT_FX_TIME):
 			continue
@@ -413,10 +449,10 @@ func _draw_ground(view: Rect2) -> void:
 	for p in _patches:
 		if view.has_point(p.pos):
 			if soft:
-				# UI-40c: mảng loang mềm (4 vòng đồng tâm mờ dần) thay cho vòng tròn mép cứng
-				var pc: Color = Color(1.0, 0.95, 0.8, 0.035) if p.shade > 0.5 else Color(0.0, 0.03, 0.02, 0.05)
-				for j in 4:
-					draw_circle(p.pos, p.r * (1.0 - j * 0.22), pc)
+				# UI-40c: mảng loang mềm thay cho vòng tròn mép cứng. PF-01 (04/11): 1 ô texture gradient tròn (vẽ gộp được)
+				# thay cho 4 vòng tròn trong suốt chồng nhau — mảng loang từng chiếm ~40% thời gian khung hình.
+				var pc: Color = Color(1.0, 0.95, 0.8, 0.13) if p.shade > 0.5 else Color(0.0, 0.03, 0.02, 0.19)
+				draw_texture_rect(_soft_blob(), Rect2(p.pos - Vector2(p.r, p.r), Vector2(p.r, p.r) * 2.0), false, pc)
 			elif _art and bool(world.map.get("desert", false)):
 				# M6: sa mạc — gợn cát sáng/đỏ nhạt thay cho mảng cỏ tối
 				draw_circle(p.pos, p.r, Color(1.0, 0.9, 0.65, 0.07) if p.shade > 0.5 else Color(0.6, 0.3, 0.15, 0.07))
@@ -492,6 +528,26 @@ func _draw_ground(view: Rect2) -> void:
 			draw_rect(band, Color("#1b1620"))
 		draw_line(Vector2(0, 110), Vector2(sz.x, 110), Color("#3b3242"), 4.0)
 		draw_line(Vector2(0, sz.y - 110), Vector2(sz.x, sz.y - 110), Color("#3b3242"), 4.0)
+
+
+## PF-01: đốm tròn mờ dần ra mép (alpha 1 ở tâm → 0 ở mép), dùng chung cho mọi mảng loang.
+static var _blob_tex: Texture2D
+
+
+static func _soft_blob() -> Texture2D:
+	if _blob_tex == null:
+		var g := Gradient.new()
+		g.offsets = PackedFloat32Array([0.0, 0.4, 0.7, 1.0])
+		g.colors = PackedColorArray([Color(1, 1, 1, 1), Color(1, 1, 1, 0.85), Color(1, 1, 1, 0.45), Color(1, 1, 1, 0)])
+		var t := GradientTexture2D.new()
+		t.gradient = g
+		t.fill = GradientTexture2D.FILL_RADIAL
+		t.fill_from = Vector2(0.5, 0.5)
+		t.fill_to = Vector2(1.0, 0.5)
+		t.width = 64
+		t.height = 64
+		_blob_tex = t
+	return _blob_tex
 
 
 func _circle_points(c: Vector2, r: float, n := 48) -> PackedVector2Array:
@@ -639,6 +695,7 @@ func _draw_trees(view: Rect2) -> void:
 
 # ---------------------------------------------------------------- sắp xếp theo chiều sâu (AR-31, AR-32)
 func _draw_sorted(view: Rect2) -> void:
+	_fade_focus = _occlusion_focus()
 	var items: Array = []
 	for t in _trees:
 		if view.has_point(t.pos):
@@ -681,25 +738,35 @@ func _draw_sorted(view: Rect2) -> void:
 			if not (i in got) and view.has_point(pods[i]):
 				items.append([pods[i].y, _draw_env_scaled.bind("dream-pod", pods[i], 1.4, false)])
 
+	# PF-01 (04/11): chỉ vẽ thứ trong khung nhìn — map ×3 có hàng trăm quái, trước đây vẽ cả con ở xa (giật khi đi).
 	for h in world.herbs:
-		if h.respawn <= 0.0:
+		if h.respawn <= 0.0 and view.has_point(h.pos):
 			items.append([h.pos.y, _draw_env_at.bind("herb", h.pos)])
 	for ch in world.chests:
-		if world.chest_visible(ch):
+		if world.chest_visible(ch) and view.has_point(ch.pos):
 			items.append([ch.pos.y, _draw_chest.bind(ch)])
 	for a in world.allies:
-		items.append([a.pos.y, _draw_ally_sprite.bind(a)])
+		if _in_view(view, a.pos, a.radius):
+			items.append([a.pos.y, _draw_ally_sprite.bind(a)])
 	for e in world.enemies:
-		items.append([e.pos.y, _draw_enemy_sprite.bind(e)])
+		if _in_view(view, e.pos, e.radius):
+			items.append([e.pos.y, _draw_enemy_sprite.bind(e)])
 	for k in _corpses:
-		items.append([k.pos.y - 1.0, _draw_corpse.bind(k)])
+		if view.has_point(k.pos):
+			items.append([k.pos.y - 1.0, _draw_corpse.bind(k)])
 	# C1-11, M4.3: NPC của map (dữ liệu maps.gd), bấm E khi đứng gần
 	for npc in world.npcs():
-		items.append([npc.pos.y, _draw_npc.bind(npc.sprite, npc.pos, npc.name)])
+		if view.has_point(npc.pos):
+			items.append([npc.pos.y, _draw_npc.bind(npc.sprite, npc.pos, npc.name)])
 	items.append([world.player.pos.y, _draw_player_sprite])
 	items.sort_custom(func(a, b): return a[0] < b[0])
 	for it in items:
 		it[1].call()
+
+
+## PF-01: điểm có nằm trong khung nhìn (nới theo bán kính — boss / quái to vẽ tràn ra ngoài bán kính va chạm).
+func _in_view(view: Rect2, pos: Vector2, radius: float) -> bool:
+	return view.grow(radius * 3.0 + 40.0).has_point(pos)
 
 
 func _draw_npc(id: String, at: Vector2, label: String) -> void:
@@ -732,6 +799,42 @@ func _feet(pos: Vector2, r: float) -> Vector2:
 	return pos + Vector2(0, r * 0.6)
 
 
+## Làm mờ vật che (như Diablo): điểm cần thấy = thân người chơi, boss, điểm rơi đòn của tinh anh / boss đang lấy đà,
+## thân mọi quái đang lấy đà trong 300 px (động tác lấy đà là tín hiệu chính ở kiểu tự nhiên).
+func _occlusion_focus() -> Array:
+	var out: Array = [world.player.pos + Vector2(0, -18)]
+	for e in world.enemies:
+		if e.dead:
+			continue
+		if str(e.role) == "boss":
+			out.append(e.pos + Vector2(0, -e.radius * 0.5))
+		if e.state == "windup" and (e.elite or str(e.role) == "boss"):
+			out.append(e.target)
+		if e.state == "windup" and e.pos.distance_to(world.player.pos) < 300.0:
+			out.append(e.pos + Vector2(0, -e.radius * 0.5))  # quái lấy đà gần (mọi cấp): phải thấy động tác
+	return out
+
+
+## Độ trong của cây: tán che một điểm cần thấy (điểm nằm SAU gốc cây và trong khung hình cây) → mờ dần còn 40%,
+## hết che thì hiện lại dần (không bật / tắt đột ngột).
+func _tree_fade(t: Dictionary, id: String, base: Vector2, size_mul: float) -> float:
+	var target := 1.0
+	var e: Dictionary = SpriteLib.data().get("env", {}).get(id, {})
+	if not e.is_empty():
+		var tex := SpriteLib.texture(e.path)
+		if tex != null:
+			var k := SpriteLib.scale() * size_mul / SpriteLib.px_of(e)
+			var box := Rect2(base - Vector2(e.origin[0], e.origin[1]) * k, tex.get_size() * k).grow(-6.0)
+			for f in _fade_focus:
+				if f.y < base.y - 4.0 and box.has_point(f):
+					target = 0.4
+					break
+	var cur: float = t.get("fade", 1.0)
+	cur = move_toward(cur, target, 0.08)
+	t["fade"] = cur
+	return cur
+
+
 func _draw_tree_sprite(t: Dictionary) -> void:
 	var base: Vector2 = t.pos + Vector2(0, t.r * 0.6)
 	# M7: đầm lầy — cây chết, lau sậy, lá súng (trên nước), bụi.
@@ -740,38 +843,46 @@ func _draw_tree_sprite(t: Dictionary) -> void:
 		var sid: String = ("lily" if wet else ["dead-tree-0", "reeds-0", "dead-tree-1", "reeds-1"][t.variant])
 		if not SpriteLib.has_env(sid):
 			sid = "bush"
-		SpriteLib.draw_env(self, sid, base, Color.WHITE, 1.0 if t.r < 28.0 else 1.3, t.shade > 0.5)
+		SpriteLib.draw_env(self, sid, base, Color(1, 1, 1, _tree_fade(t, sid, base, 1.0 if t.r < 28.0 else 1.3)), 1.0 if t.r < 28.0 else 1.3, t.shade > 0.5)
 		return
 	# M8: núi lửa — đá dung nham, cây cháy, miệng phun.
 	if str(world.map.get("decor", "forest")) == "volcano":
-		SpriteLib.draw_env(self, R5View.decor_id(t.variant), base, Color.WHITE, 1.0 if t.r < 28.0 else 1.4, t.shade > 0.5)
+		var did: String = R5View.decor_id(t.variant)
+		SpriteLib.draw_env(self, did, base, Color(1, 1, 1, _tree_fade(t, did, base, 1.0 if t.r < 28.0 else 1.4)), 1.0 if t.r < 28.0 else 1.4, t.shade > 0.5)
 		return
 	# M10: đảo bay — rừng treo, mây / cột Thiên Cung.
 	if str(world.map.get("decor", "forest")) in ["sky", "sky_ruins"]:
-		SpriteLib.draw_env(self, R7View.decor_id(t.variant, str(world.map.decor) == "sky_ruins"), base, Color.WHITE, 1.0 if t.r < 28.0 else 1.4, t.shade > 0.5)
+		var did: String = R7View.decor_id(t.variant, str(world.map.decor) == "sky_ruins")
+		SpriteLib.draw_env(self, did, base, Color(1, 1, 1, _tree_fade(t, did, base, 1.0 if t.r < 28.0 else 1.4)), 1.0 if t.r < 28.0 else 1.4, t.shade > 0.5)
 		return
 	# M12: Thiên Thê — cột ngọc, mây vàng.
 	if str(world.map.get("decor", "forest")) == "heaven":
-		SpriteLib.draw_env(self, R9View.decor_id(t.variant), base, Color.WHITE, 1.0 if t.r < 28.0 else 1.3, t.shade > 0.5)
+		var did: String = R9View.decor_id(t.variant)
+		SpriteLib.draw_env(self, did, base, Color(1, 1, 1, _tree_fade(t, did, base, 1.0 if t.r < 28.0 else 1.3)), 1.0 if t.r < 28.0 else 1.3, t.shade > 0.5)
 		return
 	# M11: vực Hư Vô — cây chết, đá vụn.
 	if str(world.map.get("decor", "forest")) == "void":
-		SpriteLib.draw_env(self, R8View.decor_id(t.variant), base, Color(0.7, 0.6, 0.85), 1.0 if t.r < 28.0 else 1.3, t.shade > 0.5)
+		var vid: String = R8View.decor_id(t.variant)
+		SpriteLib.draw_env(self, vid, base, Color(0.7, 0.6, 0.85, _tree_fade(t, vid, base, 1.0 if t.r < 28.0 else 1.3)), 1.0 if t.r < 28.0 else 1.3, t.shade > 0.5)
 		return
 	# M9: băng nguyên — thông phủ tuyết, đá băng, gò tuyết.
 	if str(world.map.get("decor", "forest")) == "tundra":
-		SpriteLib.draw_env(self, R6View.decor_id(t.variant), base, Color.WHITE, 1.0 if t.r < 28.0 else 1.4, t.shade > 0.5)
+		var did: String = R6View.decor_id(t.variant)
+		SpriteLib.draw_env(self, did, base, Color(1, 1, 1, _tree_fade(t, did, base, 1.0 if t.r < 28.0 else 1.4)), 1.0 if t.r < 28.0 else 1.4, t.shade > 0.5)
 		return
 	# M4.2: thảo nguyên — đá, cỏ cao, bụi thay cho cây rừng.
 	if str(world.map.get("decor", "forest")) == "plains":
 		var pid: String = ["rock-0", "tall-grass", "rock-1", "bush"][t.variant]
-		SpriteLib.draw_env(self, pid if SpriteLib.has_env(pid) else "bush", base, Color.WHITE, 1.0 if t.r < 28.0 else 1.4, t.shade > 0.5)
+		if not SpriteLib.has_env(pid):
+			pid = "bush"
+		SpriteLib.draw_env(self, pid, base, Color(1, 1, 1, _tree_fade(t, pid, base, 1.0 if t.r < 28.0 else 1.4)), 1.0 if t.r < 28.0 else 1.4, t.shade > 0.5)
 		return
 	if t.r < 20.0:
-		SpriteLib.draw_env(self, "bush", base, Color.WHITE, 1.0, t.shade > 0.5)
+		SpriteLib.draw_env(self, "bush", base, Color(1, 1, 1, _tree_fade(t, "bush", base, 1.0)), 1.0, t.shade > 0.5)
 		return
 	var id: String = ["tree-0", "tree-1", "tree-2", "tree-pine"][t.variant]
 	var tint := Color(0.85, 0.9, 0.85) if t.shade > 0.5 else Color.WHITE
+	tint.a = _tree_fade(t, id, base, 1.0 if t.r < 32.0 else 1.5)
 	SpriteLib.draw_env(self, id, base, tint, 1.0 if t.r < 32.0 else 1.5, t.shade > 0.7)
 
 
@@ -904,7 +1015,10 @@ func _draw_enemy_sprite(e) -> void:
 	# M4.2: khiên chặn phía trước
 	if Monsters.DEFS[e.kind].get("shield", false) and not hidden:
 		draw_arc(e.pos, e.radius + 9.0, e.face - GameWorld.SHIELD_ARC, e.face + GameWorld.SHIELD_ARC, 16, Color(0.8, 0.85, 0.95, 0.75), 4.0, true)
-	SpriteLib.draw_frame(self, sid, anim, frame, _feet(e.pos, e.radius), left, mod, _enemy_size(e))
+	var pose: Array = [Vector2.ONE, 0.0, Vector2.ZERO]
+	if e.state == "windup":
+		pose = Fx1.windup_pose(world, e, 1.0 - maxf(0.0, e.timer) / e.windup_total)  # §9.13: co người, ngả, run lên
+	SpriteLib.draw_frame(self, sid, anim, frame, _feet(e.pos, e.radius) + pose[2], left, mod, _enemy_size(e), pose[0], pose[1])
 
 
 func _draw_corpse(k: Dictionary) -> void:
@@ -1205,10 +1319,24 @@ func _draw_enemy_overlay(e) -> void:
 const NAMEPLATE_NEAR := 420.0
 
 
+## UI-53 (docs/38): kiểu bảng tên theo Cài đặt "nameplates" — "smart" (mặc định): quái thường chỉ hiện khi là mục tiêu
+## (rê chuột / vừa đánh) hoặc đã mất máu, dạng ngắn "Lv N Tên" (bỏ chữ "Thường"); "always": như UI-15 cũ;
+## "off": chỉ tinh anh / thủ lĩnh / hiếm / chúa hang, cổng. Bảng tên không chồng nhau: bảng quái thường trùng chỗ
+## bảng đã vẽ thì bỏ qua, bảng quan trọng thì đẩy lên trên. _plates xoá mỗi khung (_draw_texts).
+var _plates: Array[Rect2] = []
+
+
 func _enemy_nameplate(e, at: Vector2) -> void:
 	var plain: bool = not e.elite and e.role != "rare" and e.role != "nestGuard" and not e.cave_boss
-	if plain and e.hp >= e.max_hp and e.pos.distance_to(world.player.pos) > NAMEPLATE_NEAR:
-		return
+	var mode := str(Settings.values.get("nameplates", "smart"))
+	var focused: bool = e == world.focus
+	if plain:
+		if mode == "off" and not focused:
+			return
+		if mode == "always" and e.hp >= e.max_hp and e.pos.distance_to(world.player.pos) > NAMEPLATE_NEAR:
+			return
+		if mode == "smart" and not focused and e.hp >= e.max_hp:
+			return
 	var tier := "Thường"
 	var tcol := Color(0.75, 0.77, 0.8)
 	if e.gate_boss:
@@ -1237,10 +1365,26 @@ func _enemy_nameplate(e, at: Vector2) -> void:
 	var f := UiTheme.bold_font()
 	var fs := 12 if plain else 13
 	var parts := [[tier + " · ", tcol], [str(e.name) + " · ", Color(0.95, 0.93, 0.88)], ["Lv%d" % int(e.level), lcol]]
+	if plain and mode != "always":
+		parts = [["Lv%d " % int(e.level), lcol], [str(e.name), Color(0.95, 0.93, 0.88)]]
 	var total := 0.0
 	for pt in parts:
 		total += f.get_string_size(pt[0], HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
 	var icon_w := 16.0
+	var rect := Rect2(at.x - (total + icon_w) / 2.0 - 2.0, at.y - fs - 1.0, total + icon_w + 4.0, fs + 5.0)
+	for k in 4:
+		var hit := false
+		for pr in _plates:
+			if pr.intersects(rect):
+				hit = true
+				break
+		if not hit:
+			break
+		if plain and not focused:
+			return
+		rect.position.y -= rect.size.y
+		at.y -= rect.size.y
+	_plates.append(rect)
 	var x := at.x - (total + icon_w) / 2.0
 	var el: String = world.el_of(e)
 	ElementIcon.draw(self, Vector2(x + 6.0, at.y - fs * 0.35), el, 6.5, 0.95)
@@ -1460,10 +1604,17 @@ func _draw_ally(a) -> void:
 	draw_arc(a.pos, a.radius + 3.0, 0.0, TAU, 32, Color("#5bd16a") if a.kind == "pet" else Color("#b36bff"), 2.0, true)
 
 
+## Đòn riêng vùng 5–9: view của chương tự vẽ cảnh báo (draw_over) → nhánh mặc định không vẽ thêm vòng đỏ chồng lên.
+const REGION_TELEGRAPHS := ["fireburst", "hammer", "pdive", "firepillar", "dbreath", "snowball", "icepillar", "icecrack",
+	"frostbreath", "m_spin", "m_dash", "m_bolt", "slam", "lance", "clouddash", "rootlash", "seal", "voidbeam", "heavycleave",
+	"jaw", "sacrifice", "devour", "elemlance", "gallop", "dash9", "roar9", "spin9", "pounce9"]
+
+
 func _draw_telegraph(e: GameWorld.Enemy) -> void:
 	if e.state != "windup":
 		return
 	var progress := 1.0 - maxf(0.0, e.timer) / e.windup_total
+	var cue := Fx1.windup_cue(_pa, world, e, progress)  # §9.12: động tác lấy đà (kiểu tự nhiên)
 	if _fx1_telegraph(e, progress):
 		return
 	match e.attack_kind:
@@ -1529,10 +1680,11 @@ func _draw_telegraph(e: GameWorld.Enemy) -> void:
 				gp.append(e.pos + Vector2.from_angle(gd - Ch3.GAZE_HALF + 2.0 * Ch3.GAZE_HALF * i / 8.0) * (Ch3.GAZE_R + e.radius))
 			SpriteLib.poly(self, gp, Color(0.3, 0.75, 1.0, 0.12 + progress * 0.25))
 		_:
-			draw_arc(e.pos, e.radius + e.attack_range * progress, 0.0, TAU, 40, Color(1, 0.24, 0.31, 0.2 + progress * 0.6), 3.0, true)
+			if not cue and not (e.attack_kind in REGION_TELEGRAPHS):
+				draw_arc(e.pos, e.radius + e.attack_range * progress, 0.0, TAU, 40, Color(1, 0.24, 0.31, 0.2 + progress * 0.6), 3.0, true)
 
 
-## FX-1 §9.9: các đòn có vùng tròn vẽ bằng Fx1.draw_danger (đúng bán kính gameplay); nón / đường giữ kiểu cũ.
+## FX-1 §9.9 / §9.11: vùng tròn (Fx1.draw_danger), dải và nón (Fx1.danger_line / danger_cone), đúng kích thước gameplay.
 func _fx1_telegraph(e: GameWorld.Enemy, progress: float) -> bool:
 	var zones: Array = []
 	match e.attack_kind:
@@ -1541,7 +1693,8 @@ func _fx1_telegraph(e: GameWorld.Enemy, progress: float) -> bool:
 		"dive":
 			zones = [[e.target, GameWorld.DIVE_R, Fx1.P_FROST]]
 		"tiger":
-			draw_line(e.pos, e.target, Color(0.95, 0.95, 0.9, 0.15 + progress * 0.3), 3.0, true)
+			if not Fx1.tele_natural():
+				draw_line(e.pos, e.target, Color(0.95, 0.95, 0.9, 0.15 + progress * 0.3), 3.0, true)
 			zones = [[e.target, GameWorld.TIGER_R, Fx1.P_DANGER]]
 		"roar":
 			zones = [[e.pos, GameWorld.ROAR_R, Fx1.P_FROST]]
@@ -1553,9 +1706,32 @@ func _fx1_telegraph(e: GameWorld.Enemy, progress: float) -> bool:
 		"emerge", "sdive", "tail", "sandvortex":
 			var rr: float = {"emerge": Ch3.BURROW_R, "sdive": Ch3.DIVE_R, "tail": Ch3.TAIL_R, "sandvortex": Ch3.VORTEX_R}[e.attack_kind]
 			zones = [[e.target, rr, Fx1.P_TOXIC if e.attack_kind == "tail" else Fx1.P_SAND]]
+		"pull":
+			zones = [[e.pos, GameWorld.PULL_R, Fx1.P_FROST]]
+		# §9.11: dạng đường / nón — cùng độ dài, bề rộng, góc như kiểu cũ (gameplay)
+		"volley", "darts", "dart1":
+			var ang: float = (e.target - e.pos).angle()
+			var spread: float = deg_to_rad(15.0 if e.attack_kind == "volley" else 20.0)
+			var ok := true
+			for k in [-1, 0, 1]:
+				ok = Fx1.danger_line(world, e.pos, e.pos + Vector2.from_angle(ang + k * spread) * 220.0, 3.0, Fx1.P_FIRE, progress, e) and ok
+			return ok
+		"spore":
+			return Fx1.danger_line(world, e.pos, e.target, 4.0, Fx1.P_TOXIC, progress, e)
+		"dash":
+			return Fx1.danger_line(world, e.pos, e.pos + (e.target - e.pos).limit_length(150.0), 4.0, Fx1.P_FROST, progress, e)
+		"roll":
+			return Fx1.danger_line(world, e.pos, e.target, e.radius * 0.8, Fx1.P_SAND, progress, e)
+		"leaf":
+			return Fx1.danger_cone(world, e.pos, (e.target - e.pos).angle(), GameWorld.LEAF_ARC, GameWorld.LEAF_RANGE + e.radius, Fx1.P_LEAF, progress, e)
+		"gaze":
+			return Fx1.danger_cone(world, e.pos, (e.target - e.pos).angle(), Ch3.GAZE_HALF, Ch3.GAZE_R + e.radius, Fx1.P_FROST, progress, e)
 		_:
 			return false
-	return Fx1.draw_danger(_pa, world, zones, progress)
+	var ok := true
+	for z in zones:
+		ok = Fx1.danger_zone(world, z[0], z[1], z[2], progress, e) and ok
+	return ok
 
 
 func _draw_enemy(e: GameWorld.Enemy) -> void:
@@ -1598,14 +1774,13 @@ func _draw_player() -> void:
 	draw_line(p.pos + dir * (GameWorld.PLAYER_RADIUS - 2.0), p.pos + dir * (GameWorld.PLAYER_RADIUS + 26.0), Color(0.81, 0.89, 1.0, alpha), 4.0, true)
 
 
+## UI-52 (docs/38): tối đa FLOAT_MAX chữ nổi cùng lúc (mới nhất); chữ trùng chỗ chữ đã vẽ thì đẩy lên trên.
+## Dòng nhặt đồ (SN5-10) không còn xếp trên đầu nhân vật — HUD vẽ ở dải nhặt đồ bên trái (ui/pickup_feed.gd).
+const FLOAT_MAX := 10
+
+
 func _draw_texts() -> void:
-	# SN5-10: dòng nhặt đồ xếp chồng trên đầu nhân vật (mới nhất ở dưới), không đè nhau.
-	var notes: Array = world.pickup_notes
-	for i in notes.size():
-		var n = notes[i]
-		var row := notes.size() - 1 - i
-		var at: Vector2 = world.player.pos + Vector2(0, -96.0 - row * 20.0)
-		_label(n.text, at, Color(n.color, minf(1.0, n.ttl * 2.0)), 16 if n.big else 14, true)
+	_plates.clear()
 	# SN5-01: điểm đến khi bấm bản đồ nhỏ
 	if world.has_move_target():
 		var tp: Vector2 = world.move_target
@@ -1613,10 +1788,27 @@ func _draw_texts() -> void:
 		draw_arc(tp, 14.0 + 4.0 * k, 0.0, TAU, 24, Color(1, 0.85, 0.3, 0.8), 2.0, true)
 		draw_line(tp, tp + Vector2(0, -26), Color("#ffc940"), 2.0)
 		SpriteLib.poly(self, PackedVector2Array([tp + Vector2(0, -26), tp + Vector2(14, -21), tp + Vector2(0, -16)]), Color("#ffc940"))
-	for t in world.texts:
+	var list: Array = world.texts
+	var placed: Array[Rect2] = []
+	var f := UiTheme.bold_font()
+	for i in range(maxi(0, list.size() - FLOAT_MAX), list.size()):
+		var t = list[list.size() - 1 - (i - maxi(0, list.size() - FLOAT_MAX))]
 		var size := 19 if t.big else 15
 		var c: Color = t.color
-		_label(t.text, t.pos, Color(c, minf(1.0, t.ttl * 2.0)), size, true)
+		var w := f.get_string_size(t.text, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x + 6.0
+		var at: Vector2 = t.pos
+		var rect := Rect2(at.x - w / 2.0, at.y - size, w, size + 3.0)
+		for k in 6:
+			var hit := false
+			for pr in placed:
+				if pr.intersects(rect):
+					hit = true
+					break
+			if not hit:
+				break
+			rect.position.y -= rect.size.y
+		placed.append(rect)
+		_label(t.text, Vector2(at.x, rect.end.y - 3.0), Color(c, minf(1.0, t.ttl * 2.0)), size, true)
 
 
 func _label(text: String, pos: Vector2, color: Color, size: int, bold := false) -> void:

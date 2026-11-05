@@ -13,6 +13,15 @@ const UP := Color("#5bd16a")
 const DOWN := Color("#ff6a6a")
 
 
+## UI-63: bảng màu mù màu → lam / cam (mũi tên ▲ ▼ vẫn giữ để không chỉ dựa vào màu).
+static func _up() -> Color:
+	return UiTheme.GOOD_CB if UiTheme.colorblind else UP
+
+
+static func _down() -> Color:
+	return UiTheme.BAD_CB if UiTheme.colorblind else DOWN
+
+
 ## Dòng chênh lệch giữa 2 món (đồ đang xem đã tính cấp cường hoá nhận khi mặc) — [[chữ, màu], ...].
 static func diff_lines(world, item: Dictionary, worn: Dictionary) -> Array:
 	var it := item.duplicate()
@@ -33,11 +42,11 @@ static func diff_lines(world, item: Dictionary, worn: Dictionary) -> Array:
 		if absf(d) < (0.0005 if pct else 0.5):
 			continue
 		var num := ("%.1f%%" % absf(d * 100.0)) if pct else ("%d" % roundi(absf(d)))
-		out.append(["%s %s %s" % ["▲" if d > 0.0 else "▼", num, ItemData.AFFIXES[k].name], UP if d > 0.0 else DOWN])
+		out.append(["%s %s %s" % ["▲" if d > 0.0 else "▼", num, ItemData.AFFIXES[k].name], _up() if d > 0.0 else _down()])
 	if world != null:
 		var dp: int = world.power_if_equipped(item) - world.combat_power()
 		if dp != 0:
-			out.append(["%s %d Lực chiến" % ["▲" if dp > 0 else "▼", absi(dp)], UP if dp > 0 else DOWN])
+			out.append(["%s %d Lực chiến" % ["▲" if dp > 0 else "▼", absi(dp)], _up() if dp > 0 else _down()])
 	return out
 
 

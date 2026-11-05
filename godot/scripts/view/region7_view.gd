@@ -5,6 +5,7 @@ extends RefCounted
 
 const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
 const Ch7 = preload("res://scripts/core/chapter7.gd")
+const Fx1 = preload("res://scripts/view/fx1.gd")
 
 const SKY_TOP := Color("#6ea4e8")
 const SKY_LOW := Color("#bcdcff")
@@ -146,6 +147,8 @@ static func draw_over(ci: CanvasItem, world, view: Rect2, _art: bool) -> void:
 	var t: float = world.time
 	for mk in st.marks:
 		var k: float = 1.0 - mk.t / maxf(0.01, mk.total)
+		if Fx1.danger_zone(world, mk.pos, mk.r, Fx1.P_DANGER, k):
+			continue
 		ci.draw_circle(mk.pos, mk.r, Color(1.0, 0.95, 0.85, 0.12 + 0.2 * k))
 		ci.draw_arc(mk.pos, mk.r * k, 0.0, TAU, 24, Color(1.0, 0.4, 0.3, 0.8), 2.0, true)
 		ci.draw_arc(mk.pos, mk.r, 0.0, TAU, 24, Color(1.0, 0.9, 0.7, 0.8), 1.5, true)
@@ -161,7 +164,12 @@ static func draw_over(ci: CanvasItem, world, view: Rect2, _art: bool) -> void:
 			ci.draw_arc(e.pos, e.radius + 10.0, PI, TAU, 20, Color(1.0, 0.9, 0.5, 0.85), 3.0, true)
 		if e.kind == "cu-than" and e.state == "windup":
 			var k2: float = 1.0 - e.timer / maxf(0.01, e.windup_total)
-			match e.attack_kind:
+			var fx_done := false
+			if e.attack_kind == "slam":
+				fx_done = Fx1.danger_zone(world, e.target, Ch7.SLAM_R, Fx1.P_DANGER, k2, e)
+			elif e.attack_kind == "hammer":
+				fx_done = Fx1.danger_zone(world, e.pos, Ch7.HAMMER_R, Fx1.P_DANGER, k2, e)
+			match "" if fx_done else e.attack_kind:
 				"slam":
 					ci.draw_circle(e.target, Ch7.SLAM_R, Color(1.0, 0.3, 0.2, 0.18 + 0.25 * k2))
 					ci.draw_arc(e.target, Ch7.SLAM_R * k2, 0.0, TAU, 32, Color(1.0, 0.3, 0.2, 0.9), 2.5, true)
@@ -170,8 +178,10 @@ static func draw_over(ci: CanvasItem, world, view: Rect2, _art: bool) -> void:
 					ci.draw_arc(e.pos, Ch7.HAMMER_R * k2, 0.0, TAU, 40, Color(1.0, 0.2, 0.1, 0.95), 3.0, true)
 		if e.state == "windup" and e.attack_kind in ["lance", "clouddash"]:
 			var len: float = Ch7.LANCE_LEN if e.attack_kind == "lance" else Ch7.DASH_LEN
-			ci.draw_line(e.pos, e.pos + (e.target - e.pos).normalized() * len, Color(1.0, 0.35, 0.3, 0.45), Ch7.LANCE_HALF * 2.0)
-		if e.state == "windup" and e.attack_kind == "rootlash":
+			var k4: float = 1.0 - e.timer / maxf(0.01, e.windup_total)
+			if not Fx1.danger_line(world, e.pos, e.pos + (e.target - e.pos).normalized() * len, Ch7.LANCE_HALF, Fx1.P_DANGER, k4, e):
+				ci.draw_line(e.pos, e.pos + (e.target - e.pos).normalized() * len, Color(1.0, 0.35, 0.3, 0.45), Ch7.LANCE_HALF * 2.0)
+		if e.state == "windup" and e.attack_kind == "rootlash" and not Fx1.danger_zone(world, e.pos, Ch7.ROOT_R + e.radius, Fx1.P_LEAF, 1.0 - e.timer / maxf(0.01, e.windup_total), e):
 			ci.draw_arc(e.pos, Ch7.ROOT_R + e.radius, 0.0, TAU, 32, Color(0.6, 1.0, 0.5, 0.8), 2.5, true)
 	var p = world.player
 	if st.hover > 0.0:

@@ -37,6 +37,8 @@ Kết quả: `godot/assets/audio/sfx/<id>.wav` và `godot/assets/audio/music/<id
 | `ultimate` | Tối thượng / Thần Kỹ | Nổ trầm + hợp âm trưởng ngân dài |
 | `unlock` | Mở kỹ năng mới | Kèn 3 nốt + chuông |
 | `portal` | Tới map mới | Xoáy lung linh đi xuống rồi lên |
+| `tele_elite` | Tinh anh bắt đầu lấy đà *(04/11, FX-1 §9.13)* | Gió vút lên (nhiễu lọc cao quét lên) + gầm gừ răng cưa |
+| `tele_boss` | Boss bắt đầu lấy đà *(04/11)* | Răng cưa trầm 55 → 80 Hz + hơi thở lọc thấp dâng lên |
 
 ## Nhạc nền (`music.py`, vòng lặp liền mạch, đỉnh 0,6)
 

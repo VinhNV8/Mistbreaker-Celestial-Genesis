@@ -4,6 +4,7 @@ extends RefCounted
 
 const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
 const Ch5 = preload("res://scripts/core/chapter5.gd")
+const Fx1 = preload("res://scripts/view/fx1.gd")
 
 
 static func _circle(c: Vector2, r: float, n := 28) -> PackedVector2Array:
@@ -76,9 +77,10 @@ static func draw_over(ci: CanvasItem, world, view: Rect2, art: bool) -> void:
 	var t: float = world.time
 	for m in st.meteors:
 		var k: float = clampf(1.0 - m.t / Ch5.METEOR_WARN, 0.0, 1.0)
-		ci.draw_circle(m.pos, Ch5.METEOR_R, Color(1.0, 0.25, 0.1, 0.12))
-		ci.draw_circle(m.pos, Ch5.METEOR_R * k, Color(1.0, 0.3, 0.1, 0.3))
-		ci.draw_arc(m.pos, Ch5.METEOR_R, 0.0, TAU, 32, Color(1.0, 0.4, 0.2, 0.8), 2.0, true)
+		if not Fx1.danger_zone(world, m.pos, Ch5.METEOR_R, Fx1.P_FIRE, k):
+			ci.draw_circle(m.pos, Ch5.METEOR_R, Color(1.0, 0.25, 0.1, 0.12))
+			ci.draw_circle(m.pos, Ch5.METEOR_R * k, Color(1.0, 0.3, 0.1, 0.3))
+			ci.draw_arc(m.pos, Ch5.METEOR_R, 0.0, TAU, 32, Color(1.0, 0.4, 0.2, 0.8), 2.0, true)
 		if m.t < 0.6:
 			var fall: Vector2 = m.pos + Vector2(-40, -260) * (m.t / 0.6)
 			if art and SpriteLib.has_env("fx-meteor"):
@@ -87,12 +89,14 @@ static func draw_over(ci: CanvasItem, world, view: Rect2, art: bool) -> void:
 				ci.draw_circle(fall, 8.0, Color("#ff9a3c"))
 	for pl in st.pillars:
 		var k2: float = clampf(1.0 - pl.t / (Ch5.PILLAR_GAP * Ch5.PILLARS), 0.0, 1.0)
-		ci.draw_circle(pl.pos, Ch5.PILLAR_R, Color(1.0, 0.35, 0.1, 0.15 + 0.3 * k2))
-		ci.draw_arc(pl.pos, Ch5.PILLAR_R, 0.0, TAU, 20, Color(1.0, 0.5, 0.2, 0.8), 2.0, true)
+		if not Fx1.danger_zone(world, pl.pos, Ch5.PILLAR_R, Fx1.P_FIRE, k2):
+			ci.draw_circle(pl.pos, Ch5.PILLAR_R, Color(1.0, 0.35, 0.1, 0.15 + 0.3 * k2))
+			ci.draw_arc(pl.pos, Ch5.PILLAR_R, 0.0, TAU, 20, Color(1.0, 0.5, 0.2, 0.8), 2.0, true)
 	for f in st.feathers:
 		var k3: float = clampf(1.0 - f.t / Ch5.FEATHER_WARN, 0.0, 1.0)
-		ci.draw_circle(f.pos, Ch5.FEATHER_R * k3, Color(1.0, 0.7, 0.3, 0.3))
-		ci.draw_arc(f.pos, Ch5.FEATHER_R, 0.0, TAU, 20, Color(1.0, 0.7, 0.3, 0.7), 1.5, true)
+		if not Fx1.danger_zone(world, f.pos, Ch5.FEATHER_R, Fx1.P_GOLD, k3):
+			ci.draw_circle(f.pos, Ch5.FEATHER_R * k3, Color(1.0, 0.7, 0.3, 0.3))
+			ci.draw_arc(f.pos, Ch5.FEATHER_R, 0.0, TAU, 20, Color(1.0, 0.7, 0.3, 0.7), 1.5, true)
 	for br in st.breaths:
 		var origin: Vector2 = world.player.pos
 		if not br.player:
@@ -121,6 +125,8 @@ static func draw_over(ci: CanvasItem, world, view: Rect2, art: bool) -> void:
 		if e.dead or e.state != "windup":
 			continue
 		var prog: float = 1.0 - maxf(0.0, e.timer) / maxf(0.01, e.windup_total)
+		if _fx1(world, e, prog):
+			continue
 		match e.attack_kind:
 			"fireburst":
 				ci.draw_circle(e.pos, Ch5.BURST_R * prog, Color(1, 0.4, 0.1, 0.3))
@@ -133,3 +139,18 @@ static func draw_over(ci: CanvasItem, world, view: Rect2, art: bool) -> void:
 					Color(1, 0.5, 0.2, 0.25 + 0.5 * prog), 6.0, true)
 			"dbreath":
 				ci.draw_arc(e.pos, Ch5.DRAGON_BREATH_RANGE * prog, 0.0, TAU, 40, Color(1, 0.4, 0.1, 0.5), 2.0, true)
+
+
+## FX-1 §9.11: cảnh báo đòn riêng vùng 5 theo ngôn ngữ FX-1 (đúng kích thước gameplay); false → kiểu cũ.
+static func _fx1(world, e, prog: float) -> bool:
+	match e.attack_kind:
+		"fireburst":
+			return Fx1.danger_zone(world, e.pos, Ch5.BURST_R, Fx1.P_FIRE, prog, e)
+		"hammer":
+			return Fx1.danger_zone(world, e.pos, Ch5.HAMMER_R, Fx1.P_DANGER, prog, e)
+		"pdive", "firepillar":
+			var ln: float = Ch5.DIVE_LEN if e.attack_kind == "pdive" else e.pos.distance_to(e.target)
+			return Fx1.danger_line(world, e.pos, e.pos + (e.target - e.pos).normalized() * ln, 8.0, Fx1.P_FIRE, prog, e)
+		"dbreath":
+			return Fx1.danger_cone(world, e.pos, (e.target - e.pos).angle(), Ch5.DRAGON_BREATH_ARC, Ch5.DRAGON_BREATH_RANGE, Fx1.P_FIRE, prog, e)
+	return false

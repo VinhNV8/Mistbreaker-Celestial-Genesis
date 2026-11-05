@@ -6,6 +6,7 @@ const Awakening = preload("res://scripts/core/awakening.gd")
 const Config = preload("res://scripts/core/config.gd")
 const Explore = preload("res://scripts/core/explore.gd")
 const Formulas = preload("res://scripts/core/formulas.gd")
+const Gates = preload("res://scripts/core/gates.gd")
 const GameWorld = preload("res://scripts/core/game_world.gd")
 const Profile = preload("res://scripts/core/profile.gd")
 const RngUtil = preload("res://scripts/core/rng_util.gd")
@@ -240,6 +241,7 @@ func _init() -> void:
 	_run("SN12-T3 cân bằng 7 ô: đủ ô 5 / 6 / G hạ Viêm Long (cấp 60) và Cự Thần (cấp 90) nhanh hơn bộ 4 ô bao nhiêu", _test_sn12_balance)
 	_run("AU-T1 âm thanh: nhạc riêng vùng 1–9 + boss cuối, âm kỹ năng theo lớp, Tối thượng, mở kỹ năng, tới map — đủ file", _test_audio_files)
 	_run("TL-B9b Thần Vực: bot 5 lớp cấp 100 (chưa có Điểm Thiên Đạo) đạt tầng 10–20, các lớp chênh ≤ 25% số tầng", _test_tower_balance)
+	_run("BOSS-T1 quét mọi boss (9 boss vùng, 9 boss hiếm, Chúa Hang 26 map, Chúa Cổng E…S) qua vòng chơi thật: gục, biến mất, không kẹt HP — chạy riêng --only=BOSS", _test_boss_sweep)
 	_run("RB-T1 9 boss hiếm nhận sát thương qua vòng cập nhật thật (Thất Đầu: sau khi chặt 7 đầu) — Spec_Notes 02/11", _test_rare_damageable)
 	_run("TP5-T1 ô Thiên phú phụ mở theo chuyển chức, Lễ Thức Tỉnh ô phụ (bể, 4 lượt, nhận), save v28", _test_tp5_slots)
 	_run("TP5-T2 Thiên phú phụ có hiệu lực (HP, chí mạng, Hấp Huyết), luyện cấp phụ, phím L dùng kỹ năng phụ", _test_tp5_effects)
@@ -250,6 +252,7 @@ func _init() -> void:
 	_run("BD11-T3 Cổng dungeon: hạng cao mạnh hơn, save v29, giao diện (bản đồ lục địa, cổng trên map)", _test_bd11_save_ui)
 	_run("UI40-T1 đồ hoạ HD (docs/35 G0): lớp phủ manifest, kích thước logic giữ nguyên, mipmap + Linear, bật / tắt", _test_ui40_hd)
 	_run("UI41-T1 giao diện đồng chạm khắc (docs/35 §11): khung, cụm nút góc phải, thanh EXP, cuộn nhiệm vụ", _test_ui41_hud)
+	_run("UI38-T1 rà soát giao diện (docs/38): cỡ chữ tối thiểu, máu thấp, đổi phím, Cài đặt 4 tab, tiêu đề mới, bảng tên quái, dải nhặt đồ", _test_ui38)
 	_run("UI40b-T1 khu an toàn HD (docs/35 §9–10): làng + trại 9 vùng, đủ hình, chỗ Cổng Dịch Chuyển", _test_ui41_village)
 	_run("SK3-T4 cân bằng: bộ kỹ năng nhánh hạ Viêm Long không chậm quá 30% bộ mặc định", _test_sk3_balance)
 	# LH1 — Hộ Vệ (docs/19)
@@ -286,7 +289,9 @@ func _init() -> void:
 	_run("AR-45b hình thi triển 14 kỹ năng Kiếm Khách (docs/design/skills/kiem-khach): vfx-<id> / fx-sheet, ghi hiệu ứng khi thi triển", _test_ar45b_kiem_khach_vfx)
 	_run("AR45d-T1 10 kỹ năng Kiếm Khách dàn dựng chuyển động bằng mảnh hình gốc (Trảm Phong / Kiếm Ý / Vạn Kiếm); 4 kỹ năng giữ hình cũ", _test_ar45c_phases)
 	_run("FX1-T1 hiệu ứng kỹ năng FX-1 (docs/36): đủ 70 kỹ năng, chính sách song song, mọi dàn cảnh / lớp phủ vẽ được (Painter headless)", _test_fx1)
+	_run("PACE-TELE đo nguồn sát thương (docs/36 §9.13): phần sát thương từ đòn mất vết cảnh báo ở kiểu tự nhiên — chạy riêng --only=PACE-TELE", _test_tele_sim)
 	_run("IC1-T1 icon kỹ năng IC-1 (docs/37): 51 icon chủ động + 20 bị động HD qua lớp phủ, 19 icon vẽ tay giữ nguyên, tắt HD về icon cũ", _test_ic1)
+	_run("MD1-T1 thiết kế lại quái HD (docs/39): mọi quái / tinh anh / boss có sheet HD đủ 5 hoạt ảnh, cỡ logic = pixel, linh thú chưa bật (Q190), tắt HD về pixel", _test_md1)
 	print("")
 	if _failed.is_empty():
 		print("TẤT CẢ %d TEST QUA" % _total)
@@ -311,6 +316,9 @@ func _run(test_name: String, fn: Callable) -> void:
 		return
 	# Bài đo nhịp độ chạy lâu (vài phút): chỉ chạy khi gọi riêng --only=PACE.
 	if test_name.begins_with("PACE") and only == "":
+		return
+	# BOSS-T1 quét ~50 trận boss qua vòng chơi thật (vài phút): chạy riêng --only=BOSS.
+	if test_name.begins_with("BOSS") and only == "":
 		return
 	_total += 1
 	_current = test_name
@@ -4231,9 +4239,23 @@ func _test_c5_bosses() -> void:
 	w._apply_damage(ph, 100, false, true)
 	_check(not ph.dead and w.ch5.reborn and w.ch5.egg_t > 0.0, "lần đầu bị hạ: hoá trứng, Niết bàn")
 	_check(Ch5.adjust_damage(w, ph, 100, true) == 0, "đang là trứng: bất tử")
-	w.ch5.egg_t = 0.01
-	Ch5.update_rare(w, ph, 0.1)
+	# SN15-01: trứng đếm ngược qua vòng cập nhật quái thật (trước đây kẹt 1 HP, bất tử mãi).
+	for i in 32:
+		w._update_enemy(ph, 0.1)
+	_check(w.ch5.egg_t <= 0.0 and is_equal_approx(ph.hp, ph.max_hp * Ch5.REBIRTH_HP), "SN15-01: trứng tự nở sau 3 giây trong vòng cập nhật quái")
 	_check(is_equal_approx(ph.hp, ph.max_hp * Ch5.REBIRTH_HP), "tái sinh 50% HP")
+	ph.hp = 10.0
+	w._apply_damage(ph, 100, false, true)
+	_check(ph.dead, "SN15-01: đã Niết bàn — lần hạ thứ hai gục hẳn")
+	ph.dead = false
+	w.ch5.reborn = true
+	w.ch5.egg_t = 2.0
+	ph.hp = 1.0
+	w._die()
+	w._update_enemy(ph, 0.1)
+	_check(not w.ch5.reborn and w.ch5.egg_t <= 0.0 and is_equal_approx(ph.hp, ph.max_hp), "SN15-01: người chơi gục → Phượng Hoàng hồi đầy, Niết bàn được dùng lại")
+	w.player.hp = float(w.stats.max_hp)
+	w.player.dead_timer = 0.0
 	# lần 2 (hoặc trúng hệ Thủy): gục hẳn — thử nhánh Nước Thánh
 	w.ch5.reborn = false
 	w.profile.holy_water = 1
@@ -9756,10 +9778,8 @@ func _test_ui40_hd() -> void:
 	for id in SL.data().sprites:
 		if (str(id).begins_with("pc-") or str(id).begins_with("hero-")) and str(SL.data().sprites[id].path).begins_with("res://assets/hd/"):
 			keep = false
-	for id in SL.data().icons:
-		if str(id).begins_with("skill-") and str(SL.data().icons[id]).begins_with("res://assets/hd/"):
-			keep = false
-	_check(keep, "nhân vật (pc-*, hero-*) và icon kỹ năng không bị thay bằng hình HD")
+	# icon kỹ năng: IC-1 (docs/37) đã duyệt thay bằng HD; 19 icon vẽ tay giữ nguyên do IC1-T1 kiểm tra
+	_check(keep, "nhân vật (pc-*, hero-*) không bị thay bằng hình HD")
 	for id in ["wolf", "boss"]:
 		var s: Dictionary = SL.data().sprites[id]
 		var tex := SL.texture(str(s.path))
@@ -9892,6 +9912,67 @@ func _test_ui41_hud() -> void:
 	_check(HudS.parchment_ink(Color("#ffc940")) == Bronze.INK_RED, "chữ vàng HUD → mực đỏ trên giấy da")
 	var main_src := FileAccess.get_file_as_string("res://scripts/main.gd")
 	_check(main_src.contains("has_meta(\"hud_action\")"), "main: chuột trên cụm nút vẫn đánh được")
+
+
+func _test_ui38() -> void:
+	const UiT = preload("res://scripts/ui/ui_theme.gd")
+	const LowHp = preload("res://scripts/ui/low_hp_overlay.gd")
+	const Keyb = preload("res://scripts/core/keybinds.gd")
+	const SettingsS = preload("res://scripts/core/settings.gd")
+	const Pause = preload("res://scripts/ui/pause_menu.gd")
+	const HudS = preload("res://scripts/ui/hud.gd")
+	_check(UiT.fs(8) >= UiT.MIN_FONT and UiT.fs(9) >= 11, "UI-51: cỡ chữ qua theme không dưới 11 px gốc")
+	_check(LowHp.level_of(20.0, 100.0) > 0.0 and LowHp.level_of(50.0, 100.0) == 0.0 and LowHp.level_of(0.0, 100.0) == 0.0,
+		"UI-55: cảnh báo máu thấp dưới 30% (không hiện khi đã gục)")
+	# UI-61: đổi phím — giữ cài đặt người chơi, test xong trả lại
+	var old: Dictionary = SettingsS.values.duplicate(true)
+	SettingsS.values["keybinds"] = {}
+	Keyb.defaults = {"potion": [KEY_Q], "mp_potion": [KEY_F]}
+	for a in Keyb.defaults:
+		if not InputMap.has_action(a):
+			InputMap.add_action(a)
+	Keyb.apply()
+	var taken := Keyb.set_key("mp_potion", KEY_Q)
+	var potion_keys := InputMap.action_get_events("potion").filter(func(e): return e is InputEventKey)
+	var mp_keys := InputMap.action_get_events("mp_potion").map(func(e): return e.physical_keycode)
+	_check(taken == "potion" and potion_keys.is_empty() and mp_keys == [KEY_Q] and Keyb.key_name("mp_potion") == "Q",
+		"UI-61: gán phím đang dùng → thao tác kia mất phím đó")
+	Keyb.reset()
+	mp_keys = InputMap.action_get_events("mp_potion").map(func(e): return e.physical_keycode)
+	_check(mp_keys == [KEY_F] and Keyb.key_name("potion") == "Q", "UI-61: khôi phục phím mặc định")
+	# Cài đặt: 4 tab, tab Điều khiển có ô đổi phím, không còn chữ "Project Settings"
+	var pm = Pause.new()
+	pm.settings_only = true
+	get_root().add_child(pm)
+	if pm._box == null:
+		pm._ready()  # chạy trong _init của SceneTree: _ready chưa được gọi
+	var tabs_ok := true
+	for t in Pause.TABS:
+		tabs_ok = tabs_ok and pm.find_child("Tab_" + str(t[0]), true, false) != null
+	pm.tab = "controls"
+	pm.show_settings()
+	var has_key: bool = pm.find_child("Key_potion", true, false) != null
+	pm.tab = "access"
+	pm.show_settings()
+	var has_np: bool = pm.find_child("Nameplates_smart", true, false) != null and pm.find_child("LowHpWarn", true, false) != null
+	pm.queue_free()
+	_check(tabs_ok and has_key and has_np and not FileAccess.get_file_as_string("res://scripts/ui/pause_menu.gd").contains("Project Settings →"),
+		"UI-61: Cài đặt 4 tab (Âm thanh, Hiển thị, Điều khiển, Trợ năng), đổi phím trong game, tab Trợ năng")
+	SettingsS.values = old
+	SettingsS.save_settings()
+	Keyb.defaults = {}
+	# UI-57: màn tiêu đề không còn bảng phím tắt; chưa có nhân vật thì ẩn "Tiếp tục"
+	var title: Control = Screens9.title(false, func(): pass, func(): pass, func(): pass)
+	var grid_n := title.find_children("*", "GridContainer", true, false).size()
+	var cont: Control = title.find_child("ContinueButton", true, false)
+	_check(grid_n == 0 and cont != null and not cont.visible and title.find_child("SettingsButton", true, false) != null,
+		"UI-57: tiêu đề có cảnh nền, bỏ bảng phím tắt, ẩn Tiếp tục khi chưa có nhân vật")
+	title.free()
+	# UI-52 / 53: dòng nhặt đồ chuyển sang HUD; bảng tên quái mặc định "thông minh"
+	var wv_src := FileAccess.get_file_as_string("res://scripts/view/world_view.gd")
+	_check(not wv_src.contains("world.pickup_notes") and FileAccess.get_file_as_string("res://scripts/ui/hud.gd").contains("PickupFeed")
+		and str(SettingsS.DEFAULTS.nameplates) == "smart" and HudS.LOG_MAX == 3,
+		"UI-52 / 53 / 54: dải nhặt đồ ở HUD, bảng tên quái thông minh, nhật ký 3 dòng")
 
 
 func _test_fx1() -> void:
@@ -10040,6 +10121,91 @@ func _test_fx1() -> void:
 	Fx1.set_mode("old")
 	dz_ok = dz_ok and not Fx1.draw_danger(Kit.Painter.new(), w, [[Vector2(100, 100), 90.0, Fx1.P_DANGER]], 0.5)
 	_check(dz_ok, "vòng cảnh báo đòn quái FX-1; chế độ Hình cũ thì về kiểu cũ")
+	# §9.11 dải / nón / vòng qua Fx1.painter (region5–9 + world_view); không painter hoặc "old" → kiểu cũ
+	St2.values["tele_style"] = "clear"  # khối dưới kiểm kiểu rõ ràng (§9.11); kiểu tự nhiên kiểm sau
+	var pl = Kit.Painter.new()
+	var saved_pa = Fx1.painter
+	Fx1.painter = pl
+	Fx1.set_mode("fx1")
+	var lc_ok: bool = Fx1.danger_line(w, Vector2(0, 0), Vector2(300, 80), 15.0, Fx1.P_VOID, 0.6) and Fx1.danger_cone(w, Vector2(50, 50), 0.4, deg_to_rad(35.0), 180.0, Fx1.P_FIRE, 0.9) and Fx1.danger_zone(w, Vector2(0, 0), 60.0, Fx1.pal_of(Color("#9ad8ff")), 0.3)
+	lc_ok = lc_ok and pl.n > 20 and pl.bad == 0 and pl.tri_fix == 0
+	Fx1.set_mode("old")
+	lc_ok = lc_ok and not Fx1.danger_line(w, Vector2.ZERO, Vector2(100, 0), 5.0, Fx1.P_FIRE, 0.5)
+	Fx1.set_mode("fx1")
+	Fx1.painter = null
+	lc_ok = lc_ok and not Fx1.danger_cone(w, Vector2.ZERO, 0.0, 0.5, 100.0, Fx1.P_FIRE, 0.5)
+	var kinds_by_view := {
+		"res://scripts/view/region5_view.gd": ["fireburst", "hammer", "pdive", "firepillar", "dbreath"],
+		"res://scripts/view/region6_view.gd": ["snowball", "icepillar", "icecrack", "frostbreath", "m_spin", "m_dash", "m_bolt"],
+		"res://scripts/view/region8_view.gd": ["seal", "voidbeam", "heavycleave", "jaw", "sacrifice"],
+		"res://scripts/view/region9_view.gd": ["elemlance", "gallop", "dash9", "roar9", "spin9"]}
+	Fx1.painter = pl
+	var re := w.spawn_enemy("wolf", 20, Vector2(400, 400))
+	re.target = Vector2(520, 460)
+	for path in kinds_by_view:
+		var rv = load(path)
+		for kind in kinds_by_view[path]:
+			re.attack_kind = kind
+			if not rv._fx1(w, re, 0.5):
+				lc_ok = false
+				print("    FX1 cảnh báo chưa vẽ: ", path.get_file(), " ", kind)
+	lc_ok = lc_ok and pl.bad == 0
+	# §9.12 kiểu tự nhiên (mặc định): vết mặt đất vào hàng đợi, vẽ ở khung sau dưới quái; quái thường đòn lao chỉ báo bằng
+	# động tác; tinh anh / boss / cơ chế chương có vết; "Rõ ràng" vẽ ngay như trên
+	St2.values["tele_style"] = "natural"
+	_check(St2.DEFAULTS.get("tele_style") == "natural", "mặc định: cảnh báo kiểu tự nhiên")
+	Fx1.tele_queue = []
+	var nm := w.spawn_enemy("wolf", 20, Vector2(300, 300))
+	nm.attack_kind = "pounce"
+	nm.target = Vector2(380, 330)
+	var pc = Kit.Painter.new()
+	Fx1.painter = pc
+	var drew_now: bool = Fx1.danger_zone(w, nm.target, 60.0, Fx1.P_DANGER, 0.8, nm)
+	var nat_ok: bool = drew_now and pc.n == 0 and Fx1.tele_queue.is_empty()
+	nm.elite = true
+	Fx1.danger_zone(w, nm.target, 60.0, Fx1.P_DANGER, 0.8, nm)
+	nm.elite = false
+	Fx1.danger_zone(w, Vector2(500, 500), 80.0, Fx1.P_FIRE, 0.6)  # thiên thạch (cơ chế, e = null)
+	nm.attack_kind = "stomp"
+	Fx1.danger_zone(w, nm.pos, 70.0, Fx1.P_DANGER, 0.2, nm)  # quái thường đòn vùng: chưa hiện ở 20%
+	Fx1.danger_line(w, Vector2.ZERO, Vector2(200, 50), 15.0, Fx1.P_VOID, 0.7)
+	Fx1.danger_cone(w, Vector2(50, 50), 0.4, 0.6, 180.0, Fx1.P_FIRE, 0.9)
+	nat_ok = nat_ok and Fx1.tele_queue.size() == 4
+	var pg = Kit.Painter.new()
+	pg.strict = true
+	Fx1.flush_ground(pg, w)
+	nat_ok = nat_ok and pg.n > 40 and pg.bad == 0 and Fx1.tele_queue.is_empty()
+	var pcue = Kit.Painter.new()
+	nm.attack_kind = "pounce"
+	nat_ok = nat_ok and Fx1.windup_cue(pcue, w, nm, 0.9) and pcue.n > 3
+	_check(nat_ok, "kiểu tự nhiên: quái thường đòn lao không có vết, tinh anh / cơ chế có vết (hàng đợi %d), vẽ dưới quái %d nét, động tác lấy đà %d nét" % [Fx1.tele_queue.size(), pg.n, pcue.n])
+	# §9.13 âm báo: tinh anh bắt đầu lấy đà gần người chơi → "tele_elite" đúng một lần; ở xa → không
+	Fx1.set_mode("fx1")
+	w.sfx.clear()
+	nm.elite = true
+	nm.state = "windup"
+	nm.pos = w.player.pos + Vector2(200, 0)
+	Fx1.tick(w, 1.0 / 60.0)
+	Fx1.tick(w, 1.0 / 60.0)
+	var heard: int = w.sfx.count("tele_elite")
+	var far := w.spawn_enemy("wolf", 20, w.player.pos + Vector2(1500, 0))
+	far.elite = true
+	far.state = "windup"
+	Fx1.tick(w, 1.0 / 60.0)
+	_check(heard == 1 and w.sfx.count("tele_elite") == 1, "âm báo tinh anh lấy đà: phát 1 lần, quái xa không phát (%d)" % heard)
+	nm.state = "chase"
+	far.state = "chase"
+	Fx1.set_mode("")
+	# §9.14 mù màu đỏ – lục: đỏ → cam, xanh lá → lam ngọc; tắt thì giữ nguyên; chất liệu không đổi
+	St2.values["colorblind"] = true
+	var cb_ok: bool = Fx1._cb(Fx1.P_DANGER) == Fx1.P_CB_RED and Fx1._cb(Fx1.P_TOXIC) == Fx1.P_CB_GREEN and Fx1._cb(Fx1.P_FIRE) == Fx1.P_FIRE
+	St2.values["colorblind"] = false
+	cb_ok = cb_ok and Fx1._cb(Fx1.P_DANGER) == Fx1.P_DANGER and Fx1._mat(Fx1.P_DANGER) == "crack"
+	_check(cb_ok, "chế độ mù màu: cảnh báo đỏ → cam, xanh lá → lam ngọc")
+	St2.values["tele_style"] = St2.DEFAULTS.tele_style
+	Fx1.tele_queue = []
+	Fx1.painter = saved_pa
+	_check(lc_ok, "cảnh báo dải / nón / vòng chương 5–9 vẽ được, không đa giác lỗi (n=%d, lỗi %d)" % [pl.n, pl.bad])
 	Fx1.set_mode("")
 	Fx1.casts = []
 
@@ -10081,7 +10247,321 @@ func _test_ic1() -> void:
 				pv_bad.append(str(d.icon))
 	var tab: Texture2D = SL.icon("skill-pv-tab")
 	_check(pv_n == 20 and pv_bad.is_empty() and tab != null and tab.get_width() == 128, "20 icon bị động + tab IC-1 HD %s" % str(pv_bad))
+	# §7 IC-2: 20 Thiên phú + đủ icon trang bị (8 ô + món độc nhất) ở bản HD 128 px
+	var ic2_bad: Array = []
+	for tl in Talents.LIST:
+		var tid := str(tl.id)
+		var tt: Texture2D = SL.talent_icon(str(tid))
+		if tt == null or tt.get_width() != 128:
+			ic2_bad.append("talent-" + str(tid))
+	var item_ids: Array = []
+	var misc_n := 0
+	for k in SL.data().icons:
+		if str(k).begins_with("item-"):
+			item_ids.append(str(k))
+		elif str(k).begins_with("res-") or str(k).begins_with("stat-"):
+			misc_n += 1
+			var tm: Texture2D = SL.icon(str(k))
+			if tm == null or tm.get_width() != 128:
+				ic2_bad.append(str(k))
+		elif str(k).begins_with("portrait-") and str(SL.data().icons[k]).begins_with("res://assets/hd/"):
+			ic2_bad.append(str(k) + " (chân dung chủ dự án bị thay)")
+	for k in item_ids:
+		var ti: Texture2D = SL.icon(k)
+		if ti == null or ti.get_width() != 128:
+			ic2_bad.append(k)
+	_check(Talents.LIST.size() == 20 and item_ids.size() >= 25 and misc_n >= 41 and ic2_bad.is_empty(), "IC-2: 20 Thiên phú + %d icon trang bị + %d tài nguyên / chỉ số HD, chân dung giữ nguyên %s" % [item_ids.size(), misc_n, str(ic2_bad)])
 	SL.set_hd(false)
 	var old: Texture2D = SL.icon("skill-spin")
 	_check(old != null and old.get_width() <= 48, "tắt Đồ hoạ HD → icon cũ")
+	SL.set_hd(true)
+
+# ------------------------------------------------------------------ BOSS-T1 (04/11, sau SN15-01): quét mọi boss qua vòng chơi thật
+
+## Thế giới đúng vùng của map (cờ nhiệm vụ / boss trước đã ngã), người chơi cấp `lv`.
+func _boss_world(map_id: String, lv: int) -> GameWorld:
+	var reg := int(map_id.split("-")[0]) if map_id[0].is_valid_int() else 1
+	var w: GameWorld
+	match reg:
+		1:
+			var p := _profile("tay-nhanh", 3)
+			p.class_id = "kiem-khach"
+			p.level = lv
+			p.map_id = map_id
+			p.unlocked_maps = ["1-1", "1-2", "1-3"]
+			w = GameWorld.new(p, RngUtil.make(5))
+		2: w = _region2_world(map_id, "kiem-khach", "tay-nhanh", lv)
+		3: w = _region3_world(map_id, "kiem-khach", "tay-nhanh", lv)
+		4: w = _region4_world(map_id, "kiem-khach", "tay-nhanh", lv)
+		5: w = _region5_world(map_id, "kiem-khach", "tay-nhanh", lv)
+		6: w = _region6_world(map_id, "kiem-khach", "tay-nhanh", lv)
+		7: w = _region7_world(map_id, "kiem-khach", "tay-nhanh", lv)
+		8: w = _region8_world(map_id, "kiem-khach", "tay-nhanh", lv)
+		_: w = _region9_world(map_id, "kiem-khach", "tay-nhanh", lv)
+	w.field_spawn = false
+	return w
+
+
+## Đánh tới khi boss gục (tối đa `limit` giây): người chơi bám mục tiêu (boss, hoặc quái gần nhất khi boss ẩn /
+## miễn sát thương — đầu Thất Đầu, bản sao…), luôn đầy máu. HP boss thu về ~80 đòn thường (mốc % giữ nguyên).
+## Trả "" nếu ổn, ngược lại mô tả lỗi.
+func _sweep_fight(w: GameWorld, b, limit := 240.0) -> String:
+	var hit: float = maxf(1.0, Formulas.compute_damage(float(w.stats.atk), b.def, 1.0))
+	if b.max_hp > hit * 80.0:
+		b.max_hp = hit * 80.0
+		b.hp = b.max_hp
+	var dt := 1.0 / 30.0
+	var t := 0.0
+	var last_hp: float = b.hp
+	var still := 0.0
+	var worst := 0.0
+	var min_frac := 1.0
+	var deaths := 0
+	while t < limit and not b.dead:
+		w.player.hp = float(w.stats.max_hp)
+		w.player.mp = float(w.stats.max_mp)
+		w.player.shield = 1e9
+		w.player.shield_time = 999.0
+		if w.player.dead_timer > 0.0:
+			deaths += 1
+			w.player.dead_timer = 0.0
+		var tgt = b
+		# HP boss đứng yên: luân phiên 4 giây đánh quái phụ gần boss (đầu Thất Đầu, Tư Tế…) / 4 giây đánh boss.
+		# Boss "ẩn" (Bản Ngã trong gương) chỉ là không tự ngắm — người chơi vẫn đánh đúng tấm thật.
+		var heads := w.enemies.filter(func(e): return e.kind == "dau-thuy-quai" and not e.dead)
+		if not heads.is_empty():
+			tgt = heads[0]
+		elif int(still / 4.0) % 2 == 1:
+			var best := 1e12
+			for e in w.enemies:
+				if e.dead or e == b or e.role == "summon" and e.kind == "manh-da":
+					continue
+				var d: float = e.pos.distance_squared_to(b.pos)
+				if d < best:
+					best = d
+					tgt = e
+		var dir: Vector2 = (w.player.pos - tgt.pos)
+		dir = dir.normalized() if dir.length() > 1.0 else Vector2.RIGHT
+		var stand: Vector2 = tgt.pos + dir * (float(tgt.radius) + 26.0)
+		# Chương 7: đứng chỗ còn nền (người chơi thật né khỏi hố Đấm đất / vành vỡ).
+		if w.map.has("islands") and not Ch7.on_land(w, stand):
+			for k in 16:
+				var alt: Vector2 = tgt.pos + Vector2.from_angle(k * TAU / 16.0) * (float(tgt.radius) + 26.0)
+				if Ch7.on_land(w, alt):
+					stand = alt
+					break
+		w.player.pos = stand
+		w.update(dt, {"move": Vector2.ZERO, "aim": tgt.pos, "attack": true, "skill": false, "talent": false, "dodge": false})
+		t += dt
+		min_frac = minf(min_frac, b.hp / maxf(1.0, b.max_hp))
+		if absf(b.hp - last_hp) > 0.01:
+			last_hp = b.hp
+			worst = maxf(worst, still)
+			still = 0.0
+		else:
+			still += dt
+	worst = maxf(worst, still)
+	var info := "%.0f giây, HP thấp nhất %.0f%%, đứng HP lâu nhất %.0f giây%s" % [t, min_frac * 100.0, worst, (", người chơi gục %d lần" % deaths) if deaths > 0 else ""]
+	_boss_log.append("%s: %s%s" % [b.kind, "GỤC " if b.dead else "KHÔNG GỤC ", info])
+	if not b.dead:
+		return "không gục sau %s" % info
+	for _i in 10:
+		w.update(dt, _idle(w))
+	if w.enemies.has(b):
+		return "đã gục nhưng vẫn còn trong danh sách quái"
+	return ""
+
+
+var _boss_log: Array = []
+
+
+func _test_boss_sweep() -> void:
+	_boss_log = []
+	# 9 boss vùng: vào đấu trường như người chơi (boss sinh khi bước vào vòng).
+	for id in MapsData.MAPS:
+		var m: Dictionary = MapsData.MAPS[id]
+		if m.get("arena") == null:
+			continue
+		var lv := int(m.arena.level) + 2
+		var w := _boss_world(str(id), lv)
+		var kind := str(m.arena.boss)
+		if kind == "boss":
+			w.profile.boss_defeated = false
+		w.profile.bosses.erase(kind)
+		w._load_map(str(id))
+		# Bài quét không chạy chuỗi nhiệm vụ: mở tường trước đấu trường như khi đã làm xong (bản sao — không đụng map dùng chung).
+		w.map = w.map.duplicate()
+		w.map.gate = false
+		w.enemies = []
+		w.player.pos = w.arena_pos
+		_tick(w, {}, 2)
+		var b = w.boss()
+		_check(b != null, "%s: boss vùng %s sinh khi vào đấu trường" % [id, kind])
+		if b != null:
+			var err := _sweep_fight(w, b)
+			_check(err == "", "boss vùng %s (%s): %s" % [kind, id, err])
+	# 9 boss hiếm
+	for id in GameWorld.RARE_BOSSES:
+		var rd: Dictionary = GameWorld.RARE_BOSSES[id]
+		var w := _boss_world(str(id), int(rd.level) + 2)
+		w.profile.bosses[str(rd.after)] = true
+		w._load_map(str(id))
+		w.enemies = []
+		w.debug_now = 1000.0
+		w._check_rare_boss()
+		var b = w.rare_boss()
+		_check(b != null and b.kind == str(rd.kind), "%s: boss hiếm %s xuất hiện" % [id, rd.kind])
+		if b != null:
+			_tick(w, {}, 30)
+			var err := _sweep_fight(w, b)
+			_check(err == "", "boss hiếm %s (%s): %s" % [rd.kind, id, err])
+	# Chúa Hang mọi map ngoài trời
+	for id in MapsData.MAPS:
+		var cid := "cave-" + str(id)
+		var w := _boss_world(str(id), int(MapsData.MAPS[id].levels[1]) + 2)
+		w._load_map(cid)
+		var bs := w.enemies.filter(func(e): return e.cave_boss)
+		_check(bs.size() == 1, "%s: có 1 Chúa Hang (%d)" % [cid, bs.size()])
+		if bs.size() == 1:
+			w.enemies = bs
+			var err := _sweep_fight(w, bs[0], 120.0)
+			_check(err == "", "Chúa Hang %s (%s): %s" % [bs[0].kind, cid, err])
+			_check(w.portals.any(func(pt): return pt.kind == "exit"), "%s: hạ Chúa Hang → mở cổng ra" % cid)
+	# Chúa Cổng: mỗi hạng 1 cổng, rải các vùng
+	var ranks := ["E", "D", "C", "B", "A", "S"]
+	var parents := ["1-3", "3-1", "4-2", "6-1", "7-2", "9-1"]
+	for i in ranks.size():
+		var gid := str(Gates.gate_id(parents[i], ranks[i]))
+		var w := _boss_world(parents[i], int(MapsData.MAPS[parents[i]].levels[1]) + 8)
+		w._load_map(gid)
+		var bs := w.enemies.filter(func(e): return e.gate_boss)
+		_check(bs.size() == 1, "%s: có 1 Chúa Cổng (%d)" % [gid, bs.size()])
+		if bs.size() == 1:
+			w.enemies = bs
+			var err := _sweep_fight(w, bs[0], 120.0)
+			_check(err == "", "Chúa Cổng %s (%s): %s" % [bs[0].kind, gid, err])
+	for line in _boss_log:
+		print("    ", line)
+
+
+# ------------------------------------------------------------------ PACE-TELE (FX-1 §9.13): cảnh báo kiểu tự nhiên ảnh hưởng độ khó?
+## Bot không "nhìn" màn hình nên không đo được người có thấy cảnh báo hay không. Đo thứ có ý nghĩa cho quyết định cân bằng:
+## bao nhiêu % sát thương người chơi nhận đến từ đòn KHÔNG còn vết mặt đất ở kiểu tự nhiên (quái thường, Fx1.BODY_ONLY).
+## Gán: máu mất trong khung → con quái vừa ra đòn gần nhất (thoát lấy đà trong 0,8 giây, kể cả đạn bay); không có → "khác".
+func _test_tele_sim() -> void:
+	var Fx1 = load("res://scripts/view/fx1.gd")
+	var scenes := [["vùng 1 (1-1, cấp 5)", "1-1"], ["vùng 5 (5-1, cấp 47)", "5-1"]]
+	for sc in scenes:
+		var w: GameWorld
+		if sc[1] == "5-1":
+			w = _region5_world("5-1")
+			w.field_spawn = true
+		else:
+			var p := _profile("tay-nhanh", 3)
+			p.level = 5
+			w = GameWorld.new(p, RngUtil.make(5))
+			_standard_kit(w)
+		var buckets := {"thường: lao / bắn / cận chiến (mất vết)": 0.0, "thường: đòn vùng (vết từ 35%)": 0.0,
+			"tinh anh / boss (vết từ 10%)": 0.0, "khác (chạm, độc, cơ chế chương)": 0.0}
+		var prev_wind := {}
+		var by_kind := {}
+		var recent := {}  # id → [bucket, thời điểm ra đòn, loại đòn]
+		var deaths := 0
+		var seconds := 0.0
+		var total := 0.0
+		while seconds < 240.0:
+			var hp0: float = w.player.hp
+			var dead0: bool = w.player.dead_timer > 0.0
+			w.update(1.0 / 60.0, _bot(w))
+			seconds += 1.0 / 60.0
+			var now := {}
+			for e in w.enemies:
+				if e.state == "windup":
+					now[e.id] = e
+			for id in prev_wind:
+				if not now.has(id):
+					var e = prev_wind[id]
+					var major: bool = e.elite or str(e.role) == "boss"
+					var b := "tinh anh / boss (vết từ 10%)"
+					if not major:
+						b = "thường: lao / bắn / cận chiến (mất vết)" if str(e.attack_kind) in Fx1.BODY_ONLY else "thường: đòn vùng (vết từ 35%)"
+					recent[id] = [b, seconds, str(e.attack_kind)]
+			prev_wind = now
+			for ev in w.drain_events():
+				if ev.type == "death":
+					deaths += 1
+			if dead0 or w.player.dead_timer > 0.0:
+				continue
+			var lost: float = hp0 - float(w.player.hp)
+			if lost <= 0.0:
+				continue
+			total += lost
+			var best := "khác (chạm, độc, cơ chế chương)"
+			var best_kind := "khác"
+			var bt := -1.0
+			for id in recent:
+				var r: Array = recent[id]
+				if seconds - float(r[1]) <= 0.8 and float(r[1]) > bt:
+					bt = float(r[1])
+					best = r[0]
+					best_kind = r[2]
+			buckets[best] += lost
+			by_kind[best_kind] = float(by_kind.get(best_kind, 0.0)) + lost
+		var parts := PackedStringArray()
+		for b in buckets:
+			parts.append("%s %.0f%%" % [b, 100.0 * buckets[b] / maxf(1.0, total)])
+		print("       [%s] 240 giây, máu mất %d, chết %d — %s" % [sc[0], int(total), deaths, " · ".join(parts)])
+		var kparts := PackedStringArray()
+		for kk in by_kind:
+			kparts.append("%s %.0f%%" % [kk, 100.0 * by_kind[kk] / maxf(1.0, total)])
+		print("         theo đòn: " + " · ".join(kparts))
+		_check(total > 0.0, "%s: có nhận sát thương để đo" % sc[0])
+
+
+## MD-1 (docs/39): bộ quái HD theo phong cách mới — đọc thẳng manifest để so lớp phủ HD với bản pixel cùng id.
+func _test_md1() -> void:
+	var SL = load("res://scripts/view/sprite_lib.gd")
+	var man = JSON.parse_string(FileAccess.get_file_as_string("res://assets/art_manifest.json"))
+	var pix: Dictionary = man.sprites
+	var hd: Dictionary = man.get("hd", {}).get("sprites", {})
+	var ids: Array = []
+	for kind in Monsters.DEFS:
+		ids.append(str(kind))
+		var es := str(Monsters.DEFS[kind].get("elite_sprite", ""))
+		if es != "" and not ids.has(es):
+			ids.append(es)
+	var bad: Array = []
+	SL.set_hd(true)
+	for id in ids:
+		if not hd.has(id):
+			bad.append("%s: thiếu HD" % id)
+			continue
+		var h: Dictionary = hd[id]
+		var p: Dictionary = pix[id]
+		var lw := float(h.w) / float(h.px)
+		if absf(lw - float(p.w)) > 0.01 or absf(float(h.h) / float(h.px) - float(p.h)) > 0.01:
+			bad.append("%s: cỡ logic %.1f ≠ %d" % [id, lw, int(p.w)])
+		if float(h.size_mul) < 0.6 or float(h.size_mul) > 4.5:
+			bad.append("%s: size_mul %.2f" % [id, float(h.size_mul)])
+		# độ nét: ảnh 1 frame không nhỏ hơn cỡ hiển thị (w logic × 2 × size_mul) quá 10%
+		if float(h.w) < float(p.w) * 2.0 * float(h.size_mul) * 0.9:
+			bad.append("%s: ảnh %d px < cỡ hiển thị %.0f px" % [id, int(h.w), float(p.w) * 2.0 * float(h.size_mul)])
+		var tex: Texture2D = SL.texture(str(h.path))
+		if tex == null:
+			bad.append("%s: không nạp được texture" % id)
+			continue
+		for a in ["idle", "run", "attack", "hurt", "death"]:
+			if not h.anims.has(a) or (int(h.anims[a].row) + 1) * int(h.h) > tex.get_height() or int(h.anims[a].frames) * int(h.w) > tex.get_width():
+				bad.append("%s: thiếu / tràn hoạt ảnh %s" % [id, a])
+	_check(bad.is_empty() and ids.size() >= 80, "%d quái có sheet HD hợp lệ %s" % [ids.size(), str(bad)])
+	# Linh thú Triệu Hồi Sư thuộc kỹ năng → chưa thay khi chủ dự án chưa duyệt (Q190)
+	var pets := ["linh-ho", "hoa-ho", "soi-bong", "tieu-quy", "thach-quy", "linh-ung", "linh-hon", "au-long", "ky-lan"]
+	var pet_hd: Array = []
+	for id in pets:
+		if hd.has(id):
+			pet_hd.append(id)
+	_check(pet_hd.is_empty(), "linh thú giữ hình cũ %s" % str(pet_hd))
+	_check(str(SL.data().sprites["vien-long"].path).begins_with("res://assets/hd/"), "bật HD: Viêm Long dùng hình HD")
+	SL.set_hd(false)
+	_check(not str(SL.data().sprites["vien-long"].path).begins_with("res://assets/hd/"), "tắt HD: Viêm Long về hình pixel")
 	SL.set_hd(true)

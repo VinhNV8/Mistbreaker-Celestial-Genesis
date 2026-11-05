@@ -1,4 +1,4 @@
-"""UI-40 G0: Sói Sương (wolf) + Sói Chúa Hư Vô (boss) HD — dựng chung một khung sói 4 chân, nhìn sang phải."""
+"""UI-40 G0 (KHÔNG còn dùng — thay bằng mon_beast / mon_catalog, MD-1 docs/39; giữ để so sánh): Sói Sương + Sói Chúa Hư Vô HD — dựng chung một khung sói 4 chân, nhìn sang phải."""
 import math
 
 from vec import Canvas, Tone, bezier, polar, sheet

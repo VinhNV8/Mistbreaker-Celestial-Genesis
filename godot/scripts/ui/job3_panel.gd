@@ -57,6 +57,8 @@ func _render(content: VBoxContainer) -> void:
 	var b := UiTheme.button("Chuyển chức %s" % j.name, true)
 	b.name = "Job3_" + str(j.id)
 	b.disabled = why != ""
+	if why != "":
+		b.tooltip_text = why  # UI-62: lý do khoá
 	b.pressed.connect(func():
 		if Job3.do_job3(world):
 			close())

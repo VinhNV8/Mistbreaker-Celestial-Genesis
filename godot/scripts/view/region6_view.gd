@@ -5,6 +5,7 @@ extends RefCounted
 
 const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
 const Ch6 = preload("res://scripts/core/chapter6.gd")
+const Fx1 = preload("res://scripts/view/fx1.gd")
 
 
 ## Lớp nền (sau nền đất, trước vật thể): lửa, đèn, mặt băng, bão tuyết.
@@ -119,6 +120,8 @@ static func draw_over(ci: CanvasItem, world, view: Rect2, _art: bool) -> void:
 		var col := Color(m.get("color", "#9ad8ff"))
 		var warn: float = 1.5
 		var k: float = clampf(1.0 - m.t / warn, 0.0, 1.0)
+		if Fx1.danger_zone(world, m.pos, m.r, Fx1.pal_of(col.darkened(0.4)), k):
+			continue
 		ci.draw_circle(m.pos, m.r, Color(col, 0.12))
 		ci.draw_circle(m.pos, m.r * k, Color(col, 0.3))
 		ci.draw_arc(m.pos, m.r, 0.0, TAU, 28, Color(col, 0.85), 2.0, true)
@@ -126,6 +129,8 @@ static func draw_over(ci: CanvasItem, world, view: Rect2, _art: bool) -> void:
 		if e.dead or e.state != "windup":
 			continue
 		var prog: float = 1.0 - maxf(0.0, e.timer) / maxf(0.01, e.windup_total)
+		if _fx1(world, e, prog):
+			continue
 		match e.attack_kind:
 			"snowball":
 				ci.draw_circle(e.target, Ch6.SNOW_R * prog, Color(0.9, 0.95, 1.0, 0.35))
@@ -176,3 +181,25 @@ static func draw_over(ci: CanvasItem, world, view: Rect2, _art: bool) -> void:
 			ci.draw_rect(view.grow(-i * 26.0), Color(0.35, 0.1, 0.55, a4 * (1.0 - i * 0.2)), false, 26.0)
 	if st.lost_t > 0.0 or st.ascend_t > 0.0:
 		ci.draw_arc(c, 34.0 + 3.0 * sin(t * 8.0), 0.0, TAU, 32, Color(0.6, 0.25, 0.95, 0.8), 3.0, true)
+
+
+## FX-1 §9.11: cảnh báo đòn riêng vùng 6 theo ngôn ngữ FX-1 (đúng kích thước gameplay); false → kiểu cũ.
+static func _fx1(world, e, prog: float) -> bool:
+	match e.attack_kind:
+		"snowball":
+			return Fx1.danger_zone(world, e.target, Ch6.SNOW_R, Fx1.P_ICE, prog, e)
+		"icepillar":
+			return Fx1.danger_zone(world, e.target, Ch6.PILLAR_R, Fx1.P_ICE, prog, e)
+		"icecrack":
+			var ok := true
+			for seg in Ch6.crack_lines(e):
+				ok = Fx1.danger_line(world, seg[0], seg[1], Ch6.CRACK_HALF, Fx1.P_ICE, prog, e) and ok
+			return ok
+		"frostbreath":
+			return Fx1.danger_cone(world, e.pos, (e.target - e.pos).angle(), Ch6.ICE_BREATH_ARC, Ch6.ICE_BREATH_RANGE, Fx1.P_ICE, prog, e)
+		"m_spin":
+			return Fx1.danger_zone(world, e.pos, Ch6.M_SPIN_R + e.radius, Fx1.P_VOID, prog, e)
+		"m_dash", "m_bolt":
+			var to: Vector2 = e.pos + (e.target - e.pos).limit_length(Ch6.M_DASH_LEN if e.attack_kind == "m_dash" else 300.0)
+			return Fx1.danger_line(world, e.pos, to, 6.0 if e.attack_kind == "m_dash" else 3.0, Fx1.P_VOID, prog, e)
+	return false

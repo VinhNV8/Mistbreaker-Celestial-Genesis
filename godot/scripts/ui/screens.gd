@@ -8,6 +8,8 @@ const Talents = preload("res://scripts/data/talents.gd")
 const UiTheme = preload("res://scripts/ui/ui_theme.gd")
 const Classes = preload("res://scripts/data/classes.gd")
 const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
+const Bronze = preload("res://scripts/ui/bronze.gd")
+const FrameBox = preload("res://scripts/ui/frame_box.gd")
 
 ## UI-17: bảng phím đầy đủ — dùng ở màn hình tiêu đề và bảng Trợ giúp (F1).
 const CONTROLS := [
@@ -93,19 +95,159 @@ class SteleGlow:
 		SpriteLib.draw_env(self, "stele", base, Color(1, 1, 1).lerp(c, 0.35 * strength + 0.1 * pulse), 2.0)
 
 
+## UI-57 (docs/38): cảnh nền màn tiêu đề / chọn nhân vật, vẽ bằng code (không cần tranh): trời đêm xanh rêu,
+## 2 lớp núi xa, rừng thông hai bên, Bia Đá Thiên Đạo giữa phát sáng xanh có cột sáng, sương trôi ngang, đốm sáng
+## bay lên, viền tối. dim = phủ tối thêm (màn chọn nhân vật cần nền dịu hơn).
+class Backdrop:
+	extends Control
+	var t := 0.0
+	var dim := 0.0
+
+	func _ready() -> void:
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+		set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
+	func _process(delta: float) -> void:
+		t += delta
+		queue_redraw()
+
+	func _ridge(y0: float, amp: float, seed: float, col: Color) -> void:
+		var pts := PackedVector2Array([Vector2(0, size.y)])
+		for i in 49:
+			var x := size.x * i / 48.0
+			var y := y0 - amp * (0.55 * sin(x * 0.006 + seed) + 0.3 * sin(x * 0.017 + seed * 2.3) + 0.15 * sin(x * 0.041 + seed * 0.7))
+			pts.append(Vector2(x, y))
+		pts.append(Vector2(size.x, size.y))
+		draw_colored_polygon(pts, col)
+
+	func _pine(base: Vector2, h: float, col: Color) -> void:
+		var w := h * 0.36
+		for k in 3:
+			var y := base.y - h * (0.3 + 0.27 * k)
+			var ww := w * (1.0 - 0.25 * k)
+			draw_colored_polygon(PackedVector2Array([Vector2(base.x - ww, y + h * 0.3), Vector2(base.x, y - h * 0.22), Vector2(base.x + ww, y + h * 0.3)]), col)
+		draw_rect(Rect2(base.x - h * 0.03, base.y - h * 0.12, h * 0.06, h * 0.12), col)
+
+	func _draw() -> void:
+		var s := size
+		var top := Color("#0a1220")
+		var mid := Color("#16262a")
+		var low := Color("#0d1712")
+		draw_polygon(PackedVector2Array([Vector2.ZERO, Vector2(s.x, 0), Vector2(s.x, s.y * 0.55), Vector2(0, s.y * 0.55)]), PackedColorArray([top, top, mid, mid]))
+		draw_polygon(PackedVector2Array([Vector2(0, s.y * 0.55), Vector2(s.x, s.y * 0.55), Vector2(s.x, s.y), Vector2(0, s.y)]), PackedColorArray([mid, mid, low, low]))
+		var c := Vector2(s.x * 0.5, s.y * 0.66)
+		var pulse := 0.5 + 0.5 * sin(t * 1.3)
+		# quầng sáng sau Bia Đá + cột sáng lên trời
+		for i in 6:
+			draw_circle(c + Vector2(0, -70), 60.0 + i * 46.0, Color(0.35, 0.85, 0.8, (0.06 - i * 0.008) * (0.8 + 0.2 * pulse)))
+		draw_polygon(PackedVector2Array([c + Vector2(-26, -60), c + Vector2(26, -60), c + Vector2(60, -s.y), c + Vector2(-60, -s.y)]),
+			PackedColorArray([Color(0.6, 1.0, 0.95, 0.16), Color(0.6, 1.0, 0.95, 0.16), Color(0.6, 1.0, 0.95, 0.0), Color(0.6, 1.0, 0.95, 0.0)]))
+		_ridge(s.y * 0.52, 70.0, 1.3, Color("#1a2a33"))
+		_ridge(s.y * 0.62, 50.0, 4.1, Color("#142219"))
+		# sương xa
+		for i in 5:
+			var x := fposmod(i * 330.0 + t * (10.0 + i * 3.0), s.x + 600.0) - 300.0
+			draw_set_transform(Vector2(x, s.y * (0.6 + 0.04 * (i % 3))), 0.0, Vector2(1.0, 0.22))
+			draw_circle(Vector2.ZERO, 260.0, Color(0.75, 0.9, 0.9, 0.045))
+			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+		# mặt đất + Bia Đá
+		draw_polygon(PackedVector2Array([Vector2(0, s.y * 0.7), Vector2(s.x, s.y * 0.7), Vector2(s.x, s.y), Vector2(0, s.y)]),
+			PackedColorArray([Color(low, 0.0), Color(low, 0.0), Color("#070c09"), Color("#070c09")]))
+		draw_set_transform(c + Vector2(0, 6), 0.0, Vector2(1.0, 0.3))
+		draw_circle(Vector2.ZERO, 120.0, Color(0.4, 0.95, 0.85, 0.12 + 0.05 * pulse))
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+		SpriteLib.draw_env(self, "stele", c, Color(1, 1, 1).lerp(Color("#9ff5e6"), 0.25 + 0.15 * pulse), 3.0)
+		# rừng thông hai bên (gần: to, tối)
+		var dark := Color("#08100b")
+		for i in 9:
+			var k := i / 8.0
+			_pine(Vector2(s.x * (0.02 + 0.2 * k), s.y * (0.88 + 0.05 * sin(i * 2.1))), 150.0 + 150.0 * (1.0 - k), dark)
+			_pine(Vector2(s.x * (0.98 - 0.2 * k), s.y * (0.88 + 0.05 * cos(i * 1.7))), 150.0 + 150.0 * (1.0 - k), dark)
+		# đốm sáng bay lên
+		for i in 46:
+			var sx := fposmod(i * 97.3, s.x)
+			var y := s.y - fposmod(t * (14.0 + (i % 7) * 4.0) + i * 53.0, s.y * 0.9)
+			var x := sx + 14.0 * sin(t * 0.8 + i)
+			var a := 0.35 + 0.35 * sin(t * 2.0 + i * 1.3)
+			var col := Color(1.0, 0.86, 0.5, a) if i % 3 else Color(0.6, 1.0, 0.95, a)
+			draw_circle(Vector2(x, y), 1.6 + (i % 3) * 0.6, col)
+		# sương gần
+		for i in 4:
+			var x := fposmod(i * 470.0 - t * (16.0 + i * 5.0), s.x + 800.0) - 400.0
+			draw_set_transform(Vector2(x, s.y * (0.82 + 0.05 * i)), 0.0, Vector2(1.0, 0.18))
+			draw_circle(Vector2.ZERO, 420.0, Color(0.8, 0.92, 0.9, 0.05))
+			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+		# viền tối trên / dưới + phủ tối
+		var v := Color(0, 0, 0, 0.55)
+		var cl := Color(0, 0, 0, 0)
+		var e := s.y * 0.22
+		draw_polygon(PackedVector2Array([Vector2.ZERO, Vector2(s.x, 0), Vector2(s.x, e), Vector2(0, e)]), PackedColorArray([v, v, cl, cl]))
+		draw_polygon(PackedVector2Array([Vector2(0, s.y - e), Vector2(s.x, s.y - e), Vector2(s.x, s.y), Vector2(0, s.y)]), PackedColorArray([cl, cl, v, v]))
+		if dim > 0.0:
+			draw_rect(Rect2(Vector2.ZERO, s), Color(0.02, 0.03, 0.03, dim))
+
+
 ## Nền + cột nội dung căn giữa. Trả về [màn hình, cột].
-static func _page(bg_alpha := 1.0, width := 640.0) -> Array:
+## UI-50 / 59 (docs/38): framed = cột nằm trong khung đồng (SolidPanel) như các bảng khác; backdrop = cảnh nền Backdrop.
+static func _page(bg_alpha := 1.0, width := 640.0, framed := false, backdrop := false, dim := 0.0) -> Array:
 	var screen := ColorRect.new()
 	screen.color = Color(UiTheme.BG, bg_alpha)
 	screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	if backdrop:
+		var bd := Backdrop.new()
+		bd.dim = dim
+		screen.add_child(bd)
 	var center := CenterContainer.new()
 	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	screen.add_child(center)
 	var col := UiTheme.vbox(14)
 	col.custom_minimum_size.x = width
 	col.alignment = BoxContainer.ALIGNMENT_CENTER
-	center.add_child(col)
+	if framed:
+		var panel := PanelContainer.new()
+		panel.theme_type_variation = "SolidPanel"
+		panel.add_child(col)
+		center.add_child(panel)
+	else:
+		center.add_child(col)
 	return [screen, col]
+
+
+## Tiêu đề chữ cổ vàng (Cormorant SC) có viền nâu — dùng chung cho màn tiêu đề / kết chương / kết thúc.
+static func _title_label(text: String, size := 44) -> Label:
+	var l := Label.new()
+	l.text = text
+	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	l.add_theme_font_override("font", Bronze.title_font())
+	l.add_theme_font_size_override("font_size", UiTheme.fs(size))
+	l.add_theme_color_override("font_color", Bronze.GOLD_TEXT)
+	l.add_theme_color_override("font_outline_color", Color("#1a0f05"))
+	l.add_theme_constant_override("outline_size", maxi(6, size / 6))
+	l.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.6))
+	l.add_theme_constant_override("shadow_offset_y", 3)
+	return l
+
+
+## Thẻ khung đồng nhỏ (FrameBox kiểu HUD).
+static func _bronze_card(margin := 14) -> PanelContainer:
+	var card := PanelContainer.new()
+	card.add_theme_stylebox_override("panel", FrameBox.new().setup(Color(Bronze.MOSS, 0.94), margin, "small"))
+	return card
+
+
+## Ô số liệu nhỏ: số to + nhãn nhỏ (màn kết chương).
+static func _stat_tile(value: String, caption: String) -> PanelContainer:
+	var card := _bronze_card(10)
+	card.custom_minimum_size = Vector2(112, 0)
+	var v := UiTheme.vbox(0)
+	var n := _centered(value)
+	n.add_theme_font_override("font", UiTheme.bold_font())
+	n.add_theme_font_size_override("font_size", UiTheme.fs(18))
+	n.add_theme_color_override("font_color", Bronze.GOLD_TEXT)
+	v.add_child(n)
+	v.add_child(_centered(caption, "Small"))
+	card.add_child(v)
+	return card
 
 
 static func _centered(text: String, variation := "", wrap := 0.0) -> Label:
@@ -121,13 +263,35 @@ static func _buttons(col: VBoxContainer) -> HBoxContainer:
 	return row
 
 
+## UI-57 (docs/38): cảnh nền vẽ bằng code + logo chữ cổ vàng + cột nút đồng lớn; bỏ bảng 20 phím tắt (đã có ở
+## Trợ giúp F1 và Cài đặt → Điều khiển), chỉ còn một dòng gợi ý dưới đáy.
 static func title(has_save: bool, on_new: Callable, on_continue: Callable, on_settings := Callable()) -> Control:
-	var page := _page()
-	var col: VBoxContainer = page[1]
-	col.add_child(_centered("MISTBREAKER: CELESTIAL GENESIS", "Eyebrow"))
-	col.add_child(_centered("Thiên Phú Khai Giới", "Title"))
-	col.add_child(_centered("Nhận Thiên phú từ Bia Đá, đánh quái lên cấp, xua tan sương mù Hư Vô và hạ Sói Chúa.", "Muted", 560))
-	var row := _buttons(col)
+	var screen := ColorRect.new()
+	screen.color = UiTheme.BG
+	screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	screen.add_child(Backdrop.new())
+	var top := UiTheme.vbox(2)
+	top.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+	top.offset_top = 48
+	var eb := _centered("MISTBREAKER  ·  CELESTIAL GENESIS", "Eyebrow")
+	eb.add_theme_color_override("font_color", Bronze.BR_LIGHT)
+	top.add_child(eb)
+	top.add_child(_title_label("Thiên Phú Khai Giới", 72))
+	var tag := _centered("Nhận Thiên phú từ Bia Đá, xua tan sương mù Hư Vô.")
+	tag.add_theme_color_override("font_color", Color("#d8e4dc"))
+	tag.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8))
+	tag.add_theme_constant_override("outline_size", 4)
+	top.add_child(tag)
+	screen.add_child(top)
+	var col := UiTheme.vbox(10)
+	col.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
+	col.offset_left = -150
+	col.offset_right = 150
+	col.offset_top = -230
+	col.offset_bottom = -56
+	col.alignment = BoxContainer.ALIGNMENT_END
+	screen.add_child(col)
+	var row := col
 	# SN9-02: có nhân vật rồi thì nút chính mở màn Chọn nhân vật (tối đa 5)
 	var b_new := UiTheme.button("Chọn nhân vật" if has_save else "Hành trình mới", true)
 	b_new.name = "NewButton"
@@ -143,26 +307,27 @@ static func title(has_save: bool, on_new: Callable, on_continue: Callable, on_se
 		b_set.name = "SettingsButton"
 		b_set.pressed.connect(on_settings)
 		row.add_child(b_set)
-	var grid := GridContainer.new()
-	grid.columns = 2
-	grid.add_theme_constant_override("h_separation", 24)
-	grid.add_theme_constant_override("v_separation", 6)
-	grid.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	for c in CONTROLS:
-		var k := UiTheme.label(c[0])
-		k.add_theme_font_override("font", UiTheme.bold_font())
-		grid.add_child(k)
-		grid.add_child(UiTheme.label(c[1], "Muted"))
-	col.add_child(grid)
-	return page[0]
+	for b in row.get_children():
+		(b as Button).custom_minimum_size = Vector2(300, 44)
+		(b as Button).add_theme_font_size_override("font_size", UiTheme.fs(17))
+	# chưa có nhân vật: ẩn "Tiếp tục" thay vì nút xám không bấm được (T6 — nút khoá phải có lý do)
+	b_cont.visible = has_save
+	var hint := _centered("F1 · Trợ giúp và phím tắt     Esc · Tạm dừng     Đổi phím: Cài đặt → Điều khiển", "Small")
+	hint.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	hint.offset_top = -30
+	hint.offset_bottom = -10
+	hint.add_theme_color_override("font_color", Color("#b9ab8c"))
+	screen.add_child(hint)
+	return screen
 
 
 ## SN9-02 (Spec_Notes đợt 9): màn Chọn nhân vật — 5 thẻ (slots = SaveSystem.list_slots()).
 ## on_play(n), on_delete(n), on_new(), on_back().
 static func slots(slots_info: Array, on_play: Callable, on_delete: Callable, on_new: Callable, on_back: Callable) -> Control:
-	var page := _page(1.0, 1240.0)
+	# UI-58 (docs/38): cảnh nền + thẻ khung đồng; ô trống là bệ đá có dấu "+".
+	var page := _page(1.0, 1240.0, false, true, 0.45)
 	var col: VBoxContainer = page[1]
-	col.add_child(_centered("CHỌN NHÂN VẬT", "Eyebrow"))
+	col.add_child(_title_label("Chọn nhân vật", 40))
 	var used := slots_info.filter(func(s): return not s.is_empty()).size()
 	col.add_child(_centered("%d / %d nhân vật" % [used, slots_info.size()], "Muted"))
 	var row := HBoxContainer.new()
@@ -172,27 +337,31 @@ static func slots(slots_info: Array, on_play: Callable, on_delete: Callable, on_
 	for i in slots_info.size():
 		var s: Dictionary = slots_info[i]
 		var n := i + 1
-		var card := UiTheme.panel(UiTheme.box(Color("#15111c"), 8, 2, UiTheme.GOLD_DARK if not s.is_empty() else Color(0.3, 0.3, 0.35), 10))
+		var card := _bronze_card(14)
 		card.name = "Slot_%d" % n
-		card.custom_minimum_size = Vector2(220, 330)
+		card.custom_minimum_size = Vector2(220, 340)
+		if s.is_empty():
+			card.modulate = Color(0.85, 0.85, 0.85)
 		var v := UiTheme.vbox(8)
 		v.alignment = BoxContainer.ALIGNMENT_CENTER
 		card.add_child(v)
 		v.add_child(_centered("Ô %d" % n, "Small"))
 		if s.is_empty():
-			var plus := _centered("+", "Title")
-			plus.add_theme_color_override("font_color", Color(0.5, 0.5, 0.55))
+			var plus := _title_label("+", 64)
+			plus.add_theme_color_override("font_color", Color(Bronze.BR_MID, 0.8))
 			v.add_child(plus)
+			v.add_child(_centered("Ô trống", "Small"))
 			var bn := UiTheme.button("Tạo nhân vật mới", true)
 			bn.name = "New_%d" % n
 			bn.pressed.connect(on_new)
 			v.add_child(bn)
 		else:
-			var ic := UiTheme.icon_rect(SpriteLib.icon("portrait-" + str(s.class_id)), 96)
+			var ic := UiTheme.icon_rect(SpriteLib.icon("portrait-" + str(s.class_id)), 104)
 			ic.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 			v.add_child(ic)
 			var nm := _centered(str(s.name), "Heading", 196)
-			nm.add_theme_font_size_override("font_size", 20)
+			nm.add_theme_font_size_override("font_size", UiTheme.fs(20))
+			nm.add_theme_color_override("font_color", Bronze.GOLD_TEXT)
 			v.add_child(nm)
 			v.add_child(_centered("Lv %d · %s" % [int(s.level), Classes.title(str(s.class_id), str(s.job), str(s.job2), str(s.job3))], "", 196))
 			var t: Dictionary = Talents.get_talent(str(s.talent))
@@ -487,10 +656,11 @@ const ENDINGS := [
 
 ## C9-44: màn lựa chọn kết thúc — chọn 1 thẻ rồi xác nhận lần 2 ("Lựa chọn này không thể đổi lại.").
 static func ending_choice(on_pick: Callable) -> Control:
-	var page := _page(0.95, 900.0)
+	# UI-59 (docs/38): khung đồng + tiêu đề chữ cổ như các bảng khác.
+	var page := _page(0.95, 900.0, true)
 	var col: VBoxContainer = page[1]
 	col.add_child(_centered("CHƯƠNG 9 · LỰA CHỌN", "Eyebrow"))
-	col.add_child(_centered("Số phận của mảnh thứ hai", "Title"))
+	col.add_child(_title_label("Số phận của mảnh thứ hai", 44))
 	var row := UiTheme.hbox(24)
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	col.add_child(row)
@@ -499,16 +669,10 @@ static func ending_choice(on_pick: Callable) -> Control:
 	col.add_child(confirm)
 	var chosen := [""]
 	for e in ENDINGS:
-		var card := PanelContainer.new()
+		var card := _bronze_card(18)
 		card.name = "Ending_" + str(e[0])
 		card.custom_minimum_size = Vector2(400, 260)
-		var sb := StyleBoxFlat.new()
-		sb.bg_color = Color(0.12, 0.11, 0.16, 0.96)
-		sb.border_color = Color("#fff0b0") if e[0] == "hop-nhat" else Color("#9de0e6")
-		sb.set_border_width_all(2)
-		sb.set_corner_radius_all(12)
-		sb.set_content_margin_all(18)
-		card.add_theme_stylebox_override("panel", sb)
+		var sb := {"border_color": Color("#fff0b0") if e[0] == "hop-nhat" else Color("#9de0e6")}
 		var v := UiTheme.vbox(10)
 		card.add_child(v)
 		var h := UiTheme.label(str(e[1]), "Heading")
@@ -542,13 +706,13 @@ static func ending_choice(on_pick: Callable) -> Control:
 
 ## C9-47: bảng tổng kết hành trình + danh đề.
 static func credits(world, on_close: Callable) -> Control:
-	var page := _page(0.97, 700.0)
+	var page := _page(0.97, 700.0, true)
 	var col: VBoxContainer = page[1]
 	var p = world.profile
 	var t: Dictionary = world.talent()
 	var end_name := "Hợp nhất" if str(p.ending) == "hop-nhat" else "Hiến tế"
 	col.add_child(_centered("HÀNH TRÌNH HOÀN THÀNH · %s" % end_name.to_upper(), "Eyebrow"))
-	col.add_child(_centered(str(p.name), "Title"))
+	col.add_child(_title_label(str(p.name), 56))
 	var bosses := 0
 	for k in p.bosses:
 		if bool(p.bosses[k]) and k != "ending9":
@@ -572,25 +736,31 @@ static func credits(world, on_close: Callable) -> Control:
 
 static func victory(world, on_continue: Callable, on_title: Callable, boss_id := "boss") -> Control:
 	# R1 (docs/19 RS-UI05): nền gần kín (0,82 → 0,95) — chữ "Lên cấp", Bí Kíp, số sát thương phía sau không lộ qua.
-	var page := _page(0.95)
+	# UI-59 (docs/38): khung đồng, tiêu đề chữ cổ, số liệu thành các ô nhỏ (thay một dòng dài).
+	var page := _page(0.95, 680.0, true)
 	var col: VBoxContainer = page[1]
 	var p = world.profile
 	var t: Dictionary = world.talent()
 	var v: Array = VICTORY.get(boss_id, VICTORY["boss"])
 	col.add_child(_centered("CHƯƠNG %d HOÀN THÀNH" % int(v[0]), "Eyebrow"))
-	var h := _centered(str(v[1]), "Title")
-	h.add_theme_font_size_override("font_size", 44 if int(v[0]) == 1 else 40)
+	var h := _title_label(str(v[1]), 40)
+	h.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	h.custom_minimum_size.x = 660
 	col.add_child(h)
 	col.add_child(_centered(str(v[2]) % p.name, "Muted", 580))
 	# C1-13 (TN-09): bản đồ lục địa hiện ra, vùng đã qua sáng, vùng kế tiếp nhấp nháy.
 	var art := Continent.new()
 	art.chapter = int(v[0])
-	art.custom_minimum_size = Vector2(620, 290)
+	art.custom_minimum_size = Vector2(620, 250)
 	art.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	col.add_child(art)
-	col.add_child(_centered("Thời gian chơi %d phút  ·  Cấp %d  ·  Quái đã hạ %d  ·  Khai phá %d/%d  ·  Thiên phú %s · %s" % [
-		roundi(p.play_seconds / 60.0), p.level, p.kills, Explore.owned_count(p.tiles), Explore.explore_total(p.tiles), t.rank, t.name
-	], "", 600))
+	var tiles := UiTheme.hbox(8)
+	tiles.alignment = BoxContainer.ALIGNMENT_CENTER
+	for pair in [["%d phút" % roundi(p.play_seconds / 60.0), "Thời gian chơi"], ["%d" % int(p.level), "Cấp"],
+			["%d" % int(p.kills), "Quái đã hạ"], ["%d/%d" % [Explore.owned_count(p.tiles), Explore.explore_total(p.tiles)], "Khai phá"],
+			["%s · %s" % [t.rank, t.name], "Thiên phú"]]:
+		tiles.add_child(_stat_tile(pair[0], pair[1]))
+	col.add_child(tiles)
 	col.add_child(_centered(str(v[3]), "Small", 580))
 	var row := _buttons(col)
 	var b1 := UiTheme.button("Tiếp tục khám phá", true)

@@ -165,6 +165,8 @@ func _render(outer: VBoxContainer) -> void:
 		Ornate.button(b, "gold")
 		b.custom_minimum_size.y = 48
 		b.disabled = blocker != ""
+		if blocker != "":
+			b.tooltip_text = blocker  # UI-62: lý do khoá
 		b.pressed.connect(func():
 			world.level_talent()
 			refresh())
@@ -300,6 +302,8 @@ func _evolution(content: VBoxContainer, t: Dictionary) -> void:
 		var eb := UiTheme.button("Tiến hoá → %s (%s)" % [stages[evo][0], stages[evo][1]], why == "")
 		eb.name = "EvolveButton"
 		eb.disabled = why != ""
+		if why != "":
+			eb.tooltip_text = why  # UI-62: lý do khoá
 		eb.size_flags_horizontal = SIZE_SHRINK_BEGIN
 		eb.pressed.connect(func():
 			Ch4.evolve(world)

@@ -128,8 +128,9 @@ static func frame_progress(id: String, anim: String, progress: float) -> int:
 	return clampi(int(progress * float(a.frames)), 0, int(a.frames) - 1)
 
 
+## squash / lean (FX-1 §9.13): co giãn và nghiêng quanh chân (tư thế lấy đà của quái); mặc định không đổi.
 static func draw_frame(ci: CanvasItem, id: String, anim: String, frame: int, pos: Vector2, flip := false,
-		modulate := Color.WHITE, size_mul := 1.0) -> void:
+		modulate := Color.WHITE, size_mul := 1.0, squash := Vector2.ONE, lean := 0.0) -> void:
 	var s: Dictionary = data().sprites.get(id, {})
 	if s.is_empty():
 		return
@@ -141,7 +142,7 @@ static func draw_frame(ci: CanvasItem, id: String, anim: String, frame: int, pos
 	var h := float(s.h)
 	var region := Rect2(frame * w, float(a.row) * h, w, h)
 	var k := scale() * size_mul * float(s.get("size_mul", 1.0)) / px_of(s)
-	ci.draw_set_transform(pos, 0.0, Vector2(-k if flip else k, k))
+	ci.draw_set_transform(pos, lean, Vector2((-k if flip else k) * squash.x, k * squash.y))
 	ci.draw_texture_rect_region(tex, Rect2(-Vector2(s.origin[0], s.origin[1]), Vector2(w, h)), region, modulate)
 	ci.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 

@@ -27,10 +27,13 @@ const QuestBox = preload("res://scripts/ui/quest_box.gd")
 const LogBox = preload("res://scripts/ui/log_box.gd")
 const Bronze = preload("res://scripts/ui/bronze.gd")
 const ActionCluster = preload("res://scripts/ui/action_cluster.gd")
+const PickupFeed = preload("res://scripts/ui/pickup_feed.gd")
+const LowHpOverlay = preload("res://scripts/ui/low_hp_overlay.gd")
 const ExpBar = preload("res://scripts/ui/exp_bar.gd")
 const Skills2 = preload("res://scripts/core/skills2.gd")
 ## UI-20: nhật ký tối đa 5 dòng, mỗi dòng sống 6 giây rồi mờ dần.
-const LOG_MAX := 5
+## UI-54 (docs/38): nhật ký thu gọn — 3 dòng mới nhất (cũ: 5), tự mờ.
+const LOG_MAX := 3
 const LOG_LIFE := 6.0
 ## DH-11: thứ tự ô trên thanh kỹ năng.
 ## UI-10: thanh đã vẽ gọn (ô R 22, không tên) nên giữ tỉ lệ 1.
@@ -71,6 +74,9 @@ var _boss_poise: ProgressBar
 var _boss_compact := false
 
 var _combo: Label
+## UI-52: dải nhặt đồ bên trái; UI-55: viền đỏ máu thấp.
+var _feed: PickupFeed
+var _low_hp: LowHpOverlay
 var _wind: Label
 ## DH-11: ô 0 = đánh thường, 1–4 = kỹ năng lớp, 5 né, 6 Thiên phú (L), 7 bình máu, 8 bình MP (SN10-02).
 var _skills: Control
@@ -97,6 +103,9 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	mouse_filter = MOUSE_FILTER_IGNORE
 
+	# UI-55 (docs/38): viền đỏ máu thấp — dưới mọi thành phần HUD.
+	_low_hp = LowHpOverlay.new()
+	add_child(_low_hp)
 	# UI-08 (Spec_Notes đợt 6): khung nhân vật kiểu khung vàng – ngọc tím (ui/char_frame.gd).
 	_tl = CharFrame.new()
 	add_child(_tl)
@@ -123,10 +132,14 @@ func _ready() -> void:
 		res_row.add_child(cell)
 	trv.add_child(res_row)
 	trv.add_child(_resources)
-	_map_name = UiTheme.label("", "Small")
-	trv.add_child(_map_name)
 	_tr.add_child(trv)
 	add_child(_tr)
+	# UI-56 (docs/38): dòng "vùng · cấp · khám phá" rời khỏi thanh tài nguyên (cho thanh gọn 1 hàng số), đặt dưới la bàn.
+	_map_name = UiTheme.label("", "HudLabel")
+	_map_name.add_theme_font_size_override("font_size", UiTheme.fs(13))
+	_map_name.add_theme_color_override("font_color", Color("#e8dcc0"))
+	_map_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	add_child(_map_name)
 
 	_minimap = Minimap.new()
 	add_child(_minimap)
@@ -185,7 +198,8 @@ func _ready() -> void:
 	add_child(_target)
 	_combo = UiTheme.label("", "HudLabel")
 	_combo.add_theme_font_override("font", UiTheme.bold_font())
-	_combo.add_theme_font_size_override("font_size", 24)
+	# UI-54 (docs/38): dòng combo nhỏ lại, đặt sát trên cụm nút (thông tin phụ, không nặng hơn thanh máu).
+	_combo.add_theme_font_size_override("font_size", UiTheme.fs(15))
 	_combo.add_theme_color_override("font_color", UiTheme.GOLD)
 	add_child(_combo)
 
@@ -205,6 +219,8 @@ func _ready() -> void:
 
 	_log = UiTheme.vbox(3)
 	add_child(_log)
+	_feed = PickupFeed.new()
+	add_child(_feed)
 
 	_banner = UiTheme.label("", "HudLabel")
 	_banner.add_theme_font_override("font", UiTheme.bold_font())
@@ -438,7 +454,9 @@ func update_from(w: GameWorld) -> void:
 		_wind.add_theme_color_override("font_color", Color("#ff9a3c") if alert else Color("#f2d79a"))
 
 	_combo.visible = w.combo >= 5
-	_combo.text = "%d combo · +%d%% EXP" % [w.combo, roundi((Formulas.combo_exp_multiplier(w.combo) - 1.0) * 100.0)]
+	_combo.text = "×%d combo · +%d%% EXP" % [w.combo, roundi((Formulas.combo_exp_multiplier(w.combo) - 1.0) * 100.0)]
+	_feed.update_from(w)
+	_low_hp.update_hp(pl.hp, float(s.max_hp), get_process_delta_time())
 
 	_update_skill_bar(w, t, rank_color)
 	var extra: Array[String] = []
@@ -521,7 +539,7 @@ func _update_skill_bar(w: GameWorld, t: Dictionary, rank_color: Color) -> void:
 		_skills.set_slot(SLOT_SKILL0 + i, {"key": key, "name": sk.name, "icon": SpriteLib.icon("skill-" + str(sk.icon)),
 			"cd": 0.0 if locked else cd_left / maxf(0.1, w.skill_cd_of(i)), "cd_text": "" if locked else (str(ceili(cd_left)) if cd_left > 0.0 else ""),
 			"badge": str(lv) if lv > 1 and not locked else "", "lock": ("Cấp %d" % int(sk.unlock)) if locked else "",
-			"dim": low or locked, "big": big, "ring": skill_ring(w, str(sk.id), big)})
+			"dim": low or locked, "big": big, "ring": skill_ring(w, str(sk.id), big), "el": Skills2.element_of(w, str(sk.id))})
 	var dodge := {"key": "Space", "name": "Né lăn", "icon": SpriteLib.icon("skill-dodge"),
 		"cd": pl.dodge_cd / GameWorld.DODGE_CD, "cd_text": ("%.1f" % pl.dodge_cd) if pl.dodge_cd > 0.0 else ""}
 	_cluster.set_button("dodge", dodge)
@@ -545,6 +563,9 @@ func _update_skill_bar(w: GameWorld, t: Dictionary, rank_color: Color) -> void:
 	pot.cd = pl.potion_cd / GameWorld.POTION_CD
 	pot.cd_text = str(ceili(pl.potion_cd)) if pl.potion_cd > 0.0 else ""
 	pot.dim = p.potions <= 0
+	# UI-55: máu thấp + còn bình → viền bình máu đỏ (gợi ý bấm Q)
+	if p.potions > 0 and pl.potion_cd <= 0.0 and LowHpOverlay.level_of(pl.hp, float(w.stats.max_hp)) > 0.0:
+		pot.ring = Color("#ff5470")
 	_cluster.set_button("potion", pot)
 	_skills.set_slot(SLOT_POTION, {"hidden": true, "key": "Q", "name": "Bình máu"})
 	_cluster.set_button("mp_potion", {"key": "F", "name": "Bình MP", "icon": SpriteLib.icon("skill-mp_potion"),
@@ -704,8 +725,11 @@ func _layout() -> void:
 	_tr.reset_size()
 	_tr.position = Vector2((sz.x - _tr.size.x) / 2.0, 8)
 	_minimap.position = Vector2(sz.x - _minimap.size.x - 12, 12)
+	_map_name.reset_size()
+	_map_name.position = Vector2(minf(_minimap.position.x + (_minimap.size.x - _map_name.size.x) / 2.0, sz.x - _map_name.size.x - 8.0),
+		_minimap.position.y + _minimap.size.y + 2.0)
 	_obj.reset_size()
-	_obj.position = Vector2(sz.x - _obj.size.x - 12, _minimap.position.y + _minimap.size.y + 8)
+	_obj.position = Vector2(sz.x - _obj.size.x - 12, _map_name.position.y + (_map_name.size.y if _map_name.visible and _map_name.text != "" else 0.0) + 6.0)
 	var boss_w := clampf(sz.x - 680.0, 260.0, 520.0)
 	_boss_box.size = Vector2(boss_w, 0)
 	_boss_box.position = Vector2((sz.x - boss_w) / 2.0, _tr.position.y + _tr.size.y + 6)
@@ -721,7 +745,6 @@ func _layout() -> void:
 	var target_y := wind_y + (_wind.size.y + 4.0 if _wind.visible else 0.0)
 	_target.position = Vector2((sz.x - _target.size.x) / 2.0, target_y)
 	_combo.reset_size()
-	_combo.position = Vector2(sz.x - _combo.size.x - 24, maxf(sz.y / 2.0, _obj.position.y + _obj.size.y + 8.0))
 	# UI-41: thanh EXP sát đáy, thanh kỹ năng ngay trên, cụm nút góc phải dưới
 	# 03/11: đầu rồng phải của thanh EXP (nhô ~26 px ngoài khung) không được chạm cụm nút (bình máu Q) — rút ngắn thanh.
 	_cluster.position = sz - _cluster.size - Vector2(6, 4)
@@ -734,5 +757,8 @@ func _layout() -> void:
 	# UI-02: nhật ký nằm trên thanh kỹ năng.
 	_log.reset_size()
 	_log.position = Vector2(12, _skills.position.y - _log.size.y - 12)
+	# dải nhặt đồ ngay trên vùng nhật ký: chỗ cố định cho 3 dòng ngắn, nhật ký cao hơn (dòng xuống hàng) thì đẩy lên
+	_feed.position = Vector2(12, minf(_log.position.y, _skills.position.y - 12.0 - LOG_MAX * 34.0) - _feed.size.y - 6.0)
+	_combo.position = Vector2(sz.x - _combo.size.x - 16, _cluster.position.y - _combo.size.y - 2.0)
 	_banner.reset_size()
 	_banner.position = Vector2((sz.x - _banner.size.x) / 2.0, sz.y * 0.28)

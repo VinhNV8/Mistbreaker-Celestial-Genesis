@@ -221,6 +221,8 @@ func _merchant(body: HBoxContainer, p) -> void:
 	b.name = "BuyMerchant"
 	b.custom_minimum_size = Vector2(0, 46)
 	b.disabled = int(p.gold) < int(item.price) or p.inventory.size() >= ItemData.BAG_SIZE
+	if b.disabled:
+		b.tooltip_text = "Túi đồ đầy" if p.inventory.size() >= ItemData.BAG_SIZE else "Không đủ vàng (cần %d)" % int(item.price)  # UI-62
 	b.pressed.connect(func():
 		world.buy_merchant(idx)
 		_sel = ""

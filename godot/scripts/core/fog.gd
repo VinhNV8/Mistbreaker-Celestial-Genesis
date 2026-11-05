@@ -14,6 +14,10 @@ var cells := PackedByteArray()
 var opened := 0
 ## Tăng mỗi khi có ô mới mở (view dựng lại texture khi số này đổi).
 var version := 0
+## PF-01 (04/11): vùng ô của lần reveal() gần nhất (đúng khi dirty_version == version) — lớp sương / bản đồ nhỏ chỉ
+## cập nhật vùng này thay vì dựng lại cả ảnh (~8.500 ô map ×3) mỗi bước đi khám phá.
+var dirty := Rect2i()
+var dirty_version := -1
 
 
 func setup(world_size: Vector2, saved := "") -> void:
@@ -68,6 +72,8 @@ func reveal(center: Vector2, radius: float) -> int:
 	if n > 0:
 		opened += n
 		version += 1
+		dirty = Rect2i(x0, y0, x1 - x0 + 1, y1 - y0 + 1)
+		dirty_version = version
 	return n
 
 

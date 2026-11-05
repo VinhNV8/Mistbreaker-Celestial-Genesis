@@ -166,12 +166,13 @@ func _ready() -> void:
 	bg.color = UiTheme.BG
 	bg.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	add_child(bg)
-	var center := CenterContainer.new()
-	center.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
-	add_child(center)
+	# UI-60 (docs/38): khung cao hơn cửa sổ 768 px (dòng chân bị cắt) → thu nhỏ vừa cửa sổ, căn giữa (_fit).
 	var box := PanelContainer.new()
 	box.theme_type_variation = "SolidPanel"
-	center.add_child(box)
+	add_child(box)
+	_box = box
+	resized.connect(_fit)
+	box.resized.connect(_fit)
 	var col := UiTheme.vbox(10)
 	box.add_child(col)
 	# tiêu đề
@@ -195,6 +196,19 @@ func _ready() -> void:
 	foot.alignment = BoxContainer.ALIGNMENT_CENTER
 	foot.add_child(UiTheme.strong("NĂM CON ĐƯỜNG, MỘT THẾ GIỚI", 14, Color("#c9a45c")))
 	col.add_child(foot)
+
+
+var _box: PanelContainer
+
+
+func _fit() -> void:
+	if _box == null:
+		return
+	var need := _box.get_combined_minimum_size()
+	_box.size = need
+	var k := minf(1.0, minf((size.x - 16.0) / maxf(1.0, need.x), (size.y - 16.0) / maxf(1.0, need.y)))
+	_box.scale = Vector2(k, k)
+	_box.position = ((size - need * k) / 2.0).floor()
 
 
 func _card(def: Dictionary) -> PanelContainer:

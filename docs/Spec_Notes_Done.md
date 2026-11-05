@@ -45,3 +45,5 @@ Khi focus vào đánh quái, cần hiển thị là đang focus vào quái nào 
 - (Đợt 14 — [31](31-de-xuat-thanh-ky-nang.md) mục SN14, **done 02/11/2026**) Kỹ năng đang sử dụng - Không thay đổi được kỹ năng đang sử dụng thành kỹ năng mới.
 
 - (Đợt 15 — [35](35-de-xuat-giao-dien-moi.md), **done 03/11/2026**: đã lên kế hoạch; chủ dự án chọn hướng B HD vector + cel-shade, đang làm bản thử G0) Cần cải thiện giao diện, giao diện hiện tại pixel quá người chơi không thích -> Người chơi muốn giao diện đẹp cơ -> hãy lên kế hoạch đề xuất giao diện
+
+- (Đợt 15 — [32](32-ra-soat-01-11.md) mục 6, **done 04/11/2026**) Phượng hoàng Tro - khi đánh chết không bị mất đang bị lỗi...

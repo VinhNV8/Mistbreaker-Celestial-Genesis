@@ -23,10 +23,13 @@ import env_camps  # noqa: E402
 import env_regions  # noqa: E402
 import action_icons  # noqa: E402
 import icons_hd  # noqa: E402
-import wolf  # noqa: E402
+import items_hd_more  # noqa: E402
+import res_stat_hd  # noqa: E402
+import mon_build  # noqa: E402  MD-1 (docs/39): 85 quái / boss HD
 
 sys.path.insert(0, os.path.dirname(HERE))
 import skill_icons_fx  # noqa: E402
+import talent_icons_fx  # noqa: E402
 
 PX = 4
 
@@ -41,10 +44,9 @@ def _save(img, sub, name):
 def main():
     hd = {"sprites": {}, "env": {}, "icons": {}}
     # Không vẽ lại nhân vật người chơi (pc-*) và hình / hiệu ứng kỹ năng: dùng nguyên bộ hình chủ dự án cung cấp.
-    for k in ("wolf", "boss"):
-        img, meta = wolf.build(k)
-        meta["path"] = _save(img, "sprites", k)
-        hd["sprites"][k] = meta
+    # MD-1 (docs/39): toàn bộ quái / boss theo phong cách mới (thay bản G0 wolf.py); linh thú Triệu Hồi Sư chỉ có
+    # ảnh duyệt (sprites-review/) cho tới khi chủ dự án đồng ý (Q190)
+    hd["sprites"].update(mon_build.build_all(_save))
     env = dict(env_forest.build())
     env.update(env_village.build())  # UI-40b: Làng Thanh Thạch
     env.update(env_regions.build())  # UI-40c: nền + cảnh vật vùng 2–9
@@ -56,6 +58,14 @@ def main():
     # IC-1 (docs/37): 51 icon kỹ năng vẽ lại (19 icon vẽ tay của chủ dự án giữ nguyên, không có trong bộ này)
     for k, img in skill_icons_fx.build().items():
         hd["icons"]["skill-" + k] = _save(img, "icons", "skill-" + k)
+    # IC-2 (docs/37 §7): 18 icon trang bị còn thiếu + 20 icon Thiên phú
+    for k, img in items_hd_more.build().items():
+        hd["icons"][k] = _save(img, "icons", k)
+    for k, img in talent_icons_fx.build().items():
+        hd["icons"][k] = _save(img, "icons", k)
+    # IC-2 §8: 14 icon tài nguyên + 24 icon chỉ số (chân dung portrait-* là hình chủ dự án, giữ nguyên)
+    for k, img in res_stat_hd.build().items():
+        hd["icons"][k] = _save(img, "icons", k)
     action_icons.save_all()  # UI-41d: icon riêng cụm nút góc phải (cụm nút nạp thẳng, không qua lớp phủ manifest)
     with open(MANIFEST, encoding="utf-8") as f:
         m = json.load(f)

@@ -32,6 +32,7 @@ const SubTalentPanel = preload("res://scripts/ui/sub_talent_panel.gd")
 const Job3Panel = preload("res://scripts/ui/job3_panel.gd")
 const DivinePanel = preload("res://scripts/ui/divine_panel.gd")
 const PauseMenu = preload("res://scripts/ui/pause_menu.gd")
+const Keybinds = preload("res://scripts/core/keybinds.gd")
 const Settings = preload("res://scripts/core/settings.gd")
 const AudioManager = preload("res://scripts/audio/audio_manager.gd")
 
@@ -158,6 +159,7 @@ func _ready() -> void:
 	Settings.load_settings()
 	preload("res://scripts/view/sprite_lib.gd").set_hd(bool(Settings.values.get("hd_art", true)))
 	_ui.theme = UiTheme.set_font_scale(float(Settings.values.get("font_scale", 1.0)))
+	UiTheme.set_colorblind(bool(Settings.values.get("colorblind", false)))
 	_ui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_ui.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	ui_layer.add_child(_ui)
@@ -170,6 +172,9 @@ func _ready() -> void:
 
 
 func _setup_input() -> void:
+	# UI-61 (docs/38): phím người chơi đổi ở Cài đặt → Điều khiển áp sau phím mặc định.
+	Keybinds.defaults = KEY_ACTIONS
+	Settings.load_settings()
 	for action in KEY_ACTIONS:
 		if InputMap.has_action(action):
 			continue
@@ -182,6 +187,7 @@ func _setup_input() -> void:
 			var mb := InputEventMouseButton.new()
 			mb.button_index = MOUSE_ACTIONS[action]
 			InputMap.action_add_event(action, mb)
+	Keybinds.apply()
 
 
 func _vignette_texture() -> GradientTexture2D:

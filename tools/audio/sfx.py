@@ -177,6 +177,20 @@ def portal():
     return mix(gain(swirl, 0.4), gain(shimmer, 0.25), gain(concat(S.silence(0.2), rise), 0.3))
 
 
+def tele_elite():
+    """FX-1 §9.13: tinh anh bắt đầu lấy đà — gió vút lên + gầm gừ ngắn (báo bằng tai, như ARPG)."""
+    whoosh = envelope(highpass(osc("noise", 3000, 0.42, seed=21), lambda i: 400 + 2600 * i / (0.42 * S.RATE)), 0.25, 0.05, 0.7, 0.08)
+    growl = envelope(lowpass(osc("saw", 120, 0.42, freq_end=150, vibrato=0.1, vib_rate=22), 700), 0.12, 0.1, 0.6, 0.12)
+    return mix(gain(whoosh, 0.45), gain(growl, 0.4))
+
+
+def tele_boss():
+    """FX-1 §9.13: boss bắt đầu lấy đà — ầm trầm dâng lên + hơi thở nặng."""
+    rumble = envelope(lowpass(osc("saw", 55, 0.75, freq_end=80, vibrato=0.08, vib_rate=14), 400), 0.35, 0.1, 0.8, 0.15)
+    rise = envelope(lowpass(osc("noise", 2000, 0.75, seed=22), lambda i: 200 + 1400 * i / (0.75 * S.RATE)), 0.5, 0.05, 0.7, 0.1)
+    return mix(gain(rumble, 0.7), gain(rise, 0.4))
+
+
 SFX = {
     "slash": slash, "shot": shot, "hit": hit, "crit": crit, "enemy_die": enemy_die,
     "player_hurt": player_hurt, "dodge": dodge, "perfect": perfect, "pickup_gold": pickup_gold,
@@ -184,4 +198,5 @@ SFX = {
     "boss_roar": boss_roar, "explode": explode, "heal": heal,
     "skill_blade": skill_blade, "skill_bow": skill_bow, "skill_magic": skill_magic, "skill_shield": skill_shield,
     "skill_summon": skill_summon, "ultimate": ultimate, "unlock": unlock, "portal": portal,
+    "tele_elite": tele_elite, "tele_boss": tele_boss,
 }

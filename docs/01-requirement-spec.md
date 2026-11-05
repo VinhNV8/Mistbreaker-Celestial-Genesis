@@ -129,6 +129,7 @@ Cột **Trạng thái**: ✅ đã làm và có test tự động · 🟡 đã l�
 | NFR-05 | Không mất tiến trình khi game đóng đột ngột quá 5 giây kể từ lần lưu gần nhất |
 | NFR-06 | Cửa sổ co giãn được, tối thiểu 1280 × 720 vẫn hiển thị đủ HUD |
 | NFR-07 | Hiệu ứng kỹ năng đọc được gameplay (FX-1, [36](36-thiet-ke-lai-vfx-ky-nang.md) §3.3): kỹ năng đặt điểm có vòng cảnh báo đúng bán kính trước khi gây sát thương; quái trúng đòn nháy trắng; choáng / trói / độc có ký hiệu trên đầu; màu xanh lá chỉ dùng cho hồi máu; mỗi lớp một bảng màu riêng (§4). Nghiệm thu: chủ dự án duyệt Q180–Q183 (03/11/2026: cả 70 kỹ năng, song song với hình đã duyệt, HD); test FX1-T1 + smoke `tests/fx1_smoke.gd` — ✅ |
+| NFR-08 | Quái / tinh anh / boss cùng một phong cách HD (MD-1, [39](39-thiet-ke-lai-quai-vat.md)): cartoon vẽ tay theo ảnh mẫu — silhouette nhận ra ở ~50 px, viền tối dày, cel 3 tông, một màu nhấn phát sáng, họ màu theo vùng; cỡ hiển thị và vùng va chạm như bản pixel; frame đánh đầu tiên là tư thế lấy đà; tắt "Đồ hoạ HD" về hình pixel. Linh thú Triệu Hồi Sư chưa đổi (Q190). Nghiệm thu: test MD1-T1 + ảnh `docs/design/monsters/` (+ `ingame/`); chủ dự án duyệt Q190–Q192 — 🟡 chờ duyệt |
 
 ## 5. Chỗ lệch so với kịch bản
 

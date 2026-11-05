@@ -385,7 +385,9 @@ static func update_enemy(w, e, dt: float) -> bool:
 			return true
 	if e.kind == "vien-long" and e.role == "boss":
 		return _update_dragon(w, e, dt)
+	# SN15-01: trứng lửa vẫn phải đếm ngược (trước đây trả true ở đây làm _update_rare không chạy → kẹt 1 HP mãi).
 	if e.kind == "phuong-hoang" and st.egg_t > 0.0:
+		update_rare(w, e, dt)
 		return true
 	if e.role == "siege":
 		return _update_siege_mob(w, e, dt)
@@ -723,6 +725,10 @@ static func update_rare(w, e, dt: float) -> bool:
 	if e.kind != "phuong-hoang":
 		return false
 	var st = w.ch5
+	# SN15-01: đầy máu = trận mới (mới xuất hiện / người chơi gục nên nó hồi đầy) — Niết bàn được dùng lại, bỏ trứng dở.
+	if e.hp >= e.max_hp and (st.reborn or st.egg_t > 0.0):
+		st.reborn = false
+		st.egg_t = 0.0
 	if st.egg_t > 0.0:
 		st.egg_t -= dt
 		e.state = "idle"
