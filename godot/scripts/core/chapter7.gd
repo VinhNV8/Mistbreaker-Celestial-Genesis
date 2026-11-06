@@ -681,7 +681,7 @@ static func on_kill(w, e) -> void:
 	ensure(w)
 	var q: Dictionary = w.profile.quest
 	if in_region(w) and step(w) == S_KILLS and e.role in ["field", "pack", "nestMinion", "nestGuard"]:
-		q.kills7 = int(q.kills7) + 1
+		pass  # NV-B (docs/41): bước này nay theo mục tiêu riêng — core/main_variants.gd ghi tiến độ
 	if e.kind == "neo-hu-vo" and e.has_meta("anchor_idx"):
 		var i: int = int(e.get_meta("anchor_idx"))
 		if not (i in q.anchors7):

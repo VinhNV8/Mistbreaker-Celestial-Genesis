@@ -29,6 +29,7 @@ const CONTROLS := [
 	["M · N", "Khai phá (lưới ô) · Bản đồ lục địa (chỉ xem)"],
 	["V", "Phóng to / thu nhỏ bản đồ nhỏ (bấm bản đồ nhỏ để tự chạy tới)"],
 	["E", "Nói chuyện / cửa hàng (đứng cạnh NPC trong làng)"],
+	["O", "Sổ nhiệm vụ — bấm khung nhiệm vụ để tự chạy tới mục tiêu"],
 	["R", "Lò Rèn: cường hoá, chế tạo, luyện nguyên liệu, phân rã"],
 	["F1 · H", "Trợ giúp"],
 	["Esc", "Đóng bảng · Tạm dừng"],

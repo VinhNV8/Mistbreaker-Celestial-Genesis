@@ -13,6 +13,7 @@ const Settings = preload("res://scripts/core/settings.gd")
 const Items = preload("res://scripts/core/items.gd")
 const Monsters = preload("res://scripts/data/monsters.gd")
 const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
+const QuestView = preload("res://scripts/view/quest_view.gd")
 
 const HERO_SPRITE := "hero-kiem-khach"
 const Classes = preload("res://scripts/data/classes.gd")
@@ -356,6 +357,8 @@ func _draw() -> void:
 	for e in world.enemies:
 		if _in_view(view, e.pos, e.radius):
 			_draw_enemy_overlay(e)
+	# NV-A1 / A2 (docs/41): mũi tên + vòng mục tiêu nhiệm vụ, dấu "!" trên NPC cần gặp
+	QuestView.draw(self, world, view, _font)
 	for f in _hit_fx:
 		if Fx1.draw_hit(_pa, world, f.pos, f.t / HIT_FX_TIME):
 			continue
@@ -1041,7 +1044,18 @@ func _draw_ally_sprite(a) -> void:
 		_ground_ring(_feet(a.pos, a.radius), a.radius + 3.0, a.color)
 	else:
 		_ground_ring(_feet(a.pos, a.radius), a.radius + 3.0, Color("#b36bff") if shadow else Color("#5bd16a"))
-	SpriteLib.draw_frame(self, a.monster, anim, frame, _feet(a.pos, a.radius), _facing_left(key, a.pos, false), mod, clampf(a.radius / 16.0, 0.75, 1.25))
+	# SN16: đang hiện hình → mọc lên từ vòng trận (cao dần, sáng loá rồi dịu), đứng yên
+	var squash := Vector2.ONE
+	if a.spawn_t > 0.0:
+		var k := clampf(1.0 - a.spawn_t / GameWorld.ALLY_SPAWN, 0.0, 1.0)
+		var e := 1.0 - pow(1.0 - k, 3.0)
+		squash = Vector2(1.25 - 0.25 * e, maxf(0.05, e))
+		var glow := 1.0 + 0.9 * (1.0 - k)
+		mod = Color(mod.r * glow, mod.g * glow, mod.b * glow, mod.a * minf(1.0, 0.25 + k * 1.2))
+		anim = "idle"
+		frame = 0
+	SpriteLib.draw_frame(self, a.monster, anim, frame, _feet(a.pos, a.radius), _facing_left(key, a.pos, false), mod,
+		clampf(a.radius / 16.0, 0.75, 1.25), squash)
 
 
 ## Sprite để tính số frame (thân theo ngoại hình; thiếu thì hình mặc định của lớp).
@@ -1085,18 +1099,10 @@ func _draw_player_sprite() -> void:
 		mod = mod * Color(1.2, 1.15, 0.85)
 	if p.poison_timer > 0.0:
 		mod = mod * Color(0.75, 1.15, 0.7)
-	# Spec_Notes N8: vũ khí cường hoá cao toả hào quang quanh nhân vật.
-	var wpn: Dictionary = world.profile.equipment.get("weapon", {})
-	var plus: int = int(wpn.get("plus", 0))
-	var tier := Items.enhance_tier(plus)
-	if tier > 0 and p.dead_timer <= 0.0:
-		var gc := Items.enhance_color(plus)
-		var mid := p.pos + Vector2(0, -6)
-		draw_circle(mid, 26.0 + tier * 3.0, Color(gc, 0.06 + 0.03 * tier + 0.03 * sin(world.time * 3.0)))
-		for k in tier * 2:
-			var ang := world.time * (1.2 + 0.2 * tier) + k * TAU / (tier * 2)
-			var rr := 22.0 + 6.0 * sin(world.time * 2.0 + k)
-			draw_circle(mid + Vector2(cos(ang) * rr, sin(ang) * rr * 0.55), 1.5 + 0.4 * tier, Color(gc, 0.9))
+	# Spec_Notes N8 → EN-1 (docs/43 §6): vũ khí cường hoá +4 trở lên — vòng ấn xoay dưới chân + hạt sáng bốc lên (màu bậc).
+	var plus: int = int(world.profile.equipment.get("weapon", {}).get("plus", 0))
+	if Items.enhance_tier(plus) > 0 and p.dead_timer <= 0.0:
+		_enhance_aura(_feet(p.pos, GameWorld.PLAYER_RADIUS), plus)
 	if p.root_timer > 0.0:
 		var feet := _feet(p.pos, GameWorld.PLAYER_RADIUS)
 		for k in 5:
@@ -1108,6 +1114,9 @@ func _draw_player_sprite() -> void:
 		# SN9-01: tên + dòng nhỏ chức nghiệp hiện tại (màu tím nhạt)
 		var pf = world.profile
 		_label(str(pf.name), p.pos + Vector2(0, -GameWorld.PLAYER_RADIUS - 56.0), Color(1, 1, 1, 0.9), 12, true)
+		# NV-C (docs/41): danh hiệu đang đeo (trang trí) trên tên
+		if str(pf.title) != "":
+			_label("« %s »" % pf.title, p.pos + Vector2(0, -GameWorld.PLAYER_RADIUS - 70.0), Color("#ffd257"), 10, true)
 		_label(Classes.title(str(pf.class_id), str(pf.job), str(pf.job2), str(pf.job3)), p.pos + Vector2(0, -GameWorld.PLAYER_RADIUS - 44.0), Color(0.85, 0.77, 1.0, 0.85), 10)
 	# SN-04 Pháp Thuẫn: vòng tím, dày theo lượng khiên còn lại
 	if p.shield > 0.0:
@@ -1122,6 +1131,35 @@ func _draw_player_sprite() -> void:
 		var a := 0.35 + 0.15 * sin(world.time * 8.0)
 		draw_circle(p.pos, GameWorld.PLAYER_RADIUS + 14.0, Color(0.6, 0.8, 1.0, a * 0.4))
 		draw_arc(p.pos, GameWorld.PLAYER_RADIUS + 14.0, 0.0, TAU, 40, Color(0.8, 0.92, 1.0, a + 0.3), 2.5, true)
+
+
+## EN-1 (docs/43 §6): hào quang vũ khí cường hoá. Vòng ấn (vạch cung + hình thoi) xoay chậm theo chiều kim đồng hồ,
+## số vạch tăng theo bậc; hạt sáng bốc lên từ chân. Bậc 4 (+13): thêm vòng trong xoay ngược + hạt to, dày hơn.
+func _enhance_aura(feet: Vector2, plus: int) -> void:
+	var tier := Items.enhance_tier(plus)
+	var gc := Items.enhance_color(plus)
+	var t := world.time
+	var r := GameWorld.PLAYER_RADIUS + 16.0
+	var pulse := 0.75 + 0.25 * sin(t * 2.5)
+	draw_set_transform(feet, 0.0, Vector2(1.0, 0.45))
+	draw_circle(Vector2.ZERO, r + 4.0, Color(gc, 0.07 + 0.02 * tier))
+	var n := 2 + tier * 2
+	for i in n:
+		var a0 := t * 0.8 + TAU * i / n
+		draw_arc(Vector2.ZERO, r, a0, a0 + TAU / n * 0.6, 10, Color(gc, 0.8 * pulse), 2.5, true)
+		var d := Vector2.from_angle(a0 + TAU / n * 0.8) * r
+		draw_colored_polygon(PackedVector2Array([d + Vector2(0, -4), d + Vector2(4, 0), d + Vector2(0, 4), d + Vector2(-4, 0)]), Color(gc.lightened(0.3), 0.9 * pulse))
+	if tier >= 4:
+		for i in 6:
+			var a1 := -t * 1.3 + TAU * i / 6.0
+			draw_arc(Vector2.ZERO, r - 8.0, a1, a1 + 0.6, 8, Color(gc.lightened(0.25), 0.7), 2.0, true)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	var hot := gc.lightened(0.35)
+	for k in 3 + tier * 2:
+		var life := fmod(t * (0.45 + 0.07 * (k % 4)) + k * 0.618, 1.0)
+		var x := sin(k * 2.4 + life * 3.0) * (12.0 + (k % 3) * 5.0)
+		var pos := feet + Vector2(x, -life * (38.0 + tier * 6.0))
+		draw_circle(pos, (1.2 + 0.35 * tier) * (1.0 - life * 0.6), Color(hot, 0.85 * (1.0 - life)))
 
 
 func _ground_ring(pos: Vector2, r: float, c: Color) -> void:
@@ -1276,6 +1314,12 @@ func _draw_player_fx() -> void:
 		# CL1: vệt chém Kiếm Khách màu đỏ (charactors.md: "kiếm khí màu đỏ").
 		var sc := Color(1, 0.3, 0.25) if world.profile.class_id == "kiem-khach" else Color(1, 1, 1)
 		SpriteLib.poly(self, pts, Color(sc, 0.3 * minf(1.0, p.swing / _swing_len(p, 0.16))))
+		# EN-1 (docs/43 §6): vũ khí +13 trở lên — mép vệt chém mang màu bậc cường hoá
+		var wplus: int = int(world.profile.equipment.get("weapon", {}).get("plus", 0))
+		if Items.enhance_tier(wplus) >= 4:
+			var k := minf(1.0, p.swing / _swing_len(p, 0.16))
+			draw_arc(p.pos, GameWorld.SLASH_RANGE, p.facing - GameWorld.SLASH_ARC, p.facing + GameWorld.SLASH_ARC, 24, Color(Items.enhance_color(wplus), 0.85 * k), 5.0, true)
+			draw_arc(p.pos, GameWorld.SLASH_RANGE - 3.0, p.facing - GameWorld.SLASH_ARC * 0.8, p.facing + GameWorld.SLASH_ARC * 0.8, 20, Color(1, 1, 1, 0.6 * k), 2.0, true)
 	elif not Fx1.owns_burst(world):
 		var r := GameWorld.SPIN_RANGE * (1.0 - p.swing / 0.6)
 		draw_arc(p.pos, r, 0.0, TAU, 48, Color(0.78, 0.9, 1.0, 0.7 * minf(1.0, p.swing / 0.3)), 10.0, true)

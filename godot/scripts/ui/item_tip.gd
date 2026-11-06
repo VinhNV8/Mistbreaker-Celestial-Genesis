@@ -6,9 +6,10 @@ extends PanelContainer
 
 const UiTheme = preload("res://scripts/ui/ui_theme.gd")
 const Items = preload("res://scripts/core/items.gd")
+const ItemCard = preload("res://scripts/ui/item_card.gd")
 const ItemData = preload("res://scripts/data/items.gd")
 
-const CARD_W := 270.0
+const CARD_W := 290.0
 const UP := Color("#5bd16a")
 const DOWN := Color("#ff6a6a")
 
@@ -50,46 +51,21 @@ static func diff_lines(world, item: Dictionary, worn: Dictionary) -> Array:
 	return out
 
 
-## Một thẻ: tiêu đề nhỏ, tên, phẩm chất · ô · cấp, chỉ số gốc + dòng phụ, hiệu ứng riêng, bộ; worn ≠ {} thì thêm phần so sánh.
+## Một thẻ (UI-65, docs/42): khung tối viền màu phẩm chất bọc ItemCard.build — dải đầu nhuộm màu, icon lớn, tên,
+## chỉ số chính số to, dòng phụ có biểu tượng, bộ, hiệu ứng riêng; worn ≠ {} / compare thì thêm phần so sánh (chip ▲ ▼).
 static func card(world, item: Dictionary, header: String, worn := {}, compare := false) -> PanelContainer:
 	var c := Items.rarity_color(item)
 	var pc := PanelContainer.new()
-	pc.add_theme_stylebox_override("panel", UiTheme.box(Color(0.06, 0.045, 0.03, 0.97), 8, 2, c, 10))
+	var sb := UiTheme.box(Color(0.055, 0.04, 0.03, 0.97), 8, 2, c.darkened(0.1), 6)
+	sb.shadow_color = Color(0, 0, 0, 0.55)
+	sb.shadow_size = 8
+	pc.add_theme_stylebox_override("panel", sb)
 	pc.mouse_filter = MOUSE_FILTER_IGNORE
-	var v := UiTheme.vbox(3)
-	v.custom_minimum_size.x = CARD_W
-	pc.add_child(v)
-	var h := UiTheme.label(header, "Small")
-	h.add_theme_color_override("font_color", UiTheme.GOLD if header == "ĐANG MẶC" else UiTheme.MUTED)
-	v.add_child(h)
-	var t := UiTheme.label(Items.display_name(item), "", CARD_W)
-	t.add_theme_color_override("font_color", c)
-	t.add_theme_font_size_override("font_size", 17)
-	v.add_child(t)
-	v.add_child(UiTheme.label("%s · %s · Cấp %d" % [ItemData.RARITIES[item.rarity].name, ItemData.SLOTS[item.slot].name, int(item.level)], "Small"))
-	v.add_child(UiTheme.label(Items.base_text(item) + "  (gốc)", "", CARD_W))
-	for af in item.affixes:
-		var l := UiTheme.label(Items.stat_text(af.stat, af.value), "", CARD_W)
-		l.add_theme_color_override("font_color", Color("#9ec8ff"))
-		v.add_child(l)
-	if str(item.unique) != "":
-		var u := UiTheme.label(str(ItemData.UNIQUES[item.unique].text), "Small", CARD_W)
-		u.add_theme_color_override("font_color", c)
-		v.add_child(u)
-	if str(item.set) != "":
-		var s := UiTheme.label(str(ItemData.SETS[item.set].get("name", item.set)), "Small", CARD_W)
-		s.add_theme_color_override("font_color", Color("#7ad65a"))
-		v.add_child(s)
+	var diff: Array = diff_lines(world, item, worn) if compare else []
+	var title := ""
 	if compare:
-		v.add_child(HSeparator.new())
-		var lines := diff_lines(world, item, worn)
-		v.add_child(UiTheme.label("So với đang mặc:" if not worn.is_empty() else "Ô này đang trống — mặc vào:", "Small"))
-		if lines.is_empty():
-			v.add_child(UiTheme.label("Chỉ số như nhau", "Small"))
-		for ln in lines:
-			var dl := UiTheme.label(str(ln[0]), "", CARD_W)
-			dl.add_theme_color_override("font_color", ln[1])
-			v.add_child(dl)
+		title = "So với đang mặc:" if not worn.is_empty() else "Ô này đang trống — mặc vào:"
+	pc.add_child(ItemCard.build(item, CARD_W, header, world.profile if world != null else null, diff, title))
 	return pc
 
 

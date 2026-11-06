@@ -544,7 +544,7 @@ static func update_rare(_w, e, _dt: float) -> bool:
 static func on_kill(w, e) -> void:
 	ensure(w)
 	if in_region(w) and step(w) == 2 and e.role in ["field", "pack", "nestMinion", "nestGuard"]:
-		w.profile.quest.kills6 = int(w.profile.quest.kills6) + 1
+		pass  # NV-B (docs/41): bước này nay theo mục tiêu riêng — core/main_variants.gd ghi tiến độ
 	if dark_active(w) and e.role != "bossMinion":
 		w.ch6.dark = minf(100.0, w.ch6.dark + DARK_KILL)
 

@@ -328,7 +328,8 @@ static func salvage(p, id: int, rng := Callable()) -> Dictionary:
 
 
 ## Spec_Notes N8: bậc hiệu ứng theo cấp cường hoá — 0 (+0…+3) · 1 (+4…+6) · 2 (+7…+9) · 3 (+10…+12) · 4 (+13…+15).
-const ENHANCE_TIER_HEX := ["", "#4a9df8", "#b36bff", "#ffc940", "#ff5470"]
+## EN-1 (docs/43): bạc → lam băng → vàng kim → huyết hồng — tách khỏi thang màu phẩm chất (lam / tím cũ dễ nhầm)
+const ENHANCE_TIER_HEX := ["", "#cde4ff", "#5ad2ff", "#ffce50", "#ff4660"]
 
 
 static func enhance_tier(plus: int) -> int:

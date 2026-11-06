@@ -16,6 +16,7 @@ const REBINDABLE := [
 	["toggle_stats", "Nhân vật"], ["toggle_inventory", "Túi đồ"], ["toggle_skills", "Kỹ năng"],
 	["toggle_talent", "Thiên phú"], ["toggle_map", "Khai phá"], ["toggle_world", "Bản đồ lục địa"],
 	["toggle_minimap", "Bản đồ nhỏ"], ["toggle_forge", "Lò Rèn"], ["toggle_help", "Trợ giúp"],
+	["toggle_quests", "Sổ nhiệm vụ"],
 ]
 
 ## Phím mặc định (main.KEY_ACTIONS) — main gán lúc khởi động.

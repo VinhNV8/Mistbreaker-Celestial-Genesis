@@ -22,6 +22,8 @@ import env_village  # noqa: E402
 import env_camps  # noqa: E402
 import env_regions  # noqa: E402
 import action_icons  # noqa: E402
+import equip_icons  # noqa: E402
+import equip_unique  # noqa: E402
 import icons_hd  # noqa: E402
 import items_hd_more  # noqa: E402
 import res_stat_hd  # noqa: E402
@@ -67,6 +69,12 @@ def main():
     for k, img in res_stat_hd.build().items():
         hd["icons"][k] = _save(img, "icons", k)
     action_icons.save_all()  # UI-41d: icon riêng cụm nút góc phải (cụm nút nạp thẳng, không qua lớp phủ manifest)
+    # EQ-HD (docs/40): 336 icon trang bị (12 dáng × 2 biến thể × 14 chủ đề) + ảnh duyệt docs/design/equipment
+    for k, img in equip_icons.build().items():
+        hd["icons"][k] = _save(img, "icons", k)
+    # EQ-HD v2 (docs/42 §6): 17 đồ độc nhất vẽ lại — ghi đè bản phẳng IC-2 của items_hd_more ở trên
+    for k, img in equip_unique.build().items():
+        hd["icons"][k] = _save(img, "icons", k)
     with open(MANIFEST, encoding="utf-8") as f:
         m = json.load(f)
     m["hd"] = hd

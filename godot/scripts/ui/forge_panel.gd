@@ -126,11 +126,7 @@ func _enhance(body: HBoxContainer, p) -> void:
 	var head := UiTheme.hbox(12)
 	var frame := UiTheme.panel(UiTheme.box(Color(c.darkened(0.7), 0.9), 8, 2, c, 6))
 	var ic := UiTheme.icon_rect(SpriteLib.item_icon(item), 72)
-	var glow = Inv.PlusGlow.new()
-	glow.plus = plus
-	glow.mouse_filter = MOUSE_FILTER_IGNORE
-	glow.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
-	ic.add_child(glow)
+	Inv.EnhanceFx.attach(ic, item, ic.texture, 0.0, 6.0)
 	frame.add_child(ic)
 	head.add_child(frame)
 	var hv := UiTheme.vbox(2)
@@ -209,7 +205,7 @@ func _enhance(body: HBoxContainer, p) -> void:
 		refresh()
 		if res.ok:
 			var it: Dictionary = Items.find_item(world.profile, id).item
-			_burst(res.get("success", false), int(it.plus), Items.display_name(it)))
+			_burst(res.get("success", false), int(it.plus), Items.display_name(it), SpriteLib.item_icon(it)))
 	col.add_child(b)
 	if blocker != "":
 		var bw := UiTheme.label(blocker, "", CENTER_W)
@@ -238,11 +234,7 @@ func _pick_button(item: Dictionary, slot: String) -> Button:
 	b.add_theme_stylebox_override("normal", normal)
 	b.add_theme_stylebox_override("pressed", normal)
 	b.add_theme_stylebox_override("hover", UiTheme.box(Color(c, 0.3), 6, 2, c.lightened(0.3), 6))
-	var glow = Inv.PlusGlow.new()
-	glow.plus = int(item.plus)
-	glow.mouse_filter = MOUSE_FILTER_IGNORE
-	glow.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
-	b.add_child(glow)
+	Inv.EnhanceFx.attach(b, item, b.icon, 6.0, 6.0)
 	var id := int(item.id)
 	b.pressed.connect(func():
 		_item_id = id
@@ -301,10 +293,10 @@ func _cost_text(cost: Dictionary) -> String:
 
 
 ## SN10-01: kết quả cường hoá hiện giữa màn hình.
-func _burst(success: bool, plus: int, label := "") -> void:
+func _burst(success: bool, plus: int, label := "", tex: Texture2D = null) -> void:
 	if not is_inside_tree():
 		return
-	Inv.EnhanceToast.pop(self, success, plus, label)
+	Inv.EnhanceToast.pop(self, success, plus, label, tex)
 
 
 # ------------------------------------------------------------------ Chế tạo (Xưởng Rèn)

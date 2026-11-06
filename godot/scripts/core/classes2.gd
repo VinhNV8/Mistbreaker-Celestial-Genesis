@@ -579,6 +579,8 @@ static func summon(w, kind: String, factor: float, ttl: float, skill: String, at
 	a.max_hp = float(w.stats.max_hp) * float(d.get("hp", 0.3)) * (VL_HP if job3(w) == "van-linh" else 1.0) \
 		* PET_HP * (1.0 + float(w.stats.get("pet_hp_pct", 0.0)))
 	a.hp = a.max_hp
+	# SN16: linh thú gọi bằng kỹ năng hiện hình xong mới lao ra (Linh Hồ thường trực sinh lại ngay)
+	a.spawn_t = 0.0 if perm else w.ALLY_SPAWN
 	w.allies.append(a)
 	if skill in MAIN_SUMMONS:
 		var mains: Array = w.allies.filter(func(x): return not x.dead and x.kind == "summon" and x.skill in MAIN_SUMMONS)
@@ -717,7 +719,7 @@ static func mob_vs_summon(w, e, dt: float) -> bool:
 	var best = null
 	var bd := MOB_REACH
 	for a in w.allies:
-		if a.dead or a.kind != "summon" or a.max_hp <= 0.0:
+		if a.dead or a.kind != "summon" or a.max_hp <= 0.0 or a.spawn_t > 0.0:
 			continue
 		var d: float = e.pos.distance_to(a.pos) - a.radius
 		var taunt: bool = SUMMONS.get(a.monster, {}).get("taunt", false)

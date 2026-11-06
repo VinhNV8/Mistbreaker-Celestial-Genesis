@@ -454,3 +454,20 @@ Chủ dự án duyệt đề xuất cải thiện tiếp (thứ tự 1 → 2 →
 5. Sửa lỗi: đổi map thì xoá hàng đợi vết cảnh báo và danh sách âm báo (không còn vết của map cũ hiện 1 khung).
 
 Ảnh: [canh-bao-nen-chuyen-dong.jpg](design/skills-fx-ingame/canh-bao-nen-chuyen-dong.jpg). Test FX1-T1 thêm chế độ mù màu.
+
+### 9.15. SN16-01: linh thú hiện hình xong mới lao ra (Spec_Notes 05/11/2026)
+
+**Góp ý:** "Khi nhấn triệu hồi, thú cưng chưa xuất hiện xong thì đã chạy ra đánh quái. Cần triệu hồi xong mới phi ra đánh, hoặc hiệu ứng triệu hồi kết thúc sớm hơn. Đề xuất hướng tốt nhất."
+
+**Nguyên nhân:** linh thú sinh ra là di chuyển / đánh ngay khung đầu (210 px/giây), trong khi nghi thức FX-1 (vòng trận, cột sáng, hạt) kéo dài 0,9 giây và vẽ theo vị trí linh thú. Vì vậy linh thú chạy khỏi vòng trận, cột sáng chạy theo.
+
+**Hướng chọn: kết hợp cả hai, ngắn gọn.** Nếu chỉ rút ngắn hiệu ứng thì vẫn còn cảm giác linh thú "bật ra" từ hư không. Nếu bắt chờ trọn 0,9 giây thì kỹ năng gọi bị chậm, nhất là khi đang giao tranh.
+
+| | Trước | Sau |
+| --- | --- | --- |
+| Gameplay | Linh thú hành động ngay | **Hiện hình 0,5 giây** (`GameWorld.ALLY_SPAWN`): đứng yên trong vòng trận, chưa đánh, quái thường chưa nhắm (`mob_vs_summon` bỏ qua), **chưa trừ thời gian tồn tại** (không thiệt thời lượng) |
+| Hình | Hiện nguyên hình ngay | Mọc lên từ vòng trận: cao dần 5% → 100% (ease-out), hơi bè rồi thu lại, sáng loá ×1,9 → ×1, mờ → rõ (`world_view._draw_ally_sprite`) |
+| Nghi thức FX-1 | 0,9 giây, cột sáng tới 0,54 giây | **0,7 giây**; cột sáng tắt đúng 0,5 giây = lúc linh thú lao ra; vòng + hạt tan nốt 0,2 giây khi linh thú đã chạy |
+| Áp dụng | | Mọi linh thú gọi bằng kỹ năng của Triệu Hồi Sư, Xương Nô (kỹ năng Triệu Hồi Xương, Tử Linh Sư dựng từ xác). **Không** áp cho Linh Hồ thường trực (sinh lại khi đổi map / hồi sinh, không có nghi thức) |
+
+Sát thương / phút của Triệu Hồi Sư gần như không đổi: linh thú vẫn sống đủ thời gian, chỉ trễ 0,5 giây lúc mới gọi. Test **SN16-T1** kiểm: đứng yên, chưa đánh, chưa trừ giờ trong 0,45 giây; lao ra rồi đánh sau 0,5 giây; Linh Hồ không chờ; cột sáng tắt khớp `ALLY_SPAWN`. SH-T1 thêm kiểm "đang hiện hình thì chưa bị quái nhắm".

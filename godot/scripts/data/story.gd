@@ -389,23 +389,23 @@ const DIALOGS := {
 
 ## Nhiệm vụ chính chương 2 (03 mục 6.4). Bước lưu ở profile.quest.ch2 (0 = chưa tới vùng 2, 6 = xong).
 const QUESTS2 := [
-	{"title": "Gia nhập Liên minh", "hint": "Tới Thành Biên Đài, đứng cạnh Lạc Phong bấm E.", "type": "talk_lac", "need": 1, "reward": {"exp": 5000, "gold": 200}},
-	{"title": "Dẹp loạn Cửa Gió", "hint": "Hạ quái ở vùng 2. Lính khiên: đánh từ bên hông hoặc sau lưng.", "type": "kills2", "need": 30, "reward": {"exp": 15000}},
-	{"title": "Lãnh địa đầu tiên", "hint": "M mở Bản đồ khai phá vùng 2, chiếm 6 ô đất.", "type": "tiles2", "need": 6, "reward": {"exp": 20000, "stones": 5}},
-	{"title": "Tin đồn trong thành", "hint": "Hỏi Thương nhân Mạc Tam (E) về gián điệp.", "type": "talk_mac", "need": 1, "reward": {"exp": 25000}},
-	{"title": "Phủ Huyền Ảnh", "hint": "N → Mắt Bão. Hạ Tướng Gián Điệp Huyền Ảnh — chỉ bản thật có bóng.", "type": "boss2", "need": 1, "reward": {"exp": 30000}},
+	{"title": "Gia nhập Liên minh", "hint": "Tới Thành Biên Đài, đứng cạnh Lạc Phong bấm E.", "type": "talk_lac", "goal": {"npc": "lac-phong"}, "need": 1, "reward": {"exp": 5000, "gold": 200}},
+	{"title": "Dẹp loạn Cửa Gió", "hint": "Hạ 10 quái ở Cửa Gió rồi hạ Đội trưởng Lính Thuê (tinh anh có tên).", "type": "kills2", "goal": {"variant": "kills2"}, "need": 11, "reward": {"exp": 15000}},
+	{"title": "Lãnh địa đầu tiên", "hint": "M mở Bản đồ khai phá vùng 2, chiếm 6 ô đất.", "type": "tiles2", "goal": {"panel": "map"}, "need": 6, "reward": {"exp": 20000, "stones": 5}},
+	{"title": "Tin đồn trong thành", "hint": "Hỏi Thương nhân Mạc Tam (E) về gián điệp.", "type": "talk_mac", "goal": {"npc": "mac-tam"}, "need": 1, "reward": {"exp": 25000}},
+	{"title": "Phủ Huyền Ảnh", "hint": "Tới Mắt Bão (theo mũi tên vàng). Hạ Tướng Gián Điệp Huyền Ảnh — chỉ bản thật có bóng.", "type": "boss2", "goal": {"map": "2-3", "at": "arena"}, "need": 1, "reward": {"exp": 30000}},
 ]
 const DONE2 := 6
 
 ## M7 (docs/11 C4-41): nhiệm vụ chính chương 4. Bước lưu ở profile.quest.ch4 (0 = chưa tới vùng 4, 7 = xong).
 ## Thưởng EXP ≈ 25% EXP từ cấp 30 lên 45 (4,6 triệu × 25% ≈ 1,15 triệu).
 const QUESTS4 := [
-	{"title": "Làng Chài Lau", "hint": "Tới Làng Chài Lau (Bãi Lau Mù), đứng cạnh Lão Ngư bấm E.", "type": "talk_ngu", "need": 1, "reward": {"exp": 40000, "gold": 500, "antidotes": 2}},
-	{"title": "Tiếng hát trong lau", "hint": "Cùng Lam Nhi hạ 30 quái vùng 4 (ảo ảnh không tính).", "type": "kills4", "need": 30, "reward": {"exp": 120000}},
-	{"title": "Ký ức của Lam Nhi", "hint": "N → Đầm Sâu. Phá 5 Bọc Mộng trên các cồn đất (đi tới chạm vào).", "type": "pods4", "need": 5, "reward": {"exp": 180000, "stones": 8}},
-	{"title": "Cung Mộng", "hint": "N → Cung Mộng. Khám phá ≥ 40% map để tìm cửa Cung Phệ Mộng.", "type": "explore4", "need": 1, "reward": {"exp": 230000}},
-	{"title": "Nữ Vương Phệ Mộng", "hint": "Hạ Nữ Vương ở phía đông Cung Mộng. Trong mơ: phá 3 Mộng Châu.", "type": "boss4", "need": 1, "reward": {"exp": 280000}},
-	{"title": "Tiến hoá Thiên phú", "hint": "Thiên phú Lv10 + 1 Tinh Hoa Tiến Hoá → gặp Tinh Quang Sứ (E) hoặc bảng Thiên phú (T).", "type": "evolve", "need": 1, "reward": {"exp": 300000, "gold": 2000}},
+	{"title": "Làng Chài Lau", "hint": "Tới Làng Chài Lau (Bãi Lau Mù), đứng cạnh Lão Ngư bấm E.", "type": "talk_ngu", "goal": {"npc": "lao-ngu"}, "need": 1, "reward": {"exp": 40000, "gold": 500, "antidotes": 2}},
+	{"title": "Tiếng hát trong lau", "hint": "Cùng Lam Nhi lần 3 dấu vết ảo ảnh ở Bãi Lau Mù, rồi hạ Ảo Ảnh Gọi Tên.", "type": "kills4", "goal": {"variant": "kills4"}, "need": 4, "reward": {"exp": 120000}},
+	{"title": "Ký ức của Lam Nhi", "hint": "Tới Đầm Sâu (theo mũi tên vàng). Phá 5 Bọc Mộng trên các cồn đất (đi tới chạm vào).", "type": "pods4", "goal": {"map": "4-2", "list": "pods", "done": "orbs4"}, "need": 5, "reward": {"exp": 180000, "stones": 8}},
+	{"title": "Cung Mộng", "hint": "Tới Cung Mộng (theo mũi tên vàng). Khám phá ≥ 40% map để tìm cửa Cung Phệ Mộng.", "type": "explore4", "goal": {"map": "4-3", "at": "explore"}, "need": 1, "reward": {"exp": 230000}},
+	{"title": "Nữ Vương Phệ Mộng", "hint": "Hạ Nữ Vương ở phía đông Cung Mộng. Trong mơ: phá 3 Mộng Châu.", "type": "boss4", "goal": {"map": "4-3", "at": "arena"}, "need": 1, "reward": {"exp": 280000}},
+	{"title": "Tiến hoá Thiên phú", "hint": "Thiên phú Lv10 + 1 Tinh Hoa Tiến Hoá → gặp Tinh Quang Sứ (E) hoặc bảng Thiên phú (T).", "type": "evolve", "goal": {"npc": "tinh-quang"}, "need": 1, "reward": {"exp": 300000, "gold": 2000}},
 ]
 const DONE4 := 7
 
@@ -417,13 +417,13 @@ static func quest4(step: int) -> Dictionary:
 ## M8 (docs/12 C5-41): nhiệm vụ chính chương 5. Bước lưu ở profile.quest.ch5 (0 = chưa tới vùng 5, 8 = xong).
 ## Thưởng EXP ≈ 25% EXP từ cấp 45 lên 60 (9,8 triệu × 25% ≈ 2,45 triệu).
 const QUESTS5 := [
-	{"title": "Trại Tro Hồng", "hint": "Tới Trại Tro Hồng (Chân Núi Tro), đứng cạnh Xích Đồng bấm E.", "type": "talk_xich", "need": 1, "reward": {"exp": 100000, "gold": 800, "holy_water": 1}},
-	{"title": "Dọn đường cho đoàn buôn", "hint": "Hạ 30 quái vùng 5 giúp Kim Phú. Tránh dung nham.", "type": "kills5", "need": 30, "reward": {"exp": 250000}},
-	{"title": "Đất dưới chân núi", "hint": "M mở Bản đồ khai phá vùng 5: chiếm 6 ô, có ít nhất 1 Mỏ Tinh Thạch.", "type": "tiles5", "need": 6, "reward": {"exp": 300000, "stones": 8}},
-	{"title": "Thương hội phản bội", "hint": "Về Trại Tro Hồng, nói với Xích Đồng (E) rồi giữ Cổng Trại qua 3 đợt lính Kim Luân.", "type": "siege5", "need": 1, "reward": {"exp": 400000, "gold": 2000}},
-	{"title": "Miệng Núi Lửa", "hint": "N → Miệng Núi Lửa. Khám phá ≥ 40% map để tìm lối vào Long Huyệt.", "type": "explore5", "need": 1, "reward": {"exp": 400000}},
-	{"title": "Viêm Long", "hint": "Hạ Viêm Long ở Long Huyệt (phía đông). Khi dung nham dâng: đứng trên Đá Nổi.", "type": "boss5", "need": 1, "reward": {"exp": 450000, "crystal": 10}},
-	{"title": "Chuyển chức lần 2", "hint": "Cấp 60 + 30 Tinh Thạch → gặp Liệt Diễm (E) ở Trại Tro Hồng, chọn 1 trong 2 nhánh.", "type": "job2", "need": 1, "reward": {"exp": 550000, "gold": 3000}},
+	{"title": "Trại Tro Hồng", "hint": "Tới Trại Tro Hồng (Chân Núi Tro), đứng cạnh Xích Đồng bấm E.", "type": "talk_xich", "goal": {"npc": "xich-dong"}, "need": 1, "reward": {"exp": 100000, "gold": 800, "holy_water": 1}},
+	{"title": "Dọn đường cho đoàn buôn", "hint": "Nhặt 8 Than Đá Đỏ rơi từ Thằn Lằn Lửa / Người Đá cho Kim Phú. Tránh dung nham.", "type": "kills5", "goal": {"variant": "kills5"}, "need": 8, "reward": {"exp": 250000}},
+	{"title": "Đất dưới chân núi", "hint": "M mở Bản đồ khai phá vùng 5: chiếm 6 ô, có ít nhất 1 Mỏ Tinh Thạch.", "type": "tiles5", "goal": {"panel": "map"}, "need": 6, "reward": {"exp": 300000, "stones": 8}},
+	{"title": "Thương hội phản bội", "hint": "Về Trại Tro Hồng, nói với Xích Đồng (E) rồi giữ Cổng Trại qua 3 đợt lính Kim Luân.", "type": "siege5", "goal": {"npc": "xich-dong", "siege": true}, "need": 1, "reward": {"exp": 400000, "gold": 2000}},
+	{"title": "Miệng Núi Lửa", "hint": "Tới Miệng Núi Lửa (theo mũi tên vàng). Khám phá ≥ 40% map để tìm lối vào Long Huyệt.", "type": "explore5", "goal": {"map": "5-3", "at": "explore"}, "need": 1, "reward": {"exp": 400000}},
+	{"title": "Viêm Long", "hint": "Hạ Viêm Long ở Long Huyệt (phía đông). Khi dung nham dâng: đứng trên Đá Nổi.", "type": "boss5", "goal": {"map": "5-3", "at": "arena"}, "need": 1, "reward": {"exp": 450000, "crystal": 10}},
+	{"title": "Chuyển chức lần 2", "hint": "Cấp 60 + 30 Tinh Thạch → gặp Liệt Diễm (E) ở Trại Tro Hồng, chọn 1 trong 2 nhánh.", "type": "job2", "goal": {"npc": "liet-dien"}, "need": 1, "reward": {"exp": 550000, "gold": 3000}},
 ]
 const DONE5 := 8
 
@@ -435,13 +435,13 @@ static func quest5(step: int) -> Dictionary:
 ## M9 (docs/14 C6-41): nhiệm vụ chính chương 6. Bước lưu ở profile.quest.ch6 (0 = chưa tới vùng 6, 8 = xong).
 ## Thưởng EXP ≈ 25% EXP từ cấp 60 lên 72 (13,3 triệu × 25% ≈ 3,34 triệu).
 const QUESTS6 := [
-	{"title": "Trạm Tuyết Bạc", "hint": "Tới Trạm Tuyết Bạc (Đồng Tuyết), đứng cạnh Tuyết Nga bấm E.", "type": "talk_nga", "need": 1, "reward": {"exp": 120000, "gold": 1000, "embers": 2}},
-	{"title": "Đàn sói đói", "hint": "Hạ 30 quái vùng 6 giúp Lão Hàn. Đừng đứng yên quá lâu.", "type": "kills6", "need": 30, "reward": {"exp": 300000}},
-	{"title": "Thắp Đèn Cực Quang", "hint": "N → Rừng Băng. Đứng cạnh 3 Đèn Cực Quang 2 giây để thắp.", "type": "beacons6", "need": 3, "reward": {"exp": 400000, "stones": 8}},
-	{"title": "Mảnh thứ hai thức giấc", "hint": "N → Đỉnh Cực Quang. Trải qua 3 lần mất kiểm soát (thanh Ám Khí đầy). Lửa làm Ám Khí dịu đi.", "type": "dark6", "need": 3, "reward": {"exp": 450000}},
-	{"title": "Gương Băng Vĩnh Dạ", "hint": "Khám phá ≥ 40% Đỉnh Cực Quang để tìm cửa hang gương.", "type": "explore6", "need": 1, "reward": {"exp": 550000}},
-	{"title": "Bản Ngã Bóng Tối", "hint": "Hạ Bản Ngã ở phía đông Đỉnh Cực Quang. Nó dùng lại kỹ năng của ngươi 3 giây sau; trong 4 gương chỉ tấm thật có bóng.", "type": "boss6", "need": 1, "reward": {"exp": 700000, "crystal": 10}},
-	{"title": "Sự thật", "hint": "Về Trạm Tuyết Bạc, nói với Tuyết Nga (E).", "type": "truth6", "need": 1, "reward": {"exp": 820000, "gold": 4000}},
+	{"title": "Trạm Tuyết Bạc", "hint": "Tới Trạm Tuyết Bạc (Đồng Tuyết), đứng cạnh Tuyết Nga bấm E.", "type": "talk_nga", "goal": {"npc": "tuyet-nga"}, "need": 1, "reward": {"exp": 120000, "gold": 1000, "embers": 2}},
+	{"title": "Đàn sói đói", "hint": "Giữ điểm phía đông Trạm Tuyết Bạc qua 3 đợt sói đói (đừng rời xa).", "type": "kills6", "goal": {"variant": "kills6"}, "need": 3, "reward": {"exp": 300000}},
+	{"title": "Thắp Đèn Cực Quang", "hint": "Tới Rừng Băng (theo mũi tên vàng). Đứng cạnh 3 Đèn Cực Quang 2 giây để thắp.", "type": "beacons6", "goal": {"map": "6-2", "list": "beacons", "done": "beacons6"}, "need": 3, "reward": {"exp": 400000, "stones": 8}},
+	{"title": "Mảnh thứ hai thức giấc", "hint": "Tới Đỉnh Cực Quang (theo mũi tên vàng). Trải qua 3 lần mất kiểm soát (thanh Ám Khí đầy). Lửa làm Ám Khí dịu đi.", "type": "dark6", "goal": {"map": "6-3", "at": "camp"}, "need": 3, "reward": {"exp": 450000}},
+	{"title": "Gương Băng Vĩnh Dạ", "hint": "Khám phá ≥ 40% Đỉnh Cực Quang để tìm cửa hang gương.", "type": "explore6", "goal": {"map": "6-3", "at": "explore"}, "need": 1, "reward": {"exp": 550000}},
+	{"title": "Bản Ngã Bóng Tối", "hint": "Hạ Bản Ngã ở phía đông Đỉnh Cực Quang. Nó dùng lại kỹ năng của ngươi 3 giây sau; trong 4 gương chỉ tấm thật có bóng.", "type": "boss6", "goal": {"map": "6-3", "at": "arena"}, "need": 1, "reward": {"exp": 700000, "crystal": 10}},
+	{"title": "Sự thật", "hint": "Về Trạm Tuyết Bạc, nói với Tuyết Nga (E).", "type": "truth6", "goal": {"npc": "tuyet-nga"}, "need": 1, "reward": {"exp": 820000, "gold": 4000}},
 ]
 const DONE6 := 8
 
@@ -453,13 +453,13 @@ static func quest6(step: int) -> Dictionary:
 ## M12 (docs/18 C9-41): nhiệm vụ chính chương 9. Bước lưu ở profile.quest.ch9: 0 = chưa xong chương 8, 1…7 = bước 1…7, 8 = xong.
 ## Thưởng EXP ≈ 25% EXP cấp 95 → 100 ≈ 3,39 triệu.
 const QUESTS9 := [
-	{"title": "Thiên Thê", "hint": "Tới Thiên Thê Đài, gặp Vân Hạc", "type": "talk_van9", "need": 1, "reward": {"exp": 200000, "gold": 5000}},
-	{"title": "Thiên binh", "hint": "Hạ 30 quái vùng 9", "type": "kills9", "need": 30, "reward": {"exp": 350000}},
-	{"title": "Vượt tầng", "hint": "Mở Cửa Tầng tới tầng 6", "type": "floors9", "need": 5, "reward": {"exp": 450000, "stones": 12}},
-	{"title": "Ánh Hồn", "hint": "Giải thoát 9 Tàn Hồn Khai Giới Giả", "type": "souls9", "need": 9, "reward": {"exp": 500000, "crystal": 15}},
-	{"title": "Thiên Đạo Chi Môn", "hint": "Mở tới tầng 9, tìm Cổng (40% map)", "type": "explore9", "need": 1, "reward": {"exp": 550000}},
-	{"title": "Ma Tôn Vô Diện", "hint": "Hạ Ma Tôn ở Thiên Đạo Chi Môn", "type": "boss9", "need": 1, "reward": {"exp": 600000, "crystal": 20}},
-	{"title": "Lựa chọn", "hint": "Chọn số phận của mảnh thứ hai", "type": "ending9", "need": 1, "reward": {"exp": 740000, "gold": 10000}},
+	{"title": "Thiên Thê", "hint": "Tới Thiên Thê Đài, gặp Vân Hạc", "type": "talk_van9", "goal": {"npc": "van-hac-9"}, "need": 1, "reward": {"exp": 200000, "gold": 5000}},
+	{"title": "Thiên binh", "hint": "Hạ 10 quái Thiên Thê rồi hạ Thiên Binh Thống Lĩnh", "type": "kills9", "goal": {"variant": "kills9"}, "need": 11, "reward": {"exp": 350000}},
+	{"title": "Vượt tầng", "hint": "Mở Cửa Tầng tới tầng 6", "type": "floors9", "goal": {"region": 9, "enemy": "guard9"}, "need": 5, "reward": {"exp": 450000, "stones": 12}},
+	{"title": "Ánh Hồn", "hint": "Giải thoát 9 Tàn Hồn Khai Giới Giả", "type": "souls9", "goal": {"region": 9, "enemy": "tan-hon"}, "need": 9, "reward": {"exp": 500000, "crystal": 15}},
+	{"title": "Thiên Đạo Chi Môn", "hint": "Mở tới tầng 9, tìm Cổng (40% map)", "type": "explore9", "goal": {"map": "9-3", "at": "explore"}, "need": 1, "reward": {"exp": 550000}},
+	{"title": "Ma Tôn Vô Diện", "hint": "Hạ Ma Tôn ở Thiên Đạo Chi Môn", "type": "boss9", "goal": {"map": "9-3", "at": "arena"}, "need": 1, "reward": {"exp": 600000, "crystal": 20}},
+	{"title": "Lựa chọn", "hint": "Chọn số phận của mảnh thứ hai", "type": "ending9", "goal": {"none": "Chọn kết thúc ở bảng hiện ra sau trận Ma Tôn"}, "need": 1, "reward": {"exp": 740000, "gold": 10000}},
 ]
 const DONE9 := 8
 
@@ -471,13 +471,13 @@ static func quest9(step: int) -> Dictionary:
 ## M11 (docs/17 C8-41): nhiệm vụ chính chương 8. Bước lưu ở profile.quest.ch8: 0 = chưa xong chương 7, 1…7 = bước 1…7, 8 = xong.
 ## Thưởng EXP ≈ 25% EXP cấp 84 → 95 ≈ 6,19 triệu, tăng dần theo bước.
 const QUESTS8 := [
-	{"title": "Xuống vực", "hint": "Tới Tiền Đồn Tinh Quang, gặp Lạc Phong", "type": "talk_lac8", "need": 1, "reward": {"exp": 300000, "lanterns": 2}},
-	{"title": "Mở đường", "hint": "Hạ 30 quái vùng 8", "type": "kills8", "need": 30, "reward": {"exp": 600000}},
-	{"title": "Thắp đèn", "hint": "Thắp 4 Đèn Tinh Quang ở Đáy Vực", "type": "lamps8", "need": 4, "reward": {"exp": 800000, "stones": 10}},
-	{"title": "Lồng Hư Vô", "hint": "Phá 3 Lồng Hư Vô ở Đáy Vực", "type": "cages8", "need": 3, "reward": {"exp": 900000, "crystal": 10}},
-	{"title": "Tổng tấn công", "hint": "Phá 3 Trụ Phong Ấn ở Sào Huyệt", "type": "assault8", "need": 3, "reward": {"exp": 1000000, "gold": 6000}},
-	{"title": "Giáo Chủ Hư Vô", "hint": "Hạ Giáo Chủ ở Điện Giáo Chủ", "type": "boss8", "need": 1, "reward": {"exp": 1200000, "crystal": 15}},
-	{"title": "Chuyển chức lần 3", "hint": "Gặp Tổ Sư ở Cổng Phá Vây", "type": "job3", "need": 1, "reward": {"exp": 1390000, "gold": 8000}},
+	{"title": "Xuống vực", "hint": "Tới Tiền Đồn Tinh Quang, gặp Lạc Phong", "type": "talk_lac8", "goal": {"npc": "lac-phong-8"}, "need": 1, "reward": {"exp": 300000, "lanterns": 2}},
+	{"title": "Mở đường", "hint": "Nhặt 8 Mảnh Phong Ấn từ Kẻ Nuốt / Bóng Hư Vô", "type": "kills8", "goal": {"variant": "kills8"}, "need": 8, "reward": {"exp": 600000}},
+	{"title": "Thắp đèn", "hint": "Thắp 4 Đèn Tinh Quang ở Đáy Vực", "type": "lamps8", "goal": {"map": "8-2", "list": "lamps", "only": "lamps_off", "done": "lamps8"}, "need": 4, "reward": {"exp": 800000, "stones": 10}},
+	{"title": "Lồng Hư Vô", "hint": "Phá 3 Lồng Hư Vô ở Đáy Vực", "type": "cages8", "goal": {"map": "8-2", "list": "cages", "done": "cages8"}, "need": 3, "reward": {"exp": 900000, "crystal": 10}},
+	{"title": "Tổng tấn công", "hint": "Phá 3 Trụ Phong Ấn ở Sào Huyệt", "type": "assault8", "goal": {"map": "8-3", "list": "seals", "done": "pillars8"}, "need": 3, "reward": {"exp": 1000000, "gold": 6000}},
+	{"title": "Giáo Chủ Hư Vô", "hint": "Hạ Giáo Chủ ở Điện Giáo Chủ", "type": "boss8", "goal": {"map": "8-3", "at": "arena"}, "need": 1, "reward": {"exp": 1200000, "crystal": 15}},
+	{"title": "Chuyển chức lần 3", "hint": "Gặp Tổ Sư ở Cổng Phá Vây", "type": "job3", "goal": {"npc": "to-su"}, "need": 1, "reward": {"exp": 1390000, "gold": 8000}},
 ]
 const DONE8 := 8
 
@@ -490,14 +490,14 @@ static func quest8(step: int) -> Dictionary:
 ## (bước 0 của spec), 2…8 = bước 1…7, 9 = xong. Thưởng EXP ≈ 25% EXP cấp 72 → 84 ≈ 4,91 triệu, tăng dần theo bước.
 ## Mục tiêu ≤ 30 ký tự, gợi ý ≤ 40 ký tự (UI-16).
 const QUESTS7 := [
-	{"title": "Dựng Cảng Khí Cầu", "hint": "Nâng lãnh địa lên Hoàng Thành, xây Cảng", "type": "port7", "need": 1, "reward": {"exp": 200000, "gold": 3000}},
-	{"title": "Lên đảo", "hint": "Tới Bến Mây, nói chuyện với Vân Hạc", "type": "talk_vanhac", "need": 1, "reward": {"exp": 350000, "feathers": 3}},
-	{"title": "Bầy chim dữ", "hint": "Hạ 30 quái vùng 7", "type": "kills7", "need": 30, "reward": {"exp": 500000}},
-	{"title": "Nối cầu gió", "hint": "Kích 3 Trụ Gió ở Đảo Rừng Treo", "type": "pillars7", "need": 3, "reward": {"exp": 600000, "stones": 10}},
-	{"title": "Neo Hư Vô", "hint": "Phá 3 Neo Hư Vô ở Thiên Cung", "type": "anchors7", "need": 3, "reward": {"exp": 700000}},
-	{"title": "Tìm Đài Cự Thần", "hint": "Khám phá 40% Thiên Cung Đổ Nát", "type": "explore7", "need": 1, "reward": {"exp": 750000}},
-	{"title": "Thiên Không Cự Thần", "hint": "Hạ Cự Thần ở Đài Cự Thần", "type": "boss7", "need": 1, "reward": {"exp": 850000, "crystal": 12}},
-	{"title": "Nghịch Thiên Cải Mệnh", "hint": "Chạm Bia Đá gốc, tiến hoá lần 2", "type": "evo7", "need": 1, "reward": {"exp": 960000, "gold": 6000}},
+	{"title": "Dựng Cảng Khí Cầu", "hint": "Nâng lãnh địa lên Hoàng Thành, xây Cảng", "type": "port7", "goal": {"panel": "map"}, "need": 1, "reward": {"exp": 200000, "gold": 3000}},
+	{"title": "Lên đảo", "hint": "Tới Bến Mây, nói chuyện với Vân Hạc", "type": "talk_vanhac", "goal": {"npc": "van-hac"}, "need": 1, "reward": {"exp": 350000, "feathers": 3}},
+	{"title": "Bầy chim dữ", "hint": "Giữ điểm đông Bến Mây qua 3 đợt chim", "type": "kills7", "goal": {"variant": "kills7"}, "need": 3, "reward": {"exp": 500000}},
+	{"title": "Nối cầu gió", "hint": "Kích 3 Trụ Gió ở Đảo Rừng Treo", "type": "pillars7", "goal": {"map": "7-2", "list": "pillars", "done": "pillars7"}, "need": 3, "reward": {"exp": 600000, "stones": 10}},
+	{"title": "Neo Hư Vô", "hint": "Phá 3 Neo Hư Vô ở Thiên Cung", "type": "anchors7", "goal": {"map": "7-3", "list": "void_anchors", "done": "anchors7"}, "need": 3, "reward": {"exp": 700000}},
+	{"title": "Tìm Đài Cự Thần", "hint": "Khám phá 40% Thiên Cung Đổ Nát", "type": "explore7", "goal": {"map": "7-3", "at": "explore"}, "need": 1, "reward": {"exp": 750000}},
+	{"title": "Thiên Không Cự Thần", "hint": "Hạ Cự Thần ở Đài Cự Thần", "type": "boss7", "goal": {"map": "7-3", "at": "arena"}, "need": 1, "reward": {"exp": 850000, "crystal": 12}},
+	{"title": "Nghịch Thiên Cải Mệnh", "hint": "Chạm Bia Đá gốc, tiến hoá lần 2", "type": "evo7", "goal": {"map": "7-3", "at": "arena"}, "need": 1, "reward": {"exp": 960000, "gold": 6000}},
 ]
 const DONE7 := 9
 
@@ -509,12 +509,12 @@ static func quest7(step: int) -> Dictionary:
 ## M6 (docs/10 C3-41): nhiệm vụ chính chương 3. Bước lưu ở profile.quest.ch3 (0 = chưa tới vùng 3, 7 = xong).
 ## Thưởng EXP ≈ 25% EXP từ cấp 20 lên 30 (M5-02: 1,2 triệu × 25% ≈ 300.000).
 const QUESTS3 := [
-	{"title": "Học giả sa mạc", "hint": "Tới Trại Cát Đỏ (Rìa Cát Đỏ), đứng cạnh Sa Lão bấm E.", "type": "talk_salao", "need": 1, "reward": {"exp": 15000, "gold": 300}},
-	{"title": "Mảnh bản đồ", "hint": "Hạ 30 quái vùng 3. Đứng trong bóng râm tảng đá để tránh nắng.", "type": "kills3", "need": 30, "reward": {"exp": 35000}},
-	{"title": "Ba ốc đảo", "hint": "N → Ốc Đảo Lãng Quên. Uống nước ở cả 3 ốc đảo (đứng trong hồ 1 giây).", "type": "oases", "need": 3, "reward": {"exp": 45000, "potions": 2}},
-	{"title": "Bia Khai Giới Giả", "hint": "N → Di Tích Khai Giới Giả. Khám phá ≥ 40% map và tới Bia Khai Giới Giả.", "type": "stele3", "need": 1, "reward": {"exp": 55000, "stones": 6}},
-	{"title": "Sào Huyệt Sa Hoàng", "hint": "Hạ Bọ Cạp Sa Hoàng ở phía đông Di tích. Né vết cát khi nó chui xuống.", "type": "boss3", "need": 1, "reward": {"exp": 70000}},
-	{"title": "Thử Thách Chuyển Chức", "hint": "Đạt cấp 30, gặp Thạch Thủ ở Trại Cát Đỏ (E) để chuyển chức.", "type": "job", "need": 1, "reward": {"exp": 80000, "gold": 1000}},
+	{"title": "Học giả sa mạc", "hint": "Tới Trại Cát Đỏ (Rìa Cát Đỏ), đứng cạnh Sa Lão bấm E.", "type": "talk_salao", "goal": {"npc": "sa-lao"}, "need": 1, "reward": {"exp": 15000, "gold": 300}},
+	{"title": "Mảnh bản đồ", "hint": "Tìm 3 Mảnh bản đồ phát sáng quanh Rìa Cát Đỏ, rồi hạ Xác Ướp Giữ Bản Đồ.", "type": "kills3", "goal": {"variant": "kills3"}, "need": 4, "reward": {"exp": 35000}},
+	{"title": "Ba ốc đảo", "hint": "Tới Ốc Đảo Lãng Quên (theo mũi tên vàng). Uống nước ở cả 3 ốc đảo (đứng trong hồ 1 giây).", "type": "oases", "goal": {"map": "3-2", "list": "oases", "done": "oases"}, "need": 3, "reward": {"exp": 45000, "potions": 2}},
+	{"title": "Bia Khai Giới Giả", "hint": "Tới Di Tích Khai Giới Giả (theo mũi tên vàng). Khám phá ≥ 40% map và tới Bia Khai Giới Giả.", "type": "stele3", "goal": {"map": "3-3", "at": "stele3"}, "need": 1, "reward": {"exp": 55000, "stones": 6}},
+	{"title": "Sào Huyệt Sa Hoàng", "hint": "Hạ Bọ Cạp Sa Hoàng ở phía đông Di tích. Né vết cát khi nó chui xuống.", "type": "boss3", "goal": {"map": "3-3", "at": "arena"}, "need": 1, "reward": {"exp": 70000}},
+	{"title": "Thử Thách Chuyển Chức", "hint": "Đạt cấp 30, gặp Thạch Thủ ở Trại Cát Đỏ (E) để chuyển chức.", "type": "job", "goal": {"npc": "thach-thu"}, "need": 1, "reward": {"exp": 80000, "gold": 1000}},
 ]
 const DONE3 := 7
 
@@ -530,21 +530,21 @@ static func quest2(step: int) -> Dictionary:
 ## boss_unlocked · boss · enter_map. need = số cần đạt (với kiểu đếm).
 ## reward: {exp, gold, potions, torches, stones}
 const QUESTS := [
-	{"title": "Quái Sương tấn công làng!", "hint": "Ra cổng làng. Chuột trái / J để đánh.", "type": "kill_quest", "need": 3,
+	{"title": "Quái Sương tấn công làng!", "hint": "Ra cổng làng. Chuột trái / J để đánh.", "type": "kill_quest", "goal": {"map": "1-1", "at": "field"}, "need": 3,
 		"reward": {"exp": 80, "gold": 20}},
-	{"title": "Học kỹ năng", "hint": "Phím 1–4 dùng kỹ năng (tốn MP).", "type": "skill", "need": 2, "reward": {"exp": 100}},
-	{"title": "Học né", "hint": "Space né lăn; né đúng lúc đòn tới = Hoàn hảo.", "type": "dodge", "need": 1, "reward": {"exp": 120}},
-	{"title": "Món quà của Trưởng làng", "hint": "I mở túi đồ, chọn vũ khí, bấm Mặc.", "type": "equip_weapon", "need": 1, "reward": {"exp": 150}},
-	{"title": "Vào Rừng Sương", "hint": "Đánh quái phía đông làng để lên cấp.", "type": "level", "need": 3, "reward": {"exp": 300, "gold": 100}},
-	{"title": "Cộng điểm tiềm năng", "hint": "C mở Chỉ số — cộng hết điểm (hoặc Tự cộng điểm).", "type": "spend_points", "need": 1,
+	{"title": "Học kỹ năng", "hint": "Phím 1–4 dùng kỹ năng (tốn MP).", "type": "skill", "goal": {"near": "enemy"}, "need": 2, "reward": {"exp": 100}},
+	{"title": "Học né", "hint": "Space né lăn; né đúng lúc đòn tới = Hoàn hảo.", "type": "dodge", "goal": {"near": "enemy"}, "need": 1, "reward": {"exp": 120}},
+	{"title": "Món quà của Trưởng làng", "hint": "I mở túi đồ, chọn vũ khí, bấm Mặc.", "type": "equip_weapon", "goal": {"panel": "bag"}, "need": 1, "reward": {"exp": 150}},
+	{"title": "Vào Rừng Sương", "hint": "Đánh quái phía đông làng để lên cấp.", "type": "level", "goal": {"map": "1-1", "at": "camp"}, "need": 3, "reward": {"exp": 300, "gold": 100}},
+	{"title": "Cộng điểm tiềm năng", "hint": "C mở Chỉ số — cộng hết điểm (hoặc Tự cộng điểm).", "type": "spend_points", "goal": {"panel": "stats"}, "need": 1,
 		"reward": {"exp": 300, "potions": 2}},
-	{"title": "Dọn sương", "hint": "M mở Bản đồ khai phá, dùng Đuốc lên ô kề lãnh địa.", "type": "reveal", "need": 3,
+	{"title": "Dọn sương", "hint": "M mở Bản đồ khai phá, dùng Đuốc lên ô kề lãnh địa.", "type": "reveal", "goal": {"panel": "map"}, "need": 3,
 		"reward": {"torches": 1, "exp": 600}},
-	{"title": "Xây công trình đầu tiên", "hint": "Chiếm Rừng gỗ (30 vàng) — Xưởng Gỗ tự xây.", "type": "build", "need": 1,
+	{"title": "Xây công trình đầu tiên", "hint": "Chiếm Rừng gỗ (30 vàng) — Xưởng Gỗ tự xây.", "type": "build", "goal": {"panel": "map"}, "need": 1,
 		"reward": {"exp": 800, "gold": 150}},
-	{"title": "Chuẩn bị đánh boss", "hint": "Đạt cấp 5 và chiếm 6 ô đất.", "type": "boss_unlocked", "need": 1, "reward": {"exp": 1200, "stones": 3}},
-	{"title": "Sói Chúa Hư Vô", "hint": "Vào hang phía đông. Phá thanh Phá Thế để boss choáng.", "type": "boss", "need": 1, "reward": {"exp": 2500}},
-	{"title": "Lõi Sương", "hint": "N mở bản đồ lục địa → Lõi Sương → Lên đường.", "type": "enter_map", "need": 1, "reward": {"exp": 3500}},
+	{"title": "Chuẩn bị đánh boss", "hint": "Đạt cấp 5 và chiếm 6 ô đất.", "type": "boss_unlocked", "goal": {"map": "1-1", "at": "camp"}, "need": 1, "reward": {"exp": 1200, "stones": 3}},
+	{"title": "Sói Chúa Hư Vô", "hint": "Vào hang phía đông. Phá thanh Phá Thế để boss choáng.", "type": "boss", "goal": {"map": "1-1", "at": "arena"}, "need": 1, "reward": {"exp": 2500}},
+	{"title": "Lõi Sương", "hint": "Đi tới Lõi Sương theo mũi tên vàng (Cổng Dịch Chuyển hoặc cổng vàng cuối map).", "type": "enter_map", "goal": {"map": "1-3", "at": "safe"}, "need": 1, "reward": {"exp": 3500}},
 ]
 const DONE_STEP := 12
 

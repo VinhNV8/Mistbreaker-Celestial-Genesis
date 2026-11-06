@@ -518,7 +518,7 @@ static func on_kill(w, e) -> void:
 		if w.ch3.fallen.size() > 6:
 			w.ch3.fallen.pop_front()
 	if int(w.map.get("region", 1)) == 3 and int(w.profile.quest.ch3) == 2:
-		w.profile.quest.kills3 = int(w.profile.quest.kills3) + 1
+		pass  # NV-B (docs/41): bước này nay theo mục tiêu riêng — core/main_variants.gd ghi tiến độ
 
 
 # ---------------------------------------------------------------- Nhân Sư Đá

@@ -4,6 +4,7 @@ extends "res://scripts/ui/modal.gd"
 
 const Items = preload("res://scripts/core/items.gd")
 const ItemData = preload("res://scripts/data/items.gd")
+const ItemCard = preload("res://scripts/ui/item_card.gd")
 const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
 const Classes = preload("res://scripts/data/classes.gd")
 const Resources = preload("res://scripts/data/resources.gd")
@@ -18,6 +19,7 @@ const ShopW = preload("res://scripts/ui/shop_widgets.gd")
 const Ornate = preload("res://scripts/ui/ornate.gd")
 const CharBar = preload("res://scripts/ui/char_bar.gd")
 const EnhanceToast = preload("res://scripts/ui/enhance_toast.gd")
+const EnhanceFx = preload("res://scripts/ui/enhance_fx.gd")
 const ItemTip = preload("res://scripts/ui/item_tip.gd")
 
 const DETAIL_W := 300.0
@@ -43,33 +45,6 @@ class RarityPips:
 			var c := Vector2(7.0 + i * 6.0, size.y - 7.0)
 			draw_circle(c, 2.8, Color(0, 0, 0, 0.85))
 			draw_circle(c, 1.9, col)
-
-
-class PlusGlow:
-	extends Control
-	var plus := 0
-	var t := 0.0
-
-	func _process(delta: float) -> void:
-		t += delta
-		queue_redraw()
-
-	func _draw() -> void:
-		var c := Items.enhance_color(plus)
-		var tier := Items.enhance_tier(plus)
-		if tier > 0:
-			var a := 0.45 + 0.35 * sin(t * (2.0 + tier))
-			for i in tier:
-				draw_rect(Rect2(Vector2.ONE * (1 + i * 2), size - Vector2.ONE * (2 + i * 4)), Color(c, a / (i + 1)), false, 2.0)
-			for k in tier * 2:
-				var ang := t * 1.5 + k * TAU / (tier * 2)
-				var r := size.x * 0.42
-				draw_circle(size / 2.0 + Vector2.from_angle(ang) * r, 1.5 + tier * 0.4, Color(c, 0.9))
-		if plus > 0:
-			var f := UiTheme.bold_font()
-			var col := c if tier > 0 else Color.WHITE
-			draw_string_outline(f, Vector2(0, size.y - 4), "+%d" % plus, HORIZONTAL_ALIGNMENT_RIGHT, size.x - 4, 12, 3, Color.BLACK)
-			draw_string(f, Vector2(0, size.y - 4), "+%d" % plus, HORIZONTAL_ALIGNMENT_RIGHT, size.x - 4, 12, col)
 
 
 ## Hiệu ứng khi bấm Cường hoá: thành công = chùm sáng toả ra; thất bại = tia xám rơi xuống.
@@ -326,10 +301,11 @@ func _slot_column(p, slots: Array) -> VBoxContainer:
 		b.tooltip_text = "" if not item.is_empty() else "%s: trống" % slot_name
 		b.name = "Worn_" + str(slot)
 		if item.is_empty():
+			# UI-64 (docs/42): ô trống = bóng khắc chìm của loại đồ (mờ, không màu) trên nền ô trống
 			b.icon = SpriteLib.icon("item-" + slot)
-			b.add_theme_stylebox_override("disabled", UiTheme.box(Color("#0f0a06"), 6, 1, Color("#4a3620"), 8))
-			b.add_theme_color_override("icon_normal_color", Color(1, 1, 1, 0.22))
-			b.add_theme_color_override("icon_disabled_color", Color(1, 1, 1, 0.22))
+			ItemCard.style_slot(b, {})
+			b.add_theme_color_override("icon_normal_color", Color(0.75, 0.68, 0.55, 0.22))
+			b.add_theme_color_override("icon_disabled_color", Color(0.75, 0.68, 0.55, 0.22))
 			b.disabled = true
 		v.add_child(b)
 	return v
@@ -411,7 +387,7 @@ func _bag_grid(p) -> PanelContainer:
 		b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		b.expand_icon = true
 		if item.is_empty():
-			b.add_theme_stylebox_override("disabled", UiTheme.box(Color("#0f0a06"), 6, 1, Color("#3a2a18"), 8))
+			ItemCard.style_slot(b, {})
 		b.disabled = item.is_empty()
 		grid.add_child(b)
 	col.add_child(grid)
@@ -440,18 +416,11 @@ func _item_button(item: Dictionary, text: String, doll := false, tip := "") -> B
 	pips.mouse_filter = MOUSE_FILTER_IGNORE
 	pips.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	b.add_child(pips)
-	var glow := PlusGlow.new()
-	glow.plus = int(item.plus)
-	glow.mouse_filter = MOUSE_FILTER_IGNORE
-	glow.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
-	b.add_child(glow)
+	# EN-1 (docs/43): hiệu ứng cường hoá hướng D (ánh kim / linh hoả + vệt sáng chạy quanh viền + tấm "+N")
+	EnhanceFx.attach(b, item, b.icon, 3.0, 7.0)
 	var selected := int(item.id) == _selected_id
-	var fill := (0.32 if selected else 0.2) if doll else (0.22 if selected else 0.08)
-	var normal := UiTheme.box(Color(c.darkened(0.45), fill + 0.35) if doll else Color(c, fill), 6, 2 if (selected or doll) else 1,
-		c.lightened(0.3) if selected else c, 6)
-	b.add_theme_stylebox_override("normal", normal)
-	b.add_theme_stylebox_override("hover", UiTheme.box(Color(c, 0.3), 6, 2, c.lightened(0.3), 6))
-	b.add_theme_stylebox_override("pressed", normal)
+	# UI-64 (docs/42): ô đồ theo bậc phẩm chất — nền nhuộm màu toả từ đáy, khung đổi hình theo bậc, icon ~90% ô
+	ItemCard.style_slot(b, item, selected)
 	b.add_theme_color_override("font_color", c.lightened(0.25))
 	b.add_theme_color_override("font_hover_color", Color.WHITE)
 	var id := int(item.id)
@@ -476,47 +445,21 @@ func _detail(p) -> VBoxContainer:
 		return col
 	var item: Dictionary = found.item
 	var in_bag: bool = found.where == "bag"
-	var rarity: Dictionary = ItemData.RARITIES[item.rarity]
-
-	var title := UiTheme.label(Items.display_name(item), "Heading", DETAIL_W)
-	title.add_theme_color_override("font_color", Items.rarity_color(item))
-	title.add_theme_font_size_override("font_size", 19)
-	col.add_child(title)
-	col.add_child(UiTheme.label(
-		"%s · %s · Cấp %d" % [rarity.name, ItemData.SLOTS[item.slot].name, int(item.level)], "Small"
-	))
-	# SN9-07: gốc + phần cường hoá ("+9 + 15 Tấn công (gốc)")
-	col.add_child(UiTheme.label(Items.base_text(item) + "  (gốc)"))
-	for af in item.affixes:
-		var l := UiTheme.label(Items.stat_text(af.stat, af.value))
-		l.add_theme_color_override("font_color", Color("#9ec8ff"))
-		col.add_child(l)
-	if item.unique != "":
-		var u := UiTheme.label(ItemData.UNIQUES[item.unique].text, "", DETAIL_W)
-		u.add_theme_color_override("font_color", Items.rarity_color(item))
-		col.add_child(u)
-	if item.set != "":
-		_set_lines(col, p, item.set)
-
+	# UI-66 (docs/42): phần thông tin = thẻ ItemCard (dải đầu nhuộm màu phẩm chất, icon lớn, chỉ số chính số to, dòng
+	# phụ có biểu tượng, bộ, so sánh dạng chip ▲ ▼); nút Mặc / Phân rã / Cường hoá giữ như cũ bên dưới.
+	var diff: Array = []
+	var ctitle := ""
+	var note := ""
 	if in_bag:
 		# SN11-02: so sánh với đồ đang mặc cùng ô (▲ / ▼ từng chỉ số + Lực chiến)
 		var worn: Dictionary = p.equipment.get(str(item.slot), {})
-		var hd := UiTheme.label(("So với đang mặc: %s" % Items.display_name(worn)) if not worn.is_empty() else "Ô này đang trống — mặc vào:", "Small", DETAIL_W)
-		hd.name = "CompareHeader"
-		col.add_child(hd)
-		var lines := ItemTip.diff_lines(world, item, worn)
-		if lines.is_empty():
-			col.add_child(UiTheme.label("Chỉ số như nhau", "Small", DETAIL_W))
-		for ln in lines:
-			var dl := UiTheme.label(str(ln[0]), "", DETAIL_W)
-			dl.add_theme_color_override("font_color", ln[1])
-			col.add_child(dl)
+		ctitle = ("So với đang mặc: %s" % Items.display_name(worn)) if not worn.is_empty() else "Ô này đang trống — mặc vào:"
+		diff = ItemTip.diff_lines(world, item, worn)
 		# SN-20: báo trước cấp cường hoá được chuyển từ đồ đang mặc.
 		var moved := Items.plus_after_equip(p, item)
 		if moved > int(item.plus):
-			var tl := UiTheme.label("Mặc vào: nhận +%d từ đồ đang mặc (đồ cũ còn +%d)." % [moved, int(item.plus)], "", DETAIL_W)
-			tl.add_theme_color_override("font_color", UiTheme.GOLD)
-			col.add_child(tl)
+			note = "Mặc vào: nhận +%d từ đồ đang mặc (đồ cũ còn +%d)." % [moved, int(item.plus)]
+	col.add_child(ItemCard.build(item, DETAIL_W, "", p, diff, ctitle, note))
 
 	col.add_child(HSeparator.new())
 	var row := UiTheme.hbox(8)
@@ -542,21 +485,10 @@ func _detail(p) -> VBoxContainer:
 	return col
 
 
-func _set_lines(col: VBoxContainer, p, set_id: String) -> void:
-	var set_def: Dictionary = ItemData.SETS[set_id]
-	var worn: int = Items.equipment_bonus(p.equipment).sets.get(set_id, 0)
-	col.add_child(UiTheme.label("%s — đang mặc %d/6" % [set_def.name, worn], "Small"))
-	for tier in set_def.tiers:
-		var on: bool = worn >= int(tier.count)
-		var l := UiTheme.label("  (%d) %s" % [tier.count, tier.text], "", DETAIL_W)
-		l.add_theme_font_size_override("font_size", 13)
-		l.add_theme_color_override("font_color", UiTheme.GOOD if on else UiTheme.MUTED)
-		col.add_child(l)
-
-
 ## EQ-12/13: hiện chi phí, tỉ lệ, lý do bị khoá. UI-25 (Spec_Notes đợt 8): chi phí là các ô icon "cần / có"
 ## (thiếu thì đỏ) thay cho dòng chữ nhỏ; bảng chi phí mọi cấp ở Lò Rèn (phím R).
 signal open_forge
+
 
 func _enhance_block(col: VBoxContainer, p, item: Dictionary) -> void:
 	var plus := int(item.plus)
@@ -595,7 +527,7 @@ func _enhance_block(col: VBoxContainer, p, item: Dictionary) -> void:
 		refresh()
 		if res.ok:
 			_play_burst(res.get("success", false), int(Items.find_item(world.profile, int(item.id)).item.plus),
-				Items.display_name(Items.find_item(world.profile, int(item.id)).item)))
+				Items.display_name(Items.find_item(world.profile, int(item.id)).item), SpriteLib.item_icon(item)))
 	brow.add_child(b)
 	var fb := UiTheme.button("Lò Rèn (R)")
 	fb.name = "ForgeButton"
@@ -630,8 +562,8 @@ func close() -> void:
 
 
 ## SN10-01: kết quả cường hoá hiện giữa màn hình (EnhanceToast), không còn hiệu ứng nhỏ trên chân dung.
-func _play_burst(success: bool, plus: int, label := "") -> void:
-	EnhanceToast.pop(self, success, plus, label)
+func _play_burst(success: bool, plus: int, label := "", tex: Texture2D = null) -> void:
+	EnhanceToast.pop(self, success, plus, label, tex)
 
 
 ## UI-11: mở Túi đồ ở một tab (phím I → "bag", phím C → "stats"). Đang mở đúng tab đó thì đóng.

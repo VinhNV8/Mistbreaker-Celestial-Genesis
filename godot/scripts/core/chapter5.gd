@@ -554,13 +554,14 @@ static func on_kill(w, e) -> void:
 			s.hp = s.max_hp
 			s.state = "chase"
 	if in_region(w) and int(p.quest.ch5) == 2 and e.role in ["field", "nestMinion", "nestGuard"]:
-		p.quest.kills5 = int(p.quest.kills5) + 1
+		pass  # NV-B (docs/41): bước này nay theo mục tiêu riêng — core/main_variants.gd ghi tiến độ
 	# Tử Linh Sư: dựng Xương Nô.
 	if job2(w) == "tu-linh-su" and e.role == "field" and not e.elite and w._r() < TL_CHANCE and _bones(w) < TL_MAX:
 		var a = w._add_ally("shadow", "xuong-no", e.level, e.pos)
 		a.kind = "bone"
 		a.atk = float(w.stats.atk) * TL_ATK
 		a.ttl = TL_TTL
+		a.spawn_t = w.ALLY_SPAWN  # SN16: trồi lên xong mới lao ra
 		a.color = Color("#d2c8b2")
 		w._text(e.pos + Vector2(0, -24), "Xương Nô!", Color("#d2c8b2"), false)
 

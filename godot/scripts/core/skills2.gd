@@ -693,6 +693,7 @@ static func cast(w, id: String, mul: float) -> bool:
 				a.kind = "bone"
 				a.atk = float(w.stats.atk) * 0.5
 				a.ttl = TH_BONE_TTL
+				a.spawn_t = w.ALLY_SPAWN  # SN16: trồi lên xong mới lao ra
 				a.color = Color("#d2c8b2")
 			w._text(p.pos + Vector2(0, -50), "Triệu Hồi Xương!", Color("#d2c8b2"), true)
 		"khidoc":

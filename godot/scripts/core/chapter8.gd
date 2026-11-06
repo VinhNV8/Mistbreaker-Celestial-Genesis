@@ -671,7 +671,7 @@ static func on_kill(w, e) -> void:
 	var q: Dictionary = w.profile.quest
 	var p = w.profile
 	if in_region(w) and step(w) == S_KILLS and e.role in ["field", "pack", "nestMinion", "nestGuard"] and not e.has_meta("sacrificed"):
-		q.kills8 = int(q.kills8) + 1
+		pass  # NV-B (docs/41): bước này nay theo mục tiêu riêng — core/main_variants.gd ghi tiến độ
 	if e.has_meta("cage_idx"):
 		var i: int = int(e.get_meta("cage_idx"))
 		if not (i in q.cages8):

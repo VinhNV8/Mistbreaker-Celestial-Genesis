@@ -479,7 +479,7 @@ static func boss_phase_two(w, e) -> bool:
 static func on_kill(w, e) -> void:
 	ensure(w)
 	if in_region(w) and int(w.profile.quest.ch4) == 2 and not e.illusion:
-		w.profile.quest.kills4 = int(w.profile.quest.kills4) + 1
+		pass  # NV-B (docs/41): bước này nay theo mục tiêu riêng — core/main_variants.gd ghi tiến độ
 	if w.ch4.leech_id == e.id:
 		w.ch4.leech_id = -1
 

@@ -7,6 +7,8 @@ const Config = preload("res://scripts/core/config.gd")
 const Explore = preload("res://scripts/core/explore.gd")
 const Formulas = preload("res://scripts/core/formulas.gd")
 const Gates = preload("res://scripts/core/gates.gd")
+const QuestLog = preload("res://scripts/core/quest_log.gd")
+const Quests = preload("res://scripts/core/quests.gd")
 const GameWorld = preload("res://scripts/core/game_world.gd")
 const Profile = preload("res://scripts/core/profile.gd")
 const RngUtil = preload("res://scripts/core/rng_util.gd")
@@ -242,6 +244,11 @@ func _init() -> void:
 	_run("AU-T1 âm thanh: nhạc riêng vùng 1–9 + boss cuối, âm kỹ năng theo lớp, Tối thượng, mở kỹ năng, tới map — đủ file", _test_audio_files)
 	_run("TL-B9b Thần Vực: bot 5 lớp cấp 100 (chưa có Điểm Thiên Đạo) đạt tầng 10–20, các lớp chênh ≤ 25% số tầng", _test_tower_balance)
 	_run("BOSS-T1 quét mọi boss (9 boss vùng, 9 boss hiếm, Chúa Hang 26 map, Chúa Cổng E…S) qua vòng chơi thật: gục, biến mất, không kẹt HP — chạy riêng --only=BOSS", _test_boss_sweep)
+	_run("NVA-T1 nhiệm vụ rõ ràng (docs/41 NV-A): 64 bước có mục tiêu, chỉ đường trong map / qua cổng, Sổ nhiệm vụ, dòng chỉ đường HUD", _test_nva_guide)
+	_run("NVD-T1 uỷ thác hằng ngày (docs/41 NV-D): 3 việc / ngày, tiến độ, nhận ở khu an toàn, rương ngày, chuỗi 7 ngày, đổi việc, cửa hàng điểm, save v30, ghim + chỉ đường", _test_nvd_daily)
+	_run("NVC-T1 nhiệm vụ phụ (docs/41 NV-C): 27 chuỗi khớp dữ liệu, người giao hiện khi mở, nhận / tiến độ / ? / chọn thưởng, tới nơi, hang, danh hiệu, save", _test_nvc_side)
+	_run("NVB-T1 chính tuyến bớt đơn điệu (docs/41 NV-B): 8 bước \"hạ 30 quái\" → tinh anh có tên / dấu vết / nhặt vật / giữ điểm, chương tự chuyển bước, quy đổi save cũ", _test_nvb_variants)
+	_run("NVE-T1 sự kiện trên đường (docs/41 NV-E): phục kích, người sống sót, rương bị canh, tinh anh đi lạc, hết giờ, theo dõi + chỉ đường", _test_nve_road)
 	_run("RB-T1 9 boss hiếm nhận sát thương qua vòng cập nhật thật (Thất Đầu: sau khi chặt 7 đầu) — Spec_Notes 02/11", _test_rare_damageable)
 	_run("TP5-T1 ô Thiên phú phụ mở theo chuyển chức, Lễ Thức Tỉnh ô phụ (bể, 4 lượt, nhận), save v28", _test_tp5_slots)
 	_run("TP5-T2 Thiên phú phụ có hiệu lực (HP, chí mạng, Hấp Huyết), luyện cấp phụ, phím L dùng kỹ năng phụ", _test_tp5_effects)
@@ -253,6 +260,8 @@ func _init() -> void:
 	_run("UI40-T1 đồ hoạ HD (docs/35 G0): lớp phủ manifest, kích thước logic giữ nguyên, mipmap + Linear, bật / tắt", _test_ui40_hd)
 	_run("UI41-T1 giao diện đồng chạm khắc (docs/35 §11): khung, cụm nút góc phải, thanh EXP, cuộn nhiệm vụ", _test_ui41_hud)
 	_run("UI38-T1 rà soát giao diện (docs/38): cỡ chữ tối thiểu, máu thấp, đổi phím, Cài đặt 4 tab, tiêu đề mới, bảng tên quái, dải nhặt đồ", _test_ui38)
+	_run("EQ1-T1 icon trang bị HD (docs/40) + giao diện xem đồ (docs/42): đủ icon, đồ độc nhất giữ icon, tắt HD về icon cũ, ô theo bậc, thẻ đồ", _test_eq1)
+	_run("EN1-T1 hiệu ứng đồ cường hoá hướng D (docs/43): bảng màu bậc, EnhanceFx trên ô đồ, vệt viền chiều kim đồng hồ", _test_en1)
 	_run("UI40b-T1 khu an toàn HD (docs/35 §9–10): làng + trại 9 vùng, đủ hình, chỗ Cổng Dịch Chuyển", _test_ui41_village)
 	_run("SK3-T4 cân bằng: bộ kỹ năng nhánh hạ Viêm Long không chậm quá 30% bộ mặc định", _test_sk3_balance)
 	# LH1 — Hộ Vệ (docs/19)
@@ -268,6 +277,7 @@ func _init() -> void:
 	_run("J3-T2 chức 3: Kiếm Thần, Thiên Lạc Xạ Thủ, Hiền Giả, Thủ Hộ Thần, Vạn Linh Chi Chủ — 2 hiệu ứng mỗi chức", _test_j3_effects)
 	_run("J3-T3 5 Thần Kỹ: khoá khi chưa chức 3, gây sát thương, Nhất Kiếm ×2 Phá Thế, Tinh Vũ 8 mũi, Ngũ Hành, Thiên Thuẫn, Kỳ Lân", _test_j3_skills)
 	_run("SH-T1 linh thú có máu: quái thường đánh linh thú, Thạch Quỷ khiêu khích, boss bỏ qua, gục, Linh Hồ 10 giây, hồi máu", _test_sh_summon_hp)
+	_run("SN16-T1 linh thú hiện hình 0,5 giây (đứng yên, chưa đánh, chưa trừ giờ) rồi mới lao ra; khớp nghi thức FX-1", _test_sn16_summon_spawn)
 	_run("TL-J3 cân bằng chức 3: nhanh hơn chức 2 8–20% khi hạ Cự Thần ở cấp 90, các lớp chênh ≤ 25%", _test_j3_balance)
 	_run("PACE-T1 nhịp lên cấp 1 → 20 chỉ bằng đánh quái (bot cày, đo phút)", _test_pace_mobs)
 	for c in Classes.ORDER:
@@ -7457,6 +7467,8 @@ func _test_sh_summon_hp() -> void:
 	var e2 := w.spawn_enemy("wolf", 58, w.player.pos + Vector2(30, 0))
 	e2.state = "chase"
 	var golem = C2.summon(w, "thach-quy", 1.4, 15.0, "thachquy", e2.pos + Vector2(50, 0))
+	_check(not C2.mob_vs_summon(w, e2, 1.0 / 60.0), "SN16: Thạch Quỷ đang hiện hình → chưa bị quái nhắm")
+	golem.spawn_t = 0.0
 	_check(C2.mob_vs_summon(w, e2, 1.0 / 60.0), "Thạch Quỷ khiêu khích quái trong 8 m")
 	_check(is_equal_approx(golem.max_hp, float(w.stats.max_hp) * 0.8 * pet_k), "Thạch Quỷ: HP = 80% HP người chơi (× linh thú +20%, WIS)")
 	e.dead = true
@@ -7478,6 +7490,41 @@ func _test_sh_summon_hp() -> void:
 	for i in 60:
 		w.update(1.0 / 60.0, _idle(w))
 	_check(golem.hp > golem.max_hp * 0.53, "linh thú hồi ~5% HP/giây khi không bị đánh")
+
+
+## SN16 (Spec_Notes 05/11): linh thú gọi bằng kỹ năng hiện hình 0,5 giây (đứng yên, chưa đánh, chưa trừ giờ) rồi mới lao ra.
+func _test_sn16_summon_spawn() -> void:
+	var C2 = GameWorld.Classes2
+	var w := _sk3_world("trieu-hoi-su", 0)
+	w.player.pos = Vector2(1200, 1280)
+	w.update(1.0 / 60.0, _idle(w))
+	var fox = _th_summons(w, true)[0]
+	_check(fox.spawn_t <= 0.0, "Linh Hồ thường trực sinh lại không chờ hiện hình")
+	for a in _th_summons(w, true):
+		a.dead = true
+	var e := w.spawn_enemy("wolf", 58, w.player.pos + Vector2(160, 0))
+	e.max_hp = 1e7
+	e.hp = e.max_hp
+	e.state = "idle"
+	e.root_timer = 99.0
+	var wolf = C2.summon(w, "soi-bong", 1.0, 20.0, "soibong", w.player.pos + Vector2(30, 0))
+	_check(is_equal_approx(wolf.spawn_t, GameWorld.ALLY_SPAWN), "Sói Bóng mới gọi: hiện hình %.1f giây" % GameWorld.ALLY_SPAWN)
+	var at0: Vector2 = wolf.pos
+	var ttl0: float = wolf.ttl
+	for i in 27:  # 0,45 giây
+		w.update(1.0 / 60.0, _idle(w))
+	_check(wolf.pos == at0, "đang hiện hình → đứng yên trong vòng trận")
+	_check(e.hp == e.max_hp, "đang hiện hình → chưa đánh quái")
+	_check(is_equal_approx(wolf.ttl, ttl0), "thời gian tồn tại chưa trừ khi đang hiện hình")
+	for i in 30:
+		w.update(1.0 / 60.0, _idle(w))
+	_check(wolf.spawn_t <= 0.0 and wolf.pos != at0, "hiện hình xong → lao ra")
+	for i in 120:
+		w.update(1.0 / 60.0, _idle(w))
+	_check(e.hp < e.max_hp, "rồi đánh quái")
+	var Fx1 = load("res://scripts/view/fx1.gd")
+	_check(GameWorld.ALLY_SPAWN <= Fx1.RITUAL_TIME and is_equal_approx(Fx1.PILLAR_END * Fx1.RITUAL_TIME, GameWorld.ALLY_SPAWN),
+		"cột sáng nghi thức tắt đúng lúc hiện hình xong")
 
 
 ## TL-J3: chức 3 (Thần Kỹ ở ô 4) vs chức 2 ở cấp 90 hạ Thiên Không Cự Thần (thay Giáo Chủ cho tới M11).
@@ -7976,9 +8023,17 @@ func _test_sn10_enhance_toast() -> void:
 		var oc: Vector2 = ok.global_position + ok.size / 2.0
 		_check(absf(oc.x - vc.x) < 1.0 and absf(oc.y - vc.y) < 60.0, "canh giữa màn hình (%s / %s)" % [str(oc), str(vc)])
 	_check(ok.success and not bad.success and int(bad.plus) == 6, "thành công / thất bại")
-	ok.t = Toast.LIFE + 0.1
+	ok.t = ok.life() + 0.1
 	ok._process(0.0)
-	_check(ok.is_queued_for_deletion(), "tự biến mất sau %.1f giây" % Toast.LIFE)
+	_check(ok.is_queued_for_deletion(), "tự biến mất sau %.1f giây" % ok.life())
+	# EN-1 E2/E3 (docs/43 §6): mốc bậc giữ lâu hơn + tiêu đề ĐỘT PHÁ; có icon thì icon mang hiệu ứng cấp mới; thất bại không
+	var tex: Texture2D = load("res://scripts/view/sprite_lib.gd").item_icon({"id": 1, "slot": "weapon", "style": "", "rarity": "purple", "set": "", "unique": ""})
+	var ms = Toast.pop(host, true, 10, "Kiếm +10", tex)
+	var plain = Toast.pop(host, true, 8, "Kiếm +8", tex)
+	var fail = Toast.pop(host, false, 9, "", tex)
+	_check(ms.milestone() and ms.life() > plain.life() and not plain.milestone() and not fail.milestone(), "+10 là mốc (giữ %.1f giây), +8 không" % ms.life())
+	_check(ms._icon_node != null and ms._icon_node.get_node_or_null("EnhanceFx") != null and fail._icon_node.get_node_or_null("EnhanceFx") == null,
+		"icon toast thành công mang EnhanceFx, thất bại thì không")
 	host.queue_free()
 	# Túi đồ và Lò Rèn gọi toast (không còn hiệu ứng trên chân dung)
 	var inv_src: String = FileAccess.get_file_as_string("res://scripts/ui/inventory_panel.gd")
@@ -9975,6 +10030,97 @@ func _test_ui38() -> void:
 		"UI-52 / 53 / 54: dải nhặt đồ ở HUD, bảng tên quái thông minh, nhật ký 3 dòng")
 
 
+func _test_en1() -> void:
+	var Items = load("res://scripts/core/items.gd")
+	var Fx = load("res://scripts/ui/enhance_fx.gd")
+	var SL = load("res://scripts/view/sprite_lib.gd")
+	# bảng màu bậc tách khỏi thang phẩm chất (lam #4a9df8 / tím #b36bff cũ)
+	_check(Items.enhance_color(4).to_html(false) == "cde4ff" and Items.enhance_color(7).to_html(false) == "5ad2ff"
+		and Items.enhance_color(10).to_html(false) == "ffce50" and Items.enhance_color(13).to_html(false) == "ff4660", "màu bậc: bạc / lam băng / vàng kim / huyết hồng")
+	var host := Control.new()
+	host.size = Vector2(64, 64)
+	get_root().add_child(host)
+	var tex: Texture2D = SL.item_icon({"id": 3, "slot": "weapon", "style": "", "rarity": "purple", "set": "", "unique": ""})
+	var f0 = Fx.attach(host, {"id": 1, "plus": 3}, tex)
+	var f1 = Fx.attach(host, {"id": 2, "plus": 7}, tex)
+	var f4 = Fx.attach(host, {"id": 3, "plus": 15}, tex)
+	_check(f0.glow == null and not f0.is_processing(), "+3: không có lớp sáng (chỉ tấm +N)")
+	_check(f1.glow != null and f1.is_processing() and f1.glow.show_behind_parent and f1.glow.material is ShaderMaterial, "+7: lớp sáng shader sau sao / vệt viền")
+	var m: ShaderMaterial = f4.glow.material
+	_check(int(m.get_shader_parameter("tier")) == 4 and bool(m.get_shader_parameter("rainbow")), "+15: bậc 4 (linh hoả) + viền cầu vồng")
+	_check(f1.mouse_filter == Control.MOUSE_FILTER_IGNORE, "không chặn chuột")
+	# vệt chạy viền theo chiều kim đồng hồ: bắt đầu trên-trái → sang phải dọc cạnh trên → xuống cạnh phải
+	f1.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	f1.size = Vector2(64, 64)
+	var p0: Vector2 = f1.perimeter_point(0.0)
+	var p1: Vector2 = f1.perimeter_point(0.1)
+	var p2: Vector2 = f1.perimeter_point(0.35)
+	_check(p0.y < 3.0 and p1.y < 3.0 and p1.x > p0.x and p2.x > 60.0 and p2.y > p1.y, "chiều kim đồng hồ (%s → %s → %s)" % [p0, p1, p2])
+	_check(f1.perimeter_point(1.0).distance_to(p0) < 0.5, "hết vòng về điểm đầu")
+	var r: Rect2 = f1.icon_rect()
+	_check(absf(r.size.x - 58.0) < 0.5 and r.position == Vector2(3, 3), "icon rect khớp lề SlotBox 3 px")
+	host.queue_free()
+	# ô túi đồ dùng EnhanceFx, PlusGlow cũ đã bỏ
+	var Inv = load("res://scripts/ui/inventory_panel.gd")
+	var panel = Inv.new()
+	var b: Button = panel._item_button({"id": 9, "slot": "armor", "style": "", "rarity": "orange", "set": "", "unique": "", "plus": 10, "level": 30, "affixes": []}, "", false, "")
+	_check(b.get_node_or_null("EnhanceFx") != null and int(b.get_node("EnhanceFx").plus) == 10, "ô túi đồ có EnhanceFx")
+	var src: String = FileAccess.get_file_as_string("res://scripts/ui/inventory_panel.gd") + FileAccess.get_file_as_string("res://scripts/ui/forge_panel.gd")
+	_check(not src.contains("PlusGlow"), "PlusGlow cũ đã bỏ")
+	b.free()
+	panel.free()
+
+
+func _test_eq1() -> void:
+	const SL = preload("res://scripts/view/sprite_lib.gd")
+	const ItemDataS = preload("res://scripts/data/items.gd")
+	var was_hd := SL.hd_enabled()
+	SL.set_hd(true)
+	var missing := []
+	var themes: Array = ItemDataS.RARITY_ORDER.duplicate()
+	themes.append_array(ItemDataS.SETS.keys())
+	for slot in ItemDataS.SLOT_ORDER:
+		var styles := ["", "bow", "staff", "mace", "orb"] if slot == "weapon" else [""]
+		for st in styles:
+			for th in themes:
+				for id in SL.EQ_VARIANTS:
+					var it := {"id": id, "slot": slot, "style": st, "rarity": th if th in ItemDataS.RARITY_ORDER else "purple",
+						"set": "" if th in ItemDataS.RARITY_ORDER else th, "unique": ""}
+					var key := SL.eq_icon_id(it)
+					if not SL.data().get("icons", {}).has(key) or SL.item_icon(it) == null:
+						missing.append(key)
+	_check(missing.is_empty(), "đủ icon trang bị HD (thiếu %s)" % [missing.slice(0, 5)])
+	var bow := {"id": 3, "slot": "weapon", "style": "bow", "rarity": "blue", "set": "", "unique": ""}
+	var sword := {"id": 3, "slot": "weapon", "style": "", "rarity": "blue", "set": "", "unique": ""}
+	var set_helm := {"id": 4, "slot": "helm", "style": "", "rarity": "purple", "set": "hoa_nguc", "unique": ""}
+	_check(SL.eq_icon_id(bow) == "eq-bow-1-blue" and SL.eq_icon_id(sword) == "eq-sword-1-blue" and SL.eq_icon_id(set_helm) == "eq-helm-0-hoa_nguc",
+		"dáng theo kiểu vũ khí của lớp, chủ đề theo bộ / phẩm chất, biến thể theo id")
+	var uq := {"id": 1, "slot": "weapon", "style": "", "rarity": "orange", "set": "", "unique": "wolf_fang"}
+	_check(SL.item_icon(uq) == SL.icon("item-wolf_fang"), "đồ độc nhất giữ icon riêng")
+	SL.set_hd(false)
+	_check(SL.item_icon(bow) == SL.icon("item-weapon"), "tắt Đồ hoạ HD → icon ô cũ")
+	SL.set_hd(was_hd)
+	# UI-64…66 (docs/42): ô đồ theo bậc, thẻ thông tin dùng chung
+	const Card = preload("res://scripts/ui/item_card.gd")
+	var orange := {"id": 7, "slot": "helm", "style": "", "rarity": "orange", "set": "", "unique": "", "plus": 2, "level": 9,
+		"affixes": [{"stat": "crit", "value": 0.05}]}
+	var b := Button.new()
+	Card.style_slot(b, orange, true)
+	var sb = b.get_theme_stylebox("normal")
+	_check(Card.tier_of(orange) == 4 and Card.tier_of({}) == -1 and sb is Card.SlotBox and sb.tier == 4 and sb.selected,
+		"UI-64: ô đồ vẽ theo bậc phẩm chất (Cam = bậc 4), ô chọn có viền sáng")
+	b.free()
+	var cv: Control = Card.build(orange, 290.0, "ĐANG XEM", null, [["▲ 5 Tấn công", Color.GREEN]], "So với đang mặc:")
+	var txt := []
+	_collect_labels(cv, txt)
+	_check(txt.has("ĐANG XEM") and txt.has("Cam · Huyền thoại") and txt.has("So với đang mặc:")
+		and txt.any(func(x): return str(x).begins_with("▲")) and cv.find_child("CompareHeader", true, false) != null,
+		"UI-65: thẻ đồ có dải đầu (nhãn bậc), chỉ số, so sánh dạng chip")
+	_check(txt.any(func(x): return str(x).ends_with("+2")) and not txt.has("+2") and not txt.any(func(x): return str(x).contains("Cấp 9")),
+		"UI-65b: \"+N\" chỉ ở tên món (không lặp chip), dòng ô không ghi \"Cấp N\"")
+	cv.free()
+
+
 func _test_fx1() -> void:
 	var Fx1 = load("res://scripts/view/fx1.gd")
 	var Kit = load("res://scripts/view/fx1_kit.gd")
@@ -10565,3 +10711,417 @@ func _test_md1() -> void:
 	SL.set_hd(false)
 	_check(not str(SL.data().sprites["vien-long"].path).begins_with("res://assets/hd/"), "tắt HD: Viêm Long về hình pixel")
 	SL.set_hd(true)
+
+
+# ------------------------------------------------------------------ NVA-T1 (docs/41 NV-A): nhiệm vụ rõ ràng
+
+func _test_nva_guide() -> void:
+	var kinds := {}
+	for ch in range(1, 10):
+		for q in QuestLog.quests_of(ch):
+			var g: Dictionary = q.get("goal", {})
+			_check(not g.is_empty(), "chương %d · %s: có goal" % [ch, q.title])
+			for k in ["npc", "map", "region", "panel", "none", "near", "variant"]:
+				if g.has(k):
+					kinds[k] = int(kinds.get(k, 0)) + 1
+			if g.has("npc"):
+				_check(QuestLog.npc_map(str(g.npc)) != "", "NPC %s có trên một map" % g.npc)
+			if g.has("map"):
+				_check(MapsData.MAPS.has(str(g.map)), "map %s tồn tại" % g.map)
+	# đứng đúng map mục tiêu → có toạ độ cụ thể (trừ mục tiêu là quái / bảng / không chỉ đường)
+	var checked := 0
+	for ch in range(1, 10):
+		for q in QuestLog.quests_of(ch):
+			var g: Dictionary = q.goal
+			if g.has("panel") or g.has("none") or g.has("near") or g.has("enemy") or g.has("variant"):
+				continue
+			var mid := str(g.get("map", ""))
+			if g.has("npc"):
+				mid = QuestLog.npc_map(str(g.npc))
+			elif g.has("region"):
+				mid = QuestLog.region_maps(int(g.region))[0]
+			var w := _boss_world(mid, int(MapsData.MAPS[mid].levels[0]) + 2)
+			w._load_map(mid)
+			w.player.pos = w.safe_pos
+			var t := QuestLog.target(w, q)
+			var r := QuestLog.route(w, t)
+			_check(t.map == mid and t.pos != Vector2.INF and bool(r.final), "%s (%s): có điểm mục tiêu trên map" % [q.title, mid])
+			checked += 1
+	_check(checked >= 40, "đã kiểm %d bước có điểm trên map" % checked)
+	# ở map khác → chỉ tới cổng
+	var w2 := _boss_world("2-1", 14)
+	w2._load_map("2-1")
+	var t2 := QuestLog.target(w2, Story.QUESTS2[4])
+	var r2 := QuestLog.route(w2, t2)
+	_check(t2.map == "2-3" and not bool(r2.final) and r2.pos != Vector2.INF and "Cổng" in str(r2.label), "Phủ Huyền Ảnh từ Thành Biên Đài: chỉ cổng (%s)" % r2.label)
+	# map đích đã mở, không kề → Cổng Dịch Chuyển
+	w2.profile.unlocked_maps.append("4-1")
+	var r3 := QuestLog.route(w2, {"map": "4-1", "pos": Vector2(100, 100), "label": "x", "panel": "", "note": ""})
+	_check("Cổng Dịch Chuyển" in str(r3.label), "map xa đã mở → Cổng Dịch Chuyển (%s)" % r3.label)
+	# trong hang → cửa ra
+	var w3 := _boss_world("1-1", 6)
+	w3._load_map("cave-1-1")
+	var r4 := QuestLog.route(w3, {"map": "1-1", "pos": Vector2(100, 100), "label": "x", "panel": "", "note": ""})
+	_check(r4.label == "Cửa ra" and r4.pos != Vector2.INF, "trong hang → cửa ra")
+	# bước "khám phá 40%" → ô sương chưa mở gần nhất
+	var w4 := _boss_world("4-3", 40)
+	w4._load_map("4-3")
+	var tx := QuestLog.target(w4, Story.QUESTS4[3])
+	_check(tx.pos != Vector2.INF and not w4.fog.is_open_at(tx.pos), "khám phá: chỉ vào ô sương chưa mở")
+	# bảng: chữ hướng dẫn, không toạ độ
+	var tp := QuestLog.target(w2, Story.QUESTS2[2])
+	_check(tp.panel == "map" and tp.pos == Vector2.INF and "(M)" in str(tp.note), "chiếm ô đất → mở Bản đồ khai phá (M)")
+	# guide() = bước đang làm của chương 1 (thế giới mới)
+	var wn := _world("tay-nhanh")
+	wn.profile.quest_step = 1
+	var gd := QuestLog.guide(wn)
+	_check(not gd.is_empty() and int(gd.main.chapter) == 1 and gd.route.pos != Vector2.INF, "thế giới mới: chỉ đường bước 1")
+	# Sổ nhiệm vụ: 4 tab, 9 chương, nút Chỉ đường
+	var qp = load("res://scripts/ui/quest_panel.gd").new()
+	qp.open(wn)
+	_check(qp.box.find_child("QuestTab_daily", true, false) != null and qp.box.find_child("QuestChapter_9", true, false) != null, "Sổ nhiệm vụ: tab + 9 chương")
+	var gb = qp.box.find_child("QuestGuideButton", true, false)
+	_check(gb != null and not gb.disabled, "Sổ nhiệm vụ: nút Chỉ đường bật")
+	var fired := [false]
+	qp.guide_requested.connect(func(): fired[0] = true)
+	gb.pressed.emit()
+	_check(fired[0] and not qp.is_open(), "bấm Chỉ đường: đóng sổ + phát tín hiệu")
+	qp.free()
+	# HUD: dòng "➜ … m · …" (hud._update_guide dùng QuestLog.guide_text)
+	var gt := QuestLog.guide_text(wn)
+	_check(gt.begins_with("➜ ") and " m · " in gt, "HUD: dòng chỉ đường (%s)" % gt)
+	_check(QuestLog.guide_text(w2).begins_with("➜ "), "dòng chỉ đường ở map khác (%s)" % QuestLog.guide_text(w2))
+
+
+# ------------------------------------------------------------------ NVD-T1 (docs/41 NV-D): uỷ thác hằng ngày
+
+func _test_nvd_daily() -> void:
+	var w := _boss_world("1-1", 8)
+	w.profile.boss_defeated = true
+	w._load_map("1-1")
+	w.enemies = []
+	var day0 := 20000.0 * 86400.0 + 3600.0
+	w.debug_now = day0
+	var ts: Array = Quests.tasks(w)
+	var kinds: Array = ts.map(func(t): return str(t.t))
+	_check(ts.size() == 3 and kinds.size() == 3 and kinds[0] != kinds[1] and kinds[1] != kinds[2] and kinds[0] != kinds[2], "3 việc khác loại (%s)" % str(kinds))
+	var again: Array = Quests.tasks(w).map(func(t): return str(t.t) + str(t.kind))
+	_check(again == ts.map(func(t): return str(t.t) + str(t.kind)), "cùng ngày: giữ nguyên việc")
+	# ép 3 việc đã biết để kiểm tiến độ
+	w.profile.daily.tasks = [{"t": "hunt", "kind": "wolf", "need": 3, "n": 0, "claimed": false, "region": 1},
+		{"t": "herb", "kind": "", "need": 2, "n": 0, "claimed": false, "region": 1},
+		{"t": "elite", "kind": "", "need": 1, "n": 0, "claimed": false, "region": 1}]
+	for i in 3:
+		var e := w.spawn_enemy("wolf", 8, w.player.pos + Vector2(300, 0), {"role": "field"})
+		w._kill_enemy(e)
+	var el := w.spawn_enemy("wolf", 8, w.player.pos + Vector2(300, 0), {"role": "field", "elite": true})
+	w._kill_enemy(el)
+	_check(int(w.profile.daily.tasks[0].n) == 3 and Quests.done(w.profile.daily.tasks[0]), "săn Sói: 3/3 qua _kill_enemy")
+	_check(int(w.profile.daily.tasks[2].n) == 1, "tinh anh: 1/1")
+	_check(w.drain_events().any(func(ev): return ev.type == "daily_done"), "xong việc: sự kiện daily_done")
+	Quests.on_herb(w, 2)
+	_check(Quests.done(w.profile.daily.tasks[1]), "hái thảo dược 2/2")
+	# nhận thưởng: ngoài khu an toàn bị chặn
+	w.player.pos = w.safe_pos + Vector2(w.safe_r + 400.0, 0)
+	_check(not Quests.claim(w, 0).ok and "khu an toàn" in Quests.claim_blocker(w, 0), "ngoài khu an toàn: chưa nhận được")
+	w.player.pos = w.safe_pos
+	var torches0 := int(w.profile.torches)
+	w.profile.torches = 0
+	var xp0 := int(w.profile.xp)
+	var r0 := Quests.claim(w, 0)
+	_check(r0.ok and int(w.profile.torches) == 1 and int(w.profile.daily.points) == 10 and (int(w.profile.xp) > xp0 or int(w.profile.level) > 8), "nhận thưởng: +1 Đuốc, +10 điểm, +EXP")
+	_check(not Quests.claim(w, 0).ok, "không nhận lại lần 2")
+	var gold0 := float(w.profile.gold)
+	Quests.claim(w, 1)
+	Quests.claim(w, 2)
+	_check(bool(w.profile.daily.full) and float(w.profile.gold) > gold0 and int(w.profile.daily.streak) == 1, "đủ 3 việc: rương ngày, chuỗi 1")
+	# ngày sau: việc mới, chuỗi tiếp; bỏ 1 ngày vẫn giữ; bỏ 2 ngày thì về 1
+	var full_day := func(day: float) -> void:
+		w.debug_now = day0 + day * 86400.0
+		for t in Quests.tasks(w):
+			t.n = t.need
+		for i in 3:
+			Quests.claim(w, i)
+	full_day.call(1.0)
+	_check(int(w.profile.daily.streak) == 2 and int(w.profile.daily.day) == int(Quests.day_num(w)), "ngày 2: chuỗi 2")
+	full_day.call(3.0)
+	_check(int(w.profile.daily.streak) == 3, "bỏ 1 ngày: vẫn giữ chuỗi (3)")
+	full_day.call(6.0)
+	_check(int(w.profile.daily.streak) == 1, "bỏ 2 ngày: chuỗi về 1")
+	w.profile.daily.streak = 6
+	var bag0: int = w.profile.inventory.size()
+	full_day.call(7.0)
+	_check(int(w.profile.daily.streak) == 0 and w.profile.inventory.size() == bag0 + 1 and str(w.profile.inventory[-1].rarity) == "purple", "chuỗi 7 ngày: 1 món Tím")
+	# đổi việc 1 lần / ngày
+	w.debug_now = day0 + 10.0 * 86400.0
+	var before := str(Quests.tasks(w)[0].t)
+	_check(Quests.swap(w, 0) and str(Quests.tasks(w)[0].t) != before and not Quests.can_swap(w, 1), "đổi 1 việc / ngày")
+	var have: Array = Quests.tasks(w).map(func(t): return str(t.t))
+	_check(have[0] != have[1] and have[0] != have[2], "việc đổi không trùng việc khác")
+	# cửa hàng điểm
+	w.profile.daily.points = 35
+	var st0 := int(w.profile.stones)
+	_check(Quests.buy(w, "stones").ok and int(w.profile.stones) == st0 + 5 and int(w.profile.daily.points) == 5, "đổi 30 điểm → 5 Đá Cường Hoá")
+	_check(not Quests.buy(w, "purple").ok, "thiếu điểm: không đổi được")
+	# save v30
+	QuestLog.toggle_track(w, "daily:1")
+	var d: Dictionary = JSON.parse_string(JSON.stringify(w.profile.to_dict()))
+	_check(int(d.version) >= 30, "save v30")
+	var back := Profile.new()
+	back.load_dict(d)
+	_check(int(back.daily.points) == 5 and back.daily.tasks.size() == 3 and back.tracked == ["daily:1"], "save giữ uỷ thác + việc ghim")
+	d.version = 29
+	d.erase("daily")
+	d.erase("tracked")
+	var old := Profile.new()
+	_check(old.load_dict(d) and old.daily.is_empty() and old.tracked.is_empty(), "save v29: uỷ thác rỗng")
+	# ghim + chỉ đường: thảo dược gần nhất
+	w.profile.daily.tasks[1] = {"t": "herb", "kind": "", "need": 6, "n": 0, "claimed": false, "region": 1}
+	var tr := QuestLog.tracked(w)
+	_check(tr.size() == 1 and tr[0].route.pos != Vector2.INF and str(tr[0].title).begins_with("Hái"), "việc ghim: chỉ tới thảo dược gần nhất")
+	QuestLog.toggle_track(w, "daily:0")
+	QuestLog.toggle_track(w, "daily:2")
+	_check(w.profile.tracked.size() == 2 and not ("daily:1" in w.profile.tracked), "ghim tối đa 2 (bỏ việc ghim lâu nhất)")
+	# Sổ nhiệm vụ: tab Uỷ thác
+	var qp = load("res://scripts/ui/quest_panel.gd").new()
+	qp.open(w)
+	qp._tab = "daily"
+	qp.refresh()
+	_check(qp.box.find_child("DailyClaim_0", true, false) != null and qp.box.find_child("DailySwap_2", true, false) != null and qp.box.find_child("DailyShop_purple", true, false) != null, "tab Uỷ thác: nút Nhận / Đổi / cửa hàng")
+	qp.free()
+	w.profile.torches = torches0
+
+
+# ------------------------------------------------------------------ NVC-T1 (docs/41 NV-C): nhiệm vụ phụ
+
+func _test_nvc_side() -> void:
+	var SQ = load("res://scripts/data/side_quests.gd")
+	_check(SQ.SIDE.size() == 27, "27 chuỗi phụ (%d)" % SQ.SIDE.size())
+	for reg in range(1, 10):
+		_check(SQ.SIDE.filter(func(q): return int(q.region) == reg).size() == 3, "vùng %d: 3 chuỗi" % reg)
+	var ids := {}
+	for q in SQ.SIDE:
+		_check(not ids.has(q.id), "id %s không trùng" % q.id)
+		ids[q.id] = true
+		_check(q.reward.choices.size() == 3, "%s: 3 phần thưởng chọn" % q.id)
+		var gmap := QuestLog.npc_map(str(q.giver))
+		_check(gmap != "" and int(MapsData.MAPS[gmap].region) == int(q.region), "%s: người giao %s ở vùng %d (%s)" % [q.id, q.giver, q.region, gmap])
+		for st in q.steps:
+			match str(st.type):
+				"kill":
+					var found := false
+					for m in MapsData.region(int(q.region)).maps:
+						var tb = MapsData.MAPS[m].get("mobs", "legacy")
+						if tb is Array and tb.any(func(r): return str(r[0]) == str(st.kind)):
+							found = true
+					_check(found or (int(q.region) == 1 and str(st.kind) in ["wolf", "mushroom", "wisp"]), "%s: loài %s có ở vùng %d" % [q.id, st.kind, q.region])
+				"cave", "visit":
+					_check(MapsData.MAPS.has(str(st.map)), "%s: map %s" % [q.id, st.map])
+				"rare":
+					_check(Quests._rare_map(str(st.kind)) != "", "%s: boss hiếm %s" % [q.id, st.kind])
+		# người giao hiện trên map lúc chuỗi mở
+		var u: Dictionary = q.unlock
+		var w0 := _boss_world(gmap, int(u.level))
+		if u.has("ch"):
+			if int(u.ch[0]) == 1:
+				w0.profile.quest_step = int(u.ch[1])
+			else:
+				w0.profile.quest["ch%d" % int(u.ch[0])] = int(u.ch[1])
+		if u.has("boss"):
+			w0.profile.bosses[str(u.boss)] = true
+			if str(u.boss) == "boss":
+				w0.profile.boss_defeated = true
+		w0._load_map(gmap)
+		_check(Quests.side_available(w0, q), "%s: mở được ở điều kiện unlock" % q.id)
+		_check(w0.npcs().any(func(n): return str(n.id) == str(q.giver)), "%s: %s hiện trên %s" % [q.id, q.giver, gmap])
+	# vòng đầy đủ: Đàn sói bìa rừng
+	var w := _boss_world("1-1", 5)
+	w.profile.quest_step = 5
+	w._load_map("1-1")
+	w.enemies = []
+	w.profile.tracked = []
+	_check(Quests.npc_mark(w, "elder") == "!", "Thạch Lão: dấu !")
+	var r := Quests.on_talk(w, "elder")
+	_check(str(r.get("action", "")) == "accepted" and str(Quests.side_state(w, "r1-soi").state) == "active" and "side:r1-soi" in w.profile.tracked, "E: nhận Đàn sói bìa rừng + tự ghim")
+	var tr := QuestLog.tracked(w)
+	_check(tr.size() == 1 and "Sói" in str(tr[0].title), "việc ghim: %s" % (tr[0].title if tr.size() > 0 else ""))
+	for i in 8:
+		w._kill_enemy(w.spawn_enemy("wolf", 5, w.player.pos + Vector2(300, 0), {"role": "field"}))
+	_check(int(Quests.side_state(w, "r1-soi").step) == 1, "8 sói → bước 2")
+	w._kill_enemy(w.spawn_enemy("wolf", 5, w.player.pos + Vector2(300, 0), {"role": "field", "elite": true}))
+	_check(str(Quests.side_state(w, "r1-soi").state) == "reward" and Quests.npc_mark(w, "elder") == "?", "xong: dấu ? ở người giao")
+	var e2 := QuestLog.entry(w, "side:r1-soi")
+	_check(e2.goal.has("npc"), "việc ghim: chỉ về người giao")
+	_check(str(Quests.on_talk(w, "elder").get("action", "")) == "reward", "E ở người giao: mở chọn thưởng")
+	var pot0 := int(w.profile.potions)
+	_check(Quests.side_claim(w, "r1-soi", 1).ok and int(w.profile.potions) == pot0 + 3 and str(Quests.side_state(w, "r1-soi").state) == "done", "chọn thưởng 2: +3 bình máu")
+	_check(not ("side:r1-soi" in w.profile.tracked) and not Quests.side_claim(w, "r1-soi", 0).ok, "xong: bỏ ghim, không nhận lại")
+	# chuỗi có bước tới nơi + hang + danh hiệu
+	w.profile.boss_defeated = true
+	w.profile.level = 8
+	_check(Quests.side_accept(w, "r1-loi"), "nhận Tiếng hú ở Lõi Sương")
+	w._load_map("1-3")
+	w.player.pos = w.safe_pos
+	Quests.side_tick(w)
+	_check(int(Quests.side_state(w, "r1-loi").step) == 1, "tới khu an toàn Lõi Sương → bước 2")
+	w.profile.side["r1-loi"].step = 2
+	w._load_map("cave-1-3")
+	var cb = w.enemies.filter(func(e): return e.cave_boss)[0]
+	w._kill_enemy(cb)
+	_check(str(Quests.side_state(w, "r1-loi").state) == "reward", "hạ Chúa Hang Lõi Sương → xong")
+	w.profile.titles = []
+	w.profile.title = ""
+	Quests.side_claim(w, "r1-loi", 0)
+	_check("Thợ Săn Sương" in w.profile.titles and w.profile.title == "Thợ Săn Sương", "danh hiệu Thợ Săn Sương")
+	# save
+	var d: Dictionary = JSON.parse_string(JSON.stringify(w.profile.to_dict()))
+	var back := Profile.new()
+	back.load_dict(d)
+	_check(str(back.side["r1-loi"].state) == "done" and back.title == "Thợ Săn Sương", "save giữ nhiệm vụ phụ + danh hiệu")
+	# Sổ nhiệm vụ tab Phụ: thẻ chuỗi + nút chọn thưởng
+	var w2 := _boss_world("1-1", 5)
+	w2.profile.quest_step = 5
+	w2._load_map("1-1")
+	w2.profile.side["r1-nam"] = {"step": 2, "n": 0, "state": "reward"}
+	var qp = load("res://scripts/ui/quest_panel.gd").new()
+	qp.open(w2)
+	qp.show_side("r1-nam")
+	_check(qp.box.find_child("SideCard_r1-nam", true, false) != null and qp.box.find_child("SideReward_r1-nam_2", true, false) != null, "tab Phụ: thẻ + 3 nút thưởng")
+	qp.free()
+
+
+# ------------------------------------------------------------------ NVB-T1 (docs/41 NV-B)
+
+func _nvb_run(w: GameWorld) -> void:
+	w.MainVariants.tick(w)
+	w._check_quest2()
+	Chapters.check_quest(w)
+
+
+func _test_nvb_variants() -> void:
+	var MV = load("res://scripts/core/main_variants.gd")
+	for ch in range(2, 10):
+		for q in QuestLog.quests_of(ch):
+			if MV.VARIANTS.has(str(q.type)):
+				_check(int(q.need) == MV.need(str(q.type)) and q.goal.has("variant"), "%s: need %d khớp" % [q.type, q.need])
+	# named — chương 2
+	var w := _boss_world("2-1", 13)
+	w.profile.quest.ch2 = 2
+	w.profile.quest.kills2 = 0
+	w._load_map("2-1")
+	w.enemies = []
+	_nvb_run(w)
+	var named = w.enemies.filter(func(e): return e.has_meta("nv_named"))
+	_check(named.size() == 1 and named[0].elite and named[0].name == "Đội trưởng Lính Thuê", "chương 2: sinh Đội trưởng Lính Thuê")
+	var t := QuestLog.target(w, Story.QUESTS2[1])
+	_check(t.pos != Vector2.INF, "chương 2: có điểm chỉ đường")
+	for i in 10:
+		w._kill_enemy(w.spawn_enemy("linh-danh-thue", 13, w.player.pos + Vector2(400, 0), {"role": "field"}))
+	_nvb_run(w)
+	_check(int(w.profile.quest.ch2) == 2, "10 quái chưa đủ (còn tinh anh có tên)")
+	w._kill_enemy(named[0])
+	_nvb_run(w)
+	_check(int(w.profile.quest.ch2) == 3, "hạ Đội trưởng → chương 2 sang bước 3")
+	# clues — chương 3
+	var w3 := _boss_world("3-1", 22)
+	w3.profile.quest.ch3 = 2
+	w3.profile.quest.kills3 = 0
+	w3._load_map("3-1")
+	w3.enemies = []
+	var pts: Array = MV.clue_points(w3, MV.VARIANTS.kills3)
+	_check(pts.size() == 3, "chương 3: 3 dấu vết")
+	for p in pts:
+		w3.player.pos = p
+		_nvb_run(w3)
+	var guard = w3.enemies.filter(func(e): return e.has_meta("nv_guard"))
+	_check(guard.size() == 1 and int(w3.profile.quest.ch3) == 2, "tìm đủ 3 dấu vết → kẻ canh xuất hiện")
+	w3._kill_enemy(guard[0])
+	_nvb_run(w3)
+	_check(int(w3.profile.quest.ch3) == 3, "hạ kẻ canh → chương 3 sang bước 3")
+	# collect — chương 5
+	var w5 := _region5_world("5-1", "kiem-khach", "tay-nhanh", 47)
+	w5.profile.quest.ch5 = 2
+	w5._load_map("5-1")
+	w5.enemies = []
+	var n := 0
+	while int(w5.profile.quest.ch5) == 2 and n < 200:
+		w5._kill_enemy(w5.spawn_enemy("than-lan-lua", 47, w5.player.pos + Vector2(400, 0), {"role": "field"}))
+		_nvb_run(w5)
+		n += 1
+	_check(int(w5.profile.quest.ch5) == 3 and n >= 8 and n < 60, "chương 5: nhặt 8 Than Đá Đỏ sau %d con" % n)
+	# defend — chương 6
+	var w6 := _boss_world("6-1", 62)
+	w6.profile.quest.ch6 = 2
+	w6.profile.quest.kills6 = 0
+	w6._load_map("6-1")
+	w6.enemies = []
+	var at: Vector2 = MV.defend_point(w6)
+	w6.player.pos = at
+	_nvb_run(w6)
+	var wave: Array = w6.enemies.filter(func(e): return e.has_meta("nv_wave"))
+	_check(wave.size() == 4, "chương 6: tới điểm giữ → đợt 1 (4 sói)")
+	w6.player.pos = at + Vector2(900, 0)
+	_nvb_run(w6)
+	_check(wave.all(func(e): return e.dead) and int(MV.state(w6, "kills6").wave) == 0, "rời xa: đợt đang đánh bị huỷ")
+	w6.player.pos = at
+	for k in 3:
+		_nvb_run(w6)
+		for e in w6.enemies.filter(func(e): return e.has_meta("nv_wave") and not e.dead):
+			w6._kill_enemy(e)
+		_nvb_run(w6)
+	_check(int(w6.profile.quest.ch6) == 3, "giữ vững 3 đợt → chương 6 sang bước 3")
+	# quy đổi save cũ (kills4 = 15 / 30 → 2 / 4)
+	var w4 := _boss_world("4-1", 34)
+	w4.profile.quest.ch4 = 2
+	w4.profile.quest.kills4 = 15
+	w4.profile.side.erase("_main")
+	_check(int(MV.state(w4, "kills4").p) == 2, "save cũ đang làm dở: 15/30 → 2/4")
+
+
+# ------------------------------------------------------------------ NVE-T1 (docs/41 NV-E)
+
+func _test_nve_road() -> void:
+	var RE = load("res://scripts/core/road_events.gd")
+	var w := _boss_world("1-1", 8)
+	w._load_map("1-1")
+	w.enemies = []
+	w.player.pos = w.safe_pos + Vector2(w.safe_r + 300.0, 0)
+	# tắt field_spawn → không gieo
+	w.road_t = 0.5
+	RE.tick(w, 1.0)
+	_check(w.road_event.is_empty() and w.road_t == 0.5, "field_spawn tắt: không gieo sự kiện")
+	# phục kích
+	_check(RE.start(w, "ambush") and w.enemies.filter(func(e): return e.has_meta("road")).size() == 5, "phục kích: 5 tên cướp")
+	var tr := QuestLog.tracked(w)
+	_check(not tr.is_empty() and tr[0].key == "road" and tr[0].route.pos != Vector2.INF, "sự kiện đứng đầu danh sách theo dõi, có chỉ đường")
+	var torch0 := int(w.profile.torches)
+	w.profile.torches = 0
+	var gold0 := float(w.profile.gold)
+	for e in w.enemies.filter(func(e): return e.has_meta("road")):
+		w._kill_enemy(e)
+	RE.tick(w, 0.1)
+	_check(w.road_event.is_empty() and int(w.profile.torches) == 1 and float(w.profile.gold) > gold0, "hạ hết cướp: thưởng vàng + Đuốc")
+	# rương bị canh
+	var st0 := int(w.profile.stones)
+	RE.start(w, "chest")
+	for e in w.enemies.filter(func(e): return e.has_meta("road") and not e.dead):
+		w._kill_enemy(e)
+	RE.tick(w, 0.1)
+	_check(w.road_event.is_empty() and int(w.profile.stones) == st0 + 2, "rương bị canh: +2 Đá Cường Hoá")
+	# người sống sót: tới chỗ → về khu an toàn
+	RE.start(w, "survivor")
+	var at: Vector2 = w.road_event.pos
+	w.player.pos = at
+	RE.tick(w, 0.1)
+	_check(int(w.road_event.stage) == 1 and str(RE.target(w).label).begins_with("Khu an toàn"), "người sống sót đi theo → chỉ về khu an toàn")
+	w.player.pos = w.safe_pos
+	RE.tick(w, 0.1)
+	_check(w.road_event.is_empty(), "đưa về khu an toàn: xong")
+	# tinh anh đi lạc: hết giờ thì tan, không thưởng
+	w.player.pos = w.safe_pos + Vector2(w.safe_r + 300.0, 0)
+	RE.start(w, "elite")
+	var g1 := float(w.profile.gold)
+	RE.tick(w, 91.0)
+	_check(w.road_event.is_empty() and float(w.profile.gold) == g1 and w.enemies.filter(func(e): return e.has_meta("road") and not e.dead).is_empty(), "tinh anh đi lạc: hết 90 giây → tan, không thưởng")
+	w.profile.torches = torch0
+

@@ -39,15 +39,28 @@ func _process(delta: float) -> bool:
 		p.class_id = "kiem-khach"
 		p.level = 30
 		p.map_id = map_id
+		for a in OS.get_cmdline_user_args():
+			# --quest=1:5 → chương 1 bước 5; --quest=2:1 → chương 2 bước 1 (đã xong chương 1)
+			if a.begins_with("--level="):
+				p.level = int(a.substr(8))
+			if a.begins_with("--quest="):
+				var qa: PackedStringArray = a.substr(8).split(":")
+				if qa[0] == "1":
+					p.quest_step = int(qa[1])
+				else:
+					p.quest["ch%s" % qa[0]] = int(qa[1])
 		main._start_world(p)
 		if not OS.get_cmdline_user_args().has("--mobs"):
 			main.world.field_spawn = false
 			main.world.enemies = []
 		main.world.player.pos = main.world.safe_pos + Vector2(700, 0)
+		if OS.get_cmdline_user_args().has("--still"):
+			main.world.player.pos = main.world.safe_pos + Vector2(-150, 30)
 		var explore := OS.get_cmdline_user_args().has("--explore")
 		if not explore:
 			main.world.fog.reveal(main.world.player.pos, 2000.0)
-		main.bot = func(w): return {"move": Vector2(1, 0.35 * sin(w.time * 0.5)) if explore else Vector2.from_angle(w.time * 0.6), "aim": w.player.pos + Vector2.RIGHT, "attack": false, "skill": false, "talent": false, "dodge": false}
+		var still := OS.get_cmdline_user_args().has("--still")
+		main.bot = func(w): return {"move": Vector2.ZERO if still else (Vector2(1, 0.35 * sin(w.time * 0.5)) if explore else Vector2.from_angle(w.time * 0.6)), "aim": w.player.pos + Vector2.RIGHT, "attack": false, "skill": false, "talent": false, "dodge": false}
 		for o in off.split(",", false):
 			match o:
 				"hud": main.hud.visible = false
@@ -71,6 +84,15 @@ func _process(delta: float) -> bool:
 		if off == "list":
 			for ch in main.hud.get_children():
 				print("HUDCHILD ", ch.name, " ", ch.get_class(), " ", ch.get_script().resource_path if ch.get_script() else "")
+		for a in OS.get_cmdline_user_args():
+			# --open=daily / --open=main: mở Sổ nhiệm vụ ở tab đó; --pin: ghim uỷ thác 0, 1
+			if a.begins_with("--open="):
+				main.quest_panel.open(main.world)
+				main.quest_panel._tab = a.substr(7)
+				main.quest_panel.refresh()
+			if a == "--pin":
+				main.QuestLog.toggle_track(main.world, "daily:0")
+				main.QuestLog.toggle_track(main.world, "daily:1")
 		started = true
 		return false
 	t += delta

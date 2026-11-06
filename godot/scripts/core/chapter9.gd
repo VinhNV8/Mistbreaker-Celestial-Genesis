@@ -590,7 +590,7 @@ static func on_kill(w, e) -> void:
 	var q: Dictionary = w.profile.quest
 	var p = w.profile
 	if in_region(w) and step(w) == S_KILLS and e.role in ["field", "pack", "nestMinion", "nestGuard"]:
-		q.kills9 = int(q.kills9) + 1
+		pass  # NV-B (docs/41): bước này nay theo mục tiêu riêng — core/main_variants.gd ghi tiến độ
 	if e.kind == "tan-hon" and not e.elite and step(w) == S_SOULS:
 		q.souls9 = int(q.souls9) + 1
 		w._text(e.pos + Vector2(0, -40), "Ánh Hồn %d/9" % mini(9, int(q.souls9)), Color("#bcd8f0"), true)

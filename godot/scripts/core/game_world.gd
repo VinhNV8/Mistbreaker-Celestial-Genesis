@@ -13,6 +13,10 @@ const TalentSlots = preload("res://scripts/core/talent_slots.gd")
 const Awakening = preload("res://scripts/core/awakening.gd")
 const Monsters = preload("res://scripts/data/monsters.gd")
 const Items = preload("res://scripts/core/items.gd")
+## NV (docs/41): uỷ thác hằng ngày + nhiệm vụ phụ.
+const Quests = preload("res://scripts/core/quests.gd")
+const MainVariants = preload("res://scripts/core/main_variants.gd")
+const RoadEvents = preload("res://scripts/core/road_events.gd")
 const ItemData = preload("res://scripts/data/items.gd")
 const Classes = preload("res://scripts/data/classes.gd")
 const RngUtil = preload("res://scripts/core/rng_util.gd")
@@ -118,6 +122,8 @@ const SHADOW_ATK := 0.3
 const ALLY_RANGE := 320.0
 const ALLY_SPEED := 210.0
 const PET_SPEED := 320.0
+## SN16 (Spec_Notes 05/11): linh thú / Xương Nô vừa gọi "hiện hình" 0,5 giây (khớp nghi thức FX-1) rồi mới lao ra đánh.
+const ALLY_SPAWN := 0.5
 ## SN9-04: Tự đánh chờ đồng minh cận chiến áp sát mục tiêu (≤ 4 m) — trừ khi quái đã cách nhân vật ≤ 10 m.
 const ALLY_ENGAGED := 40.0
 const AUTO_SELF_DEFENSE := 100.0
@@ -531,6 +537,8 @@ class Ally:
 	var hp := 0.0
 	var max_hp := 0.0
 	var hurt_t := 0.0
+	## SN16 (Spec_Notes 05/11): giây "hiện hình" còn lại — đứng yên trong vòng trận, chưa đánh / chưa bị quái nhắm
+	var spawn_t := 0.0
 
 
 class Herb:
@@ -613,6 +621,9 @@ var steal_buffs: Array = []
 var field_spawn := true
 ## SN9-06: bãi quái của map hiện tại — [{pos, r, level, kind, name}] (rỗng trong hang).
 var camps: Array = []
+## NV-E (docs/41): sự kiện trên đường đang diễn ra ({} = không có) + đếm ngược tới lần gieo sự kiện kế tiếp (giây).
+var road_event := {}
+var road_t := 300.0
 var _camp_seen := {}
 ## SN9-06: RNG riêng cho việc dời quái vào bãi (không đụng chuỗi ngẫu nhiên chính `_rng`).
 var _camp_rng := RandomNumberGenerator.new()
@@ -1323,6 +1334,7 @@ func update(dt: float, input: Dictionary) -> void:
 		_quest_poll = 0.5
 		_check_quest_state()
 		_check_quest2()
+		MainVariants.tick(self)
 		Chapters.check_quest(self)
 		_check_rare_boss()
 	_passive_msg_cd -= dt
@@ -1382,6 +1394,8 @@ func update(dt: float, input: Dictionary) -> void:
 	focus = _compute_focus()
 	_update_pickups(dt)
 	_update_herbs(dt)
+	Quests.side_tick(self)
+	RoadEvents.tick(self, dt)
 	_update_chests()
 	_update_spawning(dt)
 	enemies = enemies.filter(func(e): return not e.dead)
@@ -2995,9 +3009,13 @@ func _kill_enemy(e: Enemy) -> void:
 	if e.role == "quest":
 		quest_event("kill_quest")
 	if int(map.get("region", 1)) == 2 and int(profile.quest.ch2) == 2:
-		profile.quest.kills2 = int(profile.quest.kills2) + 1
+		pass  # NV-B (docs/41): bước này nay theo mục tiêu riêng — core/main_variants.gd ghi tiến độ
 	Chapters.on_kill(self, e)
 	Caves.on_kill(self, e)
+	# NV-D (docs/41): tiến độ uỷ thác hằng ngày
+	Quests.on_kill(self, e)
+	Quests.side_on_kill(self, e)
+	MainVariants.on_kill(self, e)
 	var is_boss := e.role == "boss"
 	var base := float(boss_exp(e.level)) if is_boss else float(Formulas.mob_exp(e.level, e.elite))
 	if e.role == "rare":
@@ -4342,6 +4360,10 @@ func _update_allies(dt: float) -> void:
 	for a in allies:
 		if a.dead:
 			continue
+		# SN16: đang hiện hình (nghi thức gọi) → chưa di chuyển / đánh, chưa trừ thời gian tồn tại
+		if a.spawn_t > 0.0:
+			a.spawn_t -= dt
+			continue
 		# TP13 Chúa Tể Bầy Đàn: lính bóng tối không hết thời gian khi còn thú cưng sống.
 		if a.ttl > 0.0 and not (a.kind == "shadow" and TalentSlots.has_special(profile, "chua-te") and _ally_count("pet") > 0):
 			a.ttl -= dt
@@ -4396,6 +4418,8 @@ func _update_herbs(dt: float) -> void:
 		if h.pos.distance_to(player.pos) < 22.0:
 			var gain := 2 if has_talent("thao-duoc") else 1
 			profile.herbs += gain
+			Quests.on_herb(self, gain)
+			Quests.side_on_herb(self, gain)
 			h.respawn = HERB_RESPAWN
 			_text(player.pos + Vector2(0, -30), "+%d Thảo dược" % gain, Color("#5bd16a"), false)
 			_brew_potions()

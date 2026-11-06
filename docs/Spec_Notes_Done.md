@@ -47,3 +47,9 @@ Khi focus vào đánh quái, cần hiển thị là đang focus vào quái nào 
 - (Đợt 15 — [35](35-de-xuat-giao-dien-moi.md), **done 03/11/2026**: đã lên kế hoạch; chủ dự án chọn hướng B HD vector + cel-shade, đang làm bản thử G0) Cần cải thiện giao diện, giao diện hiện tại pixel quá người chơi không thích -> Người chơi muốn giao diện đẹp cơ -> hãy lên kế hoạch đề xuất giao diện
 
 - (Đợt 15 — [32](32-ra-soat-01-11.md) mục 6, **done 04/11/2026**) Phượng hoàng Tro - khi đánh chết không bị mất đang bị lỗi...
+
+- (Đợt 16 — [36 §9.15](36-thiet-ke-lai-vfx-ky-nang.md), **done 05/11/2026**) Triệu hồi - Khi người chơi nhấn triệu hồi, thú cưng chưa xuất hiện xong, thì đã chạy ra đánh quá -> cần phải triệu hồi xong thì mới phi ra đánh quái chứ nhỉ? hoặc hiệu ứng triệu hồi cần kết thúc sớm hơn... đề xuất hướng tốt nhất nhé.
+
+- (Đợt 17 — [41](41-de-xuat-nhiem-vu.md), **done 05/11/2026**: đã nghiên cứu + đề xuất, chờ chủ dự án chọn đợt triển khai Q195–Q201) Nhiệm vụ - Người chơi đang đánh giá phần nhiệm vụ quá đơn điệu, quá ít, ngoài ra không thu hút mấy + với nhiệm vụ chưa rõ ràng.... -> Hãy nghiên cứu và đề xuất thay đổi cho tôi.
+
+Hiêu ứng đồ sau khi được nâng cấp -> Người chơi đánh giá nó xấu quá, không giống như game hiện đại bây giờ -> cần nghiên cứu và design lại. *(06/11/2026 → docs/43, EN-1: đã làm)*

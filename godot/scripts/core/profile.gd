@@ -38,7 +38,9 @@ const RngUtil = preload("res://scripts/core/rng_util.gd")
 ## cộng hưởng đặc biệt đã kích hoạt (resonance_seen). Save cũ: chưa có Thiên phú phụ (ô đã mở theo chuyển chức).
 ## v29: BD-11 (docs/34) — Cổng dungeon đang mở gates {map cha: {rank, until (giây chơi), x, y}}, số cổng đã dọn
 ## (gates_cleared), hạng cao nhất đã dọn (gate_best). Save cũ: chưa có cổng nào.
-const VERSION := 29
+## v30: NV (docs/41) — uỷ thác hằng ngày (daily), nhiệm vụ phụ (side), việc đang ghim (tracked), danh hiệu (titles, title).
+## Save cũ: rỗng.
+const VERSION := 30
 
 var talent := ""
 var level := 1
@@ -181,6 +183,14 @@ var rebuild_raid := {}
 ## M11 (v25)
 var void_cores := 0
 var lanterns := 0
+## NV (v30, docs/41): uỷ thác hằng ngày {day, tasks [{t, kind, need, n, claimed}], swapped, full, streak, last_full, points};
+## nhiệm vụ phụ {id: {step, n, state "active"|"done"}}; việc đang ghim ["daily:0", "side:<id>"] (tối đa 2);
+## danh hiệu đã có + đang đeo.
+var daily := {}
+var side := {}
+var tracked: Array = []
+var titles: Array = []
+var title := ""
 var lamp_off_until := {}
 var assault_play := 0.0
 var evo_essence := 0
@@ -298,6 +308,11 @@ func to_dict() -> Dictionary:
 		"rebuild_raid": rebuild_raid,
 		"void_cores": void_cores,
 		"lanterns": lanterns,
+		"daily": daily,
+		"side": side,
+		"tracked": tracked,
+		"titles": titles,
+		"title": title,
 		"lamp_off_until": lamp_off_until,
 		"assault_play": assault_play,
 		"evo_essence": evo_essence,
@@ -531,6 +546,12 @@ func load_dict(d: Dictionary) -> bool:
 	# v25 — save v24 trở xuống: chưa tới vùng 8.
 	void_cores = int(d.get("void_cores", 0))
 	lanterns = int(d.get("lanterns", 0))
+	# v30 (docs/41): save cũ chưa có → rỗng
+	daily = (d.get("daily", {}) as Dictionary).duplicate(true)
+	side = (d.get("side", {}) as Dictionary).duplicate(true)
+	tracked = (d.get("tracked", []) as Array).map(func(x): return str(x))
+	titles = (d.get("titles", []) as Array).map(func(x): return str(x))
+	title = str(d.get("title", ""))
 	assault_play = float(d.get("assault_play", 0.0))
 	lamp_off_until = {}
 	var lo: Dictionary = d.get("lamp_off_until", {})

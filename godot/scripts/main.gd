@@ -15,6 +15,9 @@ const InventoryPanel = preload("res://scripts/ui/inventory_panel.gd")
 const TalentPanel = preload("res://scripts/ui/talent_panel.gd")
 const SkillPanel = preload("res://scripts/ui/skill_panel.gd")
 const HelpPanel = preload("res://scripts/ui/help_panel.gd")
+## NV-A (docs/41): Sổ nhiệm vụ (O) + chỉ đường nhiệm vụ.
+const QuestPanel = preload("res://scripts/ui/quest_panel.gd")
+const QuestLog = preload("res://scripts/core/quest_log.gd")
 const WorldMapPanel = preload("res://scripts/ui/world_map_panel.gd")
 const Talents = preload("res://scripts/data/talents.gd")
 const Items = preload("res://scripts/core/items.gd")
@@ -65,6 +68,7 @@ const KEY_ACTIONS := {
 	"auto_fight": [KEY_Z],
 	"toggle_minimap": [KEY_V],
 	"toggle_help": [KEY_F1, KEY_H],
+	"toggle_quests": [KEY_O],
 	"toggle_forge": [KEY_R],
 	"potion": [KEY_Q],
 	"mp_potion": [KEY_F],
@@ -80,6 +84,7 @@ var talent_panel: TalentPanel
 var skill_panel: SkillPanel
 ## UI-17: bảng Trợ giúp (F1 / H).
 var help_panel: HelpPanel
+var quest_panel: QuestPanel
 var world_panel: WorldMapPanel
 ## Smoke test gắn bot vào đây để thay cho bàn phím/chuột.
 var bot := Callable()
@@ -238,6 +243,8 @@ func _input(event: InputEvent) -> void:
 			job3_panel.close()
 		elif divine_panel.is_open():
 			divine_panel.close()
+		elif not npc.is_empty() and _side_talk(str(npc.id)):
+			pass
 		else:
 			act = world.talk(str(npc.id)) if not npc.is_empty() else ""
 			if act == "shop" or (npc.is_empty() and world.in_village()):
@@ -271,7 +278,7 @@ func _input(event: InputEvent) -> void:
 			inventory_panel.toggle_tab(world, pair[1])
 			get_viewport().set_input_as_handled()
 			return
-	for pair in [["toggle_map", map_panel], ["toggle_talent", talent_panel], ["toggle_world", world_panel], ["toggle_skills", skill_panel], ["toggle_help", help_panel], ["toggle_forge", forge_panel]]:
+	for pair in [["toggle_map", map_panel], ["toggle_talent", talent_panel], ["toggle_world", world_panel], ["toggle_skills", skill_panel], ["toggle_help", help_panel], ["toggle_forge", forge_panel], ["toggle_quests", quest_panel]]:
 		if event.is_action_pressed(pair[0]):
 			var target = pair[1]
 			for panel in _panels():
@@ -317,7 +324,7 @@ func _open_forge(tab := "") -> void:
 
 
 func _panels() -> Array:
-	return [map_panel, inventory_panel, talent_panel, world_panel, shop_panel, forge_panel, job2_panel, job3_panel, divine_panel, skill_panel, help_panel, sub_panel]
+	return [map_panel, inventory_panel, talent_panel, world_panel, shop_panel, forge_panel, job2_panel, job3_panel, divine_panel, skill_panel, help_panel, sub_panel, quest_panel]
 
 
 func _any_panel_open() -> bool:
@@ -425,6 +432,7 @@ func _handle_event(ev: Dictionary) -> void:
 			dialog.push(str(ev.id))
 		"quest_done":
 			_persist()
+			_quest_banner(ev)
 		"sub_ritual":
 			# TP5-02 (docs/33): chuyển chức xong → Lễ Thức Tỉnh ô Thiên phú phụ.
 			for panel in _panels():
@@ -659,6 +667,11 @@ func _start_world(p: Profile) -> void:
 	_ui.add_child(skill_panel)
 	help_panel = HelpPanel.new()
 	_ui.add_child(help_panel)
+	quest_panel = QuestPanel.new()
+	_ui.add_child(quest_panel)
+	quest_panel.guide_requested.connect(_on_quest_guide)
+	hud.quest_clicked.connect(_on_quest_guide)
+	hud.track_clicked.connect(_on_track_guide)
 	world_panel = WorldMapPanel.new()
 	_ui.add_child(world_panel)
 	shop_panel = ShopPanel.new()
@@ -692,9 +705,74 @@ func _start_world(p: Profile) -> void:
 	_camera.reset_smoothing()
 
 
+## NV-A4 (docs/41): bấm khung nhiệm vụ / nút "Chỉ đường" trong sổ → tự chạy tới điểm cần tới (mục tiêu hoặc cổng
+## sang map mục tiêu); việc làm trong bảng → mở bảng đó.
+func _on_quest_guide() -> void:
+	var g := QuestLog.guide(world)
+	if g.is_empty():
+		return
+	var r: Dictionary = g.route
+	if r.pos != Vector2.INF:
+		world.set_move_target(r.pos)
+		return
+	for panel in _panels():
+		panel.close()
+	match str(r.panel):
+		"map":
+			map_panel.open(world)
+		"bag", "stats":
+			inventory_panel.toggle_tab(world, str(r.panel))
+		_:
+			if str(r.note) != "":
+				hud.log_message(str(r.note), "info")
+
+
+## NV-C (docs/41): E cạnh NPC — trả / nhận nhiệm vụ phụ (trừ khi NPC là mục tiêu bước chính đang làm: thoại chính
+## đi trước). true = đã xử lý lần bấm này.
+func _side_talk(npc_id: String) -> bool:
+	var g := QuestLog.guide(world)
+	if not g.is_empty() and str(g.main.q.get("goal", {}).get("npc", "")) == npc_id:
+		return false
+	var r := world.Quests.on_talk(world, npc_id)
+	match str(r.get("action", "")):
+		"reward":
+			for panel in _panels():
+				panel.close()
+			quest_panel.open(world)
+			quest_panel.show_side(str(r.id))
+			return true
+		"accepted":
+			var q: Dictionary = world.Quests.SideQuests.by_id(str(r.id))
+			hud.banner("Nhiệm vụ phụ: " + str(q.title), str(q.steps[0].text))
+			return true
+	return false
+
+
+## NV-A4: bấm dòng việc đang ghim → tự chạy tới mục tiêu của việc đó (hoặc báo vì sao chưa chỉ được).
+func _on_track_guide(key: String) -> void:
+	var r := QuestLog.route_of(world, key)
+	if r.is_empty():
+		return
+	if r.pos != Vector2.INF:
+		world.set_move_target(r.pos)
+	elif str(r.note) != "":
+		hud.log_message(str(r.note), "info")
+
+
+## NV-A5 (docs/41): xong bước nhiệm vụ chính → dải chữ lớn giữa màn hình: tên bước vừa xong + bước mới.
+func _quest_banner(ev: Dictionary) -> void:
+	var qs: Array = QuestLog.quests_of(int(ev.get("chapter", 1)))
+	var i := int(ev.get("step", 0)) - 1
+	if i < 0 or i >= qs.size():
+		return
+	var ms := QuestLog.main_step(world)
+	var sub := ("Nhiệm vụ mới: " + str(ms.q.title)) if not ms.is_empty() else "Mở Sổ nhiệm vụ (O) để xem việc tiếp theo"
+	hud.banner("✓ " + str(qs[i].title), sub)
+
+
 func _end_session() -> void:
 	_close_victory()
-	for n in [hud, map_panel, inventory_panel, talent_panel, world_panel, dialog, shop_panel, forge_panel, job2_panel, job3_panel, divine_panel, skill_panel, help_panel, sub_panel]:
+	for n in [hud, map_panel, inventory_panel, talent_panel, world_panel, dialog, shop_panel, forge_panel, job2_panel, job3_panel, divine_panel, skill_panel, help_panel, sub_panel, quest_panel]:
 		if n != null:
 			n.queue_free()
 	hud = null
@@ -703,6 +781,7 @@ func _end_session() -> void:
 	talent_panel = null
 	skill_panel = null
 	help_panel = null
+	quest_panel = null
 	world_panel = null
 	dialog = null
 	shop_panel = null
@@ -994,7 +1073,7 @@ func _run_smoke(dir: String) -> void:
 	world._refresh_stats()
 	inventory_panel._selected_id = int(fang.id)
 	inventory_panel.refresh()
-	inventory_panel._play_burst(true, 10, Items.display_name(Items.find_item(pp, int(fang.id)).item))
+	inventory_panel._play_burst(true, 10, Items.display_name(Items.find_item(pp, int(fang.id)).item), _view.SpriteLib.item_icon(fang))
 	await _wait(0.25)
 	await _wait(0.3)
 	await _shot(dir, "05c-inventory-equipped")
@@ -1009,6 +1088,13 @@ func _run_smoke(dir: String) -> void:
 		await _wait(0.2)
 		await _shot(dir, "05c2-item-compare")
 	inventory_panel.close()
+	# EN-1 (docs/43 §6): vũ khí +13 — vòng ấn dưới chân + hạt sáng bốc lên ngoài bản đồ.
+	Items.find_item(pp, int(fang.id)).item.plus = 13
+	world._refresh_stats()
+	await _wait(0.6)
+	await _shot(dir, "05c3-enhance-aura")
+	Items.find_item(pp, int(fang.id)).item.plus = 10
+	world._refresh_stats()
 
 	# Bảng Thiên phú + bản đồ có mục Công trình (M2).
 	pp.wood += 200

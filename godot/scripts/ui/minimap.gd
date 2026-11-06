@@ -12,6 +12,7 @@ const GameWorld = preload("res://scripts/core/game_world.gd")
 
 const Bronze = preload("res://scripts/ui/bronze.gd")
 const DrawLayer = preload("res://scripts/ui/draw_layer.gd")
+const QuestLog = preload("res://scripts/core/quest_log.gd")
 const SMALL_W := 224.0
 const LARGE_W := 460.0
 const HEADER := 18.0
@@ -273,6 +274,39 @@ func _draw_ring(cv: CanvasItem) -> void:
 	cv.draw_string(UiTheme.bold_font(), Vector2(pr.end.x - 14, pr.position.y + 17), "V", HORIZONTAL_ALIGNMENT_LEFT, -1, 9, UiTheme.MUTED)
 
 
+func _draw_goal(cv: CanvasItem, rect: Rect2) -> void:
+	# NV-E: sự kiện trên đường — "!" vàng
+	if not _world.road_event.is_empty():
+		var rt: Dictionary = _world.RoadEvents.target(_world)
+		if not rt.is_empty():
+			var ep := _to_map(rt.pos, rect)
+			if _shown(ep):
+				cv.draw_circle(ep, 6.0, Color(0, 0, 0, 0.7))
+				cv.draw_circle(ep, 5.0, Color("#ffd257"))
+				cv.draw_string(UiTheme.bold_font(), ep + Vector2(-2, 4), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color("#3a2408"))
+	var g := QuestLog.guide(_world)
+	if g.is_empty() or g.route.pos == Vector2.INF:
+		return
+	var mp := _to_map(g.route.pos, rect)
+	var gold := Color("#ffd257")
+	var k := 0.5 + 0.5 * sin(Time.get_ticks_msec() / 200.0)
+	if not large:
+		var c := round_center()
+		var off := mp - c
+		if off.length() > ROUND_R - 8.0:
+			var dir := off.normalized()
+			var tip := c + dir * (ROUND_R - 3.0)
+			var n := dir.orthogonal()
+			var tri := PackedVector2Array([tip, tip - dir * 11.0 + n * 6.0, tip - dir * 11.0 - n * 6.0])
+			cv.draw_colored_polygon(tri, gold)
+			tri.append(tri[0])
+			cv.draw_polyline(tri, Color(0, 0, 0, 0.8), 1.0, true)
+			return
+	cv.draw_circle(mp, 6.0 + 2.0 * k, Color(gold, 0.25))
+	cv.draw_arc(mp, 6.0 + 2.0 * k, 0.0, TAU, 20, gold, 1.6, true)
+	cv.draw_circle(mp, 2.2, gold)
+
+
 ## PF-01 (04/11): cỡ nhỏ — chỉ vẽ chấm nằm trong vòng la bàn (phần ngoài bị lớp cắt che, trước đây vẫn vẽ cả map).
 func _shown(mp: Vector2, extra := 0.0) -> bool:
 	return large or mp.distance_to(round_center()) <= ROUND_R + 8.0 + extra
@@ -348,6 +382,8 @@ func _draw_content(cv: CanvasItem) -> void:
 		cv.draw_line(_to_map(w.player.pos, rect), tp, Color(1, 0.85, 0.3, 0.6), 1.0, true)
 		cv.draw_line(tp, tp + Vector2(0, -9), UiTheme.GOLD, 1.5)
 		cv.draw_colored_polygon(PackedVector2Array([tp + Vector2(0, -9), tp + Vector2(6, -7), tp + Vector2(0, -5)]), UiTheme.GOLD)
+	# NV-A1 (docs/41): điểm cần tới của nhiệm vụ — vòng vàng; cỡ nhỏ mà ngoài vòng la bàn → mũi tên ở mép
+	_draw_goal(cv, rect)
 	# nhân vật: mũi tên theo hướng nhìn
 	var pp := _to_map(w.player.pos, rect)
 	var dir := Vector2.from_angle(w.player.facing)

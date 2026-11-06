@@ -12,6 +12,7 @@ const Monsters = preload("res://scripts/data/monsters.gd")
 const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
 const Classes = preload("res://scripts/data/classes.gd")
 const Story = preload("res://scripts/data/story.gd")
+const QuestLog = preload("res://scripts/core/quest_log.gd")
 const Resources = preload("res://scripts/data/resources.gd")
 ## C1-03: tài nguyên hiện trên HUD (icon + số, rê chuột xem chú thích).
 const HUD_RESOURCES := ["gold", "wood", "torches", "stones", "essence", "ore", "iron", "crystal"]
@@ -56,6 +57,10 @@ var _tl: CharFrame
 var _cluster: ActionCluster
 var _exp_bar: ExpBar
 signal auto_toggled
+## NV-A4 (docs/41): bấm khung nhiệm vụ → main tự chạy tới mục tiêu / mở bảng cần dùng.
+signal quest_clicked
+## NV-A4: bấm dòng việc đang ghim (uỷ thác / nhiệm vụ phụ) → main tự chạy tới mục tiêu của việc đó.
+signal track_clicked(key: String)
 
 var _tr: PanelContainer
 var _resources: Label
@@ -65,6 +70,10 @@ var _res_slots: Array = []
 var _obj: PanelContainer
 var _objectives: Array[Label] = []
 var _obj_progress: Control
+## NV-A1: dòng chỉ đường "➜ 85 m · Cổng → …" dưới mục tiêu.
+var _obj_guide: Label
+## NV-A4: tối đa 2 dòng việc đang ghim dưới nhiệm vụ chính.
+var _track_lines: Array[Label] = []
 
 var _boss_box: VBoxContainer
 var _boss_name: Label
@@ -173,6 +182,35 @@ func _ready() -> void:
 			_obj_progress = QuestBox.Progress.new()
 			_obj_progress.visible = false
 			ov.add_child(_obj_progress)
+	# NV-A1 / A4 (docs/41): dòng chỉ đường + bấm khung để tự chạy tới
+	_obj_guide = UiTheme.label("", "HudLabel", OBJ_W - 46)
+	_obj_guide.add_theme_font_size_override("font_size", UiTheme.fs(12))
+	_obj_guide.add_theme_font_override("font", UiTheme.bold_font())
+	_obj_guide.add_theme_constant_override("outline_size", 0)
+	_obj_guide.add_theme_color_override("font_color", Bronze.INK_RED)
+	_obj_guide.visible = false
+	ov.add_child(_obj_guide)
+	for i in 3:
+		var tl := UiTheme.label("", "HudLabel", OBJ_W - 46)
+		tl.add_theme_font_size_override("font_size", UiTheme.fs(11))
+		tl.add_theme_constant_override("outline_size", 0)
+		tl.add_theme_color_override("font_color", parchment_ink(UiTheme.TEXT))
+		tl.visible = false
+		tl.mouse_filter = Control.MOUSE_FILTER_STOP
+		tl.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		tl.gui_input.connect(func(ev: InputEvent):
+			if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT and tl.has_meta("key"):
+				track_clicked.emit(str(tl.get_meta("key")))
+				tl.accept_event())
+		_track_lines.append(tl)
+		ov.add_child(tl)
+	_obj.mouse_filter = Control.MOUSE_FILTER_STOP
+	_obj.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	_obj.tooltip_text = "Bấm: tự chạy tới mục tiêu nhiệm vụ · O: Sổ nhiệm vụ"
+	_obj.gui_input.connect(func(ev: InputEvent):
+		if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:
+			quest_clicked.emit()
+			_obj.accept_event())
 	add_child(_obj)
 
 	_boss_box = UiTheme.vbox(4)
@@ -435,6 +473,8 @@ func update_from(w: GameWorld) -> void:
 	_resources.visible = _resources.text != ""
 
 	_update_quest(w)
+	_update_guide(w)
+	_update_tracked(w)
 	# M4.2 (GI-01): hướng gió + báo trước 2 giây.
 	_wind.visible = w.wind_dir != Vector2.ZERO
 	if _wind.visible:
@@ -681,6 +721,34 @@ func _update_quest(w: GameWorld) -> void:
 	_set_obj(1, str(q.hint), UiTheme.TEXT)
 	var rt := Story.reward_text(q.reward)
 	_set_obj(2, ("Thưởng: " + rt) if rt != "" else "", UiTheme.MUTED)
+
+
+## NV-A1 (docs/41): "➜ 85 m · Bãi quái" / "➜ 1.240 m · Cổng → Mắt Bão" / "➜ Mở Bản đồ khai phá (M)".
+func _update_guide(w: GameWorld) -> void:
+	var txt := group_numbers(QuestLog.guide_text(w))
+	_obj_guide.text = txt
+	_obj_guide.visible = txt != ""
+
+
+## NV-A4: "◇ Săn 15 Sói Sương 7/15 · 85 m" (xong: "✓ … — về khu an toàn nhận thưởng").
+func _update_tracked(w: GameWorld) -> void:
+	var tr := QuestLog.tracked(w)
+	for i in _track_lines.size():
+		var l := _track_lines[i]
+		l.visible = i < tr.size()
+		if not l.visible:
+			continue
+		var e: Dictionary = tr[i]
+		l.set_meta("key", e.key)
+		var txt := ""
+		if bool(e.done):
+			txt = "✓ %s — về khu an toàn nhận thưởng" % e.title
+		else:
+			txt = ("%s" % e.title) if str(e.key) == "road" else "◇ %s  %d/%d" % [e.title, int(e.n), int(e.need)]
+			var r: Dictionary = e.route
+			if r.pos != Vector2.INF:
+				txt += " · %d m" % QuestLog.meters(w.player.pos, r.pos)
+		l.text = group_numbers(txt)
 
 
 func _set_obj(i: int, text: String, color: Color) -> void:

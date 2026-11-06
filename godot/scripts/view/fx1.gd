@@ -156,6 +156,9 @@ const ZONES := {
 static var casts: Array = []
 static var _world = null
 static var _seen_allies := {}
+## SN16: nghi thức gọi 0,9 → 0,7 giây; cột sáng tắt ở 0,5 giây (= GameWorld.ALLY_SPAWN / RITUAL_TIME)
+const RITUAL_TIME := 0.7
+const PILLAR_END := 0.5 / RITUAL_TIME
 ## Vật thể đang theo dõi để nổ khi biến mất: [vật thể, vị trí, bán kính, bảng màu, có đá văng]. Slam / cầu sấm là
 ## Dictionary đổi nội dung mỗi khung nên không làm khoá được — so tham chiếu bằng is_same.
 static var _watch: Array = []
@@ -960,7 +963,8 @@ static func draw_hit(pa: Kit.Painter, world, pos: Vector2, k: float) -> bool:
 	return true
 
 
-## Nghi thức gọi linh thú: linh thú mới (skill FX-1) → vòng trận xoay, cột sáng, hạt bay lên trong 0,9 giây.
+## Nghi thức gọi linh thú: linh thú mới (skill FX-1) → vòng trận xoay, cột sáng, hạt bay lên trong 0,7 giây.
+## SN16: cột sáng tắt đúng lúc linh thú hiện hình xong (GameWorld.ALLY_SPAWN 0,5 giây) và lao ra; vòng + hạt tan nốt.
 static func _draw_summons(pa: Kit.Painter, world) -> void:
 	var now: float = world.time
 	var full := 0  # §9.7: tối đa 4 nghi thức đầy đủ mỗi khung (Quân Đoàn gọi 10) — con thứ 5 trở đi chỉ cột sáng + vòng
@@ -972,10 +976,10 @@ static func _draw_summons(pa: Kit.Painter, world) -> void:
 		var id := str(a.skill) if a.kind == "summon" else "trieuhoi"  # Xương Nô (kind "bone") không ghi kỹ năng
 		if not active(id):
 			continue
-		var t := (now - float(_seen_allies[a])) / 0.9
+		var t := (now - float(_seen_allies[a])) / RITUAL_TIME
 		if t > 1.0:
-			if id == "kylan" and t < 2.5:
-				Kit.sparks(pa, a.pos, (t - 1.0) / 1.5, 10, 40.0, P.heal, 5, true)
+			if id == "kylan" and t < 3.0:
+				Kit.sparks(pa, a.pos, (t - 1.0) / 2.0, 10, 40.0, P.heal, 5, true)
 			continue
 		var p: Array = palette(id)
 		var r := 34.0 + float(a.radius)
@@ -983,9 +987,10 @@ static func _draw_summons(pa: Kit.Painter, world) -> void:
 		var lite := full > 4
 		if not lite:
 			Kit.decal(pa, a.pos, r * (0.5 + 0.5 * Kit.ease_out(t * 2.0)), p, now * 3.0, 6, 0.9 * (1.0 - t * 0.5))
-		if t < 0.6:
+		if t < PILLAR_END:
 			var near: bool = a.pos.distance_to(world.player.pos) < 45.0  # sát người chơi → cột mảnh + nhạt, không che nhân vật
-			Kit.pillar(pa, a.pos + Vector2(0, 4), r * (0.45 if near else 0.8) * (1.0 - t), 105.0, p, (0.45 if near else 0.85) * (1.0 - t))
+			var q := t / PILLAR_END
+			Kit.pillar(pa, a.pos + Vector2(0, 4), r * (0.45 if near else 0.8) * (1.0 - q * 0.6), 105.0, p, (0.45 if near else 0.85) * (1.0 - q))
 		Kit.ring(pa, a.pos, r * (0.6 + 0.9 * Kit.ease_out(t)), 3.0, p, 1.0 - t)
 		if not lite:
 			Kit.sparks(pa, a.pos, t, 10, 50.0, p, a.get_instance_id() % 97, true)

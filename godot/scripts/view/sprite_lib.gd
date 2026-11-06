@@ -105,7 +105,30 @@ static func item_icon(item: Dictionary) -> Texture2D:
 	var unique := str(item.get("unique", ""))
 	if unique != "" and data().get("icons", {}).has("item-" + unique):
 		return icon("item-" + unique)
+	var eq := eq_icon_id(item)
+	if eq != "" and data().get("icons", {}).has(eq):
+		return icon(eq)
 	return icon("item-" + str(item.get("slot", "")))
+
+
+## EQ-HD (docs/40): icon HD theo món — dáng = kiểu vũ khí của lớp (item.style: bow / staff / mace / orb; trống = kiếm)
+## hoặc ô trang bị; chủ đề = bộ (item.set) nếu có, không thì phẩm chất; biến thể = id % 2 (túi đồ không lặp một hình).
+## Chỉ có khi bật Đồ hoạ HD (lớp phủ manifest.hd.icons); tắt HD → icon ô cũ.
+const EQ_VARIANTS := 2
+
+
+static func eq_icon_id(item: Dictionary) -> String:
+	var slot := str(item.get("slot", ""))
+	if slot == "":
+		return ""
+	var fam := slot
+	if slot == "weapon":
+		var st := str(item.get("style", ""))
+		fam = st if st != "" else "sword"
+	var theme := str(item.get("set", ""))
+	if theme == "":
+		theme = str(item.get("rarity", "white"))
+	return "eq-%s-%d-%s" % [fam, posmod(int(item.get("id", 0)), EQ_VARIANTS), theme]
 
 
 static func talent_icon(talent_id: String) -> Texture2D:
