@@ -157,9 +157,8 @@ static func draw_over(ci: CanvasItem, world, view: Rect2, _art: bool) -> void:
 	var c: Vector2 = world.player.pos
 	if Ch6.is_night(world):
 		var inner: float = 520.0 * Ch6.vision(world)
-		ci.draw_rect(view, Color(0.02, 0.04, 0.12, 0.3))
-		for i in 6:
-			ci.draw_arc(c, inner + i * 60.0, 0.0, TAU, 64, Color(0.02, 0.04, 0.12, 0.14 + i * 0.06), 60.0, false)
+		# Fix 10/11: trước là 6 vòng draw_arc rời → lộ vành tròn quanh nhân vật (cùng lỗi đêm sa mạc 09/11).
+		SpriteLib.night_dim(ci, view, c, inner, inner + 360.0, Color(0.02, 0.04, 0.12), 0.3, 0.65)
 		# cực quang trên Đỉnh Cực Quang
 		if world.map_id == "6-3":
 			for k in 3:

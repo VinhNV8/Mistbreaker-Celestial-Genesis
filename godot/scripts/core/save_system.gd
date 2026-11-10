@@ -37,14 +37,14 @@ static func _load_path(path: String) -> Profile:
 
 
 ## Thông tin hiện ở màn Chọn nhân vật: {} nếu ô trống, ngược lại {slot, name, class_id, job, job2, job3, level,
-## talent, play_seconds, last_seen}.
+## talent, play_seconds, last_seen, look, map_id} (CR-06: look + map_id để vẽ nhân vật / ghi vùng ở màn Chọn nhân vật).
 static func slot_summary(n: int) -> Dictionary:
 	var p := _load_path(path_of(n))
 	if p == null:
 		return {}
 	return {"slot": n, "name": str(p.name), "class_id": str(p.class_id), "job": str(p.job), "job2": str(p.job2),
 		"job3": str(p.job3), "level": int(p.level), "talent": str(p.talent),
-		"play_seconds": float(p.play_seconds), "last_seen": float(p.last_seen)}
+		"play_seconds": float(p.play_seconds), "last_seen": float(p.last_seen), "look": p.look.duplicate(), "map_id": str(p.map_id)}
 
 
 static func list_slots() -> Array:

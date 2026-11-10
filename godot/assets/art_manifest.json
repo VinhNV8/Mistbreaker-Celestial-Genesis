@@ -7483,6 +7483,131 @@
    },
    "name": "Triệu Hồi Sư",
    "size_mul": 0.85
+  },
+  "pcx-kiem-khach": {
+   "path": "res://assets/sprites/pcx-kiem-khach.png",
+   "w": 63,
+   "h": 75,
+   "origin": [
+    30,
+    68
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 5,
+     "fps": 5,
+     "loop": true
+    },
+    "attack": {
+     "row": 1,
+     "frames": 4,
+     "fps": 12,
+     "loop": false
+    }
+   },
+   "name": "Kiếm Khách",
+   "size_mul": 1.0
+  },
+  "pcx-tho-san": {
+   "path": "res://assets/sprites/pcx-tho-san.png",
+   "w": 53,
+   "h": 75,
+   "origin": [
+    25,
+    70
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 5,
+     "fps": 5,
+     "loop": true
+    },
+    "attack": {
+     "row": 1,
+     "frames": 3,
+     "fps": 12,
+     "loop": false
+    }
+   },
+   "name": "Cung Thủ",
+   "size_mul": 1.0
+  },
+  "pcx-phap-su": {
+   "path": "res://assets/sprites/pcx-phap-su.png",
+   "w": 59,
+   "h": 75,
+   "origin": [
+    26,
+    70
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 5,
+     "fps": 5,
+     "loop": true
+    },
+    "attack": {
+     "row": 1,
+     "frames": 2,
+     "fps": 12,
+     "loop": false
+    }
+   },
+   "name": "Pháp Sư",
+   "size_mul": 1.0
+  },
+  "pcx-ho-ve": {
+   "path": "res://assets/sprites/pcx-ho-ve.png",
+   "w": 87,
+   "h": 75,
+   "origin": [
+    42,
+    70
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 5,
+     "fps": 5,
+     "loop": true
+    },
+    "attack": {
+     "row": 1,
+     "frames": 3,
+     "fps": 12,
+     "loop": false
+    }
+   },
+   "name": "Hộ Vệ",
+   "size_mul": 1.0
+  },
+  "pcx-trieu-hoi-su": {
+   "path": "res://assets/sprites/pcx-trieu-hoi-su.png",
+   "w": 60,
+   "h": 75,
+   "origin": [
+    32,
+    70
+   ],
+   "anims": {
+    "idle": {
+     "row": 0,
+     "frames": 4,
+     "fps": 5,
+     "loop": true
+    },
+    "attack": {
+     "row": 1,
+     "frames": 2,
+     "fps": 12,
+     "loop": false
+    }
+   },
+   "name": "Triệu Hồi Sư",
+   "size_mul": 1.0
   }
  },
  "icons": {

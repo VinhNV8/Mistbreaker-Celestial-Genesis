@@ -10,6 +10,7 @@ const Classes = preload("res://scripts/data/classes.gd")
 const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
 const Bronze = preload("res://scripts/ui/bronze.gd")
 const FrameBox = preload("res://scripts/ui/frame_box.gd")
+const CharSelect = preload("res://scripts/ui/char_select.gd")
 
 ## UI-17: bảng phím đầy đủ — dùng ở màn hình tiêu đề và bảng Trợ giúp (F1).
 const CONTROLS := [
@@ -103,6 +104,8 @@ class Backdrop:
 	extends Control
 	var t := 0.0
 	var dim := 0.0
+	## CR-06: vị trí ngang của Bia Đá (tỉ lệ bề ngang) — màn Chọn nhân vật dời sang trái để nhân vật đứng trước bia.
+	var stele_x := 0.5
 
 	func _ready() -> void:
 		mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -136,7 +139,7 @@ class Backdrop:
 		var low := Color("#0d1712")
 		draw_polygon(PackedVector2Array([Vector2.ZERO, Vector2(s.x, 0), Vector2(s.x, s.y * 0.55), Vector2(0, s.y * 0.55)]), PackedColorArray([top, top, mid, mid]))
 		draw_polygon(PackedVector2Array([Vector2(0, s.y * 0.55), Vector2(s.x, s.y * 0.55), Vector2(s.x, s.y), Vector2(0, s.y)]), PackedColorArray([mid, mid, low, low]))
-		var c := Vector2(s.x * 0.5, s.y * 0.66)
+		var c := Vector2(s.x * stele_x, s.y * 0.66)
 		var pulse := 0.5 + 0.5 * sin(t * 1.3)
 		# quầng sáng sau Bia Đá + cột sáng lên trời
 		for i in 6:
@@ -322,69 +325,16 @@ static func title(has_save: bool, on_new: Callable, on_continue: Callable, on_se
 	return screen
 
 
-## SN9-02 (Spec_Notes đợt 9): màn Chọn nhân vật — 5 thẻ (slots = SaveSystem.list_slots()).
-## on_play(n), on_delete(n), on_new(), on_back().
-static func slots(slots_info: Array, on_play: Callable, on_delete: Callable, on_new: Callable, on_back: Callable) -> Control:
-	# UI-58 (docs/38): cảnh nền + thẻ khung đồng; ô trống là bệ đá có dấu "+".
-	var page := _page(1.0, 1240.0, false, true, 0.45)
-	var col: VBoxContainer = page[1]
-	col.add_child(_title_label("Chọn nhân vật", 40))
-	var used := slots_info.filter(func(s): return not s.is_empty()).size()
-	col.add_child(_centered("%d / %d nhân vật" % [used, slots_info.size()], "Muted"))
-	var row := HBoxContainer.new()
-	row.alignment = BoxContainer.ALIGNMENT_CENTER
-	row.add_theme_constant_override("separation", 14)
-	col.add_child(row)
-	for i in slots_info.size():
-		var s: Dictionary = slots_info[i]
-		var n := i + 1
-		var card := _bronze_card(14)
-		card.name = "Slot_%d" % n
-		card.custom_minimum_size = Vector2(220, 340)
-		if s.is_empty():
-			card.modulate = Color(0.85, 0.85, 0.85)
-		var v := UiTheme.vbox(8)
-		v.alignment = BoxContainer.ALIGNMENT_CENTER
-		card.add_child(v)
-		v.add_child(_centered("Ô %d" % n, "Small"))
-		if s.is_empty():
-			var plus := _title_label("+", 64)
-			plus.add_theme_color_override("font_color", Color(Bronze.BR_MID, 0.8))
-			v.add_child(plus)
-			v.add_child(_centered("Ô trống", "Small"))
-			var bn := UiTheme.button("Tạo nhân vật mới", true)
-			bn.name = "New_%d" % n
-			bn.pressed.connect(on_new)
-			v.add_child(bn)
-		else:
-			var ic := UiTheme.icon_rect(SpriteLib.icon("portrait-" + str(s.class_id)), 104)
-			ic.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-			v.add_child(ic)
-			var nm := _centered(str(s.name), "Heading", 196)
-			nm.add_theme_font_size_override("font_size", UiTheme.fs(20))
-			nm.add_theme_color_override("font_color", Bronze.GOLD_TEXT)
-			v.add_child(nm)
-			v.add_child(_centered("Lv %d · %s" % [int(s.level), Classes.title(str(s.class_id), str(s.job), str(s.job2), str(s.job3))], "", 196))
-			var t: Dictionary = Talents.get_talent(str(s.talent))
-			if not t.is_empty():
-				v.add_child(_centered("Thiên phú %s · %s" % [t.rank, t.name], "Small", 196))
-			var mins := roundi(float(s.play_seconds) / 60.0)
-			v.add_child(_centered("Đã chơi %d giờ %02d phút" % [mins / 60, mins % 60], "Small", 196))
-			var bp := UiTheme.button("Vào game", true)
-			bp.name = "Play_%d" % n
-			bp.pressed.connect(func(): on_play.call(n))
-			v.add_child(bp)
-			var bd := UiTheme.button("Xoá")
-			bd.name = "Delete_%d" % n
-			bd.pressed.connect(func(): on_delete.call(n))
-			v.add_child(bd)
-		row.add_child(card)
-	var brow := _buttons(col)
-	var back := UiTheme.button("Quay lại")
-	back.name = "BackButton"
-	back.pressed.connect(on_back)
-	brow.add_child(back)
-	return page[0]
+## SN9-02 (Spec_Notes đợt 9): màn Chọn nhân vật (slots = SaveSystem.list_slots()).
+## CR-06: bố cục kiểu ARPG cổ điển — nhân vật đang chọn đứng to giữa cảnh, danh sách bên phải (ui/char_select.gd).
+## on_play(n), on_delete(n), on_new(), on_back(); selected = ô chọn sẵn (0 = ô có nhân vật đầu tiên).
+## CR-06b: on_settings / on_quit (tuỳ chọn) → nút Cài đặt / Thoát game góc trái dưới (màn này là màn đầu khi mở game).
+static func slots(slots_info: Array, on_play: Callable, on_delete: Callable, on_new: Callable, on_back: Callable, selected := 0,
+		on_settings := Callable(), on_quit := Callable()) -> Control:
+	var bd := Backdrop.new()
+	bd.dim = 0.2
+	bd.stele_x = CharSelect.HERO_X
+	return CharSelect.new(slots_info, on_play, on_delete, on_new, on_back, selected, bd, on_settings, on_quit)
 
 
 ## Lễ Thức Tỉnh. on_accept nhận id Thiên phú đã chọn.

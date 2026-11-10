@@ -307,6 +307,7 @@ func _init() -> void:
 	_run("VS1-T1 tỷ lệ khung nhìn (docs/44): zoom camera + cỡ giao diện theo độ phân giải, Tầm nhìn, chữ thế giới giữ cỡ, cài đặt mới", _test_vs1)
 	_run("PF02-T1 giật khi đi + vệt mờ mép trên (docs/44 §7): tiền cảnh không ở mép trên, bỏ dải sương / tia nắng, tách quái theo lưới = so mọi cặp, nướng mảng sáng", _test_pf02)
 	_run("CR05-T1 bản đồ nhỏ / khung nhiệm vụ mờ khi che nhân vật + nút ẩn / hiện (Spec_Notes 09/11)", _test_cr05)
+	_run("CR06-T1 màn Chọn nhân vật kiểu ARPG: nhân vật đứng giữa cảnh, danh sách bên phải, chọn / nhấp đúp / phím (10/11)", _test_cr06)
 	_run("MU1-T1 nhạc nền thế hệ 2 (docs/46): đủ 13 bài OGG stereo, âm môi trường theo vùng, nhạc báo, nghỉ xen kẽ, bài lặp, tầng chiến đấu (đợt 2)", _test_mu1)
 	_run("GN1-T1 góc nhìn + cảnh trại (docs/45): nghiêng phối cảnh + đổi ngược chuột, cảnh trại vùng 1–9 (rào / tường phía xa, bãi trại theo vùng, tránh nước / dung nham / mép đảo / cầu, đồ vương vãi), nguồn sáng", _test_gn1)
 	_run("GN3-T1 bộ đếm combo lớn (Q223), tông nền 9 vùng (E5), nền đất mòn bãi trại (E1) — docs/45 §8", _test_gn3)
@@ -5914,6 +5915,7 @@ func _test_sn9_slots() -> void:
 	var list := SaveSystem.list_slots()
 	_check(list.size() == 5 and SaveSystem.first_empty() == 0, "đủ 5 nhân vật thì hết ô trống")
 	_check(str(SaveSystem.slot_summary(3).name) == "NV 3" and int(SaveSystem.slot_summary(3).level) == 6, "mỗi ô một file, đọc đúng tên / cấp")
+	_check(str(SaveSystem.slot_summary(3).map_id) == "1-1" and SaveSystem.slot_summary(3).look.has("gender"), "CR-06: tóm tắt có map_id + look (vẽ nhân vật ở màn chọn)")
 	_check(SaveSystem.path_of(1).ends_with("test_sn9_slot.json") and SaveSystem.path_of(2).ends_with("test_sn9_slot_2.json"), "ô 1 dùng tên file cũ (save cũ thành ô 1)")
 	_check(SaveSystem.name_taken(" nv 2 ") and not SaveSystem.name_taken("NV 2", 2) and not SaveSystem.name_taken("NV 9"), "tên không trùng giữa các ô")
 	SaveSystem.remember_slot(4)
@@ -12371,3 +12373,57 @@ func _test_fs01() -> void:
 		"lần đầu nạp: ô bật → toàn màn hình; ô tắt → giữ cửa sổ như lúc mở")
 	_check(S.window_mode_change(1, false, MAX) == -1 and S.window_mode_change(0, true, DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN) == -1,
 		"tắt ô khi cửa sổ không còn toàn màn hình / bật khi đã toàn màn hình → giữ nguyên")
+
+
+func _test_cr06() -> void:
+	var CharSelect = load("res://scripts/ui/char_select.gd")
+	var mk := func(n: int, nm: String, cid: String, lv: int) -> Dictionary:
+		return {"slot": n, "name": nm, "class_id": cid, "job": "", "job2": "", "job3": "", "level": lv, "talent": "tay-nhanh",
+			"play_seconds": 3720.0, "last_seen": 0.0, "look": {"gender": "nam", "skin": 1, "hair_style": "ngan", "hair_color": 0}, "map_id": "3-1"}
+	var info: Array = [mk.call(1, "A", "kiem-khach", 5), {}, mk.call(3, "C", "phap-su", 40), {}, mk.call(5, "E", "ho-ve", 12)]
+	var log := []
+	var scr = Screens9.slots(info, func(n): log.append("play%d" % n), func(n): log.append("del%d" % n),
+		func(): log.append("new"), func(): log.append("back"), 3)
+	root.add_child(scr)
+	_check(scr.selected == 3 and scr.find_child("HeroName", true, false).text == "C", "mở màn: chọn sẵn ô chơi gần nhất (ô 3), tên to giữa cảnh")
+	_check(scr.stage.class_id == "phap-su" and scr.stage.stage_sprite("phap-su", info[2].look) == "pcx-phap-su", "sân khấu vẽ đúng lớp, dùng bản pcx- độ phân giải gốc")
+	_check(scr.find_child("SlotList", true, false) != null and scr.find_child("Slot_5", true, false) != null and scr.find_child("PlayButton", true, false) != null, "danh sách bên phải 5 dòng + nút Vào game")
+	(scr.find_child("Slot_1", true, false) as Button).pressed.emit()
+	_check(scr.selected == 1 and scr.stage.class_id == "kiem-khach" and log.is_empty(), "bấm một dòng = chỉ chọn, chưa vào game")
+	(scr.find_child("PlayButton", true, false) as Button).pressed.emit()
+	(scr.find_child("DeleteButton", true, false) as Button).pressed.emit()
+	_check(log == ["play1", "del1"], "Vào game / Xoá theo ô đang chọn")
+	var dbl := InputEventMouseButton.new()
+	dbl.button_index = MOUSE_BUTTON_LEFT
+	dbl.pressed = true
+	dbl.double_click = true
+	(scr.find_child("Slot_5", true, false) as Button).gui_input.emit(dbl)
+	_check(log.back() == "play5", "nhấp đúp một dòng = vào game ô đó")
+	_check(scr.step(1) == 3 and scr.step(-1) == 5, "↑ ↓ bỏ qua ô trống, vòng quanh")
+	(scr.find_child("Slot_2", true, false) as Button).pressed.emit()
+	_check(log.back() == "new" and scr.selected == 1, "bấm ô trống = tạo nhân vật mới")
+	_check(scr.find_child("SettingsButton", true, false) == null and scr.find_child("BackButton", true, false) != null, "không truyền on_settings → không có nút Cài đặt")
+	var main_src := FileAccess.get_file_as_string("res://scripts/main.gd")
+	_check(main_src.contains("func _go_home()") and main_src.contains("		_go_home()
+") and main_src.contains("if SaveSystem.any_save():
+		_open_slots()"), "CR-06b: mở game / thoát về menu → có nhân vật thì vào thẳng màn Chọn nhân vật")
+	var hs = Screens9.slots(info, func(_n): pass, func(_n): pass, func(): pass, func(): pass, 0, func(): log.append("set"), func(): log.append("quit"))
+	root.add_child(hs)
+	(hs.find_child("SettingsButton", true, false) as Button).pressed.emit()
+	(hs.find_child("QuitButton", true, false) as Button).pressed.emit()
+	_check(log.slice(-2) == ["set", "quit"] and hs.selected == 1, "CR-06b: nút Cài đặt / Thoát game ở màn đầu")
+	hs.queue_free()
+	_check(CharSelect.region_name("3-1") == "Vùng 3 · Xích Sa" and CharSelect.region_name("cave-x") == "", "tên vùng theo map_id")
+	scr.queue_free()
+	var empty = Screens9.slots([{}, {}, {}, {}, {}], func(_n): pass, func(_n): pass, func(): pass, func(): pass)
+	root.add_child(empty)
+	_check(empty.selected == 0 and (empty.find_child("PlayButton", true, false) as Button).disabled and not (empty.find_child("NewButton", true, false) as Button).disabled, "chưa có nhân vật: Vào game tắt, Tạo mới bật")
+	empty.queue_free()
+	var full = Screens9.slots([mk.call(1, "A", "kiem-khach", 5), mk.call(2, "B", "tho-san", 5), mk.call(3, "C", "phap-su", 5), mk.call(4, "D", "ho-ve", 5), mk.call(5, "E", "trieu-hoi-su", 5)],
+		func(_n): pass, func(_n): pass, func(): pass, func(): pass, 9)
+	root.add_child(full)
+	_check(full.selected == 1 and (full.find_child("NewButton", true, false) as Button).disabled, "đủ 5 nhân vật: Tạo mới tắt; ô chọn sẵn sai → ô đầu")
+	for c in ["kiem-khach", "tho-san", "phap-su", "ho-ve", "trieu-hoi-su"]:
+		_check(SpriteLib.has_sprite("pcx-" + c) and SpriteLib.data().sprites["pcx-" + c].anims.has("attack"), "có pcx-%s (idle + attack)" % c)
+	full.queue_free()
+

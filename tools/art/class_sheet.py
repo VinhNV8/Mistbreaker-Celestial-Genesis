@@ -160,10 +160,11 @@ def _frame(cls, row, xa, xb):
     return rgba, foot_x, foot_y
 
 
-def _shrink(rgba, fx, fy):
-    """Thu nhỏ về lưới pixel game: lấy mẫu giữa ô (giữ nét) rồi chốt alpha."""
+def _shrink(rgba, fx, fy, scale=None):
+    """Thu nhỏ về lưới pixel game: lấy mẫu giữa ô (giữ nét) rồi chốt alpha. scale=1 → giữ độ phân giải sheet (pcx-)."""
+    scale = SCALE if scale is None else scale
     h, w = rgba.shape[:2]
-    nw, nh = max(1, round(w * SCALE)), max(1, round(h * SCALE))
+    nw, nh = max(1, round(w * scale)), max(1, round(h * scale))
     im = Image.fromarray(rgba, "RGBA")
     box = np.asarray(im.resize((nw, nh), Image.BOX)).astype(float)
     near = np.asarray(im.resize((nw, nh), Image.NEAREST)).astype(float)
@@ -175,9 +176,11 @@ def _shrink(rgba, fx, fy):
     return Image.fromarray(out, "RGBA"), fx * nw / w, fy * nh / h
 
 
-def build_class(cls):
+def build_class(cls, scale=None, rows_only=None):
     rows = {}
     for row in ROWS:
+        if rows_only and row not in rows_only:
+            continue
         segs, _exact = _segments(cls, row)
         frames = []
         cut = []
@@ -189,7 +192,7 @@ def build_class(cls):
         ground = int(np.median([f[2] for f in frames]))
         small = []
         for rgba, fx, fy in frames:
-            im, sx, sy = _shrink(rgba, fx, ground)
+            im, sx, sy = _shrink(rgba, fx, ground, scale)
             small.append((im, sx, sy))
         rows[row] = (small, cut)
     # khung chung: đủ chứa mọi frame quanh điểm chân
@@ -208,6 +211,20 @@ def build_class(cls):
         anims[row] = {"row": ri, "frames": len(small), "fps": FPS[row], "loop": LOOP[row]}
     meta = {"w": fw, "h": fh, "origin": [ox, oy], "anims": anims, "name": NAMES[cls], "size_mul": SIZE_MUL}
     return sheet, meta, {r: v[1] for r, v in rows.items()}
+
+
+## CR-06: bản "pcx-<lớp>" giữ nguyên độ phân giải sheet (không thu 0,62) — chỉ idle + attack, dùng ở màn Chọn nhân vật
+## (nhân vật đứng to giữa cảnh). Cắt y hệt pc-, không vẽ lại (keep-owner-art); size_mul do màn hình tự tính.
+PCX_ROWS = ("idle", "attack")
+
+
+def build_pcx():
+    out = {}
+    for cls in COLS:
+        sheet, meta, _ = build_class(cls, 1.0, PCX_ROWS)
+        meta["size_mul"] = 1.0
+        out["pcx-" + cls] = (sheet, meta)
+    return out
 
 
 ## Chân dung bán thân ở đầu mỗi cột sheet (giữ nền khung màu lớp) → icon "portrait-<lớp>" (ô lớp ở màn Tạo nhân vật).
@@ -306,6 +323,10 @@ def main():
         previews.append((sid, sheet))
         print(sid, sheet.size, "frame %dx%d origin %s" % (meta["w"], meta["h"], meta["origin"]),
               {k: v["frames"] for k, v in meta["anims"].items()})
+    for sid, (sheet, meta) in build_pcx().items():
+        sheet.save(os.path.join(ASSETS, "sprites", sid + ".png"))
+        manifest["sprites"][sid] = dict({"path": "res://assets/sprites/%s.png" % sid}, **meta)
+        print(sid, sheet.size, "frame %dx%d" % (meta["w"], meta["h"]))
     for eid, (img, origin) in fx().items():
         img.save(os.path.join(ASSETS, "env", eid + ".png"))
         manifest["env"][eid] = {"path": "res://assets/env/%s.png" % eid, "w": img.width, "h": img.height, "origin": origin}

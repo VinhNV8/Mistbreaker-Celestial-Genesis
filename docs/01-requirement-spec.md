@@ -167,6 +167,17 @@ Cột **Trạng thái**: ✅ đã làm và có test tự động · 🟡 đã l�
 | NL-F | Bảo Giám: ghi danh lần đầu sở hữu đồ bộ / Cam / mốc cường hoá / ngọc cao → mốc thưởng vĩnh viễn ≈ +5% | NL3-T1 | ✅ |
 | NL-G | Thẻ đồ tách Lực chiến theo nguồn; nút "Gợi ý tăng Lực chiến" cạnh huy hiệu Lực chiến | NL1-T1 + ảnh | ✅ |
 
+### 3.13. Màn Chọn nhân vật (CS, [CR-06](CR-06-man-chon-nhan-vat-kieu-arpg.md))
+
+*(Góp ý người chơi 10/11: "muốn màn hình giống màn chọn nhân vật của Diablo" — dùng bố cục chung của thể loại ARPG, art / khung / chữ của riêng game)*
+
+| Mã | Yêu cầu | Tiêu chí nghiệm thu | Trạng thái |
+| --- | --- | --- | --- |
+| CS-01…03 | Nhân vật đang chọn đứng to giữa cảnh (~42% chiều cao) trên bệ đá trước Bia Đá, cột sáng + vòng phù văn màu hạng Thiên phú; đổi nhân vật → hiện dần + múa một đòn; trên đầu: tên lớn, Lv · lớp, Thiên phú, vùng + thời gian chơi | CR06-T1, ảnh `design/cr06/` | ✅ |
+| CS-04…06 | Danh sách 5 ô dọc bên phải (chân dung, tên, Lv · lớp, Thiên phú; ô trống = tạo mới); bấm = chọn, nhấp đúp / Enter / nút Vào game lớn giữa đáy = vào; Tạo mới + Xoá cạnh danh sách; ↑ ↓ đổi, Esc quay lại, Delete xoá | CR06-T1 | ✅ |
+| CS-07 | Mở màn chọn sẵn nhân vật chơi gần nhất; chưa có nhân vật → Vào game / Xoá tắt; đủ 5 → Tạo mới tắt | CR06-T1 | ✅ |
+| CS-08…09 | Mở game (hoặc "Về màn hình chính") → đã có nhân vật thì vào thẳng màn Chọn nhân vật, nhân vật chơi cuối hiện sẵn; chưa có → màn tiêu đề; màn chọn có Màn tiêu đề / Cài đặt / Thoát game (góp ý người chơi 10/11) | CR06-T1 | ✅ |
+
 ## 4. Yêu cầu phi chức năng
 
 | Mã | Yêu cầu |
@@ -225,6 +236,7 @@ Cho 3–5 người chơi thử từ đầu tới khi hạ boss, không hướng 
 - Nền tảng ra mắt đầu tiên: PC hay Mobile? Quyết định này ảnh hưởng điều khiển (NFR-06) và UI.
 - Phong cách đồ hoạ: pixel art, 2.5D anime hay 3D low-poly?
 - Sau playtest: có giữ tốc độ hồi Đuốc 2 phút cho bản chính không?
+- Q237 (CR-06): hình nhân vật to ở màn Chọn nhân vật đang là pixel art của sheet phóng ×4 — có cần tranh toàn thân vẽ tay cho 5 lớp không (chủ dự án cung cấp / duyệt; không tự vẽ lại nhân vật)?
 - ~~Q229–Q236~~ đã trả lời 09/11/2026 ("triển khai theo đề xuất") — [47 §8](47-de-xuat-nang-luc-chien-trang-bi.md); Q235 (chỉnh độ khó chương 7–9) theo dõi khi chơi thử.
 - ~~Q224–Q228~~ đã trả lời 09/11/2026 ("làm theo đề xuất") — [46 §8](46-nghien-cuu-nhac-nen.md).
 - ~~Q180–Q183~~ đã trả lời 03/11/2026 — [36 §8](36-thiet-ke-lai-vfx-ky-nang.md).

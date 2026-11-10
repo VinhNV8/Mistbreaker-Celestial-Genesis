@@ -200,7 +200,7 @@ func _ready() -> void:
 	if smoke != "":
 		_run_smoke(smoke)
 	else:
-		_go_title()
+		_go_home()
 
 
 func _setup_input() -> void:
@@ -661,6 +661,14 @@ func _go_title() -> void:
 	audio.music("village")
 
 
+## CR-06b (góp ý người chơi 10/11): mở game / thoát về menu → đã có nhân vật thì vào thẳng màn Chọn nhân vật
+## (chọn sẵn nhân vật chơi cuối); chưa có nhân vật → màn tiêu đề "Hành trình mới".
+func _go_home() -> void:
+	_go_title()
+	if SaveSystem.any_save():
+		_open_slots()
+
+
 ## SN9-02: nút "Tiếp tục" ở màn tiêu đề — vào ngay nhân vật chơi gần nhất.
 func _continue_last() -> void:
 	var last := SaveSystem.last_slot()
@@ -672,7 +680,8 @@ func _continue_last() -> void:
 
 ## SN9-02 (Spec_Notes đợt 9): màn Chọn nhân vật — 5 ô.
 func _open_slots() -> void:
-	_set_screen(Screens.slots(SaveSystem.list_slots(), _play_slot, _ask_delete_slot, _on_new_game, _go_title))
+	_set_screen(Screens.slots(SaveSystem.list_slots(), _play_slot, _ask_delete_slot, _on_new_game, _go_title, SaveSystem.last_slot(),
+		_open_settings, func(): get_tree().quit()))
 
 
 func _play_slot(n: int) -> void:
@@ -1760,7 +1769,7 @@ func _open_pause(settings_only := false) -> void:
 			help_panel.open(world))
 	_pause.quit_to_title.connect(func():
 		_close_pause()
-		_go_title())
+		_go_home())
 	_ui.add_child(_pause)
 
 

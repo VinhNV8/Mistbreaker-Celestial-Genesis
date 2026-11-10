@@ -58,7 +58,7 @@ def build_sprites(only):
                     "size_mul": d.get("size_mul", 1.0)}
         previews.append((d["name"], img))
     # AR-44: nhân vật 5 lớp cắt từ sprite sheet người dùng cung cấp (tools/art/src/class-sheet.png)
-    for sid, (img, meta) in class_sheet.build().items():
+    for sid, (img, meta) in list(class_sheet.build().items()) + list(class_sheet.build_pcx().items()):  # CR-06: + pcx-
         path = _save(img, "sprites", sid + ".png") if not only or sid in only else "res://assets/sprites/%s.png" % sid
         out[sid] = dict({"path": path}, **meta)
         previews.append((meta["name"], img))

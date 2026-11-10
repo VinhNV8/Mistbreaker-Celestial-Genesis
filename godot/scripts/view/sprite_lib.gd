@@ -11,6 +11,7 @@ static var _data: Dictionary = {}
 static var _loaded := false
 static var _tex: Dictionary = {}
 static var _hd := true
+static var _night_tex: Dictionary = {}
 
 
 static func data() -> Dictionary:
@@ -300,3 +301,58 @@ static func poly(ci: CanvasItem, pts: PackedVector2Array, col: Color) -> void:
 	ci.draw_set_transform(o, 0.0, Vector2.ONE)
 	ci.draw_colored_polygon(local, col)
 	ci.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+
+## Màn tối ban đêm quanh người chơi (đêm sa mạc vùng 3, đêm dài vùng 6): phủ đều `base_a` cả màn hình, rồi tối thêm
+## mượt (smoothstep) từ bán kính `inner` tới `outer` lên `edge_a`, ngoài `outer` tối đều bằng `edge_a`.
+## Fix 09–10/11: thay 6 vòng draw_arc rời (dày 60px, alpha bậc thang) từng lộ vành tròn quanh nhân vật.
+static func night_dim(ci: CanvasItem, view: Rect2, c: Vector2, inner: float, outer: float, col: Color, base_a: float, edge_a: float) -> void:
+	ci.draw_rect(view, Color(col, base_a))
+	var ring := Color(col, edge_a)
+	var box := Rect2(c - Vector2(outer, outer), Vector2(outer, outer) * 2.0)
+	ci.draw_texture_rect(_night_vignette(inner / outer), box, false, ring)
+	# phần màn hình nằm ngoài ô vuông gradient
+	var vt := view.position.y
+	var vb := view.end.y
+	if box.position.y > vt:
+		ci.draw_rect(Rect2(view.position.x, vt, view.size.x, box.position.y - vt), ring)
+	if box.end.y < vb:
+		ci.draw_rect(Rect2(view.position.x, box.end.y, view.size.x, vb - box.end.y), ring)
+	var y0 := maxf(box.position.y, vt)
+	var y1 := minf(box.end.y, vb)
+	if y1 > y0:
+		if box.position.x > view.position.x:
+			ci.draw_rect(Rect2(view.position.x, y0, box.position.x - view.position.x, y1 - y0), ring)
+		if box.end.x < view.end.x:
+			ci.draw_rect(Rect2(box.end.x, y0, view.end.x - box.end.x, y1 - y0), ring)
+
+
+## Texture vignette đêm: trong suốt tới bán kính `f` (tỉ lệ so với mép), rồi tối dần theo smoothstep tới mép (alpha 1,
+## góc ngoài vòng tròn giữ alpha 1). Cache theo f làm tròn 0.05 (f chỉ có vài giá trị: đêm / đêm + bão).
+static func _night_vignette(f: float) -> Texture2D:
+	var key := int(roundf(clampf(f, 0.0, 0.95) * 20.0))
+	if _night_tex.has(key):
+		return _night_tex[key]
+	var f0 := key / 20.0
+	var offs := PackedFloat32Array([0.0, f0])
+	var cols := PackedColorArray([Color(1, 1, 1, 0), Color(1, 1, 1, 0)])
+	for i in range(1, 9):
+		var t := i / 8.0
+		offs.append(f0 + (1.0 - f0) * t)
+		cols.append(Color(1, 1, 1, t * t * (3.0 - 2.0 * t)))
+	var g := Gradient.new()
+	g.offsets = offs
+	g.colors = cols
+	var tex := GradientTexture2D.new()
+	tex.gradient = g
+	tex.fill = GradientTexture2D.FILL_RADIAL
+	tex.fill_from = Vector2(0.5, 0.5)
+	tex.fill_to = Vector2(1.0, 0.5)
+	tex.width = 256
+	tex.height = 256
+	# project dùng filter nearest mặc định → phóng 256px lên ~1500px sẽ ra bậc thang; ép linear
+	var ct := CanvasTexture.new()
+	ct.diffuse_texture = tex
+	ct.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	_night_tex[key] = ct
+	return ct

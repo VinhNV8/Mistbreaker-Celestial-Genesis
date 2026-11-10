@@ -35,9 +35,9 @@ File này liệt kê **mọi hạng mục trong kịch bản**: trạng thái hi
 | Khai phá, lãnh địa (mục 7) | 22 | 17 | 2 | 3 | 0 |
 | Trang bị, kinh tế (mục 8) | 19 | 17 | 1 | 0 | 1 |
 | 30 phút đầu (mục 9) | 9 | 9 | 0 | 0 | 0 |
-| Đồ hoạ, âm thanh | 26 | 23 | 0 | 3 | 0 |
+| Đồ hoạ, âm thanh | 27 | 24 | 0 | 3 | 0 |
 | Kỹ thuật, phát hành | 10 | 5 | 2 | 3 | 0 |
-| **Tổng** | **205** | **168** (82%) | **16** (8%) | **19** (9%) | **2** |
+| **Tổng** | **206** | **169** (82%) | **16** (8%) | **19** (9%) | **2** |
 
 ### Các giai đoạn
 
@@ -324,6 +324,7 @@ Phong cách đã chốt: **pixel art góc trên xuống 3/4, sinh bằng code** 
 | UI-46 | G2: thú cưng, đồng minh, NPC (**không** vẽ lại 5 lớp nhân vật / kỹ năng — hình gốc của chủ dự án) | ⬜ | — | Cần chủ dự án đồng ý |
 | UI-47 | G3 quái 9 vùng, boss vùng, boss hiếm, boss cuối — **MD-1**: 85 quái / tinh anh / boss vẽ lại HD theo ảnh mẫu Pinterest (cartoon vẽ tay), skill `monster-design` | ✅ | 04/11 | MD1-T1 — [39](39-thiet-ke-lai-quai-vat.md) (Q190 / Q192 duyệt 09/11: 9 linh thú vào game, giữ sói mới; Q191 chờ chơi thử) |
 | UI-48, 49 | G4 cảnh 9 vùng + hiệu ứng kỹ năng cùng phong cách | ⬜ | — | |
+| CR-06 | **Màn Chọn nhân vật kiểu ARPG cổ điển** (góp ý người chơi 10/11 "giống màn chọn nhân vật của Diablo") — nhân vật đứng to giữa cảnh trên bệ đá trước Bia Đá, danh sách dọc bên phải, nút Vào game lớn giữa đáy | ✅ | CR-06 | [CR-06](CR-06-man-chon-nhan-vat-kieu-arpg.md) làm 10/11: CS-01…09 (gồm góp ý 2: mở game vào thẳng màn chọn, nhân vật chơi cuối hiện sẵn), `ui/char_select.gd`, sprite `pcx-<lớp>` cắt ở độ phân giải gốc sheet (không vẽ lại); test CR06-T1, ảnh `design/cr06/` |
 
 Khi có art, chỉ cần thay `scripts/view/world_view.gd` (vẽ) và theme UI; logic game không đổi (technical spec, quyết định D2, D6).
 
@@ -486,6 +487,7 @@ Mỗi đợt theo quy trình: **viết spec → duyệt → code → test → c�
 - [x] MU-1 (09/11, [46](46-nghien-cuu-nhac-nen.md)): Spec_Notes "tiếng nhạc giả quá" → nghiên cứu + bản nghe thử, chủ dự án "làm theo đề xuất" → **đợt 1 đã làm**: 13 bài mới (nhạc cụ mô phỏng: sáo, nhị, đàn tranh, tỳ bà, dàn dây, hợp xướng, taiko…; stereo OGG; giai điệu soạn tay; I-A-B-C-A'-O), nghỉ 30–90 giây giữa lượt bài khám phá, âm môi trường 9 vùng + làng + hang (bus + thanh âm lượng riêng), 5 nhạc báo (lên cấp, nhiệm vụ, sang vùng, gặp boss, chiến thắng); `tools/audio/songs2.py`, `inst2.py`, `audio_manager.gd`; test MU1-T1. Đợt 2 (S4 tầng chiến đấu) làm 10/11 — dòng dưới
 - [x] MU-1 đợt 2 (10/11, [46 §10](46-nghien-cuu-nhac-nen.md)): S4 tầng chiến đấu — 10 file `<id>_combat.ogg` (taiko, trống khung, dây nảy, kèn trầm; cùng kế hoạch ô nhịp với bài chính), `AudioStreamSynchronized` + `set_combat(world.in_combat())`, dâng 1,5 giây / lắng 4 giây, đang nghỉ vào trận thì nhạc vào luôn; test MU1-T1, `tests/mu1_play.gd`
 - [x] NL-1 (09/11, [47](47-de-xuat-nang-luc-chien-trang-bi.md)): Spec_Notes "ngoài nâng cấp đồ cần thêm cách tăng lực chiến cho đồ" → đề xuất 6 đường → chủ dự án "triển khai theo đề xuất" → **đã làm cả P1–P3**: Khảm Ngọc Ngũ Hành (ấn hệ +15%), Tẩy Luyện, Thăng Phẩm, Luyện Cấp đồ Cam / bộ, Thức Tỉnh, Bảo Giám; Lò Rèn thêm 6 tab, thẻ đồ có lỗ ngọc / ✦ / Thức Tỉnh / Lực chiến món, huy hiệu Lực chiến → Gợi ý; save v32; test NL1-T1…NL3-T2, ảnh `design/nl1/`. Còn: Q235 theo dõi độ khó chương 7–9 khi chơi thử
+- [x] CR-06 (10/11, [CR-06](CR-06-man-chon-nhan-vat-kieu-arpg.md)): góp ý người chơi "màn chọn nhân vật giống Diablo" → bố cục ARPG cổ điển: `ui/char_select.gd` (sân khấu `HeroStage` + danh sách phải + Vào game giữa đáy, bấm = chọn, nhấp đúp / Enter = vào, ↑ ↓ / Esc / Delete), `Screens.slots(..., selected)`, `slot_summary` + `look` / `map_id`, `class_sheet.build_pcx()` → `pcx-<lớp>`; test CR06-T1, `tests/cr6_shot.gd`. Góp ý 2 cùng ngày (CR-06b): `main.gd` `_go_home()` — mở game / "Về màn hình chính" vào thẳng màn Chọn nhân vật khi đã có nhân vật; thêm Cài đặt / Thoát game ở màn chọn. Còn Q237 (tranh toàn thân nếu muốn mượt hơn)
 - [x] HM-06 (10/11): Spec_Notes "đang toàn màn hình, bấm icon thu nhỏ bản đồ / nhiệm vụ / cài đặt âm thanh thì bị thu nhỏ" → `Settings.apply()` không ép chế độ cửa sổ nữa, chỉ đổi khi ô Toàn màn hình đổi (D94); test FS01-T1 + kiểm tra cửa sổ thật
 - [x] CR-04 (08/11, [CR-04](CR-04-ban-do-tu-tui-va-tu-dong-ban.md)): đánh giá người chơi "Inventory không bán được đồ, không có cấu hình tự bán" → bán / phân rã / khoá ngay trong Túi đồ (S / D / L), khung dưới 4 tab, tab Tự động (`loot_box.gd`, `Items.decide`, chèn ở `_update_pickups`), mua lại trong phiên, thẻ đồ có giá, sửa Điểm Kim chưa cộng +50% vàng; save v31; test CR4-T1…T7
 - [x] CR-04 rà soát (09/11, [CR-04 §11](CR-04-ban-do-tu-tui-va-tu-dong-ban.md)): đồ Cam / khoá không bị phân rã khi túi đầy (nằm lại trên đất), phím S / D / L và "Chắc chắn?" không dùng trạng thái cũ, thẻ ĐANG MẶC bỏ giá, Thần Tài (Tinh Hoa khi phân rã, lãnh địa +20% vàng; Q217 chốt 09/11: giữ +50% bán đồ), Mua lại ở cửa hàng, Trợ giúp, dấu chấm ngăn nghìn; test CR4-T8.
