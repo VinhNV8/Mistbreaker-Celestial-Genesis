@@ -40,28 +40,41 @@ Kết quả: `godot/assets/audio/sfx/<id>.wav` và `godot/assets/audio/music/<id
 | `tele_elite` | Tinh anh bắt đầu lấy đà *(04/11, FX-1 §9.13)* | Gió vút lên (nhiễu lọc cao quét lên) + gầm gừ răng cưa |
 | `tele_boss` | Boss bắt đầu lấy đà *(04/11)* | Răng cưa trầm 55 → 80 Hz + hơi thở lọc thấp dâng lên |
 
-## Nhạc nền (`music.py`, vòng lặp liền mạch, đỉnh 0,6)
+## Nhạc nền thế hệ 2 (MU-1, [docs/46](../../docs/46-nghien-cuu-nhac-nen.md)) — `songs2.py` + `inst2.py`
 
-| id | Nơi phát | Nhịp | Giọng | Thời lượng |
+Thay nhạc chiptune cũ (`music.py`, mono 22 kHz, vòng 30–40 giây — giữ để tham khảo, không còn ghi file). Cần **numpy + soundfile** (`pip install numpy soundfile`).
+
+```bash
+python tools/audio/songs2.py                 # sinh 13 bài + 5 nhạc báo + 11 âm môi trường (song song, vài phút)
+python tools/audio/songs2.py forest st_boss  # chỉ các id này
+python tools/audio/songs2.py --list
+```
+
+Ra OGG Vorbis stereo 44,1 kHz: `godot/assets/audio/music/<id>.ogg`, `stinger/<id>.ogg`, `ambient/<id>.ogg`. Sinh xong mở Godot (hoặc `godot --headless --path godot --import`) để nhập file mới.
+
+- `inst2.py`: nhạc cụ mô phỏng — đàn tranh, tỳ bà (vê), sáo trúc, đàn nhị, dàn dây, dây nảy, hợp xướng, contrabass, kèn trầm, taiko, trống khung, trống tay, mõ, chuông gió, chiêng; bàn trộn `Mix` (stereo, vang phòng tích chập, vòng lặp quấn đuôi nốt, độ lớn đích `target_db`); `write_ogg` ghi từng khối 1 giây (ghi một lần làm libsndfile 1.2.2 treo).
+- `songs2.py`: `SONGS` — mỗi bài là dữ liệu (nhịp, chủ âm, vòng hợp âm La Mã từng đoạn, 2 câu giai điệu soạn tay theo độ lệch nửa cung, mỗi câu 32 phách, nhạc cụ theo vai); cấu trúc dạo đầu → A → B → C (lắng, đàn gảy hát lại A) → A' (+ bè) → kết. `STINGERS` (st_levelup, st_quest, st_region, st_boss, st_victory), `AMBIENTS` (vòng 40 giây liền mạch: gió, chim, côn trùng, ếch, giọt nước, dung nham, băng, chuông, ù trầm…).
+
+| id | Nơi phát | Nhịp · giọng | Giai điệu A / B | Lặp |
 | --- | --- | --- | --- | --- |
-| `village` | Làng Thanh Thạch | 84 BPM | Rê ngũ cung trưởng — êm, sáng | 34,3 giây (12 ô nhịp) |
-| `forest` | Rừng Sương | 100 BPM | La ngũ cung thứ — bí ẩn | 38,4 giây (16 ô nhịp) |
-| `core` | Lõi Sương | 70 BPM | Mi ngũ cung thứ — u ám, thưa, tiếng vang dài | 34,3 giây (10 ô nhịp) |
-| `boss` | Trận boss | 150 BPM | Rê ngũ cung thứ — dồn dập | 32,0 giây (20 ô nhịp) |
-| `plains` | Vùng 2 Đồng Bằng Gió Hú *(01/11)* | 112 BPM | Mi ngũ cung trưởng — thoáng, gió | 34,3 giây |
-| `desert` | Vùng 3 Sa Mạc Xích Sa | 92 BPM | La thang Hijaz — nóng, huyền bí | 41,7 giây |
-| `swamp` | Vùng 4 Đầm Lầy U Minh | 76 BPM | Rê ngũ cung thứ — chậm, mơ hồ | 37,9 giây |
-| `volcano` | Vùng 5 Núi Viêm Long | 132 BPM | La ngũ cung thứ — nặng, dồn | 29,1 giây |
-| `tundra` | Vùng 6 Băng Nguyên | 80 BPM | La ngũ cung trưởng — thưa, chuông | 36,0 giây |
-| `sky` | Vùng 7 Thiên Không | 100 BPM | Sol ngũ cung trưởng — bay bổng | 38,4 giây |
-| `void` | Vùng 8 Vực Hư Vô | 64 BPM | Đô thang tối (b2, b5) — chênh vênh | 37,5 giây |
-| `heaven` | Vùng 9 Thiên Đạo | 88 BPM | Đô trưởng — hùng tráng | 43,6 giây |
-| `boss_final` | Boss vùng 7–9 | 160 BPM | Rê thang Hijaz — dồn dập | 30,0 giây |
+| `village` | Làng (vùng an toàn) | 76 · Rê trưởng ngũ cung | sáo / nhị, đàn tranh rải, trống khung | liền |
+| `forest` | Vùng 1 Rừng Sương | 84 · La thứ ngũ cung | sáo / nhị | 1 lượt + nghỉ |
+| `core` | Lõi Sương, hang | 64 · Mi thứ (Phrygian) | nhị / sáo, thưa, vang dài | liền |
+| `plains` | Vùng 2 | 104 · Mi trưởng ngũ cung | sáo / nhị | 1 lượt + nghỉ |
+| `desert` | Vùng 3 | 92 · La Hijaz | nhị / sáo, tỳ bà vê, trống tay | 1 lượt + nghỉ |
+| `swamp` | Vùng 4 | 70 · Rê thứ ngũ cung | nhị / sáo trầm, mõ | 1 lượt + nghỉ |
+| `volcano` | Vùng 5 | 124 · La thứ | nhị dồn, dây nảy, taiko, kèn | 1 lượt + nghỉ |
+| `tundra` | Vùng 6 | 72 · La trưởng ngũ cung | đàn tranh / sáo, hợp xướng | 1 lượt + nghỉ |
+| `sky` | Vùng 7 | 96 · Sol trưởng ngũ cung | sáo / nhị, hợp xướng | 1 lượt + nghỉ |
+| `void` | Vùng 8 | 58 · Đô thang tối | nhị / sáo, chiêng | 1 lượt + nghỉ |
+| `heaven` | Vùng 9 | 88 · Đô trưởng (chủ đề chính) | sáo / nhị, dàn đầy đủ | 1 lượt + nghỉ |
+| `boss` | Trận boss | 140 · Rê thứ | nhị dồn, taiko, kèn, chiêng | liền |
+| `boss_final` | Boss vùng 7–9 | 156 · Rê Hijaz | nhị dồn, taiko, hợp xướng | liền |
 
-Mỗi bản gồm: giai điệu (4 motif sinh từ seed, xếp theo dạng A A B A…; nốt đầu ô nhịp kéo về âm của hợp âm), rải hợp âm, bass, trống chip (kick, snare, hi-hat), đệm ngân (village, core). Nốt và tiếng vang tràn qua cuối bài được **quấn về đầu bài**, và bước khử DC lọc trên tín hiệu nhân đôi, nên chỗ nối vòng lặp liền mạch. Trong Godot nên bật **Loop** khi import (hoặc `AudioStreamWAV.loop_mode = LOOP_FORWARD`, `loop_end = số mẫu`).
+Phát trong game: `scripts/audio/audio_manager.gd` (nghỉ 30–90 giây sau mỗi lượt bài khám phá, âm môi trường bus "Ambient", nhạc báo hạ nhạc nền 8 dB); chọn bài / âm môi trường ở `main.gd` `_music_for`, `ambient_for`.
 
 ## Sửa, thêm âm
 
 - Hiệu ứng mới: viết hàm trong `sfx.py`, thêm vào bảng `SFX`. Âm kỹ năng chọn theo lớp ở `GameWorld.SKILL_SFX` / `skill_sfx()`; nhạc theo vùng ở `main.gd` `REGION_MUSIC` (vùng an toàn: `village`, hang phụ: `core`).
-- Bản nhạc mới: thêm 1 mục vào `SONGS` trong `music.py` (nhịp, số ô nhịp, chủ âm MIDI, thang, vòng hợp âm, nhạc cụ, `form`). Giữ 24–40 giây.
+- Bản nhạc mới: thêm 1 mục vào `SONGS` trong `songs2.py` (giai điệu mỗi câu đúng 32 phách), id vào `main.gd` `REGION_MUSIC`; bài cần lặp liền thêm vào `AudioManager.LOOP_IDS`.
 - `synth.py`: dao động (vuông/tam giác/răng cưa/sin/nhiễu), bao hình ADSR, lọc 1 cực, tiếng vang, chuẩn hoá, ghi WAV.

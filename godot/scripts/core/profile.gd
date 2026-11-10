@@ -40,7 +40,10 @@ const RngUtil = preload("res://scripts/core/rng_util.gd")
 ## (gates_cleared), hạng cao nhất đã dọn (gate_best). Save cũ: chưa có cổng nào.
 ## v30: NV (docs/41) — uỷ thác hằng ngày (daily), nhiệm vụ phụ (side), việc đang ghim (tracked), danh hiệu (titles, title).
 ## Save cũ: rỗng.
-const VERSION := 30
+## v31: CR-04 — khoá đồ (item.locked), quy tắc tự xử lý đồ (loot_rules). Save cũ: tự động Tắt, đồ Cam đang có tự khoá.
+## v32: NL-1 (docs/47) — Túi Ngọc (gem_bag {"kim:3": số viên}), Bảo Giám (codex {khoá: true}); món đồ thêm sockets, gems,
+## reforged, reforges, awaken. Save cũ: món có số lỗ theo phẩm chất, Bảo Giám ghi danh lại từ đồ đang có.
+const VERSION := 32
 
 var talent := ""
 var level := 1
@@ -208,6 +211,12 @@ var fog := {}
 var fog_rewards := {}
 ## Bộ lọc phân rã/bán nhanh (SN-10); null = mặc định.
 var bulk_filter := {}
+## CR-04: quy tắc tự bán / phân rã đồ khi nhặt (Items.normalize_rules); {} = mặc định (Tắt).
+var loot_rules := {}
+## NL-1 (docs/47 §3.A): Túi Ngọc {"kim:3": số viên} — riêng, không chiếm ô túi đồ (Q236).
+var gem_bag := {}
+## NL-1 (docs/47 §3.F): Bảo Giám — mục đã ghi danh {"s:bộ:ô" | "u:món Cam" | "p:ô:10" | "g:hệ:7": true}.
+var codex := {}
 
 
 func setup(talent_id: String, rng: Callable, now: float, class_name_id := "kiem-khach") -> void:
@@ -322,6 +331,9 @@ func to_dict() -> Dictionary:
 		"fog": fog,
 		"fog_rewards": fog_rewards,
 		"bulk_filter": bulk_filter,
+		"loot_rules": loot_rules,
+		"gem_bag": gem_bag,
+		"codex": codex,
 	}
 
 
@@ -606,6 +618,34 @@ func load_dict(d: Dictionary) -> bool:
 		fog_rewards[str(k)] = arr
 	var bf = d.get("bulk_filter", {})
 	bulk_filter = bf.duplicate(true) if bf is Dictionary else {}
+	var lr = d.get("loot_rules", {})
+	loot_rules = lr.duplicate(true) if lr is Dictionary else {}
+	gem_bag = {}
+	var gb = d.get("gem_bag", {})
+	if gb is Dictionary:
+		for k in gb:
+			if int(gb[k]) > 0:
+				gem_bag[str(k)] = int(gb[k])
+	codex = {}
+	var cx = d.get("codex", {})
+	if cx is Dictionary:
+		for k in cx:
+			codex[str(k)] = true
+	# v31 (CR-04, Q214): đồ Cam đang có tự khoá một lần.
+	if version < 31:
+		for it in inventory:
+			if str(it.rarity) == "orange":
+				it["locked"] = true
+		for slot in equipment:
+			if str(equipment[slot].rarity) == "orange":
+				equipment[slot]["locked"] = true
+	# v32 (NL-1): Bảo Giám ghi danh lại từ đồ đang có.
+	if version < 32:
+		var Items = load("res://scripts/core/items.gd")
+		for it in inventory:
+			Items.codex_item(self, it)
+		for slot in equipment:
+			Items.codex_item(self, equipment[slot])
 	# Khôi phục lưới khai phá nếu bị rỗng do save cũ hoặc lỗi dữ liệu
 	if tiles.is_empty():
 		var seed_val := int(play_seconds) + int(level) * 31 + kills
@@ -665,4 +705,20 @@ static func _load_item(d: Dictionary) -> Dictionary:
 		"unique": str(d.get("unique", "")),
 		"affixes": affixes,
 		"style": str(d.get("style", "")),
+		"locked": bool(d.get("locked", false)),
+		# NL-1 (v32): đồ cũ có số lỗ theo phẩm chất.
+		"sockets": int(d.get("sockets", {"white": 0, "green": 1, "blue": 1, "purple": 2, "orange": 3}.get(str(d.rarity), 0))),
+		"gems": Array(d.get("gems", [])).map(func(g): return str(g)),
+		"reforged": int(d.get("reforged", -1)),
+		"reforges": int(d.get("reforges", 0)),
+		"awaken": _load_awaken(d.get("awaken", {})),
 	}
+
+
+static func _load_awaken(a) -> Dictionary:
+	if not (a is Dictionary) or a.is_empty():
+		return {}
+	var offer: Array = []
+	for o in a.get("offer", []):
+		offer.append(str(o))
+	return {"id": str(a.get("id", "")), "tier": int(a.get("tier", 0)), "spent": int(a.get("spent", 0)), "offer": offer}

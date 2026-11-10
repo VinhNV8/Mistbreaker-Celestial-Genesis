@@ -1,13 +1,16 @@
 extends RefCounted
 ## Logic trang bị: sinh đồ, tính chỉ số, mặc/tháo, cường hoá, phân rã (đặc tả MVP M1).
 ## Một món đồ là Dictionary:
-## {id, slot, rarity, level, plus, set, unique, affixes: [{stat, value}]}
+## {id, slot, rarity, level, plus, set, unique, affixes: [{stat, value}], locked (CR-04, thiếu = false),
+##  NL-1 (docs/47): sockets (số lỗ ngọc), gems ["kim:3", …], reforged (chỉ số dòng đã tẩy, -1 = chưa),
+##  reforges (số lần tẩy), awaken {id, tier, spent, offer} (Thức Tỉnh; {} = chưa)}
 ## Các hàm nhận `p` là Profile (không khai báo kiểu để tránh preload vòng tròn).
 
 const ItemData = preload("res://scripts/data/items.gd")
 const RngUtil = preload("res://scripts/core/rng_util.gd")
 const Talents = preload("res://scripts/data/talents.gd")
 const TalentSlots = preload("res://scripts/core/talent_slots.gd")
+const GearData = preload("res://scripts/data/gear_data.gd")
 
 ## TL-S5: cường hoá lên +10 trở lên cần thêm 1 Tinh Kim mỗi lần.
 const TINH_KIM_FROM_PLUS := 9
@@ -42,6 +45,11 @@ static func create(id: int, level: int, rarity: String, rng: Callable, slot := "
 		"unique": unique,
 		"affixes": affixes,
 		"style": "",
+		"sockets": int(GearData.SOCKETS.get(rarity, 0)),
+		"gems": [],
+		"reforged": -1,
+		"reforges": 0,
+		"awaken": {},
 	}
 
 
@@ -82,12 +90,139 @@ static func base_value(item: Dictionary, plus := -1) -> float:
 	return (s.a + s.b * int(item.level)) * float(ItemData.RARITIES[item.rarity].mult) * (1.0 + 0.1 * p)
 
 
-## Tổng chỉ số một món: {stat: value}.
+## Tổng chỉ số một món: {stat: value} (gốc + cường hoá + dòng phụ + ngọc).
 static func item_stats(item: Dictionary) -> Dictionary:
 	var out := {base_stat(item): base_value(item)}
 	for af in item.affixes:
 		out[af.stat] = out.get(af.stat, 0.0) + float(af.value)
+	var gs := gem_stats(item)
+	for k in gs:
+		out[k] = out.get(k, 0.0) + gs[k]
 	return out
+
+
+# ------------------------------------------------------------------ NL-1: ngọc trên món (docs/47 §3.A)
+
+
+## "kim:3" → ["kim", 3].
+static func gem_parse(key: String) -> Array:
+	var parts := key.split(":")
+	return [parts[0], int(parts[1]) if parts.size() > 1 else 1]
+
+
+static func gem_key(el: String, lv: int) -> String:
+	return "%s:%d" % [el, lv]
+
+
+## Chỉ số của 1 viên ngọc khảm trên ô `slot`.
+static func gem_value(el: String, lv: int, slot: String) -> Dictionary:
+	var lv_i := clampi(lv, 1, GearData.GEM_MAX_LV)
+	var out := {str(GearData.GEM_STAT[el]): float(GearData.GEM_VALUES[el][lv_i - 1])}
+	if slot in ItemData.RES_SLOTS:
+		out["res_" + el] = GearData.GEM_RES_PER_LV * lv_i
+	return out
+
+
+static func gem_stats(item: Dictionary) -> Dictionary:
+	var out := {}
+	for g in item.get("gems", []):
+		var pr := gem_parse(str(g))
+		var gv := gem_value(pr[0], pr[1], str(item.slot))
+		for k in gv:
+			out[k] = out.get(k, 0.0) + gv[k]
+	return out
+
+
+## Ấn hệ vũ khí: hệ có ≥ 2 viên trên vũ khí (hoà thì tổng cấp cao hơn, rồi theo thứ tự ngũ hành); "" = không.
+static func weapon_seal(equipment: Dictionary) -> String:
+	var w: Dictionary = equipment.get("weapon", {})
+	if w.is_empty():
+		return ""
+	var n := {}
+	var lv := {}
+	for g in w.get("gems", []):
+		var pr := gem_parse(str(g))
+		n[pr[0]] = int(n.get(pr[0], 0)) + 1
+		lv[pr[0]] = int(lv.get(pr[0], 0)) + int(pr[1])
+	var best := ""
+	for el in GearData.ELEMENTS:
+		if int(n.get(el, 0)) < GearData.SEAL_MIN:
+			continue
+		if best == "" or int(n[el]) > int(n[best]) or (int(n[el]) == int(n[best]) and int(lv[el]) > int(lv[best])):
+			best = el
+	return best
+
+
+## Trả ngọc trên món về Túi Ngọc (phân rã / bán / làm nguyên liệu Thăng phẩm). Trả số viên.
+static func strip_gems(p, item: Dictionary) -> int:
+	var gems: Array = item.get("gems", [])
+	var n := gems.size()
+	if n > 0 and "gem_bag" in p:
+		for g in gems:
+			p.gem_bag[str(g)] = int(p.gem_bag.get(str(g), 0)) + 1
+		item["gems"] = []
+	return n
+
+
+# ------------------------------------------------------------------ NL-1: Thức Tỉnh (docs/47 §3.E)
+
+
+## Các món đang mặc có Thức Tỉnh hiệu lực: tối đa 4, ưu tiên bậc cao rồi theo thứ tự ô.
+static func active_awakens(equipment: Dictionary) -> Array:
+	var list: Array = []
+	for slot in ItemData.SLOT_ORDER:
+		var it: Dictionary = equipment.get(slot, {})
+		var aw: Dictionary = it.get("awaken", {}) if not it.is_empty() else {}
+		if str(aw.get("id", "")) != "" and int(aw.get("tier", 0)) > 0:
+			list.append({"slot": slot, "id": str(aw.id), "tier": int(aw.tier)})
+	list.sort_custom(func(a, b): return a.tier > b.tier or (a.tier == b.tier and ItemData.SLOT_ORDER.find(a.slot) < ItemData.SLOT_ORDER.find(b.slot)))
+	return list.slice(0, GearData.AWAKEN_MAX_ACTIVE)
+
+
+static func awaken_value(line_id: String, tier: int) -> float:
+	var ln: Dictionary = GearData.AWAKEN_LINES.get(line_id, {})
+	if ln.is_empty() or tier <= 0:
+		return 0.0
+	return float(ln.v[clampi(tier, 1, GearData.AWAKEN_MAX_TIER) - 1])
+
+
+static func awaken_text(line_id: String, tier: int) -> String:
+	var ln: Dictionary = GearData.AWAKEN_LINES.get(line_id, {})
+	if ln.is_empty():
+		return ""
+	var v := awaken_value(line_id, maxi(1, tier))
+	var vs := ("%s%%" % num_text(v * 100.0)) if bool(ln.pct) else num_text(v)
+	return str(ln.text) % vs
+
+
+## Số gọn kiểu Việt: 4 → "4", 1,5 → "1,5".
+static func num_text(v: float) -> String:
+	return str(roundi(v)) if absf(v - roundf(v)) < 0.05 else ("%.1f" % v).replace(".", ",")
+
+
+# ------------------------------------------------------------------ NL-1: Bảo Giám (docs/47 §3.F)
+
+
+## Ghi danh một món (lần đầu sở hữu đồ bộ / đồ Cam / mốc cường hoá). Trả về số mục mới.
+static func codex_item(p, item: Dictionary) -> int:
+	if p == null or item.is_empty() or not ("codex" in p):
+		return 0
+	var n := 0
+	if str(item.get("set", "")) != "":
+		n += codex_add(p, "s:%s:%s" % [item.set, item.slot])
+	if str(item.get("unique", "")) != "":
+		n += codex_add(p, "u:%s" % item.unique)
+	for t in GearData.CODEX_PLUS:
+		if int(item.get("plus", 0)) >= int(t):
+			n += codex_add(p, "p:%s:%d" % [item.slot, int(t)])
+	return n
+
+
+static func codex_add(p, key: String) -> int:
+	if p.codex.has(key):
+		return 0
+	p.codex[key] = true
+	return 1
 
 
 ## Cộng toàn bộ đồ đang mặc + hiệu ứng bộ + hiệu ứng riêng. Kết quả đưa vào Stats.derive().
@@ -105,21 +240,61 @@ static func equipment_bonus(equipment: Dictionary) -> Dictionary:
 		if item.unique != "":
 			uniques.append(item.unique)
 	var bonus := {"flat": flat, "sets": sets, "uniques": uniques, "max_hp_pct": 0.0, "atk_pct": 0.0, "spin_cd": 0.0,
-		"move_pct": 0.0, "atk_speed_pct": 0.0, "dodge_cd": 0.0}
+		"move_pct": 0.0, "atk_speed_pct": 0.0, "dodge_cd": 0.0,
+		# NL-1 (docs/47): Thức Tỉnh + ấn hệ vũ khí. GameWorld._derive chép sang stats.
+		"boss_dmg": 0.0, "skill_dmg": 0.0, "lifesteal": 0.0, "counter_dmg": 0.0, "def_pct": 0.0, "pet_hp_pct": 0.0,
+		"seal": weapon_seal(equipment), "awakens": []}
 	for set_id in sets:
 		for tier in ItemData.SETS[set_id].tiers:
 			if sets[set_id] >= tier.count:
 				for k in tier.bonus:
 					bonus[k] += tier.bonus[k]
+	for aw in active_awakens(equipment):
+		var key := str(GearData.AWAKEN_LINES[aw.id].key)
+		var v := awaken_value(aw.id, aw.tier)
+		if key == "crit_dmg":
+			flat["crit_dmg"] = float(flat.get("crit_dmg", 0.0)) + v
+		else:
+			bonus[key] = float(bonus.get(key, 0.0)) + v
+		bonus.awakens.append(aw.slot)
 	return bonus
 
 
 ## 3.8: Lực chiến.
+## NL-1: cp_extra = phần Lực chiến của hiệu ứng Thức Tỉnh không phải chỉ số (sát thương boss, kỹ năng, hút máu…).
 static func combat_power(stats: Dictionary) -> int:
 	return int(round(
 		stats.atk * 10.0 + stats.max_hp + stats.def * 8.0 + stats.crit * 1000.0
-		+ stats.crit_dmg * 300.0 + (stats.atk_speed - 1.0) * 800.0
+		+ stats.crit_dmg * 300.0 + (stats.atk_speed - 1.0) * 800.0 + float(stats.get("cp_extra", 0.0))
 	))
+
+
+## NL-1 (docs/47 §5): Lực chiến của một nhóm chỉ số phẳng (cùng trọng số combat_power; kháng / tốc chạy không tính).
+const STAT_POWER := {"atk": 10.0, "max_hp": 1.0, "def": 8.0, "crit": 1000.0, "crit_dmg": 300.0, "atk_speed": 800.0}
+
+
+static func stats_power(st: Dictionary) -> int:
+	var t := 0.0
+	for k in st:
+		t += float(st[k]) * float(STAT_POWER.get(k, 0.0))
+	return roundi(t)
+
+
+## Lực chiến món này tách theo nguồn: {base, plus, affix, gem, total} (chỉ phần chỉ số phẳng).
+static func item_power_parts(item: Dictionary) -> Dictionary:
+	var stat := base_stat(item)
+	var b0 := base_value(item, 0)
+	var af := {}
+	for a in item.affixes:
+		af[a.stat] = af.get(a.stat, 0.0) + float(a.value)
+	var parts := {
+		"base": stats_power({stat: b0}),
+		"plus": stats_power({stat: base_value(item) - b0}),
+		"affix": stats_power(af),
+		"gem": stats_power(gem_stats(item)),
+	}
+	parts["total"] = int(parts.base) + int(parts.plus) + int(parts.affix) + int(parts.gem)
+	return parts
 
 
 # ------------------------------------------------------------------ túi đồ
@@ -150,10 +325,15 @@ static func find_item(p, id: int) -> Dictionary:
 
 
 ## EQ-09: túi đầy thì tự phân rã thành Đá Cường Hoá.
+## CR-04 (Q214): đồ Cam tự khoá khi vào tay.
 static func add_item(p, item: Dictionary) -> Dictionary:
+	if str(item.rarity) == "orange" and not item.has("locked"):
+		item["locked"] = true
+	codex_item(p, item)
 	if p.inventory.size() >= ItemData.BAG_SIZE:
 		var stones := salvage_value(item, p)
 		p.stones += stones
+		strip_gems(p, item)
 		return _result(true, "Túi đầy: %s tự phân rã thành %d Đá Cường Hoá." % [display_name(item), stones], {"salvaged": true})
 	p.inventory.append(item)
 	return _result(true, "Nhặt được %s." % display_name(item), {"salvaged": false})
@@ -262,6 +442,7 @@ static func enhance(p, id: int, rng: Callable, rate_bonus := 0.0) -> Dictionary:
 	p.tinh_kim -= cost.tinh_kim
 	if float(rng.call()) < rate:
 		item.plus = int(item.plus) + 1
+		codex_item(p, item)
 		return _result(true, "Cường hoá thành công: %s." % display_name(item), {"success": true})
 	return _result(true, "Cường hoá thất bại (%d%%). Món đồ vẫn giữ nguyên +%d." % [roundi(rate * 100.0), int(item.plus)], {"success": false})
 
@@ -297,6 +478,8 @@ static func normalize_filter(f) -> Dictionary:
 static func bulk_candidates(p, f: Dictionary, weaker := Callable()) -> Array:
 	var out: Array = []
 	for item in p.inventory:
+		if is_locked(item):
+			continue
 		if not (str(item.rarity) in f.rarities):
 			continue
 		if f.keep_plus and int(item.plus) > 0:
@@ -314,14 +497,231 @@ static func salvage(p, id: int, rng := Callable()) -> Dictionary:
 	if i < 0:
 		return _result(false, "Chỉ phân rã được đồ trong túi (tháo ra trước).")
 	var item: Dictionary = p.inventory[i]
-	var stones := salvage_value(item, p)
+	if is_locked(item):
+		return _result(false, LOCKED_MSG)
 	p.inventory.remove_at(i)
+	var gems_back := strip_gems(p, item)
+	var g := salvage_gain(p, item, rng)
+	var msg := "Phân rã %s: +%d Đá Cường Hoá." % [display_name(item), int(g.stones)]
+	if gems_back > 0:
+		msg += " %d viên ngọc về Túi Ngọc." % gems_back
+	if str(g.get("gem", "")) != "":
+		var gp := gem_parse(str(g.gem))
+		msg += " +1 %s cấp %d!" % [GearData.GEM_NAMES[gp[0]], int(gp[1])]
+	if int(g.tinh_kim) > 0:
+		msg += " Bàn Tay Vàng: +1 Tinh Kim!"
+	if int(g.essence) > 0:
+		msg += " Thần Tài: +1 Thiên Phú Tinh Hoa!"
+	return _result(true, msg)
+
+
+## Cộng phần thưởng phân rã của một món (đã rời túi hoặc chưa từng vào túi — CR-04 tự phân rã khi nhặt).
+static func salvage_gain(p, item: Dictionary, rng := Callable()) -> Dictionary:
+	var stones := salvage_value(item, p)
 	p.stones += stones
-	var msg := "Phân rã %s: +%d Đá Cường Hoá." % [display_name(item), stones]
+	var tk := 0
 	if TalentSlots.has(p, "ban-tay-vang") and rng.is_valid() and float(rng.call()) < TalentSlots.value(p, "ban-tay-vang", GOLDEN_HAND_CHANCE, 0.3):
 		p.tinh_kim += 1
-		msg += " Bàn Tay Vàng: +1 Tinh Kim!"
-	return _result(true, msg)
+		tk = 1
+	# CR-04 R5: Thần Tài (Bàn Tay Vàng tiến hoá 2) — phân rã 10% ra 1 Thiên Phú Tinh Hoa.
+	var ess := 0
+	if golden_form(p) >= 2 and rng.is_valid() and float(rng.call()) < GOD_OF_WEALTH_ESSENCE:
+		p.essence += 1
+		ess = 1
+	# NL-1 (docs/47 §3.A): phân rã đồ Cam → 1 viên ngọc cấp 2 ngẫu nhiên.
+	var gem := ""
+	if str(item.get("rarity", "")) == "orange" and rng.is_valid() and "gem_bag" in p:
+		var el: String = GearData.ELEMENTS[int(float(rng.call()) * GearData.ELEMENTS.size()) % GearData.ELEMENTS.size()]
+		gem = gem_key(el, GearData.GEM_SALVAGE_ORANGE_LV)
+		p.gem_bag[gem] = int(p.gem_bag.get(gem, 0)) + 1
+	return {"stones": stones, "tinh_kim": tk, "essence": ess, "gem": gem}
+
+
+const GOD_OF_WEALTH_ESSENCE := 0.1
+
+
+## Dạng tiến hoá của Bàn Tay Vàng khi là Thiên phú chính: 0 = không / chưa tiến hoá, 1 = Điểm Kim, 2 = Thần Tài.
+static func golden_form(p) -> int:
+	return int(p.evo) if str(p.talent) == "ban-tay-vang" else 0
+
+
+# ------------------------------------------------------------------ CR-04: khoá đồ, tự xử lý đồ theo quy tắc
+
+const LOCKED_MSG := "Món này đã khoá — mở khoá trước (phím L)."
+## Hành động theo phẩm chất. Cam không có trong bảng: luôn giữ (Q214).
+const LOOT_ACTIONS := ["keep", "sell", "salvage"]
+const LOOT_ACTION_NAMES := {"keep": "Giữ", "sell": "Bán", "salvage": "Phân rã"}
+const LOOT_MODES := ["off", "pickup", "full"]
+const LOOT_MODE_NAMES := {"off": "Tắt", "pickup": "Khi nhặt", "full": "Khi túi đầy"}
+const LOOT_RARITIES := ["white", "green", "blue", "purple"]
+## Mẫu cấu hình sẵn: [tên, {phẩm chất: hành động}].
+const LOOT_PRESETS := {
+	"gold": ["Cày vàng", {"white": "sell", "green": "sell", "blue": "sell", "purple": "keep"}],
+	"stone": ["Cày đá", {"white": "salvage", "green": "salvage", "blue": "salvage", "purple": "keep"}],
+	"balanced": ["Cân bằng", {"white": "sell", "green": "sell", "blue": "salvage", "purple": "keep"}],
+}
+## "Giữ đồ cấp ≥ cấp nhân vật − N": N trong 0…10; −1 = tắt.
+const LOOT_GAP_MAX := 10
+
+
+static func is_locked(item: Dictionary) -> bool:
+	return bool(item.get("locked", false))
+
+
+## CR-04 R1: món không bao giờ tự phân rã khi túi đầy (đồ Cam, món đã khoá).
+static func must_keep(item: Dictionary) -> bool:
+	return str(item.rarity) == "orange" or is_locked(item)
+
+
+## Bật/tắt khoá một món (túi hoặc đang mặc).
+static func toggle_lock(p, id: int) -> Dictionary:
+	var f := find_item(p, id)
+	if f.is_empty():
+		return _result(false, "Không tìm thấy món đồ.")
+	var item: Dictionary = f.item
+	item["locked"] = not is_locked(item)
+	return _result(true, ("Đã khoá %s." if item.locked else "Đã mở khoá %s.") % display_name(item))
+
+
+## TD-17 (U3): ghi đè theo ô — "rule" = theo bảng phẩm chất.
+const LOOT_SLOT_ACTIONS := ["rule", "keep", "sell", "salvage"]
+
+
+static func default_rules() -> Dictionary:
+	var by_slot := {}
+	for sl in ItemData.SLOT_ORDER:
+		by_slot[sl] = "rule"
+	return {"mode": "off", "by_rarity": {"white": "keep", "green": "keep", "blue": "keep", "purple": "keep"},
+		"keep_plus": true, "keep_set": true, "keep_better": true, "keep_level_gap": -1,
+		"by_slot": by_slot, "keep_stats": []}
+
+
+## Đọc quy tắc từ save (thiếu / sai khoá thì lấy mặc định).
+static func normalize_rules(r) -> Dictionary:
+	var out := default_rules()
+	if not (r is Dictionary):
+		return out
+	if str(r.get("mode", "")) in LOOT_MODES:
+		out.mode = str(r.mode)
+	var br = r.get("by_rarity", {})
+	if br is Dictionary:
+		for k in LOOT_RARITIES:
+			if str(br.get(k, "")) in LOOT_ACTIONS:
+				out.by_rarity[k] = str(br[k])
+	for k in ["keep_plus", "keep_set", "keep_better"]:
+		if r.has(k):
+			out[k] = bool(r[k])
+	if r.has("keep_level_gap"):
+		out.keep_level_gap = clampi(int(r.keep_level_gap), -1, LOOT_GAP_MAX)
+	var bs = r.get("by_slot", {})
+	if bs is Dictionary:
+		for sl in ItemData.SLOT_ORDER:
+			if str(bs.get(sl, "")) in LOOT_SLOT_ACTIONS:
+				out.by_slot[sl] = str(bs[sl])
+	var ks = r.get("keep_stats", [])
+	if ks is Array:
+		for st in ks:
+			if ItemData.AFFIXES.has(str(st)) and not (str(st) in out.keep_stats):
+				out.keep_stats.append(str(st))
+	return out
+
+
+## Số quy tắc nâng cao đang bật (ô ghi đè + dòng chỉ số luôn giữ).
+static func rules_advanced_count(r: Dictionary) -> int:
+	var n: int = r.keep_stats.size()
+	for sl in r.by_slot:
+		if str(r.by_slot[sl]) != "rule":
+			n += 1
+	return n
+
+
+## Hạng so sánh món cùng loại: phẩm chất → cấp → cường hoá.
+static func _rank(item: Dictionary) -> Array:
+	return [ItemData.RARITY_ORDER.find(str(item.rarity)), int(item.level), int(item.plus)]
+
+
+## TD-16 (U2): đã có món khác cùng bộ + cùng ô mà hạng ≥ món này (bằng nhau thì món id nhỏ hơn được giữ).
+static func set_duplicate(p, item: Dictionary) -> bool:
+	var sid := str(item.get("set", ""))
+	if sid == "":
+		return false
+	var others: Array = p.inventory.duplicate()
+	others.append_array(p.equipment.values())
+	var me := _rank(item)
+	for o in others:
+		if int(o.id) == int(item.id) or str(o.get("set", "")) != sid or str(o.slot) != str(item.slot):
+			continue
+		var ro := _rank(o)
+		if ro > me or (ro == me and int(o.id) < int(item.id)):
+			return true
+	return false
+
+
+## TD-15 (U1): sắp xếp túi. mode: "rarity" (phẩm chất cao trước) | "slot" (theo ô) | "power" (power: Callable(item) -> int,
+## Lực chiến khi mặc, cao trước). Món khoá luôn đứng đầu; hoà thì theo id.
+const SORT_MODES := {"rarity": "Phẩm chất", "slot": "Ô trang bị", "power": "Lực chiến"}
+
+
+static func sort_bag(p, mode: String, power := Callable()) -> void:
+	var pw := {}
+	if mode == "power" and power.is_valid():
+		for it in p.inventory:
+			pw[int(it.id)] = int(power.call(it))
+	var key := func(it: Dictionary) -> Array:
+		var rar := -ItemData.RARITY_ORDER.find(str(it.rarity))
+		var slot := ItemData.SLOT_ORDER.find(str(it.slot))
+		var k: Array = [0 if is_locked(it) else 1]
+		match mode:
+			"slot":
+				k.append_array([slot, rar, -int(it.level)])
+			"power":
+				k.append_array([-int(pw.get(int(it.id), 0)), rar, slot])
+			_:
+				k.append_array([rar, slot, -int(it.level)])
+		k.append_array([-int(it.plus), int(it.id)])
+		return k
+	p.inventory.sort_custom(func(a, b): return key.call(a) < key.call(b))
+
+
+## Mẫu đang khớp với bảng phẩm chất ("" = tuỳ chỉnh).
+static func rules_preset(r: Dictionary) -> String:
+	for k in LOOT_PRESETS:
+		if LOOT_PRESETS[k][1] == r.by_rarity:
+			return k
+	return ""
+
+
+static func rules_all_keep(r: Dictionary) -> bool:
+	for k in LOOT_RARITIES:
+		if str(r.by_rarity.get(k, "keep")) != "keep":
+			return false
+	return true
+
+
+## CR-04.3: "keep" | "sell" | "salvage" cho một món. better: Callable(item) -> bool (mặc vào Lực chiến tăng);
+## bỏ trống = bỏ qua điều kiện "giữ đồ mạnh hơn". Thứ tự: khoá / Cam → bảng phẩm chất → các ngoại lệ luôn giữ.
+static func decide(p, item: Dictionary, r: Dictionary, better := Callable()) -> String:
+	if is_locked(item) or not (str(item.rarity) in LOOT_RARITIES):
+		return "keep"
+	# TD-17 (U3): luôn giữ đồ có dòng chỉ số đã chọn; ô ghi đè bảng phẩm chất.
+	for af in item.get("affixes", []):
+		if str(af.stat) in r.get("keep_stats", []):
+			return "keep"
+	var act := str(r.get("by_slot", {}).get(str(item.slot), "rule"))
+	if act == "rule":
+		act = str(r.by_rarity.get(str(item.rarity), "keep"))
+	if act == "keep":
+		return "keep"
+	if r.keep_plus and int(item.plus) > 0:
+		return "keep"
+	# TD-16 (U2): giữ đồ bộ — trừ khi đã có món cùng bộ, cùng ô, tốt hơn hoặc bằng (túi / đang mặc).
+	if r.keep_set and str(item.get("set", "")) != "" and not set_duplicate(p, item):
+		return "keep"
+	if int(r.keep_level_gap) >= 0 and int(item.level) >= int(p.level) - int(r.keep_level_gap):
+		return "keep"
+	if r.keep_better and better.is_valid() and bool(better.call(item)):
+		return "keep"
+	return act
 
 
 # ------------------------------------------------------------------ hiển thị

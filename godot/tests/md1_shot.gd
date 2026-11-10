@@ -23,7 +23,10 @@ const KINDS := {
 		"hu-vo-thu", "giao-chu"],
 	9: ["thien-binh", "E:thien-binh", "tan-hon", "E:tan-hon", "thien-ma", "linh-thu-ngu-hanh", "ma-ton", "thien-dao-hu-anh"],
 }
-const MAP := {1: "1-1", 2: "2-1", 3: "3-1", 4: "4-1", 5: "5-1", 6: "6-1", 7: "7-1", 8: "8-1", 9: "9-1"}
+## --region=0 (Q190): 9 linh thú Triệu Hồi Sư (hàng trên) cạnh quái cùng dáng (hàng dưới) — kiểm phân biệt được.
+const PETS := ["linh-ho", "hoa-ho", "soi-bong", "tieu-quy", "thach-quy", "linh-ung", "linh-hon", "au-long", "ky-lan"]
+const PET_FOES := ["wolf", "soi-bang", "than-lan-lua", "nguoi-da", "dai-bang-may", "wisp"]
+const MAP := {0: "2-1", 1: "1-1", 2: "2-1", 3: "3-1", 4: "4-1", 5: "5-1", 6: "6-1", 7: "7-1", 8: "8-1", 9: "9-1"}
 var _out := "user://md1_shot.png"
 var _region := 1
 var _hd := true
@@ -49,13 +52,17 @@ func _run() -> void:
 	p.quest_step = 12
 	p.level = 10 * _region
 	p.map_id = MAP[_region]
+	if _region == 0:
+		p.level = 30
 	var w := GameWorld.new(p, RngUtil.make(5))
 	w.enemies = []
 	w.field_spawn = false
 	var c := w.world_size * 0.5
 	w.player.pos = c + Vector2(0, 300)
 	w.fog.reveal(c, 1400.0)
-	var kinds: Array = KINDS[_region]
+	if _region == 0:
+		_pets(w, c)
+	var kinds: Array = KINDS[_region] if _region > 0 else []
 	var cols := 5
 	for i in kinds.size():
 		var k := str(kinds[i])
@@ -84,3 +91,16 @@ func _run() -> void:
 	print("MD1 shot: vùng %d (HD %s) → %s" % [_region, str(_hd), _out])
 	SpriteLib.set_hd(true)
 	quit()
+
+
+func _pets(w, c: Vector2) -> void:
+	w.allies = []
+	for i in PETS.size():
+		var at := c + Vector2(-560 + i * 140, -200)
+		var a = GameWorld.Classes2.summon(w, PETS[i], 1.0, -1.0, "", at, true)  # perm: không bị giới hạn số linh thú
+		a.spawn_t = 0.0
+	for i in PET_FOES.size():
+		var e = w.spawn_enemy(PET_FOES[i], 10, c + Vector2(-420 + i * 170, 90))
+		e.state = "idle"
+		e.target = e.pos + Vector2(100, 0)
+		e.face = 0.0

@@ -7679,7 +7679,23 @@
   "talent-long-mach": "res://assets/icons/talent-long-mach.png",
   "talent-dao-tac": "res://assets/icons/talent-dao-tac.png",
   "skill-kiemy": "res://assets/icons/skill-kiemy.png",
-  "skill-banglao": "res://assets/icons/skill-banglao.png"
+  "skill-banglao": "res://assets/icons/skill-banglao.png",
+  "gem-kim-1": "res://assets/hd/icons/gem-kim-1.png",
+  "gem-kim-2": "res://assets/hd/icons/gem-kim-2.png",
+  "gem-kim-3": "res://assets/hd/icons/gem-kim-3.png",
+  "gem-moc-1": "res://assets/hd/icons/gem-moc-1.png",
+  "gem-moc-2": "res://assets/hd/icons/gem-moc-2.png",
+  "gem-moc-3": "res://assets/hd/icons/gem-moc-3.png",
+  "gem-thuy-1": "res://assets/hd/icons/gem-thuy-1.png",
+  "gem-thuy-2": "res://assets/hd/icons/gem-thuy-2.png",
+  "gem-thuy-3": "res://assets/hd/icons/gem-thuy-3.png",
+  "gem-hoa-1": "res://assets/hd/icons/gem-hoa-1.png",
+  "gem-hoa-2": "res://assets/hd/icons/gem-hoa-2.png",
+  "gem-hoa-3": "res://assets/hd/icons/gem-hoa-3.png",
+  "gem-tho-1": "res://assets/hd/icons/gem-tho-1.png",
+  "gem-tho-2": "res://assets/hd/icons/gem-tho-2.png",
+  "gem-tho-3": "res://assets/hd/icons/gem-tho-3.png",
+  "gem-socket": "res://assets/hd/icons/gem-socket.png"
  },
  "env": {
   "tile-grass-0": {
@@ -12963,6 +12979,402 @@
      }
     },
     "path": "res://assets/hd/sprites/thien-dao-hu-anh.png"
+   },
+   "linh-ho": {
+    "w": 96,
+    "h": 96,
+    "origin": [
+     48,
+     88
+    ],
+    "px": 4.8,
+    "name": "Linh Hồ",
+    "size_mul": 1.093,
+    "anims": {
+     "idle": {
+      "row": 0,
+      "frames": 4,
+      "fps": 4,
+      "loop": true
+     },
+     "run": {
+      "row": 1,
+      "frames": 4,
+      "fps": 9,
+      "loop": true
+     },
+     "attack": {
+      "row": 2,
+      "frames": 3,
+      "fps": 9,
+      "loop": false
+     },
+     "hurt": {
+      "row": 3,
+      "frames": 2,
+      "fps": 8,
+      "loop": false
+     },
+     "death": {
+      "row": 4,
+      "frames": 3,
+      "fps": 6,
+      "loop": false
+     }
+    },
+    "path": "res://assets/hd/sprites/linh-ho.png"
+   },
+   "hoa-ho": {
+    "w": 96,
+    "h": 96,
+    "origin": [
+     48,
+     88
+    ],
+    "px": 4.8,
+    "name": "Hoả Hồ",
+    "size_mul": 1.093,
+    "anims": {
+     "idle": {
+      "row": 0,
+      "frames": 4,
+      "fps": 4,
+      "loop": true
+     },
+     "run": {
+      "row": 1,
+      "frames": 4,
+      "fps": 9,
+      "loop": true
+     },
+     "attack": {
+      "row": 2,
+      "frames": 3,
+      "fps": 9,
+      "loop": false
+     },
+     "hurt": {
+      "row": 3,
+      "frames": 2,
+      "fps": 8,
+      "loop": false
+     },
+     "death": {
+      "row": 4,
+      "frames": 3,
+      "fps": 6,
+      "loop": false
+     }
+    },
+    "path": "res://assets/hd/sprites/hoa-ho.png"
+   },
+   "soi-bong": {
+    "w": 96,
+    "h": 96,
+    "origin": [
+     48,
+     88
+    ],
+    "px": 4.0,
+    "name": "Sói Bóng",
+    "size_mul": 1.562,
+    "anims": {
+     "idle": {
+      "row": 0,
+      "frames": 4,
+      "fps": 4,
+      "loop": true
+     },
+     "run": {
+      "row": 1,
+      "frames": 4,
+      "fps": 9,
+      "loop": true
+     },
+     "attack": {
+      "row": 2,
+      "frames": 3,
+      "fps": 9,
+      "loop": false
+     },
+     "hurt": {
+      "row": 3,
+      "frames": 2,
+      "fps": 8,
+      "loop": false
+     },
+     "death": {
+      "row": 4,
+      "frames": 3,
+      "fps": 6,
+      "loop": false
+     }
+    },
+    "path": "res://assets/hd/sprites/soi-bong.png"
+   },
+   "tieu-quy": {
+    "w": 96,
+    "h": 96,
+    "origin": [
+     48,
+     88
+    ],
+    "px": 4.0,
+    "name": "Tiểu Quỷ",
+    "size_mul": 0.976,
+    "anims": {
+     "idle": {
+      "row": 0,
+      "frames": 4,
+      "fps": 4,
+      "loop": true
+     },
+     "run": {
+      "row": 1,
+      "frames": 4,
+      "fps": 9,
+      "loop": true
+     },
+     "attack": {
+      "row": 2,
+      "frames": 3,
+      "fps": 9,
+      "loop": false
+     },
+     "hurt": {
+      "row": 3,
+      "frames": 2,
+      "fps": 8,
+      "loop": false
+     },
+     "death": {
+      "row": 4,
+      "frames": 3,
+      "fps": 6,
+      "loop": false
+     }
+    },
+    "path": "res://assets/hd/sprites/tieu-quy.png"
+   },
+   "thach-quy": {
+    "w": 128,
+    "h": 128,
+    "origin": [
+     64,
+     117
+    ],
+    "px": 4.0,
+    "name": "Thạch Quỷ",
+    "size_mul": 1.52,
+    "anims": {
+     "idle": {
+      "row": 0,
+      "frames": 4,
+      "fps": 4,
+      "loop": true
+     },
+     "run": {
+      "row": 1,
+      "frames": 4,
+      "fps": 9,
+      "loop": true
+     },
+     "attack": {
+      "row": 2,
+      "frames": 3,
+      "fps": 9,
+      "loop": false
+     },
+     "hurt": {
+      "row": 3,
+      "frames": 2,
+      "fps": 8,
+      "loop": false
+     },
+     "death": {
+      "row": 4,
+      "frames": 3,
+      "fps": 6,
+      "loop": false
+     }
+    },
+    "path": "res://assets/hd/sprites/thach-quy.png"
+   },
+   "linh-ung": {
+    "w": 128,
+    "h": 128,
+    "origin": [
+     64,
+     117
+    ],
+    "px": 5.3333,
+    "name": "Linh Ưng",
+    "size_mul": 2.419,
+    "anims": {
+     "idle": {
+      "row": 0,
+      "frames": 4,
+      "fps": 4,
+      "loop": true
+     },
+     "run": {
+      "row": 1,
+      "frames": 4,
+      "fps": 9,
+      "loop": true
+     },
+     "attack": {
+      "row": 2,
+      "frames": 3,
+      "fps": 9,
+      "loop": false
+     },
+     "hurt": {
+      "row": 3,
+      "frames": 2,
+      "fps": 8,
+      "loop": false
+     },
+     "death": {
+      "row": 4,
+      "frames": 3,
+      "fps": 6,
+      "loop": false
+     }
+    },
+    "path": "res://assets/hd/sprites/linh-ung.png"
+   },
+   "linh-hon": {
+    "w": 96,
+    "h": 96,
+    "origin": [
+     48,
+     88
+    ],
+    "px": 4.0,
+    "name": "Linh Hồn",
+    "size_mul": 1.167,
+    "anims": {
+     "idle": {
+      "row": 0,
+      "frames": 4,
+      "fps": 4,
+      "loop": true
+     },
+     "run": {
+      "row": 1,
+      "frames": 4,
+      "fps": 9,
+      "loop": true
+     },
+     "attack": {
+      "row": 2,
+      "frames": 3,
+      "fps": 9,
+      "loop": false
+     },
+     "hurt": {
+      "row": 3,
+      "frames": 2,
+      "fps": 8,
+      "loop": false
+     },
+     "death": {
+      "row": 4,
+      "frames": 3,
+      "fps": 6,
+      "loop": false
+     }
+    },
+    "path": "res://assets/hd/sprites/linh-hon.png"
+   },
+   "au-long": {
+    "w": 96,
+    "h": 96,
+    "origin": [
+     48,
+     88
+    ],
+    "px": 3.6923,
+    "name": "Ấu Long",
+    "size_mul": 1.533,
+    "anims": {
+     "idle": {
+      "row": 0,
+      "frames": 4,
+      "fps": 4,
+      "loop": true
+     },
+     "run": {
+      "row": 1,
+      "frames": 4,
+      "fps": 9,
+      "loop": true
+     },
+     "attack": {
+      "row": 2,
+      "frames": 3,
+      "fps": 9,
+      "loop": false
+     },
+     "hurt": {
+      "row": 3,
+      "frames": 2,
+      "fps": 8,
+      "loop": false
+     },
+     "death": {
+      "row": 4,
+      "frames": 3,
+      "fps": 6,
+      "loop": false
+     }
+    },
+    "path": "res://assets/hd/sprites/au-long.png"
+   },
+   "ky-lan": {
+    "w": 128,
+    "h": 128,
+    "origin": [
+     64,
+     117
+    ],
+    "px": 4.5714,
+    "name": "Kỳ Lân",
+    "size_mul": 1.411,
+    "anims": {
+     "idle": {
+      "row": 0,
+      "frames": 4,
+      "fps": 4,
+      "loop": true
+     },
+     "run": {
+      "row": 1,
+      "frames": 4,
+      "fps": 9,
+      "loop": true
+     },
+     "attack": {
+      "row": 2,
+      "frames": 3,
+      "fps": 9,
+      "loop": false
+     },
+     "hurt": {
+      "row": 3,
+      "frames": 2,
+      "fps": 8,
+      "loop": false
+     },
+     "death": {
+      "row": 4,
+      "frames": 3,
+      "fps": 6,
+      "loop": false
+     }
+    },
+    "path": "res://assets/hd/sprites/ky-lan.png"
    }
   },
   "env": {
@@ -14245,6 +14657,336 @@
      66
     ],
     "px": 4
+   },
+   "palisade": {
+    "path": "res://assets/hd/env/palisade.png",
+    "w": 128,
+    "h": 240,
+    "origin": [
+     64,
+     230
+    ],
+    "px": 4
+   },
+   "banner-wolf": {
+    "path": "res://assets/hd/env/banner-wolf.png",
+    "w": 96,
+    "h": 272,
+    "origin": [
+     40,
+     262
+    ],
+    "px": 4
+   },
+   "weapon-rack": {
+    "path": "res://assets/hd/env/weapon-rack.png",
+    "w": 160,
+    "h": 160,
+    "origin": [
+     80,
+     150
+    ],
+    "px": 4
+   },
+   "debris-0": {
+    "path": "res://assets/hd/env/debris-0.png",
+    "w": 144,
+    "h": 72,
+    "origin": [
+     72,
+     44
+    ],
+    "px": 4
+   },
+   "debris-1": {
+    "path": "res://assets/hd/env/debris-1.png",
+    "w": 144,
+    "h": 72,
+    "origin": [
+     72,
+     44
+    ],
+    "px": 4
+   },
+   "debris-2": {
+    "path": "res://assets/hd/env/debris-2.png",
+    "w": 144,
+    "h": 72,
+    "origin": [
+     72,
+     44
+    ],
+    "px": 4
+   },
+   "palisade-plain": {
+    "path": "res://assets/hd/env/palisade-plain.png",
+    "w": 128,
+    "h": 240,
+    "origin": [
+     64,
+     230
+    ],
+    "px": 4
+   },
+   "banner-wind": {
+    "path": "res://assets/hd/env/banner-wind.png",
+    "w": 96,
+    "h": 272,
+    "origin": [
+     40,
+     262
+    ],
+    "px": 4
+   },
+   "wall-sandstone": {
+    "path": "res://assets/hd/env/wall-sandstone.png",
+    "w": 136,
+    "h": 236,
+    "origin": [
+     68,
+     226
+    ],
+    "px": 4
+   },
+   "banner-sun": {
+    "path": "res://assets/hd/env/banner-sun.png",
+    "w": 96,
+    "h": 272,
+    "origin": [
+     40,
+     262
+    ],
+    "px": 4
+   },
+   "palisade-bamboo": {
+    "path": "res://assets/hd/env/palisade-bamboo.png",
+    "w": 128,
+    "h": 240,
+    "origin": [
+     64,
+     230
+    ],
+    "px": 4
+   },
+   "banner-leaf": {
+    "path": "res://assets/hd/env/banner-leaf.png",
+    "w": 96,
+    "h": 272,
+    "origin": [
+     40,
+     262
+    ],
+    "px": 4
+   },
+   "wall-basalt": {
+    "path": "res://assets/hd/env/wall-basalt.png",
+    "w": 136,
+    "h": 236,
+    "origin": [
+     68,
+     226
+    ],
+    "px": 4
+   },
+   "banner-flame": {
+    "path": "res://assets/hd/env/banner-flame.png",
+    "w": 96,
+    "h": 272,
+    "origin": [
+     40,
+     262
+    ],
+    "px": 4
+   },
+   "palisade-snow": {
+    "path": "res://assets/hd/env/palisade-snow.png",
+    "w": 128,
+    "h": 240,
+    "origin": [
+     64,
+     230
+    ],
+    "px": 4
+   },
+   "banner-snow": {
+    "path": "res://assets/hd/env/banner-snow.png",
+    "w": 96,
+    "h": 272,
+    "origin": [
+     40,
+     262
+    ],
+    "px": 4
+   },
+   "wall-marble": {
+    "path": "res://assets/hd/env/wall-marble.png",
+    "w": 136,
+    "h": 236,
+    "origin": [
+     68,
+     226
+    ],
+    "px": 4
+   },
+   "banner-cloud": {
+    "path": "res://assets/hd/env/banner-cloud.png",
+    "w": 96,
+    "h": 272,
+    "origin": [
+     40,
+     262
+    ],
+    "px": 4
+   },
+   "wall-obsidian": {
+    "path": "res://assets/hd/env/wall-obsidian.png",
+    "w": 136,
+    "h": 236,
+    "origin": [
+     68,
+     226
+    ],
+    "px": 4
+   },
+   "banner-eye": {
+    "path": "res://assets/hd/env/banner-eye.png",
+    "w": 96,
+    "h": 272,
+    "origin": [
+     40,
+     262
+    ],
+    "px": 4
+   },
+   "wall-jade": {
+    "path": "res://assets/hd/env/wall-jade.png",
+    "w": 136,
+    "h": 236,
+    "origin": [
+     68,
+     226
+    ],
+    "px": 4
+   },
+   "banner-lotus": {
+    "path": "res://assets/hd/env/banner-lotus.png",
+    "w": 96,
+    "h": 272,
+    "origin": [
+     40,
+     262
+    ],
+    "px": 4
+   },
+   "rubble-sand": {
+    "path": "res://assets/hd/env/rubble-sand.png",
+    "w": 144,
+    "h": 72,
+    "origin": [
+     72,
+     44
+    ],
+    "px": 4
+   },
+   "rubble-basalt": {
+    "path": "res://assets/hd/env/rubble-basalt.png",
+    "w": 144,
+    "h": 72,
+    "origin": [
+     72,
+     44
+    ],
+    "px": 4
+   },
+   "rubble-marble": {
+    "path": "res://assets/hd/env/rubble-marble.png",
+    "w": 144,
+    "h": 72,
+    "origin": [
+     72,
+     44
+    ],
+    "px": 4
+   },
+   "rubble-void": {
+    "path": "res://assets/hd/env/rubble-void.png",
+    "w": 144,
+    "h": 72,
+    "origin": [
+     72,
+     44
+    ],
+    "px": 4
+   },
+   "rubble-ice": {
+    "path": "res://assets/hd/env/rubble-ice.png",
+    "w": 144,
+    "h": 72,
+    "origin": [
+     72,
+     44
+    ],
+    "px": 4
+   },
+   "cliff-rock": {
+    "path": "res://assets/hd/env/cliff-rock.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
+   },
+   "cliff-sand": {
+    "path": "res://assets/hd/env/cliff-sand.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
+   },
+   "cliff-basalt": {
+    "path": "res://assets/hd/env/cliff-basalt.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
+   },
+   "cliff-ice": {
+    "path": "res://assets/hd/env/cliff-ice.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
+   },
+   "cliff-void": {
+    "path": "res://assets/hd/env/cliff-void.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
+   },
+   "cliff-marble": {
+    "path": "res://assets/hd/env/cliff-marble.png",
+    "w": 256,
+    "h": 256,
+    "origin": [
+     0,
+     0
+    ],
+    "px": 4
    }
   },
   "icons": {
@@ -14741,7 +15483,23 @@
    "eq-amulet-1-thien_phong": "res://assets/hd/icons/eq-amulet-1-thien_phong.png",
    "eq-amulet-1-tinh_quang": "res://assets/hd/icons/eq-amulet-1-tinh_quang.png",
    "eq-amulet-1-thien_dao": "res://assets/hd/icons/eq-amulet-1-thien_dao.png",
-   "eq-amulet-1-sa_hanh": "res://assets/hd/icons/eq-amulet-1-sa_hanh.png"
+   "eq-amulet-1-sa_hanh": "res://assets/hd/icons/eq-amulet-1-sa_hanh.png",
+   "gem-kim-1": "res://assets/hd/icons/gem-kim-1.png",
+   "gem-kim-2": "res://assets/hd/icons/gem-kim-2.png",
+   "gem-kim-3": "res://assets/hd/icons/gem-kim-3.png",
+   "gem-moc-1": "res://assets/hd/icons/gem-moc-1.png",
+   "gem-moc-2": "res://assets/hd/icons/gem-moc-2.png",
+   "gem-moc-3": "res://assets/hd/icons/gem-moc-3.png",
+   "gem-thuy-1": "res://assets/hd/icons/gem-thuy-1.png",
+   "gem-thuy-2": "res://assets/hd/icons/gem-thuy-2.png",
+   "gem-thuy-3": "res://assets/hd/icons/gem-thuy-3.png",
+   "gem-hoa-1": "res://assets/hd/icons/gem-hoa-1.png",
+   "gem-hoa-2": "res://assets/hd/icons/gem-hoa-2.png",
+   "gem-hoa-3": "res://assets/hd/icons/gem-hoa-3.png",
+   "gem-tho-1": "res://assets/hd/icons/gem-tho-1.png",
+   "gem-tho-2": "res://assets/hd/icons/gem-tho-2.png",
+   "gem-tho-3": "res://assets/hd/icons/gem-tho-3.png",
+   "gem-socket": "res://assets/hd/icons/gem-socket.png"
   }
  }
 }

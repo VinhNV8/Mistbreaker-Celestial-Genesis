@@ -27,10 +27,13 @@ const AutoButton = preload("res://scripts/ui/auto_button.gd")
 const QuestBox = preload("res://scripts/ui/quest_box.gd")
 const LogBox = preload("res://scripts/ui/log_box.gd")
 const Bronze = preload("res://scripts/ui/bronze.gd")
+const Settings = preload("res://scripts/core/settings.gd")
 const ActionCluster = preload("res://scripts/ui/action_cluster.gd")
 const PickupFeed = preload("res://scripts/ui/pickup_feed.gd")
 const LowHpOverlay = preload("res://scripts/ui/low_hp_overlay.gd")
 const ExpBar = preload("res://scripts/ui/exp_bar.gd")
+## GN-3 (docs/45 Q223): bộ đếm combo lớn.
+const ComboCounter = preload("res://scripts/ui/combo_counter.gd")
 const Skills2 = preload("res://scripts/core/skills2.gd")
 ## UI-20: nhật ký tối đa 5 dòng, mỗi dòng sống 6 giây rồi mờ dần.
 ## UI-54 (docs/38): nhật ký thu gọn — 3 dòng mới nhất (cũ: 5), tự mờ.
@@ -50,6 +53,13 @@ const SLOT_MP_POTION := 11
 const BAR_COUNT := 12
 ## UI-16: bề rộng khung nhiệm vụ.
 const OBJ_W := 240
+## CR-05: độ mờ của khung HUD khi che nhân vật, lề phát hiện (px), tốc độ mờ / hiện (đơn vị alpha / giây), cỡ nút ẩn / hiện.
+const OCCLUDE_A := 0.22
+const OCCLUDE_PAD := 12.0
+const FADE_SPEED := 5.0
+const TOGGLE_D := 28.0
+## CR-05: chỗ nút ẩn / hiện trên khung nhiệm vụ (góc trên-trái, ngang hàng tiêu đề; góc phải là dấu sáp).
+const QUEST_BTN_AT := Vector2(8, 10)
 
 var _tl: CharFrame
 ## UI-12: nút bật/tắt Tự đánh (main nối tín hiệu auto_toggled → world.toggle_auto()).
@@ -61,6 +71,8 @@ signal auto_toggled
 signal quest_clicked
 ## NV-A4: bấm dòng việc đang ghim (uỷ thác / nhiệm vụ phụ) → main tự chạy tới mục tiêu của việc đó.
 signal track_clicked(key: String)
+## NL-1 (docs/47 §5): bấm huy hiệu Lực chiến.
+signal power_clicked
 
 var _tr: PanelContainer
 var _resources: Label
@@ -81,8 +93,16 @@ var _boss_hp: ProgressBar
 var _boss_poise: ProgressBar
 ## R1: đang thu gọn HUD bên phải vì có thanh máu boss.
 var _boss_compact := false
+## CR-05 (Spec_Notes 09/11): khung bao nhân vật trên màn hình (toạ độ HUD, main.gd gán mỗi khung) — bản đồ nhỏ /
+## khung nhiệm vụ mờ đi khi đè lên nhân vật; hệ số mờ hiện tại (lerp) của từng khung; 2 nút ẩn / hiện.
+var focus_rect := Rect2()
+var _fade_map := 1.0
+var _fade_quest := 1.0
+var _btn_map: HudToggle
+var _btn_quest: HudToggle
 
 var _combo: Label
+var _combo_big: ComboCounter
 ## UI-52: dải nhặt đồ bên trái; UI-55: viền đỏ máu thấp.
 var _feed: PickupFeed
 var _low_hp: LowHpOverlay
@@ -118,6 +138,7 @@ func _ready() -> void:
 	# UI-08 (Spec_Notes đợt 6): khung nhân vật kiểu khung vàng – ngọc tím (ui/char_frame.gd).
 	_tl = CharFrame.new()
 	add_child(_tl)
+	_tl.power_pressed.connect(func(): power_clicked.emit())
 
 	_tr = PanelContainer.new()
 	var trv := UiTheme.vbox(2)
@@ -206,10 +227,14 @@ func _ready() -> void:
 		ov.add_child(tl)
 	_obj.mouse_filter = Control.MOUSE_FILTER_STOP
 	_obj.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	_obj.tooltip_text = "Bấm: tự chạy tới mục tiêu nhiệm vụ · O: Sổ nhiệm vụ"
+	_obj.tooltip_text = "Bấm: tự chạy tới mục tiêu nhiệm vụ · Chuột phải: thu gọn / mở rộng · O: Sổ nhiệm vụ"
 	_obj.gui_input.connect(func(ev: InputEvent):
 		if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:
 			quest_clicked.emit()
+			_obj.accept_event()
+		elif ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_RIGHT:
+			# VS-1 A3 (docs/44): thu gọn khung nhiệm vụ còn tiêu đề + mục tiêu + dòng chỉ đường (nhớ trong Cài đặt).
+			Settings.set_value("quest_compact", not quest_compact())
 			_obj.accept_event())
 	add_child(_obj)
 
@@ -240,6 +265,9 @@ func _ready() -> void:
 	_combo.add_theme_font_size_override("font_size", UiTheme.fs(15))
 	_combo.add_theme_color_override("font_color", UiTheme.GOLD)
 	add_child(_combo)
+	_combo_big = ComboCounter.new()
+	_combo_big.visible = false
+	add_child(_combo_big)
 
 	_skills = SkillBar.new()
 	_skills.set_count(BAR_COUNT)
@@ -305,6 +333,13 @@ func _ready() -> void:
 		cell.mouse_filter = MOUSE_FILTER_PASS
 	_cluster.mouse_filter = MOUSE_FILTER_STOP
 	_cluster.auto_pressed.connect(func(): auto_toggled.emit())
+	# CR-05: nút ẩn / hiện bản đồ nhỏ + khung nhiệm vụ (nhớ trong Cài đặt), gắn ở góc trên-trái mỗi khung.
+	_btn_map = HudToggle.new("map", "Ẩn / hiện bản đồ nhỏ (V khi đang ẩn: hiện lại)")
+	_btn_map.pressed.connect(func(): Settings.set_value("hud_minimap", not hud_shown("hud_minimap")))
+	add_child(_btn_map)
+	_btn_quest = HudToggle.new("quest", "Ẩn / hiện khung nhiệm vụ")
+	_btn_quest.pressed.connect(func(): Settings.set_value("hud_quest", not hud_shown("hud_quest")))
+	add_child(_btn_quest)
 
 
 func _ignore_mouse(node: Node) -> void:
@@ -436,7 +471,44 @@ func banner(text: String, sub := "") -> void:
 
 
 func toggle_minimap() -> void:
+	# CR-05: đang ẩn bản đồ nhỏ thì V hiện lại (không đổi cỡ)
+	if not hud_shown("hud_minimap"):
+		Settings.set_value("hud_minimap", true)
+		return
 	_minimap.toggle_size()
+
+
+## CR-05: khung HUD có đang bật (Cài đặt "hud_minimap" / "hud_quest", mặc định bật).
+static func hud_shown(key: String) -> bool:
+	return bool(Settings.values.get(key, true))
+
+
+## CR-05: độ mờ đích của 1 khung HUD — khung (đã nới OCCLUDE_PAD) đè lên nhân vật thì mờ còn OCCLUDE_A;
+## chuột đang rê trên khung thì hiện rõ (vẫn bấm / đọc được); base là độ mờ sẵn có (đang đánh boss).
+static func occlusion_alpha(box: Rect2, focus: Rect2, hovered: bool, base := 1.0) -> float:
+	if hovered:
+		return 1.0
+	if focus.has_area() and box.grow(OCCLUDE_PAD).intersects(focus):
+		return minf(base, OCCLUDE_A)
+	return base
+
+
+func _apply_fade(step := -1.0) -> void:
+	var dt := clampf(get_process_delta_time() if step < 0.0 else step, 0.0, 0.1)
+	var mouse := get_local_mouse_position() if is_inside_tree() else Vector2(-1e6, -1e6)
+	var map_box := _minimap.get_rect()
+	if _map_name.visible and _map_name.text != "":
+		map_box = map_box.merge(_map_name.get_rect())
+	var t_map := occlusion_alpha(map_box, focus_rect, map_box.has_point(mouse), 0.35 if _boss_compact else 1.0)
+	var t_quest := occlusion_alpha(_obj.get_rect(), focus_rect, _obj.get_rect().has_point(mouse), 0.7 if _boss_compact else 1.0)
+	_fade_map = move_toward(_fade_map, t_map, dt * FADE_SPEED)
+	_fade_quest = move_toward(_fade_quest, t_quest, dt * FADE_SPEED)
+	_minimap.modulate.a = _fade_map
+	_map_name.modulate.a = _fade_map
+	_obj.modulate.a = _fade_quest
+	# nút gắn trên khung thì mờ theo khung (khung ẩn → nút rõ)
+	_btn_map.modulate.a = _fade_map if _minimap.visible else 1.0
+	_btn_quest.modulate.a = _fade_quest if _obj.visible else 1.0
 
 
 func update_from(w: GameWorld) -> void:
@@ -456,6 +528,7 @@ func update_from(w: GameWorld) -> void:
 		"mp": maxf(0.0, pl.mp) / maxf(1.0, float(s.max_mp)), "mp_text": "%d / %d" % [floori(maxf(0.0, pl.mp)), s.max_mp],
 		"exp": minf(1.0, float(p.xp) / need), "exp_text": "EXP %.1f%%" % (minf(1.0, float(p.xp) / need) * 100.0),
 		"power": w.combat_power(), "points": p.unspent,
+		"tips": _power_tips(w),
 	}
 
 	var torch_note := ""
@@ -493,7 +566,11 @@ func update_from(w: GameWorld) -> void:
 		var alert: bool = Chapters.env_alert(w)
 		_wind.add_theme_color_override("font_color", Color("#ff9a3c") if alert else Color("#f2d79a"))
 
-	_combo.visible = w.combo >= 5
+	# GN-3: Cài đặt "Bộ đếm combo" — Lớn (mặc định) / Nhỏ (dòng UI-54 trên cụm nút) / Tắt
+	var cstyle := str(Settings.values.get("combo_style", "big"))
+	var cpct := roundi((Formulas.combo_exp_multiplier(w.combo) - 1.0) * 100.0)
+	_combo_big.set_combo(w.combo if cstyle == "big" else 0, cpct, get_process_delta_time())
+	_combo.visible = w.combo >= 5 and cstyle == "small"
 	_combo.text = "×%d combo · +%d%% EXP" % [w.combo, roundi((Formulas.combo_exp_multiplier(w.combo) - 1.0) * 100.0)]
 	_feed.update_from(w)
 	_low_hp.update_hp(pl.hp, float(s.max_hp), get_process_delta_time())
@@ -521,13 +598,11 @@ func update_from(w: GameWorld) -> void:
 		_boss_poise.value = boss.poise / boss.max_poise
 	# R1 (docs/19 RS-UI02): đang đánh boss — khung nhiệm vụ thu về 1 dòng, bản đồ nhỏ mờ để không che đấu trường
 	# (hang boss vùng 4–6 nằm phía đông map, đúng chỗ cột HUD bên phải).
-	if boss != null:
+	if boss != null or quest_compact():
 		_objectives[1].visible = false
 		_objectives[2].visible = false
 	if _boss_compact != (boss != null):
 		_boss_compact = boss != null
-		_obj.modulate.a = 0.7 if _boss_compact else 1.0
-		_minimap.modulate.a = 0.35 if _boss_compact else 1.0
 		_obj.reset_size()
 	_dead.visible = pl.dead_timer > 0.0 and w.travel_timer <= 0.0
 	_travel.visible = w.travel_timer > 0.0
@@ -547,7 +622,14 @@ func update_from(w: GameWorld) -> void:
 		_map_name.add_theme_color_override("font_color", UiTheme.BAD)
 	else:
 		_map_name.remove_theme_color_override("font_color")
+	# CR-05: ẩn / hiện theo nút
+	_minimap.visible = hud_shown("hud_minimap")
+	_map_name.visible = _minimap.visible
+	_obj.visible = hud_shown("hud_quest")
+	_btn_map.on = _minimap.visible
+	_btn_quest.on = _obj.visible
 	_layout()
+	_apply_fade()
 
 
 func _update_skill_bar(w: GameWorld, t: Dictionary, rank_color: Color) -> void:
@@ -735,7 +817,7 @@ func _update_tracked(w: GameWorld) -> void:
 	var tr := QuestLog.tracked(w)
 	for i in _track_lines.size():
 		var l := _track_lines[i]
-		l.visible = i < tr.size()
+		l.visible = i < tr.size() and not quest_compact()
 		if not l.visible:
 			continue
 		var e: Dictionary = tr[i]
@@ -751,12 +833,17 @@ func _update_tracked(w: GameWorld) -> void:
 		l.text = group_numbers(txt)
 
 
+## VS-1 A3 (docs/44): khung nhiệm vụ đang thu gọn (chuột phải vào khung để đổi).
+static func quest_compact() -> bool:
+	return bool(Settings.values.get("quest_compact", false))
+
+
 func _set_obj(i: int, text: String, color: Color) -> void:
 	# UI-16: tiêu đề gọn ("CHƯƠNG 2 · NHIỆM VỤ 1/5" → "CHƯƠNG 2 · 1/5"); thưởng nhạt hơn
 	_obj_title.text = _obj_title.text.replace("NHIỆM VỤ ", "")
 	text = group_numbers(text)
 	_objectives[i].text = text
-	_objectives[i].visible = text != ""
+	_objectives[i].visible = text != "" and not (i > 0 and quest_compact())
 	_objectives[i].add_theme_color_override("font_color", parchment_ink(color))
 	if i == 0:
 		# UI-41: "(a/b)" ở mục tiêu → thanh tiến độ
@@ -796,8 +883,16 @@ func _layout() -> void:
 	_map_name.reset_size()
 	_map_name.position = Vector2(minf(_minimap.position.x + (_minimap.size.x - _map_name.size.x) / 2.0, sz.x - _map_name.size.x - 8.0),
 		_minimap.position.y + _minimap.size.y + 2.0)
+	# CR-05 (góp ý 09/11): mỗi nút gắn vào góc trên-trái khung của nó (la bàn / cuộn giấy nhiệm vụ);
+	# khung đang ẩn → nút đứng đúng chỗ khung đó ở sát mép phải, khung nhiệm vụ lên ngay dưới chỗ la bàn.
+	var edge_x := sz.x - TOGGLE_D - 12.0
+	_btn_map.position = (_minimap.position + Vector2(2, 2)) if _minimap.visible else Vector2(edge_x, 12)
 	_obj.reset_size()
-	_obj.position = Vector2(sz.x - _obj.size.x - 12, _map_name.position.y + (_map_name.size.y if _map_name.visible and _map_name.text != "" else 0.0) + 6.0)
+	var obj_y := _map_name.position.y + (_map_name.size.y if _map_name.visible and _map_name.text != "" else 0.0) + 6.0
+	if not _minimap.visible:
+		obj_y = _btn_map.position.y + TOGGLE_D + 6.0
+	_obj.position = Vector2(sz.x - _obj.size.x - 12, obj_y)
+	_btn_quest.position = (_obj.position + QUEST_BTN_AT) if _obj.visible else Vector2(edge_x, obj_y)
 	var boss_w := clampf(sz.x - 680.0, 260.0, 520.0)
 	_boss_box.size = Vector2(boss_w, 0)
 	_boss_box.position = Vector2((sz.x - boss_w) / 2.0, _tr.position.y + _tr.size.y + 6)
@@ -828,5 +923,70 @@ func _layout() -> void:
 	# dải nhặt đồ ngay trên vùng nhật ký: chỗ cố định cho 3 dòng ngắn, nhật ký cao hơn (dòng xuống hàng) thì đẩy lên
 	_feed.position = Vector2(12, minf(_log.position.y, _skills.position.y - 12.0 - LOG_MAX * 34.0) - _feed.size.y - 6.0)
 	_combo.position = Vector2(sz.x - _combo.size.x - 16, _cluster.position.y - _combo.size.y - 2.0)
+	# GN-3: mép trái, ngay dưới khung nhân vật (không đè nhật ký / dải nhặt đồ phía dưới)
+	_combo_big.position = Vector2(18, maxf(_tl.position.y + _tl.size.y + 18.0, sz.y * 0.3))
 	_banner.reset_size()
 	_banner.position = Vector2((sz.x - _banner.size.x) / 2.0, sz.y * 0.28)
+
+
+## CR-05: nút tròn nhỏ ẩn / hiện khung HUD — biểu tượng tấm bản đồ gấp ("map") / cuộn giấy ("quest");
+## đang tắt thì biểu tượng nhạt + gạch chéo đỏ.
+class HudToggle extends Control:
+	signal pressed
+	var kind := "map"
+	var on := true:
+		set(v):
+			if v != on:
+				on = v
+				queue_redraw()
+
+	func _init(k: String, tip: String) -> void:
+		kind = k
+		tooltip_text = tip
+		custom_minimum_size = Vector2(TOGGLE_D, TOGGLE_D)
+		size = custom_minimum_size
+		mouse_filter = MOUSE_FILTER_STOP
+		mouse_default_cursor_shape = CURSOR_POINTING_HAND
+		mouse_entered.connect(queue_redraw)
+		mouse_exited.connect(queue_redraw)
+
+	func _gui_input(ev: InputEvent) -> void:
+		if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:
+			pressed.emit()
+			accept_event()
+
+	func _draw() -> void:
+		var c := size / 2.0
+		var r := TOGGLE_D / 2.0
+		var hot := get_global_rect().has_point(get_global_mouse_position())
+		draw_circle(c, r, Color(0.07, 0.06, 0.05, 0.82))
+		draw_arc(c, r - 1.5, 0.0, TAU, 28, Bronze.BR_LIGHT if hot else Bronze.BR_MID, 2.0, true)
+		var ink := Bronze.PARCH if on else Color(Bronze.PARCH, 0.4)
+		if kind == "map":
+			# tấm bản đồ gấp 3
+			var pts := PackedVector2Array([c + Vector2(-8, -5), c + Vector2(-3, -7), c + Vector2(3, -5), c + Vector2(8, -7),
+				c + Vector2(8, 5), c + Vector2(3, 7), c + Vector2(-3, 5), c + Vector2(-8, 7)])
+			draw_colored_polygon(pts, ink)
+			draw_line(c + Vector2(-3, -7), c + Vector2(-3, 5), Bronze.BR_DARK, 1.2)
+			draw_line(c + Vector2(3, -5), c + Vector2(3, 7), Bronze.BR_DARK, 1.2)
+		else:
+			# cuộn giấy: thân + 2 lõi cuộn + 2 dòng chữ
+			draw_rect(Rect2(c + Vector2(-6, -6), Vector2(12, 12)), ink)
+			draw_rect(Rect2(c + Vector2(-8, -8), Vector2(16, 3)), Bronze.BR_LIGHT if on else Color(Bronze.BR_LIGHT, 0.4))
+			draw_rect(Rect2(c + Vector2(-8, 5), Vector2(16, 3)), Bronze.BR_LIGHT if on else Color(Bronze.BR_LIGHT, 0.4))
+			draw_line(c + Vector2(-4, -2), c + Vector2(4, -2), Bronze.INK, 1.2)
+			draw_line(c + Vector2(-4, 1.5), c + Vector2(2, 1.5), Bronze.INK, 1.2)
+		if not on:
+			draw_line(c + Vector2(-8, 8), c + Vector2(8, -8), Bronze.GEM_RED, 2.2, true)
+
+
+## NL-1: số gợi ý tăng Lực chiến (tính lại 1 lần / giây — Gear.suggestions duyệt cả 8 ô).
+var _tips_n := 0
+var _tips_at := -99.0
+
+
+func _power_tips(w) -> int:
+	if float(w.time) - _tips_at >= 1.0 or float(w.time) < _tips_at:
+		_tips_at = float(w.time)
+		_tips_n = w.power_tips().size()
+	return _tips_n

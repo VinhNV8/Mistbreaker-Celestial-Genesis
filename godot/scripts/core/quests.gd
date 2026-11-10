@@ -10,6 +10,8 @@ const Monsters = preload("res://scripts/data/monsters.gd")
 const Formulas = preload("res://scripts/core/formulas.gd")
 const Explore = preload("res://scripts/core/explore.gd")
 const Items = preload("res://scripts/core/items.gd")
+const Gear = preload("res://scripts/core/gear.gd")
+const GearData = preload("res://scripts/data/gear_data.gd")
 
 const PER_DAY := 3
 const TASK_EXP := 0.06
@@ -231,6 +233,10 @@ static func _full_bonus(w) -> String:
 	d.streak = int(d.get("streak", 0)) + 1 if today - int(d.get("last_full", -99)) <= 2 else 1
 	d.last_full = today
 	var txt := "Rương ngày: +%d vàng, +3 Đá Cường Hoá, +1 Thiên Phú Tinh Hoa · chuỗi %d/%d ngày" % [gold, int(d.streak), STREAK_GOAL]
+	# NL-1 (docs/47 §3.A): rương ngày thêm 1 viên ngọc cấp 2 (khi đã mở Khảm ngọc).
+	var gk := Gear.grant_random(p, GearData.GEM_DAILY_LV, w._loot_rng.randf)
+	if gk != "":
+		txt += ", +1 " + Gear.gem_name(gk)
 	if int(d.streak) >= STREAK_GOAL:
 		d.streak = 0
 		txt += ". Chuỗi 7 ngày: " + _give_purple(w)

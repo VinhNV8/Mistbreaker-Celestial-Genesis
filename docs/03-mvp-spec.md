@@ -54,7 +54,7 @@ Mã yêu cầu bắt đầu bằng `EQ-`. Cột **Nguồn** ghi mục kịch b�
 | EQ-06 | Sói Chúa Hư Vô chắc chắn rơi 1 món Tím; 15% rơi món Cam "Nanh Sói Chúa" | đề xuất | — |
 | EQ-07 | Sói Chúa hồi sinh 10 phút sau khi bị hạ, để cày đồ | đề xuất | — |
 | EQ-08 | Rương Di tích tặng thêm 1 món Xanh dương | đề xuất | — |
-| EQ-09 | Túi đồ 30 ô. Túi đầy thì món mới tự phân rã thành Đá Cường Hoá, kèm thông báo | đề xuất | Không mất đồ trong im lặng |
+| EQ-09 | Túi đồ 30 ô. Túi đầy thì món mới tự phân rã thành Đá Cường Hoá, kèm thông báo. *CR-04: nếu bật Tự động "Khi túi đầy", món mới xử lý theo quy tắc của người chơi (Bán / Phân rã); món "Giữ" vẫn phân rã như cũ* | đề xuất | Không mất đồ trong im lặng |
 | EQ-10 | Mặc đồ thay đồ cũ (đồ cũ về túi); tháo đồ về túi (túi đầy thì không tháo được) | 8 | — |
 | EQ-11 | Chỉ số trang bị cộng vào chỉ số nhân vật ngay khi mặc/tháo; HP hiện tại giữ đúng tỉ lệ | 4 | — |
 | EQ-12 | Cường hoá +0 → +15: mỗi cấp +10% chỉ số gốc. +1 → +7 luôn thành công; từ +8 có thể thất bại; thất bại **không mất đồ, không tụt cấp**, chỉ mất nguyên liệu | 8 | Test 10.000 lần: +1…+7 luôn thành công, thất bại giữ nguyên món |

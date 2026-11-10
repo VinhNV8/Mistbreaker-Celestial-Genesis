@@ -26,7 +26,7 @@ Rút ra từ ảnh mẫu Pinterest (bảng ~100 nhân vật cartoon vẽ tay tr�
 | S9 | **Quay mặt phải, 3/4**, chân ở gốc (0, 0) của không gian 96 × 96 | Game tự lật khi đi trái |
 | S10 | **Hoạt ảnh đủ 5**: idle 4 · run 4 · attack 3 (lấy đà → ra đòn → thu) · hurt 2 · death 3 | `mon_kit.build` tự dựng hurt / death; frame attack 0 phải đọc được là "lấy đà" (cửa sổ né) |
 
-Không được: vẽ lại nhân vật người chơi (`pc-*`, `hero-*`) hay hình / hiệu ứng kỹ năng (bộ hình chủ dự án) — xem memory keep-owner-art. Linh thú Triệu Hồi Sư (`region: "pet"`) chỉ làm ảnh duyệt, **không** đưa vào game khi chưa được duyệt (Q190, `LIVE_EXCLUDE`).
+Không được: vẽ lại nhân vật người chơi (`pc-*`, `hero-*`) hay hình / hiệu ứng kỹ năng (bộ hình chủ dự án) — xem memory keep-owner-art. Linh thú Triệu Hồi Sư (`region: "pet"`) vào game như quái từ 09/11 (Q190); linh thú phải phân biệt được với quái cùng dáng (vòng chân màu linh thú do game vẽ; màu lông / hào quang khác quái vùng). Cần loại tạm 1 id khỏi game → thêm vào `LIVE_EXCLUDE` (ảnh vào `sprites-review/`).
 
 ## 2. Họ màu theo vùng
 

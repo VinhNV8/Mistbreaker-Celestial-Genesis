@@ -3,6 +3,8 @@ extends "res://scripts/ui/modal.gd"
 ## Lò Rèn riêng (phím R, nói chuyện Thợ rèn Thiết Ngưu, hoặc nút "Lò Rèn" ở Cửa hàng). 4 tab dọc:
 ## Cường hoá (chọn món · +N → +N+1 · tỉ lệ · ô chi phí cần/có · bảng chi phí mọi cấp),
 ## Chế tạo (Xưởng Rèn), Luyện nguyên liệu (Thiết Ngưu, Tinh Thạch → Tinh Kim), Phân rã.
+## NL-1 (docs/47 §5): thêm Khảm ngọc, Tẩy luyện, Thăng phẩm (+ Luyện cấp), Thức tỉnh, Bảo Giám, Gợi ý Lực chiến
+## (ui/forge_gear.gd). Tab chưa mở vẫn hiện, bấm vào thấy điều kiện mở.
 
 const Items = preload("res://scripts/core/items.gd")
 const ItemData = preload("res://scripts/data/items.gd")
@@ -13,9 +15,17 @@ const Maps = preload("res://scripts/data/maps.gd")
 const BulkBox = preload("res://scripts/ui/bulk_box.gd")
 const W = preload("res://scripts/ui/shop_widgets.gd")
 const Inv = preload("res://scripts/ui/inventory_panel.gd")
+const ForgeGear = preload("res://scripts/ui/forge_gear.gd")
+const Gear = preload("res://scripts/core/gear.gd")
 
 const TABS := [
+	["tips", "Gợi ý", "stat-atk"],
 	["enhance", "Cường hoá", "res-stone"],
+	["gems", "Khảm ngọc", "gem-kim-2"],
+	["reforge", "Tẩy luyện", "res-crystal"],
+	["ascend", "Thăng phẩm", "item-armor"],
+	["awaken", "Thức tỉnh", "res-essence"],
+	["codex", "Bảo Giám", "stat-set"],
 	["craft", "Chế tạo", "item-weapon"],
 	["refine", "Luyện nguyên liệu", "res-tinh_kim"],
 	["salvage", "Phân rã", "res-ore"],
@@ -25,9 +35,12 @@ const CENTER_W := 360.0
 const TABLE_W := 270.0
 const PICK_W := 266.0
 
-## "enhance" | "craft" | "refine" | "salvage"
+## "tips" | "enhance" | "gems" | "reforge" | "ascend" | "awaken" | "codex" | "craft" | "refine" | "salvage"
 var tab := "enhance"
 var _item_id := -1
+## NL-1: dòng phụ đang chọn (Tẩy luyện), món nguyên liệu (Thăng phẩm).
+var _affix_idx := 0
+var _mat_id := -1
 var _craft_slot := "weapon"
 var _last_craft := {}
 
@@ -46,24 +59,46 @@ func select_item(id: int) -> void:
 func _render(content: VBoxContainer) -> void:
 	var p = world.profile
 	content.add_theme_constant_override("separation", 12)
-	content.add_child(W.title_bar(SpriteLib.icon("item-weapon"), "Lò Rèn", "Cường hoá · chế tạo · luyện nguyên liệu · phân rã", [
+	content.add_child(W.title_bar(SpriteLib.icon("item-weapon"), "Lò Rèn", "Cường hoá · khảm ngọc · tẩy luyện · thăng phẩm · thức tỉnh · chế tạo", [
 		W.currency("res-gold", int(p.gold), "Vàng"),
 		W.currency("res-stone", int(p.stones), "Đá Cường Hoá"),
 		W.currency("res-tinh_kim", int(p.tinh_kim), "Tinh Kim"),
 	], close, "Đóng (R / Esc)"))
 	var body := UiTheme.hbox(12)
 	var side := UiTheme.vbox(6)
+	side.add_theme_constant_override("separation", 4)
 	for t in TABS:
 		var key: String = t[0]
-		side.add_child(W.side_tab(key, t[1], SpriteLib.icon(t[2]), tab == key, func():
+		var badge := ""
+		if key == "tips":
+			var n: int = world.power_tips().size()
+			badge = str(n) if n > 0 else ""
+		var st := W.side_tab(key, t[1], SpriteLib.icon(t[2]), tab == key, func():
 			tab = key
-			refresh()))
+			refresh(), badge)
+		st.custom_minimum_size.y = 38
+		if not ForgeGear.tab_unlocked(p, key):
+			st.modulate = Color(1, 1, 1, 0.55)
+			st.tooltip_text = ForgeGear.tab_lock_text(key)
+		side.add_child(st)
 	side.add_child(UiTheme.spacer())
 	var hint := UiTheme.label("Cường hoá thất bại chỉ mất nguyên liệu — món đồ giữ nguyên cấp.", "Small", 160)
 	hint.add_theme_color_override("font_color", Color("#b08a5a"))
 	side.add_child(hint)
 	body.add_child(side)
 	match tab:
+		"tips":
+			ForgeGear.tips(self, body, p)
+		"gems":
+			ForgeGear.gems(self, body, p)
+		"reforge":
+			ForgeGear.reforge(self, body, p)
+		"ascend":
+			ForgeGear.ascend(self, body, p)
+		"awaken":
+			ForgeGear.awaken(self, body, p)
+		"codex":
+			ForgeGear.codex(self, body, p)
 		"craft":
 			_craft(body, p)
 		"refine":
@@ -78,7 +113,8 @@ func _render(content: VBoxContainer) -> void:
 # ------------------------------------------------------------------ Cường hoá
 
 
-func _enhance(body: HBoxContainer, p) -> void:
+## Cột trái chọn món (đang mặc + túi) — dùng chung cho Cường hoá và các tab NL-1.
+func _picker(body: HBoxContainer, p) -> void:
 	if Items.find_item(p, _item_id).is_empty():
 		_item_id = -1
 		for slot in SLOT_ROW:
@@ -86,7 +122,6 @@ func _enhance(body: HBoxContainer, p) -> void:
 			if not it.is_empty():
 				_item_id = int(it.id)
 				break
-	# trái: chọn món (đang mặc + túi)
 	var pick: Array = W.section("ĐANG MẶC", PICK_W)
 	var eq := GridContainer.new()
 	eq.columns = 4
@@ -111,6 +146,9 @@ func _enhance(body: HBoxContainer, p) -> void:
 	pick[1].add_child(scroll)
 	body.add_child(pick[0])
 
+
+func _enhance(body: HBoxContainer, p) -> void:
+	_picker(body, p)
 	# giữa: món đang chọn
 	var mid: Array = W.section("", CENTER_W)
 	body.add_child(mid[0])
@@ -229,7 +267,10 @@ func _pick_button(item: Dictionary, slot: String) -> Button:
 	var c := Items.rarity_color(item)
 	var sel := int(item.id) == _item_id
 	b.icon = SpriteLib.item_icon(item)
-	b.tooltip_text = "%s\nLần tới: %s" % [Items.display_name(item), _cost_text(Items.enhance_cost(item, world.profile)) if int(item.plus) < ItemData.MAX_PLUS else "đã tối đa"]
+	if tab == "enhance":
+		b.tooltip_text = "%s\nLần tới: %s" % [Items.display_name(item), _cost_text(Items.enhance_cost(item, world.profile)) if int(item.plus) < ItemData.MAX_PLUS else "đã tối đa"]
+	else:
+		b.tooltip_text = "%s\nLỗ ngọc %d/%d" % [Items.display_name(item), Array(item.get("gems", [])).size(), int(item.get("sockets", 0))]
 	var normal := UiTheme.box(Color(c, 0.3 if sel else 0.1), 6, 2 if sel else 1, c.lightened(0.3) if sel else c, 6)
 	b.add_theme_stylebox_override("normal", normal)
 	b.add_theme_stylebox_override("pressed", normal)

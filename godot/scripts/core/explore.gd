@@ -662,7 +662,9 @@ static func production_per_minute(p) -> Dictionary:
 		mult += 0.1
 	# C9-50 / C9-46 (M12): Điểm Thiên Đạo nhánh lãnh địa +1%/điểm; kết thúc Hiến tế +30% (Endgame.territory_bonus).
 	mult += int(p.divine_points.get("terr", 0)) * 0.01 + (0.3 if str(p.ending) == "hien-te" else 0.0)
-	return {"gold": lumber * 3.0 * mult, "wood": lumber * 6.0 * mult, "ore": mines * 4.0 * mult, "iron": mines * 2.0 * mult,
+	# CR-04 R5: Thần Tài (Bàn Tay Vàng tiến hoá 2) — lãnh địa +20% vàng.
+	var gold_k := 1.2 if str(p.talent) == "ban-tay-vang" and int(p.evo) >= 2 else 1.0
+	return {"gold": lumber * 3.0 * mult * gold_k, "wood": lumber * 6.0 * mult, "ore": mines * 4.0 * mult, "iron": mines * 2.0 * mult,
 		"crystal": crystal_mines * 1.0 * mult}
 
 

@@ -30,14 +30,14 @@ File này liệt kê **mọi hạng mục trong kịch bản**: trạng thái hi
 | Thế giới quan, cốt truyện (mục 2) | 13 | 11 | 2 | 0 | 0 |
 | Thiên phú (mục 3) | 42 | 29 | 7 | 6 | 0 |
 | Nhân vật, chỉ số (mục 4) | 28 | 25 | 2 | 1 | 0 |
-| Chiến đấu, quái (mục 5) | 23 | 20 | 1 | 1 | 1 |
+| Chiến đấu, quái (mục 5) | 23 | 21 | 0 | 1 | 1 |
 | Bản đồ, vượt map (mục 6) | 13 | 11 | 0 | 2 | 0 |
 | Khai phá, lãnh địa (mục 7) | 22 | 17 | 2 | 3 | 0 |
-| Trang bị, kinh tế (mục 8) | 17 | 14 | 1 | 1 | 1 |
+| Trang bị, kinh tế (mục 8) | 19 | 17 | 1 | 0 | 1 |
 | 30 phút đầu (mục 9) | 9 | 9 | 0 | 0 | 0 |
-| Đồ hoạ, âm thanh | 24 | 21 | 0 | 3 | 0 |
+| Đồ hoạ, âm thanh | 26 | 23 | 0 | 3 | 0 |
 | Kỹ thuật, phát hành | 10 | 5 | 2 | 3 | 0 |
-| **Tổng** | **201** | **162** (81%) | **17** (8%) | **20** (10%) | **2** |
+| **Tổng** | **205** | **168** (82%) | **16** (8%) | **19** (9%) | **2** |
 
 ### Các giai đoạn
 
@@ -183,7 +183,7 @@ Chỉ số, kỹ năng từng quái/boss và công thức sức mạnh theo cấ
 | CB-02 | Nút Tự đánh khi cày map cũ (boss vẫn phải đánh tay) | ✅ | C1 | C1-T11 | Phím Z; tự tắt khi có boss (C1-33) |
 | CB-03 | Né lăn 0,3 giây bất tử, hồi 3 giây | ✅ | Proto | CMB-03 | |
 | CB-04 | Né "Hoàn hảo" làm chậm thời gian 1 giây | ✅ | M3 | CB-T3 | Chặn đòn trong 0,15 giây đầu của né lăn → quái và đạn chậm còn 30% trong 1 giây |
-| CB-05 | Ngũ hành tương khắc +30% | 🟡 | M2 | TL-C | Quái đã có hệ; người chơi chỉ đổi hệ được nhờ Ngũ Hành Linh Căn. Người khác cần Khảm ngọc (TB-08) |
+| CB-05 | Ngũ hành tương khắc +30% | ✅ | M2 | TL-C, NL1-T1 | Quái đã có hệ. Ngũ Hành Linh Căn đổi hệ đòn (+30%); NL-1 (09/11): mọi lớp ấn hệ vũ khí bằng 2 ngọc cùng hệ (+15%) — [47](47-de-xuat-nang-luc-chien-trang-bi.md) |
 | CB-06 | Thanh Phá Thế ở boss | ✅ | Proto | MOB-07 | |
 | CB-07 | Thanh Phá Thế ở quái tinh anh | ✅ | M3 | CB-T4 | 30% HP, choáng 3 giây, +50% sát thương; hiện dưới thanh máu |
 | CB-08 | Combo tăng EXP (+20% ở 100 combo) | ✅ | Proto | CMB-05 | |
@@ -261,7 +261,7 @@ Chi tiết 9 vùng × 3 map con, cơ chế môi trường có số liệu, bộ 
 | TB-05 | Bộ cộng hưởng với nhóm Thiên phú (ví dụ "Người Khai Hoang") | ✅ | M4.3 | — | Thợ Săn Sương ≥ 4 + Chiến đấu: +5% chí mạng; Phong Hành ≥ 4 + Khai phá: +10% tốc chạy, +1 Đuốc |
 | TB-06 | Cường hoá +1 → +15, thất bại không mất đồ | ✅ | M1 | EQ-12, 13 | Từ +10 cần Tinh Kim (M2, **Q10**) |
 | TB-07 | Phân rã | ✅ | M1 | EQ-14 | |
-| TB-08 | Khảm ngọc ngũ hành, đổi hệ vũ khí | ⬜ | Alpha | — | |
+| TB-08 | Khảm ngọc ngũ hành, đổi hệ vũ khí | ✅ | NL-1 | NL1-T1 | [47](47-de-xuat-nang-luc-chien-trang-bi.md) làm 09/11: lỗ ngọc theo phẩm chất, 5 loại ngọc cấp 1–10, ghép 3 → 1, rơi theo hệ quái, ấn hệ vũ khí +15%; save v32 |
 | TB-09 | Đồ Cam có hiệu ứng riêng | 🟡 | M1 / C1 / M4.2 / M8 | EQ-16, C1-T7, TB-T1, C5-T4 | Nanh Sói Chúa, Vỏ Lão Thụ, Mặt Nạ Huyền Ảnh, Vuốt Bạch Hổ, đồ Cam chương 3–4, Long Tâm, Lông Phượng, Gương Bản Ngã, Vảy Long Băng |
 | TB-10 | Vàng, Gỗ, Thiên Phú Tinh Hoa, Đuốc | ✅ | Proto / M2 | — | |
 | TB-11 | Đá, Sắt, Tinh Thạch | ✅ | M4.3 / M8 | KP-T1b, C5-T5 | Đá, Sắt từ Mỏ vùng 2–4; **Tinh Thạch từ Mỏ vùng 5–6** (+1/phút): 30 để chuyển chức 2, 5 → 1 Tinh Kim ở Trại Tro Hồng |
@@ -270,6 +270,9 @@ Chi tiết 9 vùng × 3 map con, cơ chế môi trường có số liệu, bộ 
 | TB-15 | Mặc đồ mới nhận cấp cường hoá của đồ cũ (Spec_Notes S4) | ✅ | SN2 | SN-T4 | Đồ cũ cao hơn thì 2 món **đổi cấp** (Q47); chi tiết đồ báo trước, Lực chiến so sánh tính cả cấp chuyển |
 | TB-16 | Phân rã nhanh có bộ lọc (Spec_Notes S2, S3) | ✅ | SN2 | SN-T3 | Lọc theo phẩm chất, giữ đồ cường hoá, giữ đồ bộ, chỉ đồ yếu hơn; lưu trong save |
 | TB-17 | Bán nhanh ở cửa hàng có bộ lọc (Spec_Notes S5) | ✅ | SN2 | SN-T3 | Cùng bộ lọc với phân rã nhanh |
+| TB-18 | Bán đồ ngay trong Túi + tự động bán / phân rã theo cấu hình (CR-04, đánh giá người chơi 06/11) | ✅ | CR-04 | CR4-T1…T7 | [CR-04](CR-04-ban-do-tu-tui-va-tu-dong-ban.md) làm 08/11: bán ở mọi nơi, khoá đồ, tab Tự động (Khi nhặt / Khi túi đầy, Giữ / Bán / Phân rã theo phẩm chất, 3 mẫu), mua lại 10 món, Điểm Kim +50% vàng; save v31 |
+| TB-19 | Bản đồ nhỏ / khung nhiệm vụ mờ khi che nhân vật + nút ẩn / hiện (CR-05, Spec_Notes 09/11) | ✅ | CR-05 | CR05-T1 | [CR-05](CR-05-hud-mo-khi-che-nhan-vat.md) làm 09/11: mờ còn 22% khi nhân vật đi vào dưới khung, rê chuột hiện rõ, 2 nút ẩn / hiện gắn ở góc mỗi khung, nhớ trong Cài đặt; sửa kèm vành la bàn (lớp nướng) không mờ theo |
+| TB-20 | Thêm cách tăng Lực chiến cho trang bị ngoài cường hoá (NL-1, Spec_Notes 09/11) | ✅ | NL-1 | NL1-T2, NL2-T1, NL2-T2, NL3-T1, NL3-T2 | [47](47-de-xuat-nang-luc-chien-trang-bi.md) làm 09/11: Tẩy luyện 1 dòng, Thăng phẩm bằng đồ trùng ô, Luyện cấp đồ Cam / bộ, Thức Tỉnh (sau chuyển chức 3), Bảo Giám, tab Gợi ý + huy hiệu Lực chiến bấm được, thẻ đồ tách Lực chiến món |
 | TB-14 | Ngọc Thiên Đạo (tiền nạp), Battle Pass, thẻ tháng, ngoại hình | ⛔ | Beta | — | Cần backend; nếu bán mua đứt trên Steam thì bỏ |
 
 ## 9. Kịch bản 30 phút đầu (kịch bản mục 9)
@@ -311,13 +314,15 @@ Phong cách đã chốt: **pixel art góc trên xuống 3/4, sinh bằng code** 
 | DH-17 | **Icon trang bị HD (EQ-HD)**: nghiên cứu ảnh mẫu Pinterest (icon MMORPG) → skill `equipment-design`; 336 icon (12 dáng × 2 biến thể × 5 phẩm chất + 9 bộ), vũ khí đúng kiểu từng lớp; đã thử trong game (bật khi Đồ hoạ HD) | 🧪 chờ duyệt | 05/11 | EQ1-T1, `tests/eq_bag.gd` — [40](40-icon-trang-bi.md) (Q193, Q194) |
 | DH-18 | **Giao diện xem đồ (UI-64…66) + icon có khối (EQ-HD v2)**: nghiên cứu inventory các game; ô đồ theo bậc (nền nhuộm + khung riêng từng bậc), thẻ thông tin mới dùng chung (dải đầu màu phẩm chất, icon lớn, chỉ số to + biểu tượng, chip so sánh), icon thêm lớp "tranh vẽ" + quầng tách lớp | ✅ | 05/11 | EQ1-T1, SN11-T1/T2, smoke — [42](42-giao-dien-xem-do.md) (Q202, Q203) |
 | EN-1 | **Hiệu ứng đồ cường hoá** (Spec_Notes 06/11): hướng D (ánh kim +4…+12, linh hoả +13…+15) + vệt sáng chạy quanh viền ô; bảng màu bậc mới; hào quang nhân vật; toast có icon + ĐỘT PHÁ | ✅ | 06/11 | EN1-T1, SN10-T1, smoke — [43](43-hieu-ung-cuong-hoa.md) |
+| VS-1 | **Tỷ lệ khung nhìn + chiều sâu bản đồ** (phản ánh người chơi 06/11: toàn màn hình "to quá", map thiếu chiều sâu): camera zoom ra + cỡ giao diện theo độ phân giải, Tầm nhìn / Cỡ giao diện trong Cài đặt, khung nhiệm vụ thu gọn; bóng đổ một hướng sáng, mảng nắng / bóng râm, hạ tông nền; sương xa, hạt bay, tia nắng, tiền cảnh mép theo vùng | ✅ | 06/11 | VS1-T1, smoke 1366 / 1920 — [44](44-ty-le-khung-nhin-va-chieu-sau.md) (B6 sau) |
+| GN-1 | **Góc nhìn có chiều sâu + cảnh trại** (ảnh tham khảo ARPG 3D, [45](45-nghien-cuu-goc-nhin-va-nhan-vat.md)): nghiêng phối cảnh (Cài đặt → Phối cảnh), zoom gần khi đánh boss, camera dẫn hướng; quầng sáng đuốc / đèn, bóng sát chân, tông nền vùng 1, lối mòn mép mềm; rào cọc / chòi canh / cờ quanh đấu trường + bãi trại bỏ hoang + đồ vương vãi vùng 1 | ✅ | 09/11 | GN1-T1, ảnh `docs/design/goc-nhin/` + GN-2 09/11: cảnh trại vùng 2–9 + GN-3: bộ đếm combo, tông nền 9 vùng, nền đất mòn + GN-4: hình đứng thẳng, vách đá viền map, thành hồ / hố (còn: bậc / cầu có va chạm) |
 | UI-40 | **G0 bản thử HD cel-shade**: bộ vẽ vector `tools/art/hd/`, Sói Sương, Sói Chúa, cảnh Rừng Sương, 10 icon (03/11: **gỡ Kiếm Khách HD** — nhân vật + kỹ năng giữ hình gốc); lớp phủ `hd` trong manifest, bật / tắt ở Cài đặt | ✅ | 03/11 | UI40-T1; ảnh so sánh `03g-hd-scene` / `03g2-pixel-scene` — **chờ chủ dự án duyệt** [35](35-de-xuat-giao-dien-moi.md) |
 | UI-40b | **Làng Thanh Thạch HD** (chủ dự án 03/11: "khu vực thôn xấu quá, cần giống thực tế"): 3 kiểu nhà gỗ mái ngói / mái tranh, sân đất nện mép lượn + sân lát đá, hàng rào cọc gỗ thay vòng viền, giếng, thùng hàng, đèn lồng, ruộng rau + đống rơm ngoài rào, bia đá HD; Cổng Dịch Chuyển đặt ở khoảng trống | ✅ | 03/11 | UI40b-T1; `03h-village` — [35 §9](35-de-xuat-giao-dien-moi.md) |
 | UI-40c | **Toàn bộ map 9 vùng HD** (chủ dự án 03/11: "các map khác cũng xấu, giả tạo"): khu an toàn theo chủ đề vùng (nhà / lều / nhà sàn / lò rèn / nhà gỗ tuyết / đình / miếu, rào riêng, đồ vật, cảnh quanh), Thành Biên Đài, 18 nền + ~40 cảnh vật HD, mảng loang mềm | ✅ | 03/11 | UI40b-T1 — [35 §10](35-de-xuat-giao-dien-moi.md) |
 | UI-41 | **Giao diện đồng chạm khắc theo ảnh mẫu** (chủ dự án 03/11 chọn 6 phần): khung đồng + ngọc + nền rêu + chữ cổ cho mọi khung, thanh kỹ năng ô vuông viền theo hệ + phím treo + rồng / sư tử, thanh EXP tím dưới đáy, cụm nút tròn góc phải bấm / chạm được, bản đồ nhỏ la bàn tròn N/E/S/W + nút +/−, cuộn nhiệm vụ giấy da + dấu sáp + thanh tiến độ | ✅ | 03/11 | UI41-T1, M5-T6 — [35 §11](35-de-xuat-giao-dien-moi.md) |
 | UI-42…45 | G1 còn lại: khung nhân vật góc trái, màn tiêu đề / tạo nhân vật có minh hoạ, bảng phủ bên trong, icon 128 px toàn bộ, chuyển cảnh | ⬜ | — | Chờ chủ dự án duyệt UI-41 |
 | UI-46 | G2: thú cưng, đồng minh, NPC (**không** vẽ lại 5 lớp nhân vật / kỹ năng — hình gốc của chủ dự án) | ⬜ | — | Cần chủ dự án đồng ý |
-| UI-47 | G3 quái 9 vùng, boss vùng, boss hiếm, boss cuối — **MD-1**: 85 quái / tinh anh / boss vẽ lại HD theo ảnh mẫu Pinterest (cartoon vẽ tay), skill `monster-design` | ✅ | 04/11 | MD1-T1 — [39](39-thiet-ke-lai-quai-vat.md) (chờ duyệt Q190–Q192) |
+| UI-47 | G3 quái 9 vùng, boss vùng, boss hiếm, boss cuối — **MD-1**: 85 quái / tinh anh / boss vẽ lại HD theo ảnh mẫu Pinterest (cartoon vẽ tay), skill `monster-design` | ✅ | 04/11 | MD1-T1 — [39](39-thiet-ke-lai-quai-vat.md) (Q190 / Q192 duyệt 09/11: 9 linh thú vào game, giữ sói mới; Q191 chờ chơi thử) |
 | UI-48, 49 | G4 cảnh 9 vùng + hiệu ứng kỹ năng cùng phong cách | ⬜ | — | |
 
 Khi có art, chỉ cần thay `scripts/view/world_view.gd` (vẽ) và theme UI; logic game không đổi (technical spec, quyết định D2, D6).
@@ -467,10 +472,22 @@ Mỗi đợt theo quy trình: **viết spec → duyệt → code → test → c�
 - [x] DH-16 (04/11, [38](38-ra-soat-giao-dien-theo-tieu-chi.md)): rà soát giao diện theo tiêu chí chuẩn, chủ dự án duyệt theo đề xuất → làm cả 3 đợt UI-50…63 (UI38-T1)
 - [x] Theo đề xuất cải thiện (03/11): sửa lỗi save cũ — ô lắp kỹ năng đã thay (Thiết Bích → Kiếm Ý, Dịch Chuyển → Băng Lao) thành trống (`Skills2.migrate_replaced` đổi cả `loadout` / `loadout_alt`; test CL1 hết `SCRIPT ERROR`); FX-1 hiệu năng 1,65 ms/khung; rung + khựng đòn + âm nổ đúng khung va chạm; cài đặt rung / giảm chớp; vòng cảnh báo đòn quái FX-1; chỉnh Hoả Tường, cột sáng triệu hồi, icon Ấu Long / Linh Ưng ([36 §9.7–9.10](36-thiet-ke-lai-vfx-ky-nang.md))
 - [x] Bước 8 lát 2 (04/11): cảnh báo đòn quái của từng chương (region5–9) + dạng nón / đường theo FX-1, đúng kích thước gameplay ([36 §9.11](36-thiet-ke-lai-vfx-ky-nang.md))
-- [x] MD-1 / UI-47 (04/11, [39](39-thiet-ke-lai-quai-vat.md)): nghiên cứu ảnh mẫu Pinterest → quy chuẩn phong cách S1–S10 + họ màu 9 vùng (skill `.claude/skills/monster-design`); bộ dựng `tools/art/hd/mon_*.py`; 85 quái / tinh anh / boss vào game qua lớp phủ HD (MD1-T1), 9 linh thú chỉ có bản duyệt (Q190); ảnh duyệt `docs/design/monsters/`
+- [x] MD-1 / UI-47 (04/11, [39](39-thiet-ke-lai-quai-vat.md)): nghiên cứu ảnh mẫu Pinterest → quy chuẩn phong cách S1–S10 + họ màu 9 vùng (skill `.claude/skills/monster-design`); bộ dựng `tools/art/hd/mon_*.py`; 85 quái / tinh anh / boss vào game qua lớp phủ HD (MD1-T1), 9 linh thú chỉ có bản duyệt (Q190); ảnh duyệt `docs/design/monsters/`. 09/11: Q190 duyệt → 9 linh thú vào game; Q192 giữ sói mới
 - [x] DH-17 / EQ-HD (05/11, [40](40-icon-trang-bi.md)): icon trang bị đơn điệu (1 hình / ô, vũ khí 4 lớp vẫn là kiếm) → skill `equipment-design` + 336 icon HD theo dáng / phẩm chất / bộ / biến thể, thử trong game (EQ1-T1, ảnh túi đồ thật); chờ duyệt Q193
 - [x] DH-18 (05/11, [42](42-giao-dien-xem-do.md)): người chơi chê "xem đồ xấu" → nghiên cứu inventory game khác, làm lại ô đồ theo bậc, thẻ thông tin trang bị, icon có khối (paint pass) + sửa quầng sáng thành đĩa tối
 - [x] EN-1 (06/11, [43](43-hieu-ung-cuong-hoa.md)): Spec_Notes "hiệu ứng đồ sau khi nâng cấp xấu" → đề xuất 4 hướng, chủ dự án chọn D + vệt sáng chạy quanh viền (GIF duyệt) → `enhance_fx.gd` trên ô đồ / Lò Rèn / thẻ, bảng màu bậc mới, hào quang nhân vật (vòng ấn + hạt sáng, vệt chém +13), toast cường hoá có icon + ĐỘT PHÁ ở mốc
+- [x] VS-1 (06/11, [44](44-ty-le-khung-nhin-va-chieu-sau.md)): khung gốc 1366×768 + `canvas_items` làm màn hình to chỉ phóng hình → `view_scale.gd`: camera zoom ra (1080p ≈ 0,81), giao diện 90% / 85%, chữ thế giới giữ cỡ; Cài đặt Tầm nhìn / Cỡ giao diện / Bóng đổ; chuột phải thu gọn khung nhiệm vụ; B1–B5 chiều sâu (`atmos_layer.gd`: sương, hạt, tia nắng, tiền cảnh mép theo 11 chủ đề vùng). Còn B6 (cao độ địa hình)
+- [x] PF-02 (08/11, [44 §7](44-ty-le-khung-nhin-va-chieu-sau.md)): Spec_Notes "di chuyển hơi giật + vệt mờ phía trên" — vệt mờ = dải sương / tia nắng / chùm lá tiền cảnh cố định ở mép trên (bỏ; tiền cảnh chỉ mép dưới). Giật: sau VS-1 tụt ~20% khung/giây → lọc khung nhìn cho cổng / cổng chặn / đấu trường / rào, tách quái theo lưới, sắp xếp gốc, nướng mảng sáng thành 1 ảnh, bớt việc khi vẽ cây → script −23%, render −28%, GPU −25% (đo xen kẽ). Test PF02-T1. Chưa đạt 60 khung/giây trên iGPU khi đông quái (NFR-10 🟡)
+- [x] GN-1 (09/11, [45](45-nghien-cuu-goc-nhin-va-nhan-vat.md)): nghiên cứu góc nhìn + nhân vật theo ảnh tham khảo → duyệt "làm theo đề xuất" (Q218–Q223 mặc định) → GN-1a (phối cảnh Nhẹ, zoom trận boss ×1,1, camera dẫn hướng 5%), GN-1b (quầng sáng, bóng sát chân, tông nền vùng 1), GN-1c (lối mòn mép mềm, bộ cảnh trại vùng 1). 
+- [x] GN-2 (09/11, [45 §7](45-nghien-cuu-goc-nhin-va-nhan-vat.md)): "triển khai theo đề xuất" → cảnh trại vùng 2–9 (8 bộ rào / tường + cờ + đá vụn theo vùng, phông đấu trường vùng 2/3/4/6, tránh nước / dung nham / đảo / cầu / điểm nhiệm vụ). Còn lại: E6 cao độ địa hình, Q223 bộ đếm combo
+- [x] GN-3 (09/11, [45 §8](45-nghien-cuu-goc-nhin-va-nhan-vat.md)): "triển khai tiếp" → bộ đếm combo lớn (Cài đặt Lớn / Nhỏ / Tắt), tông nền vùng 2–9, nền đất mòn dưới bãi trại + viền mềm sân đấu trường + sân lát trại vùng 1–2, sửa xương rồng trong đấu trường 3-3. Còn lại: E6 cao độ địa hình
+- [x] GN-4 (09/11, [45 §9](45-nghien-cuu-goc-nhin-va-nhan-vat.md)): "triển khai tiếp phần còn lại" → hình đứng thẳng dưới phối cảnh (P1-B), vách đá viền map 8 vùng + thành hồ nước / hố dung nham / mặt đổ cồn đất (E6, chỉ hình). Còn lại: bậc / cầu có va chạm (khi làm lại map)
+- [x] CR-05 (09/11, [CR-05](CR-05-hud-mo-khi-che-nhan-vat.md)): Spec_Notes "bản đồ nhỏ / bảng nhiệm vụ che nhân vật ở mép bản đồ, muốn icon ẩn / hiện" → `hud.focus_rect` + `occlusion_alpha` (mờ 22%, rê chuột rõ), nút `HudToggle` ×2 (Cài đặt `hud_minimap` / `hud_quest`), V hiện lại la bàn; sửa `DrawLayer` nướng mờ theo cha; test CR05-T1, ảnh `design/cr05/`
+- [x] MU-1 (09/11, [46](46-nghien-cuu-nhac-nen.md)): Spec_Notes "tiếng nhạc giả quá" → nghiên cứu + bản nghe thử, chủ dự án "làm theo đề xuất" → **đợt 1 đã làm**: 13 bài mới (nhạc cụ mô phỏng: sáo, nhị, đàn tranh, tỳ bà, dàn dây, hợp xướng, taiko…; stereo OGG; giai điệu soạn tay; I-A-B-C-A'-O), nghỉ 30–90 giây giữa lượt bài khám phá, âm môi trường 9 vùng + làng + hang (bus + thanh âm lượng riêng), 5 nhạc báo (lên cấp, nhiệm vụ, sang vùng, gặp boss, chiến thắng); `tools/audio/songs2.py`, `inst2.py`, `audio_manager.gd`; test MU1-T1. Còn đợt 2: S4 tầng chiến đấu (Q227)
+- [x] NL-1 (09/11, [47](47-de-xuat-nang-luc-chien-trang-bi.md)): Spec_Notes "ngoài nâng cấp đồ cần thêm cách tăng lực chiến cho đồ" → đề xuất 6 đường → chủ dự án "triển khai theo đề xuất" → **đã làm cả P1–P3**: Khảm Ngọc Ngũ Hành (ấn hệ +15%), Tẩy Luyện, Thăng Phẩm, Luyện Cấp đồ Cam / bộ, Thức Tỉnh, Bảo Giám; Lò Rèn thêm 6 tab, thẻ đồ có lỗ ngọc / ✦ / Thức Tỉnh / Lực chiến món, huy hiệu Lực chiến → Gợi ý; save v32; test NL1-T1…NL3-T2, ảnh `design/nl1/`. Còn: Q235 theo dõi độ khó chương 7–9 khi chơi thử
+- [x] CR-04 (08/11, [CR-04](CR-04-ban-do-tu-tui-va-tu-dong-ban.md)): đánh giá người chơi "Inventory không bán được đồ, không có cấu hình tự bán" → bán / phân rã / khoá ngay trong Túi đồ (S / D / L), khung dưới 4 tab, tab Tự động (`loot_box.gd`, `Items.decide`, chèn ở `_update_pickups`), mua lại trong phiên, thẻ đồ có giá, sửa Điểm Kim chưa cộng +50% vàng; save v31; test CR4-T1…T7
+- [x] CR-04 rà soát (09/11, [CR-04 §11](CR-04-ban-do-tu-tui-va-tu-dong-ban.md)): đồ Cam / khoá không bị phân rã khi túi đầy (nằm lại trên đất), phím S / D / L và "Chắc chắn?" không dùng trạng thái cũ, thẻ ĐANG MẶC bỏ giá, Thần Tài (Tinh Hoa khi phân rã, lãnh địa +20% vàng; Q217 chốt 09/11: giữ +50% bán đồ), Mua lại ở cửa hàng, Trợ giúp, dấu chấm ngăn nghìn; test CR4-T8.
+- [x] CR-04 pha sau (09/11, [CR-04 §12](CR-04-ban-do-tu-tui-va-tu-dong-ban.md)): nút Sắp xếp túi (phẩm chất / ô / Lực chiến), giữ đồ bộ thông minh trong tự động, trang Quy tắc nâng cao (theo ô, luôn giữ theo dòng chỉ số), khoá nhanh đồ đang mặc, thẻ tóm tắt tự xử lý khi mở túi; test CR4-T9
 - [x] DH-18b (05/11, [42 §6](42-giao-dien-xem-do.md)): chủ dự án "vẽ lại đi em" (Q203) → 17 icon đồ độc nhất vẽ lại theo EQ-HD v2 (`equip_unique.py`), mỗi món kể chuyện boss rơi ra
 - [x] IC-2 (04/11, [37 §7](37-icon-ky-nang.md)): 20 icon Thiên phú + 18 icon trang bị HD (phiên giao diện đồng ý; 7 icon trang bị UI-40 giữ nguyên) — phần "icon 128 px" của UI-42…45
 - [x] Soát cảnh báo tự nhiên (04/11, [36 §9.14](36-thiet-ke-lai-vfx-ky-nang.md)): đọc được trên mọi nền (nét sẫm dưới nét sáng), cây mờ khi che quái lấy đà gần, chuỗi khung chuyển động, chế độ mù màu
@@ -525,6 +542,7 @@ Mỗi đợt theo quy trình: **viết spec → duyệt → code → test → c�
 | 12 | Q59–Q64: mức "chiến tranh lãnh địa" ở MVP, thiên thạch −25% HP, Bình Nước Thánh cho Phượng Hoàng, chuyển chức 2 tốn 30 Tinh Thạch, ô Thiên phú phụ 2, phe Kim Luân — [12 mục 8](12-chuong-5.md) | Chương 5 | Như 12 mục 8 |
 | 15 | Q140–Q146: chuyển chức 3 khi chưa có chương 8 (Liệt Diễm, cấp 90 + 50 Tinh Thạch), Thủ Hộ Thần / Vạn Linh Chi Chủ tự thiết kế, boss không đánh linh thú, thú cưng / Xương Nô không có máu, Bản Ngã sao chép Thần Kỹ, cây 3 chức ở màn chọn lớp — [23 mục 7](23-chuyen-chuc-3-linh-thu-co-mau.md) | Chuyển chức 3, linh thú | Như cột Mặc định của 23 (đã code, trừ Q146) |
 | 16 | Q195–Q201: làm lại hệ thống nhiệm vụ — đợt làm trước (P1 rõ ràng / P2 uỷ thác / P3 nhiệm vụ phụ / P4 đa dạng chính tuyến), phím sổ nhiệm vụ, số uỷ thác / ngày, thưởng chọn 1 trong 3, danh hiệu, đổi 8 bước "hạ 30 quái", sự kiện trên đường — [41](41-de-xuat-nhiem-vu.md) mục 7 | Nhiệm vụ, HUD, save | **Đã chốt 05/11**: làm hết P1–P4 (lần lượt), giữ mặc định gợi ý (phím O, 3 uỷ thác / ngày đổi lúc 0 giờ giờ máy, thưởng chọn 1 trong 3, danh hiệu chỉ trang trí, đổi 8 bước "hạ 30 quái", sự kiện trên đường làm ở P4) |
+| 17 | Q229–Q236: thêm cách tăng Lực chiến cho trang bị — [47](47-de-xuat-nang-luc-chien-trang-bi.md) §8 | Trang bị, Lò Rèn, cân bằng, save | **Đã chốt 09/11** ("triển khai theo đề xuất"): cả 6 đường P1 → P3, mở khảm ngọc vùng 2, ấn hệ +15%, tẩy 1 dòng, không lên Cam, Thức Tỉnh 4 món, Túi Ngọc riêng; Q235 chỉnh độ khó để sau chơi thử |
 
 ### 13.1. Đã chốt
 

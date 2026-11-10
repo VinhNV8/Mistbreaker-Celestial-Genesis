@@ -118,6 +118,54 @@ Cột **Trạng thái**: ✅ đã làm và có test tự động · 🟡 đã l�
 | SAV-02 | Save có trường `version`; save sai phiên bản bị bỏ qua, không làm crash game | — | ✅ |
 | SAV-03 | Lưu rồi nạp lại giữ đúng mọi giá trị và kiểu dữ liệu | Test lưu/nạp qua JSON | ✅ |
 
+### 3.9. Túi đồ — bán đồ và tự xử lý đồ (TD, [CR-04](CR-04-ban-do-tu-tui-va-tu-dong-ban.md))
+
+*(Đánh giá người chơi 06/11: "Tại sao Inventory không cho bán đồ luôn? Không có chỗ cấu hình tự động bán đồ?")*
+
+| Mã | Yêu cầu | Tiêu chí nghiệm thu | Trạng thái |
+| --- | --- | --- | --- |
+| TD-01…05 | Bán ngay trong Túi đồ ở mọi nơi, đủ giá (Q211): nút Bán / Phân rã ở chi tiết món (Tím, Cam, ≥ +4 bấm 2 lần); khung dưới lưới Phân rã nhanh · Bán nhanh · Tự động · Mua lại; rê chuột + S / D; thẻ đồ có dòng giá bán / phân rã | CR4-T1, CR4-T7 | ✅ |
+| TD-06…08 | Khoá đồ (nút hoặc L): món khoá không bán, phân rã, tự xử lý, không vào bộ lọc; ổ khoá trên ô; đồ Cam tự khoá (Q214) | CR4-T1, CR4-T2, CR4-T5 | ✅ |
+| TD-09…12 | Tự xử lý đồ khi nhặt: chế độ Tắt / Khi nhặt / Khi túi đầy; Giữ / Bán / Phân rã theo phẩm chất (Cam luôn giữ); ngoại lệ đồ cường hoá, đồ bộ, đồ mạnh hơn, đồ gần cấp; 3 mẫu; thông báo gộp; thống kê phiên; "Áp dụng cho túi"; mua lại 10 món trong phiên (Q213); chỉ áp cho đồ rơi, không áp thưởng nhiệm vụ | CR4-T3, CR4-T4, CR4-T6 | ✅ |
+| TD-13 | Bàn Tay Vàng — Điểm Kim: bán đồ +50% vàng ở mọi đường bán; Thần Tài: phân rã 10% ra Thiên Phú Tinh Hoa, lãnh địa +20% vàng (Q217 chốt 09/11: vẫn giữ +50% bán đồ) | CR4-T7, CR4-T8 | ✅ |
+| TD-14 | Không mất đồ Cam / đồ khoá khi túi đầy: món nằm lại trên đất + nhắc dọn túi (rà soát 09/11 R1) | CR4-T8 | ✅ |
+| TD-15…19 | Pha sau: sắp xếp túi (phẩm chất / ô / Lực chiến, món khoá đầu); giữ đồ bộ thông minh trong tự động (bỏ món trùng bộ + ô kém hơn); quy tắc nâng cao theo ô + dòng chỉ số luôn giữ; khoá / mở khoá nhanh đồ đang mặc; thẻ tóm tắt tự xử lý từ lần mở túi trước | CR4-T9 | ✅ |
+
+### 3.10. HUD — bản đồ nhỏ / khung nhiệm vụ không che nhân vật (HM, [CR-05](CR-05-hud-mo-khi-che-nhan-vat.md))
+
+*(Spec_Notes 09/11: "đi vào mép bản đồ thì bản đồ nhỏ / bảng nhiệm vụ che mất nhân vật; muốn có icon ẩn / hiện")*
+
+| Mã | Yêu cầu | Tiêu chí nghiệm thu | Trạng thái |
+| --- | --- | --- | --- |
+| HM-01…03 | Nhân vật đi vào dưới (hoặc sát 12 px) bản đồ nhỏ / khung nhiệm vụ → khung đó mờ dần còn 22%, đi ra hiện lại; rê chuột vào khung → rõ để bấm; giữ mức mờ khi đánh boss (R1) | CR05-T1 | ✅ |
+| HM-04…05 | 2 nút ẩn / hiện (bản đồ nhỏ, khung nhiệm vụ) cạnh trái la bàn, nhớ trong Cài đặt; bản đồ ẩn thì nút về góc phải; V hiện lại bản đồ nhỏ đang ẩn | CR05-T1 | ✅ |
+
+### 3.11. Nhạc nền và âm môi trường (MU, [46](46-nghien-cuu-nhac-nen.md))
+
+*(Spec_Notes 09/11: "tiếng nhạc trong game giả quá, không giống như game hiện tại")*
+
+| Mã | Yêu cầu | Tiêu chí nghiệm thu | Trạng thái |
+| --- | --- | --- | --- |
+| MU-01 | Nhạc nền dùng âm nhạc cụ (sáo trúc, đàn nhị, đàn tranh, tỳ bà, dàn dây, trống…), stereo, có không gian; mỗi vùng 1 bài + làng, hang, boss, boss cuối (13 bài); giai điệu có câu, có đoạn | MU1-T1 (đủ file OGG, bài khám phá ≥ 75 giây) + nghe thử | ✅ |
+| MU-02 | Bài khám phá phát 1 lượt rồi nghỉ 30–90 giây (chỉ còn âm môi trường), mờ vào lại; làng / hang / boss lặp liền | MU1-T1 | ✅ |
+| MU-03 | Âm môi trường theo vùng (gió, chim, côn trùng, nước, dung nham…), làng và hang riêng; thanh âm lượng "Âm thanh môi trường" trong Cài đặt | MU1-T1 | ✅ |
+| MU-04 | Nhạc báo: lên cấp, hoàn thành nhiệm vụ, sang vùng mới, gặp boss, chiến thắng; nhạc nền tự hạ khi nhạc báo phát | MU1-T1 | ✅ |
+| MU-05 | Tầng nhạc chiến đấu khi đánh quái thường (đợt 2, Q227) | — | ⬜ |
+
+### 3.12. Thêm cách tăng Lực chiến cho trang bị (NL, [47](47-de-xuat-nang-luc-chien-trang-bi.md))
+
+*(Spec_Notes 09/11: "ngoài việc nâng cấp đồ thì cần thêm các hình thức khác để nâng lực chiến cho đồ")* — chủ dự án "triển khai theo đề xuất", **đã làm 09/11/2026** ([47 §9](47-de-xuat-nang-luc-chien-trang-bi.md)). Mở theo vùng cao nhất đã tới: ngọc vùng 2, tẩy luyện + luyện cấp vùng 3, thăng phẩm vùng 4, Thức Tỉnh sau chuyển chức 3.
+
+| Mã | Yêu cầu | Tiêu chí nghiệm thu | Trạng thái |
+| --- | --- | --- | --- |
+| NL-A | Khảm Ngọc Ngũ Hành: lỗ theo phẩm chất (0/1/1/2/3), đục thêm tối đa 3; 5 loại ngọc cấp 1–10, ghép 3 → 1; ngọc rơi theo hệ quái; ≥ 2 ngọc cùng hệ trên vũ khí → ấn hệ (+15% khắc); tháo không vỡ, phân rã / bán trả ngọc về Túi Ngọc | NL1-T1 | ✅ |
+| NL-B | Tẩy Luyện: 1 dòng phụ cố định mỗi món, luyện giá trị hoặc đổi dòng, chọn giữ cũ / mới; không tẩy hiệu ứng Cam / bộ | NL1-T2 | ✅ |
+| NL-C | Thăng Phẩm: hút 1 món cùng ô cùng phẩm chất → lên 1 bậc (tới Tím), giữ cường hoá / ngọc / dòng cũ, thêm 1 dòng | NL2-T1 | ✅ |
+| NL-D | Luyện Cấp đồ Cam / đồ bộ +5 cấp mỗi lần, tối đa cấp nhân vật | NL2-T2 | ✅ |
+| NL-E | Thức Tỉnh (sau chuyển chức 3): món Tím / Cam +12 mở 1 dòng theo lớp / Thiên phú, bậc 1–5, tối đa 4 món có hiệu lực | NL3-T1 | ✅ |
+| NL-F | Bảo Giám: ghi danh lần đầu sở hữu đồ bộ / Cam / mốc cường hoá / ngọc cao → mốc thưởng vĩnh viễn ≈ +5% | NL3-T1 | ✅ |
+| NL-G | Thẻ đồ tách Lực chiến theo nguồn; nút "Gợi ý tăng Lực chiến" cạnh huy hiệu Lực chiến | NL1-T1 + ảnh | ✅ |
+
 ## 4. Yêu cầu phi chức năng
 
 | Mã | Yêu cầu |
@@ -129,7 +177,10 @@ Cột **Trạng thái**: ✅ đã làm và có test tự động · 🟡 đã l�
 | NFR-05 | Không mất tiến trình khi game đóng đột ngột quá 5 giây kể từ lần lưu gần nhất |
 | NFR-06 | Cửa sổ co giãn được, tối thiểu 1280 × 720 vẫn hiển thị đủ HUD |
 | NFR-07 | Hiệu ứng kỹ năng đọc được gameplay (FX-1, [36](36-thiet-ke-lai-vfx-ky-nang.md) §3.3): kỹ năng đặt điểm có vòng cảnh báo đúng bán kính trước khi gây sát thương; quái trúng đòn nháy trắng; choáng / trói / độc có ký hiệu trên đầu; màu xanh lá chỉ dùng cho hồi máu; mỗi lớp một bảng màu riêng (§4). Nghiệm thu: chủ dự án duyệt Q180–Q183 (03/11/2026: cả 70 kỹ năng, song song với hình đã duyệt, HD); test FX1-T1 + smoke `tests/fx1_smoke.gd` — ✅ |
-| NFR-08 | Quái / tinh anh / boss cùng một phong cách HD (MD-1, [39](39-thiet-ke-lai-quai-vat.md)): cartoon vẽ tay theo ảnh mẫu — silhouette nhận ra ở ~50 px, viền tối dày, cel 3 tông, một màu nhấn phát sáng, họ màu theo vùng; cỡ hiển thị và vùng va chạm như bản pixel; frame đánh đầu tiên là tư thế lấy đà; tắt "Đồ hoạ HD" về hình pixel. Linh thú Triệu Hồi Sư chưa đổi (Q190). Nghiệm thu: test MD1-T1 + ảnh `docs/design/monsters/` (+ `ingame/`); chủ dự án duyệt Q190–Q192 — 🟡 chờ duyệt |
+| NFR-08 | Quái / tinh anh / boss cùng một phong cách HD (MD-1, [39](39-thiet-ke-lai-quai-vat.md)): cartoon vẽ tay theo ảnh mẫu — silhouette nhận ra ở ~50 px, viền tối dày, cel 3 tông, một màu nhấn phát sáng, họ màu theo vùng; cỡ hiển thị và vùng va chạm như bản pixel; frame đánh đầu tiên là tư thế lấy đà; tắt "Đồ hoạ HD" về hình pixel. 9 linh thú Triệu Hồi Sư cùng phong cách (Q190, 09/11). Nghiệm thu: test MD1-T1 + ảnh `docs/design/monsters/` (+ `ingame/`); Q190 / Q192 duyệt 09/11, Q191 chốt làm chuẩn, chỉnh sau khi chơi thử — 🟡 chờ phản hồi chơi thử |
+| NFR-09 | Màn hình to hơn thì thấy rộng hơn, không chỉ phóng to (VS-1, [44](44-ty-le-khung-nhin-va-chieu-sau.md)): 1366×768 giữ như cũ; 1080p trở lên camera tự zoom ra (nhân vật ≈ 7–7,5% chiều cao màn hình, 1080p ≈ ×1,5 diện tích map), giao diện tự động 90% (1080p) / 85% (≥ 1440p); Cài đặt → Hiển thị có "Tầm nhìn" Gần / Vừa / Xa (Xa ×0,88) và "Cỡ giao diện" Tự động / 80–110%; chữ trên bản đồ giữ cỡ đọc được. Bản đồ có chiều sâu: bóng đổ theo một hướng sáng, mảng nắng / bóng râm lớn, nền hạ tông để nhân vật nổi, cụm sương trôi + hạt bay theo vùng, tiền cảnh mờ ở mép dưới màn hình (tắt được; PF-02 08/11: không còn dải sương / tia nắng / tiền cảnh ở mép trên — người chơi thấy như "vệt mờ"). Nghiệm thu thêm: PF02-T1. Khung nhiệm vụ thu gọn bằng chuột phải. Nghiệm thu: test VS1-T1 + ảnh `docs/design/view-scale/` — ✅ (B6 cao độ địa hình chưa làm) |
+| NFR-10 | Đi trên bản đồ không giật (PF-02, [44 §7](44-ty-le-khung-nhin-va-chieu-sau.md), phản ánh 08/11): vẽ thế giới chỉ những gì trong khung nhìn (cả cổng, cổng chặn boss, đấu trường, hàng rào), tách quái theo lưới ô (không so mọi cặp), mảng nắng / bóng râm nướng sẵn 1 ảnh mỗi map, sắp xếp vật theo Y bằng sắp xếp gốc. Đo: `tests/perf_walk.gd` (dòng `TIMELINE` / `RENDER`, `--scan`). Kết quả 08/11 trên máy iGPU 1080p + 120 quái: script −23%, render CPU −28%, GPU −25%. Nghiệm thu: PF02-T1 — 🟡 (chưa đạt 60 khung/giây của NFR-01 trên iGPU khi đông quái; bước tiếp ở 44 §7.2) |
+| NFR-11 | Góc nhìn có chiều sâu (GN-1, [45](45-nghien-cuu-goc-nhin-va-nhan-vat.md), chủ dự án duyệt "làm theo đề xuất" 09/11): **Phối cảnh** Tắt / Nhẹ (mặc định) / Vừa — mép trên (phía xa) nhỏ hơn mép dưới, nhân vật giữa màn hình giữ cỡ, chuột ngắm đúng chỗ; camera zoom gần ×1,1 khi có boss sống trong 700 px; camera lệch 5% về hướng chạy; vùng 1 có cảnh trại (rào cọc phía xa đấu trường, bãi trại bỏ hoang, đồ vương vãi), quầng sáng đuốc / đèn lồng / lửa trại, bóng sát chân, tông nền trầm hơn, lối mòn mép mềm. GN-4: dưới phối cảnh nhân vật / cây / nhà đứng thẳng; mép map có vách đá (mép trên), mặt bằng cao (hai bên), gờ vực (mép dưới) — người chơi vẫn bị chặn ở mép cũ; hồ nước / hố dung nham có thành. GN-3: bộ đếm combo lớn ở mép trái (Cài đặt Bộ đếm combo: Lớn / Nhỏ / Tắt), tông nền 9 vùng, nền đất mòn dưới bãi trại, viền mềm sân đấu trường, không cây trong sân đấu trường 3-3. GN-2: vùng 2–9 cũng có cảnh trại theo chất liệu vùng (không đè nước / dung nham / đảo / cầu / điểm nhiệm vụ; vùng 6 không đặt lửa). Giữ nhân vật chibi + 2D (Q222), không thêm viền sáng nhân vật (Q221) | ✅ | Test GN1-T1, ảnh `docs/design/goc-nhin/` |
 
 ## 5. Chỗ lệch so với kịch bản
 
@@ -173,4 +224,6 @@ Cho 3–5 người chơi thử từ đầu tới khi hạ boss, không hướng 
 - Nền tảng ra mắt đầu tiên: PC hay Mobile? Quyết định này ảnh hưởng điều khiển (NFR-06) và UI.
 - Phong cách đồ hoạ: pixel art, 2.5D anime hay 3D low-poly?
 - Sau playtest: có giữ tốc độ hồi Đuốc 2 phút cho bản chính không?
+- ~~Q229–Q236~~ đã trả lời 09/11/2026 ("triển khai theo đề xuất") — [47 §8](47-de-xuat-nang-luc-chien-trang-bi.md); Q235 (chỉnh độ khó chương 7–9) theo dõi khi chơi thử.
+- ~~Q224–Q228~~ đã trả lời 09/11/2026 ("làm theo đề xuất") — [46 §8](46-nghien-cuu-nhac-nen.md).
 - ~~Q180–Q183~~ đã trả lời 03/11/2026 — [36 §8](36-thiet-ke-lai-vfx-ky-nang.md).

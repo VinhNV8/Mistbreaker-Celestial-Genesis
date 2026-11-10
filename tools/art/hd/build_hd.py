@@ -20,6 +20,8 @@ MANIFEST = os.path.join(ASSETS, "art_manifest.json")
 import env_forest  # noqa: E402
 import env_village  # noqa: E402
 import env_camps  # noqa: E402
+import env_camp_props  # noqa: E402
+import env_cliffs  # noqa: E402  GN-4 E6 (docs/45 §9): mặt vách đá viền map + thành hồ  GN-1 E2 (docs/45): hàng rào cọc, cờ, giá vũ khí, đồ vương vãi
 import env_regions  # noqa: E402
 import action_icons  # noqa: E402
 import equip_icons  # noqa: E402
@@ -46,13 +48,14 @@ def _save(img, sub, name):
 def main():
     hd = {"sprites": {}, "env": {}, "icons": {}}
     # Không vẽ lại nhân vật người chơi (pc-*) và hình / hiệu ứng kỹ năng: dùng nguyên bộ hình chủ dự án cung cấp.
-    # MD-1 (docs/39): toàn bộ quái / boss theo phong cách mới (thay bản G0 wolf.py); linh thú Triệu Hồi Sư chỉ có
-    # ảnh duyệt (sprites-review/) cho tới khi chủ dự án đồng ý (Q190)
+    # MD-1 (docs/39): toàn bộ quái / boss + 9 linh thú Triệu Hồi Sư (Q190 duyệt 09/11) theo phong cách mới
     hd["sprites"].update(mon_build.build_all(_save))
     env = dict(env_forest.build())
     env.update(env_village.build())  # UI-40b: Làng Thanh Thạch
     env.update(env_regions.build())  # UI-40c: nền + cảnh vật vùng 2–9
     env.update(env_camps.build())  # UI-40c: khu an toàn (nhà, lều, rào, đồ vật) theo vùng
+    env.update(env_cliffs.build())  # GN-4 E6: mặt vách đá
+    env.update(env_camp_props.build())  # GN-1 E2 (docs/45): bộ cảnh trại / bãi chiến vùng 1
     for k, (img, origin) in env.items():
         hd["env"][k] = {"path": _save(img, "env", k), "w": img.size[0], "h": img.size[1], "origin": origin, "px": PX}
     for k, img in icons_hd.build().items():

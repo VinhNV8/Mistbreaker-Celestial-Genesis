@@ -12,6 +12,10 @@ const Bronze = preload("res://scripts/ui/bronze.gd")
 const Items = preload("res://scripts/core/items.gd")
 const ItemData = preload("res://scripts/data/items.gd")
 const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
+const Gear = preload("res://scripts/core/gear.gd")
+const GearData = preload("res://scripts/data/gear_data.gd")
+const Monsters = preload("res://scripts/data/monsters.gd")
+const AWAKEN_COL := Color("#ffd36a")
 
 ## Màu nền / chữ nhạt dùng chung.
 const INK := Color("#120d09")
@@ -283,8 +287,45 @@ static func build(item: Dictionary, width: float, header := "", p = null, diff: 
 	# --- dòng phụ
 	if not item.affixes.is_empty():
 		v.add_child(Divider.new())
-		for af in item.affixes:
-			v.add_child(_row(stat_icon(str(af.stat)), Items.stat_text(af.stat, af.value), AFFIX_COL, 14, width))
+		var rf := int(item.get("reforged", -1))
+		for i in item.affixes.size():
+			var af: Dictionary = item.affixes[i]
+			# NL-1: dòng đã tẩy luyện có ✦
+			v.add_child(_row(stat_icon(str(af.stat)), ("✦ " if i == rf else "") + Items.stat_text(af.stat, af.value), AFFIX_COL, 14, width))
+	# --- NL-1 (docs/47 §5): lỗ ngọc (ô tròn màu hệ, lỗ trống mờ)
+	if int(item.get("sockets", 0)) > 0:
+		var gr := UiTheme.hbox(4)
+		gr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var gems: Array = item.get("gems", [])
+		for i in int(item.sockets):
+			var key := str(gems[i]) if i < gems.size() else ""
+			var ic := UiTheme.icon_rect(SpriteLib.icon(Gear.gem_icon_id(key) if key != "" else "gem-socket"), 22)
+			ic.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			gr.add_child(ic)
+		var gs := Items.gem_stats(item)
+		var parts := PackedStringArray()
+		for k in gs:
+			parts.append(Items.stat_text(k, gs[k]))
+		var gml := UiTheme.label(", ".join(parts) if not parts.is_empty() else "Lỗ ngọc trống", "", width - 100.0)
+		gml.add_theme_font_size_override("font_size", UiTheme.fs(12))
+		gml.add_theme_color_override("font_color", UiTheme.GOOD if not parts.is_empty() else TEXT_DIM)
+		gml.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		gr.add_child(gml)
+		v.add_child(gr)
+		if str(item.slot) == "weapon":
+			var seal := Items.weapon_seal({"weapon": item})
+			if seal != "":
+				var sl := UiTheme.label("Ấn hệ %s — khắc hệ +%d%%" % [Monsters.ELEMENT_NAMES[seal], roundi(GearData.SEAL_BONUS * 100.0)], "", width)
+				sl.add_theme_font_size_override("font_size", UiTheme.fs(12))
+				sl.add_theme_color_override("font_color", Color(str(Monsters.ELEMENT_HEX[seal])))
+				v.add_child(sl)
+	# --- NL-1: Thức Tỉnh
+	var aw: Dictionary = item.get("awaken", {})
+	if str(aw.get("id", "")) != "":
+		var al := UiTheme.label("%s Thức Tỉnh: %s" % ["★".repeat(int(aw.tier)), Items.awaken_text(str(aw.id), int(aw.tier))], "", width)
+		al.add_theme_font_size_override("font_size", UiTheme.fs(13))
+		al.add_theme_color_override("font_color", AWAKEN_COL)
+		v.add_child(al)
 	# --- hiệu ứng riêng (đồ độc nhất)
 	if str(item.get("unique", "")) != "":
 		var ub := PanelContainer.new()
@@ -329,6 +370,20 @@ static func build(item: Dictionary, width: float, header := "", p = null, diff: 
 		for ln in diff:
 			flow.add_child(_chip(str(ln[0]), ln[1]))
 		v.add_child(flow)
+	# --- NL-1: Lực chiến món này, tách theo nguồn (rê chuột xem)
+	var pp := Items.item_power_parts(item)
+	var cpl := UiTheme.label("Lực chiến món: %d" % int(pp.total), "", width)
+	cpl.name = "ItemPower"
+	cpl.add_theme_font_size_override("font_size", UiTheme.fs(12))
+	cpl.add_theme_color_override("font_color", UiTheme.GOLD)
+	cpl.mouse_filter = Control.MOUSE_FILTER_PASS
+	cpl.tooltip_text = "Gốc %d · Cường hoá %d · Dòng phụ %d · Ngọc %d" % [int(pp.base), int(pp.plus), int(pp.affix), int(pp.gem)]
+	var sub2 := PackedStringArray()
+	for k in [["Gốc", pp.base], ["Cường hoá", pp.plus], ["Dòng phụ", pp.affix], ["Ngọc", pp.gem]]:
+		if int(k[1]) > 0:
+			sub2.append("%s %d" % [k[0], int(k[1])])
+	cpl.text += "  (" + " · ".join(sub2) + ")"
+	v.add_child(cpl)
 	if note != "":
 		var nl := UiTheme.label(note, "", width)
 		nl.add_theme_font_size_override("font_size", UiTheme.fs(12))

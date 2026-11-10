@@ -152,6 +152,48 @@ static func frame_progress(id: String, anim: String, progress: float) -> int:
 
 
 ## squash / lean (FX-1 §9.13): co giãn và nghiêng quanh chân (tư thế lấy đà của quái); mặc định không đổi.
+## GN-4 P1-B (docs/45 §9): hình đứng thẳng dưới lớp nghiêng phối cảnh (view/tilt.gd). Lớp biến dạng làm đường dọc ở hai bên
+## nghiêng ra ngoài; trong lúc WorldView vẽ (upright_begin … upright_end) mỗi hình được xô ngược quanh chân một hệ số
+## dx/dy = −(u − 0,5)·g·(dv/dy)/d · (W/H) (đạo hàm của phép biến dạng tại chân hình) → sau biến dạng thân hình thẳng đứng.
+static var _up_on := false
+static var _up_xf := Transform2D.IDENTITY
+static var _up_size := Vector2.ONE
+static var _up_g := 0.0
+
+
+static func upright_begin(canvas_xf: Transform2D, view_size: Vector2, g: float) -> void:
+	_up_on = g > 0.0 and view_size.x > 0.0 and view_size.y > 0.0
+	_up_xf = canvas_xf
+	_up_size = view_size
+	_up_g = g
+
+
+static func upright_end() -> void:
+	_up_on = false
+
+
+## Hệ số xô ngang (px ngang / px dọc) tại điểm thế giới pos; 0 khi tắt.
+static func upright_shear(pos: Vector2) -> float:
+	if not _up_on:
+		return 0.0
+	var s := (_up_xf * pos) / _up_size
+	var g := _up_g
+	var den := 1.0 + g - g * clampf(s.y, -0.5, 1.5)
+	var dv := (1.0 + g) / (den * den)
+	var v := s.y / den
+	var d := 1.0 + g * v
+	return -(s.x - 0.5) * g * dv / d * (_up_size.x / _up_size.y)
+
+
+## draw_set_transform có xô đứng thẳng (khi bật).
+static func _set_xf(ci: CanvasItem, pos: Vector2, rot: float, sc: Vector2) -> void:
+	if not _up_on:
+		ci.draw_set_transform(pos, rot, sc)
+		return
+	var sh := upright_shear(pos)
+	ci.draw_set_transform_matrix(Transform2D(Vector2(1, 0), Vector2(sh, 1), pos) * Transform2D(rot, sc, 0.0, Vector2.ZERO))
+
+
 static func draw_frame(ci: CanvasItem, id: String, anim: String, frame: int, pos: Vector2, flip := false,
 		modulate := Color.WHITE, size_mul := 1.0, squash := Vector2.ONE, lean := 0.0) -> void:
 	var s: Dictionary = data().sprites.get(id, {})
@@ -165,7 +207,7 @@ static func draw_frame(ci: CanvasItem, id: String, anim: String, frame: int, pos
 	var h := float(s.h)
 	var region := Rect2(frame * w, float(a.row) * h, w, h)
 	var k := scale() * size_mul * float(s.get("size_mul", 1.0)) / px_of(s)
-	ci.draw_set_transform(pos, lean, Vector2((-k if flip else k) * squash.x, k * squash.y))
+	_set_xf(ci, pos, lean, Vector2((-k if flip else k) * squash.x, k * squash.y))
 	ci.draw_texture_rect_region(tex, Rect2(-Vector2(s.origin[0], s.origin[1]), Vector2(w, h)), region, modulate)
 	ci.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
@@ -217,9 +259,20 @@ static func draw_env(ci: CanvasItem, id: String, pos: Vector2, modulate := Color
 	if tex == null:
 		return
 	var k := scale() * size_mul / px_of(e)
-	ci.draw_set_transform(pos, rotation, Vector2(-k if flip else k, k))
+	_set_xf(ci, pos, rotation, Vector2(-k if flip else k, k))
 	ci.draw_texture(tex, -Vector2(e.origin[0], e.origin[1]), modulate)
 	ci.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+
+## VS-1 B1 (docs/44): cỡ vẽ (px thế giới) của hình môi trường — để đặt bóng đổ. Thiếu hình → Vector2.ZERO.
+static func env_extent(id: String, size_mul := 1.0) -> Vector2:
+	var e: Dictionary = data().get("env", {}).get(id, {})
+	if e.is_empty():
+		return Vector2.ZERO
+	var tex := texture(e.path)
+	if tex == null:
+		return Vector2.ZERO
+	return Vector2(tex.get_size()) * scale() * size_mul / px_of(e)
 
 
 ## Tô một đa giác bằng ô đất lặp lại (cần texture_repeat bật trên CanvasItem).

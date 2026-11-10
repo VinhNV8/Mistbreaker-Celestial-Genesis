@@ -150,14 +150,14 @@ func _choices(title: String, key: String, options: Array, prefix: String, cur, o
 
 
 func _tab_audio() -> void:
-	for pair in [["master", "Âm lượng tổng"], ["music", "Nhạc nền"], ["sfx", "Hiệu ứng âm thanh"]]:
+	for pair in [["master", "Âm lượng tổng"], ["music", "Nhạc nền"], ["sfx", "Hiệu ứng âm thanh"], ["ambient", "Âm thanh môi trường"]]:
 		var row := _row(pair[1])
 		var s := HSlider.new()
 		s.name = "Slider_" + pair[0]
 		s.min_value = 0.0
 		s.max_value = 1.0
 		s.step = 0.05
-		s.value = float(Settings.values[pair[0]])
+		s.value = float(Settings.values.get(pair[0], 0.7))
 		s.custom_minimum_size.x = 260
 		s.size_flags_vertical = SIZE_SHRINK_CENTER
 		var pct := UiTheme.label("%d%%" % roundi(s.value * 100.0))
@@ -175,10 +175,22 @@ func _tab_display() -> void:
 	# UI-40 (docs/35): hình HD cel-shade / hình pixel cũ.
 	_check("HdArt", "Đồ hoạ HD (cảnh, quái, icon)", "hd_art", true, func(on):
 		load("res://scripts/view/sprite_lib.gd").set_hd(on))
+	# VS-1 B1–B3 (docs/44): bóng đổ theo hướng sáng + mảng nắng / bóng râm + hạ tông nền (chỉ với hình HD).
+	_check("DepthFx", "Bóng đổ và ánh sáng nền (chiều sâu bản đồ)", "depth_fx", true)
 	# FX-1 (docs/36, Q181): hiệu ứng kỹ năng — FX-1 chạy song song với hình đã duyệt.
 	_choices("Hiệu ứng kỹ năng", "skill_fx", preload("res://scripts/view/fx1.gd").MODES, "SkillFx_", str(Settings.values.get("skill_fx", "fx1")))
 	_choices("Cỡ chữ", "font_scale", Settings.FONT_SCALES, "Font_", float(Settings.values.get("font_scale", 1.0)),
 		func(k): font_scale_changed.emit(float(k)))
+	# VS-1 (docs/44): tầm nhìn bản đồ + cỡ giao diện (main.gd áp ở khung kế tiếp).
+	var VS = preload("res://scripts/core/view_scale.gd")
+	_choices("Tầm nhìn", "view_range", VS.RANGES, "ViewRange_", str(Settings.values.get("view_range", "mid")))
+	# GN-1 P1 (docs/45): mép trên (phía xa) nhỏ hơn mép dưới.
+	var Tilt = preload("res://scripts/view/tilt.gd")
+	_choices("Phối cảnh", "tilt", Tilt.MODES, "Tilt_", str(Settings.values.get("tilt", "low")))
+	# GN-3 (docs/45 Q223): bộ đếm combo lớn kiểu ARPG / dòng chữ nhỏ cũ / tắt.
+	_choices("Bộ đếm combo", "combo_style", Settings.COMBO_STYLES, "Combo_", str(Settings.values.get("combo_style", "big")))
+	_choices("Cỡ giao diện", "ui_scale", VS.UI_SCALES, "UiScale_", float(Settings.values.get("ui_scale", 0.0)))
+	_box.add_child(UiTheme.label("Tự động: màn hình càng lớn thì bản đồ càng rộng, giao diện gọn hơn (100% ở 768p, 90% ở 1080p, 85% từ 1440p).", "Small", 540))
 
 
 func _tab_access() -> void:

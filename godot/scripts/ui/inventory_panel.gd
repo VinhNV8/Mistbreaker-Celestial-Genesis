@@ -10,6 +10,7 @@ const Classes = preload("res://scripts/data/classes.gd")
 const Resources = preload("res://scripts/data/resources.gd")
 const CreateScreen = preload("res://scripts/ui/create_screen.gd")
 const BulkBox = preload("res://scripts/ui/bulk_box.gd")
+const LootBox = preload("res://scripts/ui/loot_box.gd")
 const StatsPage = preload("res://scripts/ui/stats_page.gd")
 const CharWidgets = preload("res://scripts/ui/char_widgets.gd")
 const Talents = preload("res://scripts/data/talents.gd")
@@ -31,6 +32,31 @@ var _tip: Control = null
 var _tab := "bag"
 ## Hiệu ứng vừa cường hoá: {item_id, success, plus, t}
 var _fx := {}
+## CR-04: khung dưới lưới túi — "salvage" (Phân rã nhanh) | "sell" (Bán nhanh) | "auto" (Tự động) | "buyback" (Mua lại).
+var _bottom := "salvage"
+## CR-04: món đang rê chuột trong túi (phím S bán / D phân rã / L khoá), -1 = không.
+var _hover_id := -1
+## CR-04 TD-01: món đang chờ bấm lần 2 để bán ("sell") / phân rã ("salvage"): {id, act, t (ms)}.
+## R3: tự huỷ sau CONFIRM_MS, khi đổi món, đổi khung dưới, mở / đóng bảng.
+var _confirm := {}
+const CONFIRM_MS := 4000
+
+## TD-19 (U5): phần tự xử lý từ lần mở Túi đồ trước (lấy lúc mở bảng).
+var _since := {}
+
+const BOTTOM_TABS := [["salvage", "Phân rã nhanh"], ["sell", "Bán nhanh"], ["auto", "Tự động"], ["buyback", "Mua lại"]]
+
+
+## CR-04.2: ổ khoá nhỏ góc trên trái ô đồ đã khoá.
+class LockMark:
+	extends Control
+
+	func _draw() -> void:
+		var o := Vector2(4, 4)
+		draw_rect(Rect2(o + Vector2(0, 0), Vector2(16, 16)), Color(0, 0, 0, 0.7))
+		draw_arc(o + Vector2(8, 7), 3.6, PI, TAU, 10, Color("#ffe08a"), 1.8, true)
+		draw_rect(Rect2(o + Vector2(3, 7), Vector2(10, 7)), Color("#ffce50"))
+		draw_rect(Rect2(o + Vector2(7, 9), Vector2(2, 3)), Color(0.2, 0.12, 0.02))
 
 
 ## Spec_Notes N8: khung phát sáng theo cấp cường hoá + số "+N" trên ô đồ.
@@ -171,6 +197,10 @@ func _character_column(p) -> PanelContainer:
 	doll.add_child(_slot_column(p, PAPER_RIGHT))
 	col.add_child(doll)
 	col.add_child(_talent_card(p, t, form))
+	if _tab == "bag":
+		var lc := _loot_card()
+		if lc != null:
+			col.add_child(lc)
 	# UI-21c: 3 tab chung cột trái, không lặp 8 chỉ số chính (đã có ở "Chỉ số chiến đấu" tab Chỉ số).
 	# Khung bộ đồ chỉ hiện khi đang mặc ít nhất 1 món thuộc bộ.
 	var sets: Dictionary = Items.equipment_bonus(p.equipment).sets
@@ -190,6 +220,27 @@ func _character_column(p) -> PanelContainer:
 
 
 ## Thẻ Thiên phú: huy hiệu hạng, tên dạng hiện tại, sao theo cấp (2 cấp = 1 sao), mô tả, nút "?".
+## TD-19 (U5): thẻ "Tự xử lý đồ" — đang bật chế độ nào, đã xử lý gì từ lần mở Túi đồ trước.
+func _loot_card() -> PanelContainer:
+	var r: Dictionary = world.loot_rules()
+	var any := int(_since.get("sold", 0)) + int(_since.get("salvaged", 0)) > 0
+	if str(r.mode) == "off" and not any:
+		return null
+	var pc := UiTheme.panel(UiTheme.box(Color("#0e0a06", 0.85), 8, 1, UiTheme.GOLD_DARK, 10))
+	pc.name = "LootSummary"
+	var v := UiTheme.vbox(3)
+	pc.add_child(v)
+	v.add_child(UiTheme.label("TỰ XỬ LÝ ĐỒ · %s" % str(Items.LOOT_MODE_NAMES[r.mode]).to_upper(), "Eyebrow"))
+	var txt := "Từ lần mở túi trước: chưa xử lý món nào."
+	if any:
+		txt = "Từ lần mở túi trước: tự bán %d món (+%s vàng), tự phân rã %d món (+%s đá)." % [int(_since.sold),
+			Ornate.group(int(_since.gold)), int(_since.salvaged), Ornate.group(int(_since.stones))]
+	var l := UiTheme.label(txt, "Small", 300)
+	l.name = "LootSummaryText"
+	v.add_child(l)
+	return pc
+
+
 func _talent_card(p, t: Dictionary, form: Array) -> PanelContainer:
 	var rank := str(form[1])
 	var rc := Talents.rank_color(rank)
@@ -362,6 +413,31 @@ func _bag_grid(p) -> PanelContainer:
 	var head := UiTheme.hbox(8)
 	head.add_child(UiTheme.strong("Túi đồ", 20, Color("#f3d27a")))
 	head.add_child(UiTheme.spacer())
+	# TD-18 (U4): khoá nhanh đồ đang mặc · TD-15 (U1): sắp xếp túi
+	var all_locked: bool = world.worn_all_locked()
+	var lw := LootBox._seg("Mở khoá đồ mặc" if all_locked else "Khoá đồ mặc", all_locked, Color("#ffce50"))
+	lw.name = "LockWorn"
+	lw.tooltip_text = "Khoá / mở khoá mọi món đang mặc — món khoá tháo ra vẫn không bị bán, phân rã hay tự xử lý."
+	lw.pressed.connect(func():
+		world.toggle_lock_worn()
+		refresh())
+	head.add_child(lw)
+	var sort := MenuButton.new()
+	sort.name = "SortBag"
+	sort.text = "Sắp xếp ▾"
+	sort.flat = false
+	sort.focus_mode = Control.FOCUS_NONE
+	sort.add_theme_font_size_override("font_size", UiTheme.fs(12))
+	for st in ["normal", "hover", "pressed"]:
+		sort.add_theme_stylebox_override(st, UiTheme.box(Color(UiTheme.GOLD, 0.06 if st == "normal" else 0.22), 6, 1, Color(UiTheme.GOLD, 0.5), 5))
+	sort.tooltip_text = "Sắp xếp túi (món khoá luôn đứng đầu)."
+	var modes: Array = Items.SORT_MODES.keys()
+	for i in modes.size():
+		sort.get_popup().add_item("Theo " + str(Items.SORT_MODES[modes[i]]).to_lower(), i)
+	sort.get_popup().id_pressed.connect(func(i: int):
+		world.sort_bag(str(modes[i]))
+		refresh())
+	head.add_child(sort)
 	var cnt := UiTheme.panel(UiTheme.box(Color("#0e0a06"), 6, 1, UiTheme.GOLD_DARK, 6))
 	cnt.add_child(UiTheme.strong("%d/%d" % [p.inventory.size(), ItemData.BAG_SIZE], 14))
 	head.add_child(cnt)
@@ -370,7 +446,13 @@ func _bag_grid(p) -> PanelContainer:
 	grid.columns = 6
 	grid.add_theme_constant_override("h_separation", 5)
 	grid.add_theme_constant_override("v_separation", 5)
-	var marked := BulkBox.marked_ids(world)
+	# SN-11 / CR-04: dấu góc theo khung dưới đang mở — bộ lọc nhanh (đỏ) hoặc quy tắc tự động (vàng = bán, đỏ = phân rã).
+	var marked := {}
+	if _bottom == "auto":
+		marked = LootBox.marked_ids(world)
+	elif _bottom != "buyback":
+		for id in BulkBox.marked_ids(world):
+			marked[id] = Color("#ff5470")
 	for i in ItemData.BAG_SIZE:
 		var item: Dictionary = p.inventory[i] if i < p.inventory.size() else {}
 		var b := _item_button(item, "", true, "bag")
@@ -378,7 +460,7 @@ func _bag_grid(p) -> PanelContainer:
 		# SN-11: món khớp bộ lọc phân rã nhanh có dấu đỏ ở góc.
 		if not item.is_empty() and marked.has(int(item.id)):
 			var dot := ColorRect.new()
-			dot.color = Color("#ff5470")
+			dot.color = marked[int(item.id)]
 			dot.size = Vector2(8, 8)
 			dot.position = Vector2(4, 4)
 			dot.mouse_filter = MOUSE_FILTER_IGNORE
@@ -392,7 +474,31 @@ func _bag_grid(p) -> PanelContainer:
 		grid.add_child(b)
 	col.add_child(grid)
 	col.add_child(HSeparator.new())
-	col.add_child(BulkBox.build(world, "salvage", refresh, 390.0))
+	var tabs := UiTheme.hbox(4)
+	for t in BOTTOM_TABS:
+		var on: bool = _bottom == t[0]
+		var label: String = t[1]
+		if t[0] == "buyback" and not world.buyback_list.is_empty():
+			label += " (%d)" % world.buyback_list.size()
+		if t[0] == "auto" and str(world.loot_rules().mode) != "off":
+			label += " ●"
+		var b := LootBox._seg(label, on, UiTheme.GOLD)
+		b.name = "Bottom_" + t[0]
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var key: String = t[0]
+		b.pressed.connect(func():
+			_bottom = key
+			_confirm = {}
+			refresh())
+		tabs.add_child(b)
+	col.add_child(tabs)
+	match _bottom:
+		"auto":
+			col.add_child(LootBox.build(world, refresh, 390.0))
+		"buyback":
+			col.add_child(LootBox.build_buyback(world, refresh, 390.0))
+		_:
+			col.add_child(BulkBox.build(world, _bottom, refresh, 390.0))
 	return outer
 
 
@@ -408,8 +514,15 @@ func _item_button(item: Dictionary, text: String, doll := false, tip := "") -> B
 	if tip != "":
 		var it := item
 		var in_bag := tip == "bag"
-		b.mouse_entered.connect(func(): _show_tip(it, in_bag))
-		b.mouse_exited.connect(_hide_tip)
+		var hid := int(item.id)
+		b.set_meta("cr4_item", hid)
+		b.mouse_entered.connect(func():
+			_hover_id = hid
+			_show_tip(it, in_bag))
+		b.mouse_exited.connect(func():
+			if _hover_id == hid:
+				_hover_id = -1
+			_hide_tip())
 	var pips := RarityPips.new()
 	pips.n = ItemData.RARITY_ORDER.find(str(item.rarity)) + 1
 	pips.col = c
@@ -421,10 +534,18 @@ func _item_button(item: Dictionary, text: String, doll := false, tip := "") -> B
 	var selected := int(item.id) == _selected_id
 	# UI-64 (docs/42): ô đồ theo bậc phẩm chất — nền nhuộm màu toả từ đáy, khung đổi hình theo bậc, icon ~90% ô
 	ItemCard.style_slot(b, item, selected)
+	if Items.is_locked(item):
+		var lk := LockMark.new()
+		lk.name = "Lock"
+		lk.mouse_filter = MOUSE_FILTER_IGNORE
+		lk.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+		b.add_child(lk)
 	b.add_theme_color_override("font_color", c.lightened(0.25))
 	b.add_theme_color_override("font_hover_color", Color.WHITE)
 	var id := int(item.id)
 	b.pressed.connect(func():
+		if id != _selected_id:
+			_confirm = {}
 		_selected_id = id
 		refresh())
 	return b
@@ -462,18 +583,28 @@ func _detail(p) -> VBoxContainer:
 	col.add_child(ItemCard.build(item, DETAIL_W, "", p, diff, ctitle, note))
 
 	col.add_child(HSeparator.new())
-	var row := UiTheme.hbox(8)
+	var row := UiTheme.hbox(6)
+	var locked := Items.is_locked(item)
+	var id := int(item.id)
 	if in_bag:
 		var wear := UiTheme.button("Mặc", true)
 		wear.pressed.connect(func():
-			world.equip(int(item.id))
+			world.equip(id)
 			refresh())
 		row.add_child(wear)
-		var sv := UiTheme.button("Phân rã (+%d đá)" % Items.salvage_value(item, p))
-		sv.pressed.connect(func():
-			world.salvage(int(item.id))
-			refresh())
-		row.add_child(sv)
+		# CR-04.1 TD-01: bán ngay trong túi, ở mọi nơi (Q211: đủ giá).
+		for a in [["sell", "Bán +%s vàng" % Ornate.group(world.sell_price(item, p))], ["salvage", "Phân rã +%d đá" % Items.salvage_value(item, p)]]:
+			var act: String = a[0]
+			var asking: bool = _asking(id, act)
+			var ab := UiTheme.button(("Chắc chắn? " + a[1]) if asking else a[1], asking)
+			ab.name = "SellButton" if act == "sell" else "SalvageButton"
+			ab.add_theme_font_size_override("font_size", UiTheme.fs(13))
+			ab.disabled = locked
+			ab.tooltip_text = Items.LOCKED_MSG if locked else ("Phím S" if act == "sell" else "Phím D")
+			ab.pressed.connect(func():
+				_do_item_action(id, act)
+				refresh())
+			row.add_child(ab)
 	else:
 		var off := UiTheme.button("Tháo")
 		off.pressed.connect(func():
@@ -481,6 +612,22 @@ func _detail(p) -> VBoxContainer:
 			refresh())
 		row.add_child(off)
 	col.add_child(row)
+	# CR-04.2 TD-06: khoá đồ — không bán / phân rã / tự xử lý được.
+	var lrow := UiTheme.hbox(6)
+	var lb := UiTheme.button("Mở khoá (L)" if locked else "Khoá (L)")
+	lb.name = "LockButton"
+	lb.add_theme_font_size_override("font_size", UiTheme.fs(13))
+	lb.tooltip_text = "Món khoá không bán, phân rã hay tự xử lý được (kể cả khớp bộ lọc)."
+	lb.pressed.connect(func():
+		world.toggle_lock(id)
+		refresh())
+	lrow.add_child(lb)
+	if locked:
+		var ll := UiTheme.label("Đã khoá", "Small")
+		ll.add_theme_color_override("font_color", Color("#ffce50"))
+		ll.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		lrow.add_child(ll)
+	col.add_child(lrow)
 	_enhance_block(col, p, item)
 	return col
 
@@ -541,6 +688,61 @@ func _enhance_block(col: VBoxContainer, p, item: Dictionary) -> void:
 		col.add_child(w)
 
 
+## R3: đang chờ bấm lần 2 cho (id, act) và chưa quá CONFIRM_MS.
+func _asking(id: int, act: String) -> bool:
+	return int(_confirm.get("id", -1)) == id and str(_confirm.get("act", "")) == act 		and Time.get_ticks_msec() - int(_confirm.get("t", 0)) < CONFIRM_MS
+
+
+## CR-04 TD-01: món Tím trở lên hoặc đã cường hoá từ +4 phải bấm 2 lần (lần 1 hỏi lại).
+static func needs_confirm(item: Dictionary) -> bool:
+	return str(item.rarity) in ["purple", "orange"] or int(item.plus) >= 4
+
+
+## Bán / phân rã một món trong túi, có bước hỏi lại. Trả true nếu đã thực hiện.
+func _do_item_action(id: int, act: String) -> bool:
+	var found := Items.find_item(world.profile, id)
+	if found.is_empty() or found.where != "bag":
+		return false
+	var item: Dictionary = found.item
+	if Items.is_locked(item):
+		world._message(Items.LOCKED_MSG, "bad")
+		return false
+	if needs_confirm(item) and not _asking(id, act):
+		_confirm = {"id": id, "act": act, "t": Time.get_ticks_msec()}
+		_selected_id = id
+		return false
+	_confirm = {}
+	if act == "sell":
+		world.sell_item(id)
+	else:
+		world.salvage(id)
+	if _selected_id == id:
+		_selected_id = -1
+	return true
+
+
+## CR-04 TD-04: rê chuột lên món trong túi — S bán, D phân rã, L khoá / mở khoá (bán / phân rã vẫn hỏi lại như nút).
+func _input(event: InputEvent) -> void:
+	if not visible or world == null or _tab != "bag" or _hover_id < 0:
+		return
+	if not (event is InputEventKey and event.pressed and not event.echo):
+		return
+	var code: int = (event as InputEventKey).physical_keycode
+	if not (code in [KEY_S, KEY_D, KEY_L]):
+		return
+	var found := Items.find_item(world.profile, _hover_id)
+	if found.is_empty() or not _really_hovered(_hover_id):
+		return
+	if get_viewport() != null:
+		get_viewport().set_input_as_handled()
+	if code == KEY_L:
+		world.toggle_lock(_hover_id)
+	elif found.where == "bag":
+		_do_item_action(_hover_id, "sell" if code == KEY_S else "salvage")
+	_hover_id = -1 if Items.find_item(world.profile, _hover_id).is_empty() else _hover_id
+	refresh()
+
+
 func _show_tip(item: Dictionary, in_bag: bool) -> void:
 	_hide_tip()
 	if not visible or world == null:
@@ -556,8 +758,30 @@ func _hide_tip() -> void:
 	_tip = null
 
 
+## R2: chuột phải đang nằm trên đúng ô của món (không dùng id rê chuột cũ sau khi đóng / mở / dựng lại bảng).
+## Ngoài cây cảnh (test headless) thì bỏ qua bước kiểm tra này.
+func _really_hovered(id: int) -> bool:
+	if not is_inside_tree():
+		return true
+	var c: Node = get_viewport().gui_get_hovered_control()
+	while c != null and c != self:
+		if c.has_meta("cr4_item"):
+			return int(c.get_meta("cr4_item")) == id
+		c = c.get_parent()
+	return false
+
+
+func open(w) -> void:
+	_hover_id = -1
+	_confirm = {}
+	_since = w.loot_since_seen() if w != null and w.has_method("loot_since_seen") else {}
+	super.open(w)
+
+
 func close() -> void:
 	_hide_tip()
+	_hover_id = -1
+	_confirm = {}
 	super.close()
 
 

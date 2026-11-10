@@ -263,5 +263,5 @@ add("ky-lan", "beast", "pet", "linh_thu", "Kỳ lân thần thú: ngựa trắng
 REGION_NAMES = {1: "Rừng Sương", 2: "Đồng Bằng Gió Hú", 3: "Sa Mạc Xích Sa", 4: "Đầm Lầy U Minh", 5: "Núi Viêm Long",
                 6: "Băng Nguyên Bắc Cực", 7: "Quần Đảo Thiên Không", 8: "Vực Hư Vô", 9: "Cổng Thiên Đạo",
                 "pet": "Linh thú Triệu Hồi Sư"}
-# Linh thú là một phần kỹ năng Triệu Hồi Sư → chỉ vẽ bản duyệt, chưa đưa vào lớp phủ HD cho tới khi chủ dự án đồng ý (Q190).
-LIVE_EXCLUDE = {k for k, v in M.items() if v["region"] == "pet"}
+# Q190 (chủ dự án duyệt 09/11/2026): linh thú Triệu Hồi Sư vào lớp phủ HD như quái. Giữ tập rỗng để loại tạm id khi cần.
+LIVE_EXCLUDE = set()

@@ -13,6 +13,8 @@ const TalentSlots = preload("res://scripts/core/talent_slots.gd")
 const Awakening = preload("res://scripts/core/awakening.gd")
 const Monsters = preload("res://scripts/data/monsters.gd")
 const Items = preload("res://scripts/core/items.gd")
+const Gear = preload("res://scripts/core/gear.gd")
+const GearData = preload("res://scripts/data/gear_data.gd")
 ## NV (docs/41): uỷ thác hằng ngày + nhiệm vụ phụ.
 const Quests = preload("res://scripts/core/quests.gd")
 const MainVariants = preload("res://scripts/core/main_variants.gd")
@@ -510,6 +512,9 @@ class Pickup:
 	var value := 0.0
 	var item := {}
 	var ttl := 30.0
+	## CR-04 R1: món phải giữ (Cam / khoá) đang chờ vì túi đầy; warn_t = giây tới lần nhắc kế.
+	var blocked := false
+	var warn_t := 0.0
 
 
 ## Thú cưng (Thuần Thú Sư) hoặc lính bóng tối (Bầy Đàn Bóng Tối).
@@ -2610,10 +2615,32 @@ func _derive(equipment = null) -> Dictionary:
 	bonus["dragon_val"] = TalentSlots.value(profile, "long-mach", 0.1, 0.15) + (0.05 if TalentSlots.has_special(profile, "long-de") else 0.0)
 	bonus["combat_sub1"] = TalentSlots.has_group_sub(profile, "combat", 1)
 	bonus["combat_sub2"] = TalentSlots.has_group_sub(profile, "combat", 2)
+	# NL-1 (docs/47 §3.F): Bảo Giám — thưởng vĩnh viễn theo mốc điểm.
+	var cb := Gear.codex_bonus(profile)
+	bonus.max_hp_pct += float(cb.max_hp_pct)
+	bonus.atk_pct += float(cb.atk_pct)
+	bonus.def_pct = float(bonus.get("def_pct", 0.0)) + float(cb.def_pct)
 	Chapters.derive_bonus(self, bonus)
 	var st := Stats.derive(profile.level, profile.points, profile.talent, bonus, profile.talent_level, profile.class_id, profile.stolen + steal_buff_points())
 	Chapters.derive_after(self, bonus, st)
+	_derive_gear(bonus, st)
 	return st
+
+
+## NL-1 (docs/47): chép phần Thức Tỉnh / ấn hệ / Bảo Giám từ bonus trang bị sang stats. cp_extra = Lực chiến của hiệu ứng
+## không phải chỉ số (ước lượng theo phần sát thương / sống sót thêm).
+func _derive_gear(bonus: Dictionary, st: Dictionary) -> void:
+	st.def = float(st.def) * (1.0 + float(bonus.get("def_pct", 0.0)))
+	st.pet_hp_pct = float(st.get("pet_hp_pct", 0.0)) + float(bonus.get("pet_hp_pct", 0.0))
+	for k in ["boss_dmg", "skill_dmg", "lifesteal", "counter_dmg"]:
+		st[k] = float(bonus.get(k, 0.0))
+	st["seal"] = str(bonus.get("seal", ""))
+	var atk_cp := float(st.atk) * 10.0
+	var extra := atk_cp * (0.5 * float(st.boss_dmg) + 0.5 * float(st.skill_dmg) + 0.4 * float(st.counter_dmg))
+	extra += float(st.max_hp) * 6.0 * float(st.lifesteal)
+	if st.seal != "":
+		extra += atk_cp * GearData.SEAL_BONUS * 0.2
+	st["cp_extra"] = extra
 
 
 ## Long Mạch Đàn đã xây xong (TL-S7).
@@ -2694,16 +2721,183 @@ func sell_many(items: Array) -> Dictionary:
 	var gold := 0
 	for item in items:
 		var i := Items.find_in_bag(profile, int(item.id))
-		if i < 0:
+		if i < 0 or Items.is_locked(profile.inventory[i]):
 			continue
-		var price := sell_price(profile.inventory[i])
+		var it: Dictionary = profile.inventory[i]
+		var price := sell_price(it, profile)
 		profile.inventory.remove_at(i)
 		profile.gold += price
+		Items.strip_gems(profile, it)
+		_push_buyback(it, price)
 		gold += price
 		n += 1
 	if n == 0:
 		return _shop_result(false, "Không có món nào khớp bộ lọc.")
 	return _shop_result(true, "Bán nhanh %d món: +%d vàng." % [n, gold])
+
+
+# ------------------------------------------------------------------ CR-04: khoá đồ, tự xử lý đồ, mua lại
+
+## Mua lại: tối đa 10 món bán gần nhất trong phiên (không lưu save — Q213).
+const BUYBACK_MAX := 10
+## CR-04 R1: món Cam / khoá chờ vì túi đầy nằm lại tới 10 phút, nhắc mỗi 6 giây khi đứng trên nó.
+const BLOCKED_PICKUP_TTL := 600.0
+const BLOCKED_WARN_EVERY := 6.0
+var buyback_list: Array = []
+## Thống kê tự xử lý trong phiên: {sold, gold, salvaged, stones}.
+var loot_stats := {"sold": 0, "gold": 0, "salvaged": 0, "stones": 0}
+
+
+func loot_rules() -> Dictionary:
+	return Items.normalize_rules(profile.loot_rules)
+
+
+## Lưu quy tắc. Bật tự động lần đầu khi bảng phẩm chất đang "giữ hết" → áp mẫu Cân bằng để bật lên là có tác dụng.
+func set_loot_rules(r: Dictionary) -> void:
+	var nr := Items.normalize_rules(r)
+	var old := loot_rules()
+	if old.mode == "off" and nr.mode != "off" and Items.rules_all_keep(nr):
+		nr.by_rarity = (Items.LOOT_PRESETS.balanced[1] as Dictionary).duplicate()
+		_message("Tự động xử lý đồ: dùng mẫu Cân bằng (Trắng / Lục bán, Lam phân rã, Tím giữ) — chỉnh lại trong Túi đồ.", "info")
+	profile.loot_rules = nr
+
+
+func toggle_lock(item_id: int) -> Dictionary:
+	return _item_action(Items.toggle_lock(profile, item_id), false)
+
+
+## TD-18 (U4): khoá nhanh mọi đồ đang mặc; đã khoá hết thì mở khoá hết.
+func toggle_lock_worn() -> Dictionary:
+	if profile.equipment.is_empty():
+		return _shop_result(false, "Chưa mặc món nào.")
+	var all_locked := true
+	for sl in profile.equipment:
+		if not Items.is_locked(profile.equipment[sl]):
+			all_locked = false
+	for sl in profile.equipment:
+		profile.equipment[sl]["locked"] = not all_locked
+	return _shop_result(true, ("Đã mở khoá %d món đang mặc." if all_locked else "Đã khoá %d món đang mặc — tháo ra vẫn giữ khoá.") % profile.equipment.size())
+
+
+func worn_all_locked() -> bool:
+	for sl in profile.equipment:
+		if not Items.is_locked(profile.equipment[sl]):
+			return false
+	return not profile.equipment.is_empty()
+
+
+## TD-15 (U1): sắp xếp túi ("rarity" | "slot" | "power").
+func sort_bag(mode: String) -> void:
+	Items.sort_bag(profile, mode, power_if_equipped)
+	_message("Đã sắp xếp túi theo %s." % str(Items.SORT_MODES.get(mode, mode)).to_lower(), "info")
+
+
+## TD-19 (U5): phần tự xử lý từ lần mở Túi đồ trước (gọi lúc mở bảng; cập nhật mốc).
+var loot_seen := {"sold": 0, "gold": 0, "salvaged": 0, "stones": 0}
+
+
+func loot_since_seen() -> Dictionary:
+	var out := {}
+	for k in loot_stats:
+		out[k] = int(loot_stats[k]) - int(loot_seen.get(k, 0))
+	loot_seen = loot_stats.duplicate()
+	return out
+
+
+## Mặc vào thì Lực chiến tăng (dùng cho "giữ đồ mạnh hơn").
+func is_upgrade(item: Dictionary) -> bool:
+	return power_if_equipped(item) > combat_power()
+
+
+func loot_decide(item: Dictionary, r := {}) -> String:
+	var rr: Dictionary = r if not r.is_empty() else loot_rules()
+	return Items.decide(profile, item, rr, is_upgrade)
+
+
+## CR-04.3: món vừa nhặt. Trả "sell" / "salvage" nếu đã tự xử lý (món không vào túi), "" nếu để như cũ.
+func _auto_loot(item: Dictionary) -> String:
+	var r := loot_rules()
+	if r.mode == "off" or (r.mode == "full" and profile.inventory.size() < ItemData.BAG_SIZE):
+		return ""
+	var act := loot_decide(item, r)
+	if act == "sell":
+		var price := sell_price(item, profile)
+		profile.gold += price
+		_push_buyback(item, price)
+		loot_stats.sold += 1
+		loot_stats.gold += price
+		_pickup_note("auto_sell", "Tự bán đồ: +%d vàng", float(price), Color("#ffc940"))
+		return act
+	if act == "salvage":
+		var g := Items.salvage_gain(profile, item, _rng)
+		loot_stats.salvaged += 1
+		loot_stats.stones += int(g.stones)
+		_pickup_note("auto_salvage", "Tự phân rã đồ: +%d đá", float(g.stones), Color("#9ec8ff"))
+		if int(g.tinh_kim) > 0:
+			_pickup_note("tinh_kim", "+%d Tinh Kim", float(g.tinh_kim), Color("#ffe27a"))
+		if int(g.essence) > 0:
+			_pickup_note("essence", "+%d Thiên Phú Tinh Hoa", float(g.essence), Color("#c79bff"))
+		return act
+	return ""
+
+
+## Đồ trong túi sẽ bị bán / phân rã nếu áp quy tắc ngay: {sell: [món], salvage: [món], gold, stones}.
+func loot_preview() -> Dictionary:
+	var r := loot_rules()
+	var out := {"sell": [], "salvage": [], "gold": 0, "stones": 0}
+	for it in profile.inventory:
+		var act := loot_decide(it, r)
+		if act == "sell":
+			out.sell.append(it)
+			out.gold += sell_price(it, profile)
+		elif act == "salvage":
+			out.salvage.append(it)
+			out.stones += Items.salvage_value(it, profile)
+	return out
+
+
+## Nút "Áp dụng cho túi hiện tại" (chạy được cả khi chế độ đang Tắt).
+func loot_apply() -> Dictionary:
+	var pv := loot_preview()
+	if pv.sell.is_empty() and pv.salvage.is_empty():
+		return _shop_result(false, "Không có món nào trong túi khớp quy tắc.")
+	var gold := 0
+	for it in pv.sell:
+		var i := Items.find_in_bag(profile, int(it.id))
+		if i < 0:
+			continue
+		var price := sell_price(it, profile)
+		profile.inventory.remove_at(i)
+		profile.gold += price
+		Items.strip_gems(profile, it)
+		_push_buyback(it, price)
+		gold += price
+	var stones0: int = profile.stones
+	for it in pv.salvage:
+		Items.salvage(profile, int(it.id), _rng)
+	return _shop_result(true, "Áp dụng quy tắc: bán %d món (+%d vàng), phân rã %d món (+%d đá)." % [
+		pv.sell.size(), gold, pv.salvage.size(), profile.stones - stones0])
+
+
+func _push_buyback(item: Dictionary, price: int) -> void:
+	buyback_list.push_front({"item": item, "price": price})
+	while buyback_list.size() > BUYBACK_MAX:
+		buyback_list.pop_back()
+
+
+## Mua lại món thứ idx (0 = bán gần nhất) đúng giá đã bán.
+func buyback(idx: int) -> Dictionary:
+	if idx < 0 or idx >= buyback_list.size():
+		return _shop_result(false, "Không còn món này.")
+	var e: Dictionary = buyback_list[idx]
+	if profile.inventory.size() >= ItemData.BAG_SIZE:
+		return _shop_result(false, "Túi đầy, không mua lại được.")
+	if profile.gold < int(e.price):
+		return _shop_result(false, "Cần %d vàng để mua lại." % int(e.price))
+	profile.gold -= int(e.price)
+	profile.inventory.append(e.item)
+	buyback_list.remove_at(idx)
+	return _shop_result(true, "Mua lại %s: −%d vàng." % [Items.display_name(e.item), int(e.price)])
 
 
 func add_exp(amount: float, from_combat: bool) -> void:
@@ -2864,6 +3058,11 @@ func _hit_enemy(e: Enemy, skill_mul: float, force_crit := false, aoe := false) -
 	var crit := force_crit or _r() < float(stats.crit) + (EAGLE_CRIT if player.eagle_time > 0.0 else 0.0) + Skills2.crit_bonus(self, sid) 		+ Job3.crit_bonus(self, e)
 	var mul := skill_mul * ((1.0 + float(stats.crit_dmg)) if crit else 1.0) * (1.5 if e.broken else 1.0) * Chapters.hit_mult(self, e, crit) \
 		* Skills2.hit_mult(self, e, sid) * Classes2.hit_mult(self)
+	# NL-1 (docs/47 §3.E): Thức Tỉnh — sát thương lên boss, sát thương kỹ năng.
+	var gear_k := 1.0 + float(stats.get("skill_dmg", 0.0)) if sid != "" else 1.0
+	if e.role == "boss" or e.role == "rare":
+		gear_k += float(stats.get("boss_dmg", 0.0))
+	mul *= gear_k
 	# CS: xuyên giáp (DEX + đặc tính lớp) bỏ qua một phần Phòng thủ quái.
 	var raw := Formulas.compute_damage(stats.atk, e.def * Skills2.def_mult(self, sid) * (1.0 - float(stats.get("armor_pen", 0.0))), mul, element_bonus(e), talent_bonus) * (0.9 + _r() * 0.2)
 	_sword_flow_hit()
@@ -2876,6 +3075,9 @@ func _hit_enemy(e: Enemy, skill_mul: float, force_crit := false, aoe := false) -
 			e.state = "chase"
 	combo += 1
 	_combo_timer = COMBO_TIMEOUT
+	# NL-1: Thức Tỉnh "Hút máu".
+	if float(stats.get("lifesteal", 0.0)) > 0.0:
+		player.hp = minf(float(stats.max_hp), player.hp + dmg * float(stats.lifesteal) * (AOE_LIFESTEAL if aoe else 1.0) * Chapters.heal_mult(self))
 	# Hấp Huyết: 8% sát thương thành máu.
 	if has_talent("hap-huyet"):
 		# TP13 Huyết Chiến Thần (Huyết Chiến + Hấp Huyết): HP < 30% → hút máu ×2.
@@ -2907,12 +3109,19 @@ func el_of(e: Enemy) -> String:
 
 
 ## TL-S6: Ngũ Hành Linh Căn đánh hệ khắc +30% (Phép thuật cấp 5: +40%).
+## NL-1 (docs/47 §3.A, Q231): vũ khí ấn hệ bằng ngọc (≥ 2 viên cùng hệ) khắc hệ +15%; có cả Thiên phú thì lấy mức cao hơn.
+## Thức Tỉnh "Đòn khắc hệ" cộng thêm khi đang khắc.
 func element_bonus(e: Enemy) -> float:
-	if not has_talent("ngu-hanh"):
-		return 0.0
-	if not Monsters.counters(profile.element, el_of(e)):
-		return 0.0
-	return tvt("ngu-hanh", Monsters.COUNTER_BONUS, 0.4) + (0.1 if TalentSlots.has_group_sub(profile, "magic", 1) else 0.0)
+	var b := 0.0
+	var el := el_of(e)
+	if has_talent("ngu-hanh") and Monsters.counters(profile.element, el):
+		b = tvt("ngu-hanh", Monsters.COUNTER_BONUS, 0.4) + (0.1 if TalentSlots.has_group_sub(profile, "magic", 1) else 0.0)
+	var seal := str(stats.get("seal", ""))
+	if seal != "" and Monsters.counters(seal, el):
+		b = maxf(b, GearData.SEAL_BONUS)
+	if b > 0.0:
+		b += float(stats.get("counter_dmg", 0.0))
+	return b
 
 
 ## SN9-03: màu số sát thương theo loại đòn (không chí mạng). kind "" = thường (trắng) / đồng minh (tím).
@@ -3253,6 +3462,7 @@ func _on_boss_killed(e: Enemy) -> void:
 ## EQ-04/05/06: rơi trang bị và Đá Cường Hoá.
 func _drop_loot(e: Enemy) -> void:
 	_drop_mp_potion(e)
+	_drop_gems(e)
 	if e.role == "rare":
 		var rd := _rare_def(e.kind)
 		if rd.get("purple", true):
@@ -3291,6 +3501,23 @@ func _drop_mp_potion(e: Enemy) -> void:
 		return
 	profile.mp_potions += n
 	_pickup_note("mp_potion", "+%d Bình MP", float(n), Color("#6fb6ff"))
+
+
+## NL-1 (docs/47 §3.A): ngọc rơi theo hệ của quái (RNG rơi đồ riêng — không đổi chuỗi _r() của trận đánh).
+func _drop_gems(e: Enemy) -> void:
+	var got := Gear.roll_drop(profile, el_of(e), e.role, e.elite, _loot_rng.randf)
+	for k in got:
+		var pr := Items.gem_parse(k)
+		_pickup_note("gem:" + k, "+%d " + Gear.gem_name(k), 1.0, Color(str(Monsters.ELEMENT_HEX.get(pr[0], "#ffffff"))))
+	if not got.is_empty():
+		_codex_title()
+
+
+## NL-1 (docs/47 §3.F): đạt mốc Bảo Giám có danh hiệu → thông báo.
+func _codex_title() -> void:
+	var t := Gear.codex_titles(profile)
+	if t != "":
+		_message("Bảo Giám: nhận danh hiệu “%s”." % t, "good")
 
 
 func _drop_item(pos: Vector2, level: int, rarity: String, unique := "") -> void:
@@ -3631,15 +3858,44 @@ func _clamp_to_arena(pos: Vector2, radius: float) -> Vector2:
 	return pos if off.length() <= limit else arena_pos + off.normalized() * limit
 
 
+## PF-02 (docs/44 §7): lưới ô cạnh = đường kính quái lớn nhất thay vì so mọi cặp (120 quái = 7 140 cặp mỗi khung).
+## Ô lấy theo vị trí đầu khung; cặp của mỗi quái vẫn xử lý theo thứ tự j tăng dần như bản so mọi cặp.
 func _separate_enemies() -> void:
-	for i in enemies.size():
+	var n := enemies.size()
+	var max_r := 1.0
+	for e in enemies:
+		if not e.dead:
+			max_r = maxf(max_r, e.radius)
+	var cell := max_r * 2.0
+	var grid := {}
+	var keys: Array[Vector2i] = []
+	keys.resize(n)
+	for i in n:
+		var e: Enemy = enemies[i]
+		if e.dead:
+			continue
+		var k := Vector2i(floori(e.pos.x / cell), floori(e.pos.y / cell))
+		keys[i] = k
+		if grid.has(k):
+			grid[k].append(i)
+		else:
+			grid[k] = [i]
+	for i in n:
 		var a: Enemy = enemies[i]
 		if a.dead:
 			continue
-		for j in range(i + 1, enemies.size()):
+		var near: Array = []
+		var ki: Vector2i = keys[i]
+		for dx in range(-1, 2):
+			for dy in range(-1, 2):
+				for j in grid.get(ki + Vector2i(dx, dy), []):
+					if j > i:
+						near.append(j)
+		if near.is_empty():
+			continue
+		near.sort()
+		for j in near:
 			var b: Enemy = enemies[j]
-			if b.dead:
-				continue
 			var off := b.pos - a.pos
 			var d := off.length()
 			var min_d := a.radius + b.radius
@@ -3668,8 +3924,11 @@ func _update_pickups(dt: float) -> void:
 	var p := player
 	for pk in pickups:
 		pk.ttl -= dt
+		pk.warn_t -= dt
+		if pk.blocked and profile.inventory.size() < ItemData.BAG_SIZE:
+			pk.blocked = false
 		var d: float = pk.pos.distance_to(p.pos)
-		if d < 130.0:
+		if d < 130.0 and not pk.blocked:
 			pk.pos = pk.pos.move_toward(p.pos, 380.0 * dt)
 		if d < 22.0:
 			pk.ttl = 0.0
@@ -3682,6 +3941,19 @@ func _update_pickups(dt: float) -> void:
 				profile.stones += int(pk.value)
 				_pickup_note("stone", "+%d Đá Cường Hoá", float(pk.value), Color("#9ec8ff"))
 			elif pk.kind == "item":
+				# CR-04.3: tự bán / phân rã theo quy tắc (chỉ đồ rơi từ quái / rương, không áp cho thưởng nhiệm vụ).
+				if _auto_loot(pk.item) != "":
+					_sfx("pickup_gold")
+					continue
+				# CR-04 R1: đồ Cam / món khoá gặp túi đầy không phân rã (EQ-09) — nằm lại trên đất, nhắc dọn túi.
+				if profile.inventory.size() >= ItemData.BAG_SIZE and Items.must_keep(pk.item):
+					pk.ttl = maxf(pk.ttl, BLOCKED_PICKUP_TTL)
+					pk.blocked = true
+					if pk.warn_t <= 0.0:
+						pk.warn_t = BLOCKED_WARN_EVERY
+						_message("Túi đầy — dọn túi (bán / phân rã) để nhặt %s." % Items.display_name(pk.item), "bad")
+						_pickup_note("bag_full", "Túi đầy!", 0.0, Color("#ff7a5a"), true)
+					continue
 				var res := Items.add_item(profile, pk.item)
 				_pickup_note("item_%d" % int(pk.item.id), Items.display_name(pk.item), 0.0, Items.rarity_color(pk.item), true)
 				_sfx("pickup_item")
@@ -4118,6 +4390,70 @@ func enhance(item_id: int) -> Dictionary:
 
 func salvage(item_id: int) -> Dictionary:
 	return _item_action(Items.salvage(profile, item_id, _rng), false)
+
+
+# ------------------------------------------------------------------ NL-1: tăng Lực chiến trang bị (docs/47)
+## Mọi thao tác đi qua đây: thông báo + tính lại chỉ số + danh hiệu Bảo Giám. Lò Rèn gọi các hàm dưới.
+
+func _gear(res: Dictionary) -> Dictionary:
+	_item_action(res, true)
+	if res.ok:
+		_codex_title()
+	return res
+
+
+func gem_socket(item_id: int, key: String) -> Dictionary:
+	return _gear(Gear.socket(profile, item_id, key))
+
+
+func gem_unsocket(item_id: int, idx: int) -> Dictionary:
+	return _gear(Gear.unsocket(profile, item_id, idx))
+
+
+func gem_punch(item_id: int) -> Dictionary:
+	return _gear(Gear.punch(profile, item_id))
+
+
+func gem_combine(key: String) -> Dictionary:
+	return _gear(Gear.combine(profile, key))
+
+
+func gem_combine_all() -> Dictionary:
+	return _gear(Gear.combine_all(profile))
+
+
+func reforge(item_id: int, idx: int, mode: String) -> Dictionary:
+	var res := Gear.reforge(profile, item_id, idx, mode, _rng)
+	_message(res.message, "good" if res.ok else "bad")
+	return res
+
+
+func reforge_keep(item_id: int, take_new: bool) -> Dictionary:
+	return _gear(Gear.reforge_keep(profile, item_id, take_new))
+
+
+func ascend(item_id: int, mat_id: int, take_plus := true) -> Dictionary:
+	return _gear(Gear.ascend(profile, item_id, mat_id, _rng, take_plus))
+
+
+func gear_levelup(item_id: int) -> Dictionary:
+	return _gear(Gear.levelup(profile, item_id))
+
+
+func awaken(item_id: int) -> Dictionary:
+	return _gear(Gear.awaken(profile, item_id, _rng))
+
+
+func awaken_choose(item_id: int, line: String) -> Dictionary:
+	return _gear(Gear.awaken_choose(profile, item_id, line))
+
+
+func awaken_reroll(item_id: int) -> Dictionary:
+	return _gear(Gear.awaken_reroll(profile, item_id, _rng))
+
+
+func power_tips() -> Array:
+	return Gear.suggestions(profile)
 
 
 func _item_action(res: Dictionary, restat: bool) -> Dictionary:
@@ -4800,19 +5136,38 @@ func shop_buy(kind: String) -> Dictionary:
 	return _shop_result(false, "Không có món này.")
 
 
-static func sell_price(item: Dictionary) -> int:
-	return 5 * maxi(1, int(item.level)) * int(SELL_MULT.get(item.rarity, 1)) * (1 + int(item.plus) / 3)
+## p: hồ sơ người bán (bỏ trống = giá gốc, vd giá Thương nhân lữ hành). CR-04.4: Bàn Tay Vàng dạng Điểm Kim
+## (Thiên phú chính, đã tiến hoá) bán đồ +50% vàng — đúng mô tả ở data/talents.gd EVOLUTION.
+static func sell_price(item: Dictionary, p = null) -> int:
+	var base := 5 * maxi(1, int(item.level)) * int(SELL_MULT.get(item.rarity, 1)) * (1 + int(item.plus) / 3)
+	if p != null and golden_seller(p):
+		return int(round(base * GOLDEN_SELL_MULT))
+	return base
 
 
+const GOLDEN_SELL_MULT := 1.5
+
+
+## Q217 (chốt 09/11): Thần Tài giữ +50% của Điểm Kim (tiến hoá cộng dồn).
+static func golden_seller(p) -> bool:
+	return Items.golden_form(p) >= 1
+
+
+## TB-12 / CR-04.1: bán ở cửa hàng hoặc ngay trong Túi đồ, ở mọi nơi, đủ giá (Q211).
 func sell_item(item_id: int) -> Dictionary:
 	var i := Items.find_in_bag(profile, item_id)
 	if i < 0:
 		return _shop_result(false, "Chỉ bán được đồ trong túi (tháo ra trước).")
 	var item: Dictionary = profile.inventory[i]
-	var price := sell_price(item)
+	if Items.is_locked(item):
+		return _shop_result(false, Items.LOCKED_MSG)
+	var price := sell_price(item, profile)
 	profile.inventory.remove_at(i)
 	profile.gold += price
-	return _shop_result(true, "Bán %s: +%d vàng." % [Items.display_name(item), price])
+	var gems_back := Items.strip_gems(profile, item)
+	_push_buyback(item, price)
+	var gtxt := (" %d viên ngọc về Túi Ngọc." % gems_back) if gems_back > 0 else ""
+	return _shop_result(true, "Bán %s: +%d vàng.%s" % [Items.display_name(item), price, gtxt])
 
 
 ## C1-32: Thương nhân lữ hành — 3 món Xanh dương/Tím trong 1 giờ thực.

@@ -42,8 +42,10 @@ const ORB_R := PORTRAIT_R + 19.0
 var data := {
 	"name": "", "level": 1, "class_id": "", "look": {}, "talent_name": "", "talent_icon": null,
 	"rank_color": Color.WHITE, "hp": 1.0, "hp_text": "", "mp": 1.0, "mp_text": "", "exp": 0.0, "exp_text": "",
-	"power": 0, "points": 0, "extra": "", "time": 0.0, "element": "",
+	"power": 0, "points": 0, "extra": "", "time": 0.0, "element": "", "tips": 0,
 }
+## NL-1 (docs/47 §5): bấm huy hiệu Lực chiến → Lò Rèn tab "Gợi ý Lực chiến".
+signal power_pressed
 ## PF-01 (04/11): toàn bộ khung vẽ vào lớp nướng _art (1 ảnh); chỉ nướng lại khi dữ liệu đổi / chân dung sang khung
 ## (3 lần/giây). Các chấm sáng nhấp nháy vẽ thẳng mỗi khung trên node này (_draw). _cv = nơi các hàm vẽ ghi lệnh.
 var _cv: CanvasItem
@@ -61,6 +63,19 @@ func _ready() -> void:
 	add_child(_art)
 	mouse_filter = MOUSE_FILTER_IGNORE
 	scale = Vector2.ONE * SCALE
+	# NL-1: nút trong suốt đè lên huy hiệu Lực chiến.
+	var pb := Button.new()
+	pb.name = "PowerButton"
+	pb.flat = true
+	pb.focus_mode = Control.FOCUS_NONE
+	pb.position = Vector2(28.0 - 24.0, 70.0 - 24.0)
+	pb.size = Vector2(48, 48)
+	pb.tooltip_text = "Lực chiến — bấm để xem gợi ý tăng Lực chiến"
+	var clear := StyleBoxEmpty.new()
+	for st in ["normal", "hover", "pressed", "focus"]:
+		pb.add_theme_stylebox_override(st, clear)
+	pb.pressed.connect(func(): power_pressed.emit())
+	add_child(pb)
 
 
 func set_data(d: Dictionary) -> void:
@@ -268,6 +283,11 @@ func _draw_hex(c: Vector2, kind: String) -> void:
 	if kind == "power":
 		_compass(c + Vector2(0, -8), 8.0)
 		_text(_short(int(data.power)), c + Vector2(-r, 8), r * 2.0, 15, GOLD_LIGHT, true)
+		# NL-1: có việc tăng Lực chiến làm được ngay → mũi tên xanh góc trên phải.
+		if int(data.get("tips", 0)) > 0:
+			var a := c + Vector2(r * 0.72, -r * 0.62)
+			_cv.draw_colored_polygon(PackedVector2Array([a + Vector2(0, -7), a + Vector2(6, 2), a + Vector2(-6, 2)]), Color("#5be37a"))
+			_cv.draw_polyline(PackedVector2Array([a + Vector2(0, -7), a + Vector2(6, 2), a + Vector2(-6, 2), a + Vector2(0, -7)]), Color("#0d2a14"), 1.5, true)
 		return
 	var pts_n := int(data.points)
 	var col := GOLD_LIGHT if active else Color(GOLD, 0.45)

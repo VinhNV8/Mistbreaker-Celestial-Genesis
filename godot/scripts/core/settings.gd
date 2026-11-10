@@ -7,7 +7,17 @@ const PATH := "user://settings.cfg"
 ## skill_fx_rev: phiên bản mặc định; file cài đặt cũ (rev 0) đang "auto" = mặc định cũ → chuyển sang "fx1" một lần.
 const DEFAULTS := {"master": 0.8, "music": 0.6, "sfx": 0.8, "fullscreen": false, "font_scale": 1.0, "hd_art": true,
 	"skill_fx": "fx1", "skill_fx_rev": 1, "fx_shake": true, "fx_soft": false, "tele_style": "natural",
-	"nameplates": "smart", "low_hp_warn": true, "colorblind": false, "keybinds": {}}
+	"nameplates": "smart", "low_hp_warn": true, "colorblind": false, "keybinds": {},
+	"view_range": "mid", "ui_scale": 0.0, "quest_compact": false, "depth_fx": true,
+	"tilt": "low", "hud_minimap": true, "hud_quest": true, "ambient": 0.7,
+	"combo_style": "big"}
+## VS-1 (docs/44): view_range — Tầm nhìn "near" / "mid" / "far"; ui_scale — cỡ giao diện (0 = tự động theo độ phân giải);
+## quest_compact — khung nhiệm vụ HUD thu gọn (chuột phải vào khung); depth_fx — bóng đổ + ánh sáng nền (chiều sâu bản đồ).
+## MU-1 (docs/46): ambient — âm lượng âm thanh môi trường (bus "Ambient").
+## CR-05: hud_minimap / hud_quest — hiện bản đồ nhỏ / khung nhiệm vụ trên HUD (nút ẩn / hiện cạnh bản đồ nhỏ).
+## GN-3 (docs/45 Q223): combo_style — bộ đếm combo "big" (mặc định) / "small" (dòng chữ UI-54) / "off".
+const COMBO_STYLES := [["big", "Lớn"], ["small", "Nhỏ"], ["off", "Tắt"]]
+## GN-1 (docs/45): tilt — nghiêng phối cảnh "off" / "low" (mặc định) / "mid".
 ## UI-53 / 55 / 61 / 63 (docs/38): nameplates — "smart" / "always" / "off" (bảng tên quái); low_hp_warn — viền đỏ máu thấp;
 ## colorblind — bảng màu cho người mù màu đỏ–lục; keybinds — {action: [mã phím vật lý…]} phím người chơi đổi.
 ## FX-1 §9.8: fx_shake — rung màn hình + khựng đòn ngắn khi chiêu mạnh va chạm; fx_soft — giảm chớp sáng (không làm tối nền,
@@ -67,5 +77,6 @@ static func apply() -> void:
 	AudioServer.set_bus_volume_db(0, linear_to_db(maxf(0.0001, float(values.master))))
 	AudioServer.set_bus_volume_db(_bus("Music"), linear_to_db(maxf(0.0001, float(values.music))))
 	AudioServer.set_bus_volume_db(_bus("SFX"), linear_to_db(maxf(0.0001, float(values.sfx))))
+	AudioServer.set_bus_volume_db(_bus("Ambient"), linear_to_db(maxf(0.0001, float(values.get("ambient", 0.7)))))
 	if DisplayServer.get_name() != "headless":
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN if values.fullscreen else DisplayServer.WINDOW_MODE_WINDOWED)

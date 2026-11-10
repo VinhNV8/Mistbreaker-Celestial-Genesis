@@ -285,10 +285,11 @@ static var _guide_cache := {}
 static func guide(w) -> Dictionary:
 	# thế giới, bản đồ nhỏ, HUD cùng gọi trong một khung hình → tính 1 lần / khung (test gọi liên tiếp: khoá theo time)
 	var key := "%d|%s|%f" % [Engine.get_process_frames(), w.map_id, w.time]
-	if _guide_cache.get("key", "") == key and _guide_cache.get("w") == w:
+	# chỉ giữ mã đối tượng (biến tĩnh giữ GameWorld làm Godot sập lúc thoát)
+	if _guide_cache.get("key", "") == key and int(_guide_cache.get("w", 0)) == w.get_instance_id():
 		return _guide_cache.val
 	var val := _guide(w)
-	_guide_cache = {"key": key, "w": w, "val": val}
+	_guide_cache = {"key": key, "w": w.get_instance_id(), "val": val}
 	return val
 
 

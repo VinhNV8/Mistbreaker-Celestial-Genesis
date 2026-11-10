@@ -6,6 +6,7 @@ extends RefCounted
 const UiTheme = preload("res://scripts/ui/ui_theme.gd")
 const Ornate = preload("res://scripts/ui/ornate.gd")
 const ItemData = preload("res://scripts/data/items.gd")
+const Items = preload("res://scripts/core/items.gd")
 
 ## [id, tên]. stats / bag / res là tab của Túi đồ; skills / talent là bảng riêng (U / T).
 const TABS := [["stats", "Thuộc tính"], ["bag", "Trang bị"], ["res", "Tài nguyên"], ["skills", "Kỹ năng"], ["talent", "Thiên phú"]]
@@ -46,6 +47,10 @@ static func build(world, active: String, on_pick: Callable, on_close: Callable) 
 		tb.focus_mode = Control.FOCUS_NONE
 		tb.custom_minimum_size = Vector2(127, 57)
 		tb.tooltip_text = TIPS[key] + ((" · %d/%d ô" % [p.inventory.size(), ItemData.BAG_SIZE]) if key == "bag" else "")
+		# CR-04 TD-12: tự động xử lý đồ đang bật → chấm xanh + chế độ trong tooltip.
+		if key == "bag" and world.has_method("loot_rules") and str(world.loot_rules().mode) != "off":
+			tb.text += " ●"
+			tb.tooltip_text += " · Tự động: " + str(Items.LOOT_MODE_NAMES[world.loot_rules().mode])
 		tb.add_theme_font_size_override("font_size", UiTheme.fs(17))
 		for e in [["normal", on_style if on else StyleBoxEmpty.new()], ["hover", on_style if on else hover], ["pressed", on_style],
 				["hover_pressed", on_style], ["focus", StyleBoxEmpty.new()]]:

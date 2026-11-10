@@ -9,6 +9,8 @@ const RngUtil = preload("res://scripts/core/rng_util.gd")
 const SaveSystem = preload("res://scripts/core/save_system.gd")
 const Explore = preload("res://scripts/core/explore.gd")
 const WorldView = preload("res://scripts/view/world_view.gd")
+## GN-1 P1 (docs/45): nghiêng phối cảnh nhẹ (lớp shader biến dạng hình thang).
+const Tilt = preload("res://scripts/view/tilt.gd")
 const Hud = preload("res://scripts/ui/hud.gd")
 const MapPanel = preload("res://scripts/ui/map_panel.gd")
 const InventoryPanel = preload("res://scripts/ui/inventory_panel.gd")
@@ -37,6 +39,8 @@ const DivinePanel = preload("res://scripts/ui/divine_panel.gd")
 const PauseMenu = preload("res://scripts/ui/pause_menu.gd")
 const Keybinds = preload("res://scripts/core/keybinds.gd")
 const Settings = preload("res://scripts/core/settings.gd")
+const ViewScale = preload("res://scripts/core/view_scale.gd")
+const AtmosLayer = preload("res://scripts/view/atmos_layer.gd")
 const AudioManager = preload("res://scripts/audio/audio_manager.gd")
 
 ## Phím mặc định. Nếu đã khai báo action cùng tên trong Project Settings > Input Map thì dùng bản đó.
@@ -93,7 +97,17 @@ var _view: WorldView
 var _camera: Camera2D
 var _fx: CanvasLayer
 var _vignette: TextureRect
+## VS-1 B4/B5 (docs/44): sương xa, hạt bay, tia nắng, tiền cảnh mép màn hình — dưới vignette.
+var _atmos: AtmosLayer
 var _freeze_tint: ColorRect
+## GN-1 P1: lớp phủ nghiêng phối cảnh (đầu tiên trong _fx → chỉ đọc ảnh thế giới); _tilt_g = 0 là tắt.
+var _tilt: ColorRect
+var _tilt_g := 0.0
+## GN-1 P2 / P3: zoom gần khi đánh boss (hệ số hiện tại, lerp) + camera dẫn hướng theo hướng chạy.
+var _base_zoom := 1.0
+var _fight_k := 1.0
+var _lead := Vector2.ZERO
+var _last_ppos := Vector2.INF
 var _ui: Control
 var _screen: Control
 var _victory: Control
@@ -107,6 +121,8 @@ var divine_panel: DivinePanel
 ## M12 (C9-47): bảng tổng kết + danh đề chờ hết thoại kết thúc rồi mới hiện.
 var _pending_credits := false
 var audio: AudioManager
+## MU-1 S5: vùng của map trước (nhạc báo khi sang vùng mới); 0 = chưa có.
+var _last_region := 0
 var _pause: PauseMenu
 ## Sau khi đóng thoại, bỏ qua phím 0,2 giây (Space vừa dùng để tắt thoại không thành né lăn).
 var _dialog_cool := 0.0
@@ -143,6 +159,17 @@ func _ready() -> void:
 	_fx.layer = 1
 	_fx.visible = false
 	add_child(_fx)
+	_tilt = ColorRect.new()
+	var tmat := ShaderMaterial.new()
+	tmat.shader = Shader.new()
+	tmat.shader.code = Tilt.SHADER
+	_tilt.material = tmat
+	_tilt.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_tilt.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_tilt.visible = false
+	_fx.add_child(_tilt)
+	_atmos = AtmosLayer.new()
+	_fx.add_child(_atmos)
 	_vignette = TextureRect.new()
 	_vignette.texture = _vignette_texture()
 	_vignette.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -209,6 +236,94 @@ func _vignette_texture() -> GradientTexture2D:
 	tex.width = 256
 	tex.height = 256
 	return tex
+
+
+## VS-1 (docs/44): cỡ giao diện (content_scale_factor) + zoom camera thế giới theo cỡ cửa sổ và Cài đặt.
+## Gọi mỗi khung (rẻ) — chỉ đặt lại khi cửa sổ / cài đặt đổi.
+var _view_sig := ""
+
+
+func _apply_view_scale() -> void:
+	var win := Vector2(get_window().size)
+	var rng := str(Settings.values.get("view_range", "mid"))
+	var pick := float(Settings.values.get("ui_scale", 0.0))
+	var tilt := str(Settings.values.get("tilt", "low"))
+	var sig := "%s|%s|%s|%s" % [win, rng, pick, tilt]
+	if sig != _view_sig:
+		_view_sig = sig
+		var u := ViewScale.ui_scale(pick, win)
+		get_window().content_scale_factor = u
+		# GN-1 P1: ảnh nghiêng phóng phần giữa màn hình lên center_scale lần → camera zoom ra bù lại.
+		_tilt_g = Tilt.g_of(tilt)
+		_view.tilt_g = _tilt_g
+		_base_zoom = ViewScale.camera_zoom(rng, win, u) / Tilt.center_scale(_tilt_g)
+		if _tilt != null:
+			(_tilt.material as ShaderMaterial).set_shader_parameter("g", _tilt_g)
+	if _tilt != null:
+		_tilt.visible = _tilt_g > 0.0 and world != null
+	# GN-1 P2 (Q219): đang có boss sống trong tầm → zoom gần ×FIGHT_ZOOM trong ~0,6 giây, hết trận trở lại.
+	var want := FIGHT_ZOOM if world != null and _boss_near() else 1.0
+	_fight_k = move_toward(_fight_k, want, get_process_delta_time() * (FIGHT_ZOOM - 1.0) / 0.6)
+	var z := _base_zoom * _fight_k
+	if _camera != null and absf(_camera.zoom.x - z) > 0.00001:
+		_camera.zoom = Vector2(z, z)
+	ViewScale.text_k = 1.0 / z
+
+
+const FIGHT_ZOOM := 1.1
+## Boss được tính là "đang đánh" khi còn sống và ở gần (≤ 700 px) — boss hiếm đi lang thang xa không kéo camera.
+const FIGHT_RANGE := 700.0
+## GN-1 P3: camera lệch về hướng chạy 5% khung nhìn, đổi hướng mượt trong ~0,8 giây.
+const LEAD_FRAC := 0.05
+## CR-05: khung bao nhân vật quanh chân (toạ độ thế giới) — thân + đầu + vũ khí giơ cao.
+const PLAYER_BOX := Rect2(-30, -96, 60, 108)
+
+
+func _boss_near() -> bool:
+	var b = world.boss()
+	return b != null and b.pos.distance_to(world.player.pos) <= FIGHT_RANGE
+
+
+func _update_lead(delta: float) -> void:
+	var p: Vector2 = world.player.pos
+	var vel := Vector2.ZERO
+	if _last_ppos != Vector2.INF and delta > 0.0:
+		vel = (p - _last_ppos) / delta
+	_last_ppos = p
+	# dịch chuyển (đổi map, né xa) không tính là chạy
+	if vel.length() > 900.0:
+		vel = Vector2.ZERO
+		_lead = Vector2.ZERO
+	var view := get_viewport().get_visible_rect().size / _camera.zoom
+	var target := Vector2.ZERO
+	if vel.length() > 40.0:
+		target = vel.normalized() * view * LEAD_FRAC
+	_lead = _lead.lerp(target, clampf(delta * 1.6, 0.0, 1.0))
+	_view.cam_lead = _lead
+
+
+## GN-1 P1: chỗ con trỏ chuột trên bản đồ — có nghiêng phối cảnh thì đổi ngược qua phép biến dạng.
+func _world_mouse() -> Vector2:
+	if _tilt_g <= 0.0:
+		return _view.get_global_mouse_position()
+	var vp := get_viewport()
+	var sz := vp.get_visible_rect().size
+	var uv := Tilt.src_uv(vp.get_mouse_position() / sz, _tilt_g)
+	return _view.get_canvas_transform().affine_inverse() * (uv * sz)
+
+
+## CR-05 (Spec_Notes 09/11): khung bao nhân vật trên màn hình (toạ độ giao diện) — HUD làm mờ bản đồ nhỏ /
+## khung nhiệm vụ khi chúng đè lên. Có nghiêng phối cảnh thì đổi 2 góc qua Tilt.dst_uv.
+func _player_screen_rect() -> Rect2:
+	var xf := _view.get_canvas_transform()
+	var p := world.player.pos
+	var a := xf * (p + PLAYER_BOX.position)
+	var b := xf * (p + PLAYER_BOX.end)
+	if _tilt_g > 0.0:
+		var sz := get_viewport().get_visible_rect().size
+		a = Tilt.dst_uv(a / sz, _tilt_g) * sz
+		b = Tilt.dst_uv(b / sz, _tilt_g) * sz
+	return Rect2(a, b - a).abs()
 
 
 # ------------------------------------------------------------------ vòng lặp
@@ -335,6 +450,7 @@ func _any_panel_open() -> bool:
 
 
 func _process(delta: float) -> void:
+	_apply_view_scale()
 	if world == null:
 		return
 	var dt := minf(delta, 0.05)
@@ -354,13 +470,20 @@ func _process(delta: float) -> void:
 		_victory = Screens.credits(world, _after_credits)
 		_ui.add_child(_victory)
 	_camera.position = world.player.pos
+	_update_lead(dt)
+	_atmos.world = world
+	_atmos.cam = _camera.get_screen_center_position()
+	_atmos.zoom = _camera.zoom.x
+	_atmos.queue_redraw()
 	_vignette.modulate.a = 0.45 + 0.35 * world.player.pos.x / world.world_size.x
 	_freeze_tint.visible = world.freeze_timer > 0.0
+	hud.focus_rect = _player_screen_rect()
 	hud.update_from(world)
 	for id in world.sfx:
 		audio.play(str(id))
 	world.sfx.clear()
 	audio.music(_music_for(world))
+	audio.ambient(ambient_for(world))
 	_save_timer += delta
 	if _save_timer > 5.0:
 		_save_timer = 0.0
@@ -369,7 +492,7 @@ func _process(delta: float) -> void:
 
 func _read_input() -> Dictionary:
 	var move := Input.get_vector("move_left", "move_right", "move_up", "move_down")
-	var aim := _view.get_global_mouse_position()
+	var aim := _world_mouse()
 	if move != Vector2.ZERO:
 		_kb_dir = move.normalized()
 	# C1-01: chuột không di chuyển trong 1,5 giây = chơi bàn phím → đánh theo hướng di chuyển cuối cùng,
@@ -415,10 +538,16 @@ func _handle_event(ev: Dictionary) -> void:
 			hud.log_message(ev.text, ev.tone)
 		"levelup":
 			hud.banner("Lên cấp %d!" % ev.level, str(ev.get("growth", "")))
+			audio.stinger("st_levelup")
 			_persist()
 		"tile":
 			_persist()
 		"map":
+			# MU-1 S5: sang vùng mới (khác vùng trước) → nhạc báo
+			var region := int(world.map.get("region", 1))
+			if region != _last_region and _last_region > 0:
+				audio.stinger("st_region")
+			_last_region = region
 			# Rà soát 01/11: bảng lục địa mở từ Cổng Dịch Chuyển không ở lại với nội dung của map cũ.
 			if world_panel.is_open():
 				world_panel.close()
@@ -432,6 +561,7 @@ func _handle_event(ev: Dictionary) -> void:
 			dialog.push(str(ev.id))
 		"quest_done":
 			_persist()
+			audio.stinger("st_quest")
 			_quest_banner(ev)
 		"sub_ritual":
 			# TP5-02 (docs/33): chuyển chức xong → Lễ Thức Tỉnh ô Thiên phú phụ.
@@ -445,6 +575,7 @@ func _handle_event(ev: Dictionary) -> void:
 			world_panel.open(world)
 		"victory":
 			_persist()
+			audio.stinger("st_victory")
 			_victory = Screens.victory(world, _after_victory, _go_title, str(ev.get("boss", "boss")))
 			_ui.add_child(_victory)
 		"ending_choice":
@@ -479,8 +610,12 @@ func _after_victory() -> void:
 
 
 func _fit_camera() -> void:
-	_camera.limit_right = int(world.world_size.x)
-	_camera.limit_bottom = int(world.world_size.y)
+	# GN-4 E6 (docs/45 §9): có vách đá viền map → camera được nhìn ra ngoài mép (người chơi vẫn bị chặn ở mép cũ)
+	var m: Vector3 = _view.TerrainEdge.margins(world)
+	_camera.limit_left = -int(m.y)
+	_camera.limit_top = -int(m.x)
+	_camera.limit_right = int(world.world_size.x + m.y)
+	_camera.limit_bottom = int(world.world_size.y + m.z)
 
 
 func _close_victory() -> void:
@@ -652,6 +787,7 @@ func _start_world(p: Profile) -> void:
 	_end_session()
 	world = GameWorld.new(p, RngUtil.make(randi()))
 	_view.world = world
+	_last_region = int(world.map.get("region", 1))
 	_view.visible = true
 	_fx.visible = true
 	hud = Hud.new()
@@ -672,6 +808,8 @@ func _start_world(p: Profile) -> void:
 	quest_panel.guide_requested.connect(_on_quest_guide)
 	hud.quest_clicked.connect(_on_quest_guide)
 	hud.track_clicked.connect(_on_track_guide)
+	# NL-1 (docs/47 §5): huy hiệu Lực chiến → Lò Rèn, tab Gợi ý.
+	hud.power_clicked.connect(func(): _open_forge("tips"))
 	world_panel = WorldMapPanel.new()
 	_ui.add_child(world_panel)
 	shop_panel = ShopPanel.new()
@@ -1580,6 +1718,20 @@ func _run_smoke(dir: String) -> void:
 ## Rà soát 01/11: nhạc theo vùng (tools/audio/music.py) — vùng 2–9 có bản riêng; boss vùng 7–9 dùng "boss_final";
 ## hang phụ dùng "core" (u ám); vùng an toàn dùng "village".
 const REGION_MUSIC := {1: "forest", 2: "plains", 3: "desert", 4: "swamp", 5: "volcano", 6: "tundra", 7: "sky", 8: "void", 9: "heaven"}
+
+
+## MU-1 S3 (docs/46): âm môi trường — hang / Lõi Sương: hang; gần khu an toàn vùng 1: làng; còn lại theo vùng.
+const REGION_AMBIENT := {1: "amb_forest", 2: "amb_plains", 3: "amb_desert", 4: "amb_swamp", 5: "amb_volcano", 6: "amb_tundra",
+	7: "amb_sky", 8: "amb_void", 9: "amb_heaven"}
+
+
+static func ambient_for(w: GameWorld) -> String:
+	if w.map_id == "1-3" or w.in_cave():
+		return "amb_cave"
+	var region := int(w.map.get("region", 1))
+	if region == 1 and w.player.pos.distance_to(w.safe_pos) < w.safe_r + 250.0:
+		return "amb_village"
+	return str(REGION_AMBIENT.get(region, "amb_forest"))
 
 
 func _music_for(w: GameWorld) -> String:

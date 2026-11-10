@@ -13,7 +13,9 @@ const TIPS := [
 	"Quái bị đánh từ xa sẽ lao tới nhanh hơn — đừng đứng yên khi thả diều.",
 	"Đảo bay: rơi khỏi mép về Đá Neo gần nhất, mất 10% HP. Lông Vũ Gió (Q) giúp lướt qua khe.",
 	"Có điểm tiềm năng: huy hiệu \"+N\" trên khung nhân vật nhấp nháy — nhấn C để cộng.",
+	"Túi đồ (I): rê chuột lên món rồi bấm S bán, D phân rã, L khoá (món khoá không bị bán / phân rã / tự xử lý). Tab Tự động: tự bán hoặc phân rã đồ khi nhặt theo phẩm chất; tab Mua lại: chuộc 10 món vừa bán.",
 	"Kỹ năng mới tự lắp vào ô trống. Đổi kỹ năng: phím U, kéo kỹ năng vào hàng Thanh kỹ năng, hoặc chuột phải một ô trên thanh. Phím X đổi Bộ 1 / Bộ 2.",
+	"Tăng Lực chiến ngoài cường hoá (Lò Rèn, phím R): khảm ngọc Ngũ Hành (từ chương 2), tẩy luyện dòng phụ (chương 3), thăng phẩm (chương 4), luyện cấp đồ Cam / bộ, thức tỉnh (sau chuyển chức 3), Bảo Giám. Bấm huy hiệu Lực chiến để xem việc làm được ngay.",
 ]
 
 

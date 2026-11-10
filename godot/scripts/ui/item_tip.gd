@@ -6,6 +6,7 @@ extends PanelContainer
 
 const UiTheme = preload("res://scripts/ui/ui_theme.gd")
 const Items = preload("res://scripts/core/items.gd")
+const Ornate = preload("res://scripts/ui/ornate.gd")
 const ItemCard = preload("res://scripts/ui/item_card.gd")
 const ItemData = preload("res://scripts/data/items.gd")
 
@@ -65,7 +66,19 @@ static func card(world, item: Dictionary, header: String, worn := {}, compare :=
 	var title := ""
 	if compare:
 		title = "So với đang mặc:" if not worn.is_empty() else "Ô này đang trống — mặc vào:"
-	pc.add_child(ItemCard.build(item, CARD_W, header, world.profile if world != null else null, diff, title))
+	var v: VBoxContainer = ItemCard.build(item, CARD_W, header, world.profile if world != null else null, diff, title)
+	pc.add_child(v)
+	# CR-04 TD-05: giá bán / phân rã (+ khoá) ở cuối thẻ.
+	# R4: chỉ món trong túi (thẻ có so sánh) — đồ đang mặc không bán được.
+	if world != null and compare:
+		var txt := "Bán: %s vàng · Phân rã: %d đá" % [Ornate.group(world.sell_price(item, world.profile)), Items.salvage_value(item, world.profile)]
+		if Items.is_locked(item):
+			txt += " · Đã khoá"
+		var pl := UiTheme.label(txt, "Small")
+		pl.name = "PriceLine"
+		pl.add_theme_color_override("font_color", Color("#e8c66a"))
+		pl.mouse_filter = MOUSE_FILTER_IGNORE
+		v.add_child(pl)
 	return pc
 
 

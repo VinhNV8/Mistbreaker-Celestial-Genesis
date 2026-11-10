@@ -11,6 +11,9 @@ const ItemData = preload("res://scripts/data/items.gd")
 const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
 const GameWorld = preload("res://scripts/core/game_world.gd")
 const BulkBox = preload("res://scripts/ui/bulk_box.gd")
+const LootBox = preload("res://scripts/ui/loot_box.gd")
+const Ornate = preload("res://scripts/ui/ornate.gd")
+const InventoryPanel = preload("res://scripts/ui/inventory_panel.gd")
 const W = preload("res://scripts/ui/shop_widgets.gd")
 
 const GRID_W := 492.0
@@ -257,7 +260,14 @@ func _sell(body: HBoxContainer, p) -> void:
 		b.add_theme_stylebox_override("normal", normal)
 		b.add_theme_stylebox_override("pressed", normal)
 		b.add_theme_stylebox_override("hover", UiTheme.box(Color(c, 0.3), 6, 2, c.lightened(0.3), 6))
-		b.tooltip_text = "%s — bán %d vàng" % [Items.display_name(it), GameWorld.sell_price(it)]
+		b.tooltip_text = "%s — bán %s vàng" % [Items.display_name(it), Ornate.group(GameWorld.sell_price(it, world.profile))]
+		# CR-04: ô đã khoá có ổ khoá như trong Túi đồ.
+		if Items.is_locked(it):
+			b.tooltip_text += " · đã khoá"
+			var lk = InventoryPanel.LockMark.new()
+			lk.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			lk.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+			b.add_child(lk)
 		var id := int(it.id)
 		b.pressed.connect(func():
 			_sell_id = id
@@ -274,15 +284,23 @@ func _sell(body: HBoxContainer, p) -> void:
 	var col: VBoxContainer = det[1]
 	if _sell_id < 0:
 		col.add_child(UiTheme.label("Chọn món trong túi để bán. Đồ đang mặc phải tháo ra trước.", "Muted", DETAIL_W))
+		# CR-04 R6: mua lại món vừa bán (dùng chung danh sách với Túi đồ).
+		col.add_child(HSeparator.new())
+		col.add_child(LootBox.build_buyback(world, refresh, DETAIL_W))
 		return
 	var item: Dictionary = p.inventory[Items.find_in_bag(p, _sell_id)]
 	_item_detail(col, item)
 	col.add_child(UiTheme.spacer())
 	col.add_child(HSeparator.new())
-	col.add_child(_total_line("Bán được", GameWorld.sell_price(item), true))
+	col.add_child(_total_line("Bán được", GameWorld.sell_price(item, world.profile), true))
 	var sb := UiTheme.button("Bán", true)
 	sb.name = "SellButton"
 	sb.custom_minimum_size = Vector2(0, 46)
+	# CR-04.2: món đã khoá không bán được (mở khoá trong Túi đồ, phím L).
+	if Items.is_locked(item):
+		sb.disabled = true
+		sb.tooltip_text = Items.LOCKED_MSG
+		sb.text = "Đã khoá"
 	sb.pressed.connect(func():
 		world.sell_item(_sell_id)
 		_sell_id = -1

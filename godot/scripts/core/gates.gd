@@ -10,6 +10,8 @@ extends RefCounted
 const Maps = preload("res://scripts/data/maps.gd")
 const Monsters = preload("res://scripts/data/monsters.gd")
 const ItemData = preload("res://scripts/data/items.gd")
+const Gear = preload("res://scripts/core/gear.gd")
+const GearData = preload("res://scripts/data/gear_data.gd")
 const Formulas = preload("res://scripts/core/formulas.gd")
 
 const PREFIX := "gate-"
@@ -312,6 +314,17 @@ static func on_kill(w, e) -> void:
 	if w.player.pos.distance_to(e.pos + Vector2(0, -20)) <= 44.0:
 		w.portal_inside = w.portals.size() - 1
 	var ess_txt := (", +%d Thiên Phú Tinh Hoa" % int(rd.ess)) if int(rd.ess) > 0 else ""
+	# NL-1 (docs/47 §3.A): cổng hạng C trở lên cho 1–3 viên ngọc (C/B 1 viên, A 2, S 3), cấp theo hạng.
+	var glv := int(GearData.GEM_GATE_LV.get(rank, 0))
+	if glv > 0:
+		var gn: int = int({"C": 1, "B": 1, "A": 2, "S": 3}.get(rank, 1))
+		var got: Array = []
+		for _i in gn:
+			var gk := Gear.grant_random(p, glv, w._gate_rng.randf)
+			if gk != "":
+				got.append(Gear.gem_name(gk))
+		if not got.is_empty():
+			ess_txt += ", " + ", ".join(got)
 	w._message("Dọn Cổng hạng %s! +%d EXP%s. Cổng ra đã mở." % [rank, xp, ess_txt], "good")
 	w._text(e.pos + Vector2(0, -60), "Cổng hạng %s đã dọn!" % rank, COLORS[rank].lightened(0.3), true)
 	w._events.append({"type": "gate_clear", "rank": rank})

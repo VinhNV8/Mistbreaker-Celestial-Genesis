@@ -20,6 +20,10 @@ var _ready_tex := false
 ## Đã nướng xong ít nhất một lần (ảnh trong SubViewport dùng được).
 var _has_tex := false
 var _premult: CanvasItemMaterial
+## CR-05: độ mờ thừa hưởng từ các node cha (modulate.a) lúc vẽ gần nhất. Ảnh nướng trộn premultiplied nên modulate
+## của cha chỉ giảm alpha mà không giảm màu → ảnh vẫn đậm (vành la bàn không mờ theo bản đồ nhỏ). Nhân màu ảnh theo
+## độ mờ này khi vẽ để mờ đúng.
+var _fa := 1.0
 
 
 func _init(p: Callable = Callable(), behind := false, baked := false) -> void:
@@ -43,6 +47,24 @@ func rebake() -> void:
 func _process(_delta: float) -> void:
 	if bake and is_visible_in_tree() and absf(_scale() - _k) > 0.01:
 		rebake()
+	elif bake and absf(inherited_alpha() - _fa) > 0.004:
+		queue_redraw()
+
+
+## Tích modulate.a của node này và các node cha (tới CanvasLayer / gốc).
+func inherited_alpha() -> float:
+	var a := 1.0
+	var n: Node = self
+	while n is CanvasItem:
+		a *= (n as CanvasItem).modulate.a
+		n = n.get_parent()
+	return a
+
+
+## Màu nhân khi vẽ ảnh nướng (premultiplied): rgb theo độ mờ thừa hưởng, alpha giữ 1 (alpha cha nhân sau).
+func _tex_mod() -> Color:
+	_fa = inherited_alpha()
+	return Color(_fa, _fa, _fa, 1.0)
 
 
 func _scale() -> float:
@@ -56,13 +78,13 @@ func _draw() -> void:
 		paint.call(self)
 		return
 	if _ready_tex and _vp != null:
-		draw_texture_rect(_vp.get_texture(), _box, false)
+		draw_texture_rect(_vp.get_texture(), _box, false, _tex_mod())
 		return
 	_bake()
 	if _vp != null and _has_tex:
 		# Đã có ảnh: SubViewport vẽ lại ngay trên ảnh đó → vẫn vẽ ảnh (không có khung vẽ thẳng nào chen vào —
 		# vẽ thẳng qua chế độ trộn premultiplied sáng hơn → chớp sáng mỗi lần nướng lại).
-		draw_texture_rect(_vp.get_texture(), _box, false)
+		draw_texture_rect(_vp.get_texture(), _box, false, _tex_mod())
 	else:
 		# Lần nướng đầu: chưa có ảnh — vẽ thẳng 1 khung với chế độ trộn thường.
 		material = null

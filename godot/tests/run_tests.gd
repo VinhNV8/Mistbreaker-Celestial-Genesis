@@ -28,6 +28,8 @@ const Ch7 = preload("res://scripts/core/chapter7.gd")
 const Ch8 = preload("res://scripts/core/chapter8.gd")
 const Ch9 = preload("res://scripts/core/chapter9.gd")
 const Endgame = preload("res://scripts/core/endgame.gd")
+const Gear = preload("res://scripts/core/gear.gd")
+const GearData = preload("res://scripts/data/gear_data.gd")
 const TalentSlots = preload("res://scripts/core/talent_slots.gd")
 const Screens9 = preload("res://scripts/ui/screens.gd")
 const Job3 = preload("res://scripts/core/job3.gd")
@@ -301,7 +303,30 @@ func _init() -> void:
 	_run("FX1-T1 hiệu ứng kỹ năng FX-1 (docs/36): đủ 70 kỹ năng, chính sách song song, mọi dàn cảnh / lớp phủ vẽ được (Painter headless)", _test_fx1)
 	_run("PACE-TELE đo nguồn sát thương (docs/36 §9.13): phần sát thương từ đòn mất vết cảnh báo ở kiểu tự nhiên — chạy riêng --only=PACE-TELE", _test_tele_sim)
 	_run("IC1-T1 icon kỹ năng IC-1 (docs/37): 51 icon chủ động + 20 bị động HD qua lớp phủ, 19 icon vẽ tay giữ nguyên, tắt HD về icon cũ", _test_ic1)
-	_run("MD1-T1 thiết kế lại quái HD (docs/39): mọi quái / tinh anh / boss có sheet HD đủ 5 hoạt ảnh, cỡ logic = pixel, linh thú chưa bật (Q190), tắt HD về pixel", _test_md1)
+	_run("MD1-T1 thiết kế lại quái HD (docs/39): mọi quái / tinh anh / boss có sheet HD đủ 5 hoạt ảnh, cỡ logic = pixel, 9 linh thú (Q190), tắt HD về pixel", _test_md1)
+	_run("VS1-T1 tỷ lệ khung nhìn (docs/44): zoom camera + cỡ giao diện theo độ phân giải, Tầm nhìn, chữ thế giới giữ cỡ, cài đặt mới", _test_vs1)
+	_run("PF02-T1 giật khi đi + vệt mờ mép trên (docs/44 §7): tiền cảnh không ở mép trên, bỏ dải sương / tia nắng, tách quái theo lưới = so mọi cặp, nướng mảng sáng", _test_pf02)
+	_run("CR05-T1 bản đồ nhỏ / khung nhiệm vụ mờ khi che nhân vật + nút ẩn / hiện (Spec_Notes 09/11)", _test_cr05)
+	_run("MU1-T1 nhạc nền thế hệ 2 (docs/46): đủ 13 bài OGG stereo, âm môi trường theo vùng, nhạc báo, nghỉ xen kẽ, bài lặp", _test_mu1)
+	_run("GN1-T1 góc nhìn + cảnh trại (docs/45): nghiêng phối cảnh + đổi ngược chuột, cảnh trại vùng 1–9 (rào / tường phía xa, bãi trại theo vùng, tránh nước / dung nham / mép đảo / cầu, đồ vương vãi), nguồn sáng", _test_gn1)
+	_run("GN3-T1 bộ đếm combo lớn (Q223), tông nền 9 vùng (E5), nền đất mòn bãi trại (E1) — docs/45 §8", _test_gn3)
+	_run("GN4-T1 hình đứng thẳng dưới phối cảnh (P1-B) + vách đá viền map (E6) — docs/45 §9", _test_gn4)
+	# CR-04 — bán đồ trong túi, khoá đồ, tự xử lý đồ (docs/CR-04)
+	_run("CR4-T1 bán trong túi ngoài làng, khoá đồ, nút Bán / Khoá, hỏi lại đồ Tím, phím L, khung dưới 4 chế độ", _test_cr4_sell_in_bag)
+	_run("CR4-T2 quy tắc tự xử lý: bảng phẩm chất, Cam / khoá luôn giữ, ngoại lệ, mẫu", _test_cr4_decide)
+	_run("CR4-T3 tự xử lý khi nhặt: 100 món, vàng / đá đúng, túi chỉ còn món Giữ, thống kê, bật lần đầu = Cân bằng", _test_cr4_pickup)
+	_run("CR4-T4 tự xử lý khi túi đầy, món Giữ vẫn phân rã như EQ-09", _test_cr4_full)
+	_run("CR4-T5 save v31: quy tắc + cờ khoá, save v30 tự Tắt + khoá đồ Cam", _test_cr4_save)
+	_run("CR4-T6 mua lại 10 món, áp dụng quy tắc cho túi, thưởng không bị tự xử lý", _test_cr4_buyback)
+	_run("CR4-T7 Điểm Kim: bán đồ +50% vàng, thẻ đồ có dòng giá", _test_cr4_golden)
+	_run("CR4-T8 rà soát 09/11: Cam túi đầy nằm lại trên đất (R1), phím / hỏi lại không dùng trạng thái cũ (R2, R3), Thần Tài (R5), Mua lại ở cửa hàng (R6)", _test_cr4_review)
+	_run("CR4-T9 pha sau: sắp xếp túi (U1), giữ đồ bộ thông minh (U2), quy tắc theo ô / dòng chỉ số (U3), khoá đồ đang mặc (U4), tóm tắt khi mở túi (U5)", _test_cr4_phase2)
+	_run("NL1-T1 khảm ngọc: lỗ theo phẩm chất, mở ở chương 2, rơi theo hệ quái, ghép 3→1, khảm / tháo không vỡ, đục lỗ, ấn hệ +15%, bán / phân rã trả ngọc, Cam ra ngọc", _test_nl1_gems)
+	_run("NL1-T2 tẩy luyện: 1 dòng cố định, giữ cũ / lấy mới, đổi dòng không trùng, chi phí tăng ×1,25, thiếu nguyên liệu không trừ", _test_nl1_reforge)
+	_run("NL2-T1 thăng phẩm: hút món cùng ô, lên 1 bậc, giữ cường hoá + ngọc + dòng cũ, thêm 1 dòng + lỗ, không lên Cam / đồ bộ", _test_nl2_ascend)
+	_run("NL2-T2 luyện cấp: chỉ Cam / đồ bộ, +5 tối đa cấp nhân vật, dòng phụ giữ hệ số quay", _test_nl2_levelup)
+	_run("NL3-T1 thức tỉnh: sau chuyển chức 3, Tím / Cam +12, chọn 1 trong 3, bậc 1→5, ≤ 4 món hiệu lực, đổi dòng giữ bậc, sát thương boss", _test_nl3_awaken)
+	_run("NL3-T2 Bảo Giám + save v32 + gợi ý tăng Lực chiến + Lực chiến món tách nguồn", _test_nl3_codex)
 	print("")
 	if _failed.is_empty():
 		print("TẤT CẢ %d TEST QUA" % _total)
@@ -1458,7 +1483,7 @@ func _test_evasion() -> void:
 
 func _test_save_v4() -> void:
 	var p := _profile("dao-tac")
-	var d := p.to_dict()
+	var d: Dictionary = p.to_dict()
 	d.version = 3
 	d.erase("class_id")
 	d.erase("stolen")
@@ -1694,7 +1719,7 @@ func _test_c1_facing() -> void:
 
 func _test_c1_save_v6() -> void:
 	var p := _profile("kiem-tam")
-	var d := p.to_dict()
+	var d: Dictionary = p.to_dict()
 	d.version = 5
 	for k in ["name", "look", "quest_step", "quest_progress", "seen_dialogs", "rare_at", "evo_essence", "herb_timer", "merchant"]:
 		d.erase(k)
@@ -2068,7 +2093,7 @@ func _test_c1_assets() -> void:
 			"levelup", "skill", "ui_click", "boss_roar", "explode", "heal"]:
 		_check(ResourceLoader.exists("res://assets/audio/sfx/%s.wav" % id), "có âm thanh %s" % id)
 	for id in ["village", "forest", "core", "boss"]:
-		_check(ResourceLoader.exists("res://assets/audio/music/%s.wav" % id), "có nhạc %s" % id)
+		_check(ResourceLoader.exists("res://assets/audio/music/%s.ogg" % id), "có nhạc %s" % id)
 
 
 func _test_gift_code() -> void:
@@ -3366,9 +3391,8 @@ func _test_c3_quest() -> void:
 	_check(w.npcs().size() == 3, "Trại Cát Đỏ có 3 NPC")
 	w.talk("sa-lao")
 	_check(int(p.quest.ch3) == 2, "bước 1: gặp Sa Lão")
-	for i in 30:
-		var m := w.spawn_enemy("bo-cat", 21, Vector2(2000, 1200))
-		w._kill_enemy(m)
+	# NV-B (docs/41): bước "hạ 30 quái" nay là tìm 3 dấu vết + hạ kẻ canh
+	_nvb_clues(w, "kills3")
 	Ch3.check_quest(w)
 	_check(int(p.quest.ch3) == 3, "bước 2: hạ 30 quái vùng 3")
 	w._load_map("3-2")
@@ -3873,9 +3897,8 @@ func _test_c4_quest() -> void:
 	_check(int(p.quest.ch4) == 1 and w.npcs().size() == 3, "tới vùng 4: nhận nhiệm vụ, 3 NPC")
 	w.talk("lao-ngu")
 	_check(int(p.quest.ch4) == 2 and p.antidotes >= 2, "bước 1: gặp Lão Ngư (+2 Thuốc Giải)")
-	for i in 30:
-		var m := w.spawn_enemy("ech-doc", 33, Vector2(2000, 1200))
-		w._kill_enemy(m)
+	# NV-B (docs/41): bước "hạ 30 quái" nay là tìm 3 dấu vết + hạ kẻ canh
+	_nvb_clues(w, "kills4")
 	Chapters.check_quest(w)
 	_check(int(p.quest.ch4) == 3, "bước 2: hạ 30 quái")
 	w._load_map("4-2")
@@ -9368,7 +9391,7 @@ func _test_audio_files() -> void:
 	var MainS = load("res://scripts/main.gd")
 	var music: Array = MainS.REGION_MUSIC.values() + ["boss", "boss_final", "village", "core"]
 	for id in music:
-		_check(ResourceLoader.exists("res://assets/audio/music/%s.wav" % id), "có nhạc %s" % id)
+		_check(ResourceLoader.exists("res://assets/audio/music/%s.ogg" % id), "có nhạc %s" % id)
 	_check(MainS.REGION_MUSIC.size() == 9 and MainS.REGION_MUSIC[3] == "desert" and MainS.REGION_MUSIC[9] == "heaven", "9 vùng có nhạc riêng")
 	var sfx: Array = GameWorld.SKILL_SFX.values() + ["ultimate", "unlock", "portal", "skill"]
 	for id in sfx:
@@ -10700,13 +10723,20 @@ func _test_md1() -> void:
 			if not h.anims.has(a) or (int(h.anims[a].row) + 1) * int(h.h) > tex.get_height() or int(h.anims[a].frames) * int(h.w) > tex.get_width():
 				bad.append("%s: thiếu / tràn hoạt ảnh %s" % [id, a])
 	_check(bad.is_empty() and ids.size() >= 80, "%d quái có sheet HD hợp lệ %s" % [ids.size(), str(bad)])
-	# Linh thú Triệu Hồi Sư thuộc kỹ năng → chưa thay khi chủ dự án chưa duyệt (Q190)
+	# Q190 (duyệt 09/11): 9 linh thú Triệu Hồi Sư cũng có HD, cỡ logic = pixel, đủ 5 hoạt ảnh
 	var pets := ["linh-ho", "hoa-ho", "soi-bong", "tieu-quy", "thach-quy", "linh-ung", "linh-hon", "au-long", "ky-lan"]
-	var pet_hd: Array = []
+	var pet_bad: Array = []
 	for id in pets:
-		if hd.has(id):
-			pet_hd.append(id)
-	_check(pet_hd.is_empty(), "linh thú giữ hình cũ %s" % str(pet_hd))
+		if not hd.has(id):
+			pet_bad.append("%s: thiếu HD" % id)
+			continue
+		var h: Dictionary = hd[id]
+		if absf(float(h.w) / float(h.px) - float(pix[id].w)) > 0.01 or SL.texture(str(h.path)) == null 				or not str(h.path).begins_with("res://assets/hd/sprites/"):
+			pet_bad.append(id)
+		for a in ["idle", "run", "attack", "hurt", "death"]:
+			if not h.anims.has(a):
+				pet_bad.append("%s: thiếu %s" % [id, a])
+	_check(pet_bad.is_empty(), "9 linh thú có sheet HD hợp lệ (Q190) %s" % str(pet_bad))
 	_check(str(SL.data().sprites["vien-long"].path).begins_with("res://assets/hd/"), "bật HD: Viêm Long dùng hình HD")
 	SL.set_hd(false)
 	_check(not str(SL.data().sprites["vien-long"].path).begins_with("res://assets/hd/"), "tắt HD: Viêm Long về hình pixel")
@@ -10998,6 +11028,19 @@ func _nvb_run(w: GameWorld) -> void:
 	Chapters.check_quest(w)
 
 
+## NV-B: đi qua 3 dấu vết của bước killsN đang làm rồi hạ kẻ canh.
+func _nvb_clues(w: GameWorld, type: String) -> void:
+	var MV = load("res://scripts/core/main_variants.gd")
+	var keep: Vector2 = w.player.pos
+	for pt in MV.clue_points(w, MV.VARIANTS[type]):
+		w.player.pos = pt
+		MV.tick(w)
+	for e in w.enemies.filter(func(e): return e.has_meta("nv_guard") and not e.dead):
+		w._kill_enemy(e)
+	MV.tick(w)
+	w.player.pos = keep
+
+
 func _test_nvb_variants() -> void:
 	var MV = load("res://scripts/core/main_variants.gd")
 	for ch in range(2, 10):
@@ -11125,3 +11168,1169 @@ func _test_nve_road() -> void:
 	_check(w.road_event.is_empty() and float(w.profile.gold) == g1 and w.enemies.filter(func(e): return e.has_meta("road") and not e.dead).is_empty(), "tinh anh đi lạc: hết 90 giây → tan, không thưởng")
 	w.profile.torches = torch0
 
+
+## VS-1 (docs/44): tỷ lệ khung nhìn theo độ phân giải.
+func _test_vs1() -> void:
+	var VS = load("res://scripts/core/view_scale.gd")
+	var S = load("res://scripts/core/settings.gd")
+	var w768 := Vector2(1366, 768)
+	var w1080 := Vector2(1920, 1080)
+	var w1440 := Vector2(2560, 1440)
+	_check(is_equal_approx(VS.stretch(w768), 1.0) and absf(VS.stretch(w1080) - 1.406) < 0.01, "hệ số phóng: 768p = 1, 1080p ≈ 1,41")
+	# cửa sổ gốc: như trước VS-1
+	_check(is_equal_approx(VS.ui_scale(0.0, w768), 1.0) and is_equal_approx(VS.camera_zoom("mid", w768, 1.0), 1.0), "1366×768: giao diện 100%, zoom 1 (không đổi)")
+	# 1080p: giao diện 90%, thế giới zoom ≈ 0,81 → nhân vật ≈ 73 px
+	var u: float = VS.ui_scale(0.0, w1080)
+	_check(is_equal_approx(u, 0.9), "1080p: giao diện tự động 90%% (%.2f)" % u)
+	var z: float = VS.world_zoom("mid", w1080)
+	_check(z > 0.78 and z < 0.84, "1080p: zoom thế giới ≈ 0,81 (%.3f)" % z)
+	var hero_px: float = 64.0 * VS.stretch(w1080) * z
+	_check(hero_px > 68.0 and hero_px < 78.0, "1080p: nhân vật cao ≈ 73 px (%.1f)" % hero_px)
+	# camera bù content_scale_factor: cỡ thế giới trên màn hình không phụ thuộc cỡ giao diện
+	var on_screen_a: float = VS.stretch(w1080) * 0.9 * VS.camera_zoom("mid", w1080, 0.9)
+	var on_screen_b: float = VS.stretch(w1080) * 1.1 * VS.camera_zoom("mid", w1080, 1.1)
+	_check(is_equal_approx(on_screen_a, on_screen_b), "đổi cỡ giao diện không đổi cỡ thế giới")
+	_check(is_equal_approx(VS.ui_scale(0.0, w1440), 0.85) and VS.world_zoom("mid", w1440) >= VS.ZOOM_MIN, "1440p: giao diện 85%, zoom ≥ sàn")
+	_check(VS.world_zoom("near", w1080) > z and VS.world_zoom("far", w1080) < z and is_equal_approx(VS.world_zoom("far", w1080) / z, 0.88), "Tầm nhìn Gần / Xa (Xa ×0,88)")
+	# cỡ giao diện lớn không làm vùng giao diện thấp hơn 700 px
+	var big: float = VS.ui_scale(1.1, w768)
+	_check(w768.y / (VS.stretch(w768) * big) >= VS.MIN_UI_HEIGHT - 0.5, "110%% ở 768p bị giới hạn (vùng giao diện ≥ 700 px, u = %.3f)" % big)
+	_check(is_equal_approx(VS.ui_scale(0.8, w1080), 0.8), "chọn tay 80%")
+	for k in ["view_range", "ui_scale", "quest_compact", "depth_fx"]:
+		_check(S.DEFAULTS.has(k), "cài đặt mặc định có " + k)
+	_check(str(S.DEFAULTS.view_range) == "mid" and float(S.DEFAULTS.ui_scale) == 0.0 and bool(S.DEFAULTS.depth_fx), "mặc định: Vừa, tự động, bật chiều sâu")
+	# hình môi trường có cỡ để đặt bóng đổ
+	var SL = load("res://scripts/view/sprite_lib.gd")
+	_check(SL.env_extent("tree-0").x > 0.0 and SL.env_extent("không-có") == Vector2.ZERO, "env_extent: cây có cỡ, id lạ = 0")
+	# B4 / B5: lớp không khí — mọi map có chủ đề, vẽ được (Control ngoài cây → _draw không gọi; kiểm tra hàm thuần)
+	var AL = load("res://scripts/view/atmos_layer.gd")
+	var Mp = load("res://scripts/data/maps.gd")
+	var bad: Array = []
+	var seen := {}
+	for id in Mp.MAPS:
+		var th: String = AL.theme_id(Mp.get_map(id))
+		seen[th] = true
+		if not AL.THEMES.has(th):
+			bad.append(id)
+	_check(bad.is_empty() and seen.size() >= 6, "mọi map có chủ đề không khí (%d chủ đề, thiếu %s)" % [seen.size(), bad])
+	_check(AL.theme_id({"cave": true, "decor": "forest"}) == "cave" and AL.theme_id({"decor": "sky_ruins"}) == "sky" and AL.theme_id({}) == "forest", "chủ đề: hang, đảo bay, mặc định rừng")
+	_check(AL._mote_vel("snow").y > 0.0 and AL._mote_vel("ember").y < 0.0, "tuyết rơi xuống, tàn lửa bay lên")
+	var al = AL.new()
+	al.size = Vector2(1000, 600)
+	al.cam = Vector2(500, 500)
+	al.zoom = 0.8
+	_check(al.to_screen(Vector2(500, 500)) == Vector2(500, 300) and al.to_screen(Vector2(600, 500)).x == 580.0, "toạ độ màn hình theo zoom camera")
+	al.free()
+
+
+# ------------------------------------------------------------------ CR-04 — bán đồ trong túi, khoá đồ, tự xử lý đồ
+
+
+## Thả một món xuống ngay chân nhân vật rồi chạy 1 khung nhặt đồ.
+func _cr4_drop(w: GameWorld, item: Dictionary) -> void:
+	var pk := GameWorld.Pickup.new()
+	pk.kind = "item"
+	pk.item = item
+	pk.pos = w.player.pos
+	w.pickups.append(pk)
+	w._update_pickups(0.016)
+
+
+## Thế giới có nhẫn mạnh đang đeo (để đồ cấp thấp là "yếu hơn"), túi trống.
+func _cr4_world(talent := "tay-nhanh") -> GameWorld:
+	var w := _m3_world("kiem-khach", talent)
+	var p = w.profile
+	p.inventory = []
+	p.level = 20
+	p.equipment["ring"] = Items.new_item(p, 20, "purple", RngUtil.make(1), "ring")
+	w._refresh_stats()
+	return w
+
+
+## CR4-T1: bán ngay trong túi ở ngoài làng, khoá đồ, nút trong Túi đồ, hỏi lại với đồ Tím.
+func _test_cr4_sell_in_bag() -> void:
+	var w := _cr4_world()
+	var p = w.profile
+	var rng := RngUtil.make(11)
+	w.player.pos = w.safe_pos + Vector2(2000, 0)
+	_check(not w.in_village(), "đứng ngoài làng")
+	var it := Items.new_item(p, 5, "green", rng, "boots")
+	Items.add_item(p, it)
+	var gold0 := int(p.gold)
+	_check(w.sell_item(int(it.id)).ok and int(p.gold) == gold0 + GameWorld.sell_price(it, p), "bán được ngoài làng, đủ giá (Q211)")
+	var lk := Items.new_item(p, 5, "white", rng, "helm")
+	Items.add_item(p, lk)
+	_check(w.toggle_lock(int(lk.id)).ok and Items.is_locked(lk), "khoá món trong túi")
+	_check(not w.sell_item(int(lk.id)).ok and Items.find_in_bag(p, int(lk.id)) >= 0, "món khoá: không bán được")
+	_check(not w.salvage(int(lk.id)).ok and Items.find_in_bag(p, int(lk.id)) >= 0, "món khoá: không phân rã được")
+	w.set_bulk_filter({"rarities": ["white"], "keep_plus": false, "keep_set": false, "only_weaker": false})
+	_check(w.bulk_list().is_empty(), "món khoá không vào danh sách bán / phân rã nhanh")
+	w.toggle_lock(int(lk.id))
+	_check(not Items.is_locked(lk) and w.bulk_list().size() == 1, "mở khoá → lại vào bộ lọc")
+	var orange := Items.new_item(p, 5, "orange", rng, "", "", "")
+	Items.add_item(p, orange)
+	_check(Items.is_locked(orange), "đồ Cam vào túi tự khoá (Q214)")
+	# Túi đồ: nút Bán / Phân rã / Khoá
+	var inv = load("res://scripts/ui/inventory_panel.gd").new()
+	inv.open(w)
+	inv._selected_id = int(lk.id)
+	inv.refresh()
+	var sb := inv.find_child("SellButton", true, false) as Button
+	_check(sb != null and not sb.disabled and inv.find_child("SalvageButton", true, false) != null, "chi tiết món trong túi có nút Bán + Phân rã")
+	gold0 = int(p.gold)
+	sb.pressed.emit()
+	_check(Items.find_in_bag(p, int(lk.id)) < 0 and int(p.gold) == gold0 + GameWorld.sell_price(lk, p), "nút Bán trong túi: bán ngay (đồ Trắng không hỏi lại)")
+	var purple := Items.new_item(p, 5, "purple", rng, "gloves")
+	Items.add_item(p, purple)
+	inv._selected_id = int(purple.id)
+	inv.refresh()
+	(inv.find_child("SellButton", true, false) as Button).pressed.emit()
+	_check(Items.find_in_bag(p, int(purple.id)) >= 0, "đồ Tím: lần bấm 1 chỉ hỏi lại")
+	(inv.find_child("SellButton", true, false) as Button).pressed.emit()
+	_check(Items.find_in_bag(p, int(purple.id)) < 0, "đồ Tím: lần bấm 2 mới bán")
+	inv._selected_id = int(orange.id)
+	inv.refresh()
+	_check((inv.find_child("SellButton", true, false) as Button).disabled, "món khoá: nút Bán bị khoá")
+	(inv.find_child("LockButton", true, false) as Button).pressed.emit()
+	_check(not Items.is_locked(orange), "nút Mở khoá")
+	# phím L khi rê chuột
+	inv._hover_id = int(orange.id)
+	var ev := InputEventKey.new()
+	ev.physical_keycode = KEY_L
+	ev.pressed = true
+	inv._input(ev)
+	_check(Items.is_locked(orange), "phím L khoá món đang rê chuột")
+	# khung dưới: 4 chế độ
+	for k in ["salvage", "sell", "auto", "buyback"]:
+		var tb := inv.find_child("Bottom_" + k, true, false) as Button
+		_check(tb != null, "khung dưới có nút %s" % k)
+		if tb != null:
+			tb.pressed.emit()
+	_check(inv._bottom == "buyback" and inv.find_child("Buyback_0", true, false) != null, "tab Mua lại liệt kê món vừa bán")
+	inv.free()
+
+
+## CR4-T2: Items.decide — bảng phẩm chất × ngoại lệ.
+func _test_cr4_decide() -> void:
+	var p := _profile("tay-nhanh")
+	p.level = 20
+	var rng := RngUtil.make(5)
+	var r := Items.default_rules()
+	r.by_rarity = {"white": "sell", "green": "salvage", "blue": "keep", "purple": "sell"}
+	r.keep_better = false
+	var mk := func(rarity: String, lv := 5) -> Dictionary:
+		return Items.create(1, lv, rarity, rng, "ring")
+	_check(Items.decide(p, mk.call("white"), r) == "sell", "Trắng → Bán")
+	_check(Items.decide(p, mk.call("green"), r) == "salvage", "Lục → Phân rã")
+	_check(Items.decide(p, mk.call("blue"), r) == "keep", "Lam → Giữ")
+	_check(Items.decide(p, mk.call("purple"), r) == "sell", "Tím → Bán (cho chọn — Q215)")
+	_check(Items.decide(p, mk.call("orange"), r) == "keep", "Cam luôn giữ (Q214)")
+	var locked: Dictionary = mk.call("white")
+	locked["locked"] = true
+	_check(Items.decide(p, locked, r) == "keep", "món khoá luôn giữ")
+	var plus: Dictionary = mk.call("white")
+	plus.plus = 2
+	_check(Items.decide(p, plus, r) == "keep", "giữ đồ đã cường hoá")
+	r.keep_plus = false
+	_check(Items.decide(p, plus, r) == "sell", "tắt giữ đồ cường hoá → bán")
+	var set_item: Dictionary = Items.create(2, 5, "white", rng, "ring", "frost_hunter")
+	_check(Items.decide(p, set_item, r) == "keep", "giữ đồ bộ")
+	r.keep_level_gap = 3
+	_check(Items.decide(p, mk.call("white", 17), r) == "keep" and Items.decide(p, mk.call("white", 16), r) == "sell", "giữ đồ cấp ≥ 20 − 3")
+	r.keep_level_gap = -1
+	r.keep_better = true
+	_check(Items.decide(p, mk.call("white"), r, func(_it): return true) == "keep", "giữ đồ mạnh hơn đang mặc")
+	_check(Items.decide(p, mk.call("white"), r, func(_it): return false) == "sell", "đồ yếu hơn → theo bảng")
+	var n := Items.normalize_rules({"mode": "abc", "by_rarity": {"white": "burn", "green": "sell"}, "keep_level_gap": 99})
+	_check(n.mode == "off" and n.by_rarity.white == "keep" and n.by_rarity.green == "sell" and int(n.keep_level_gap) == Items.LOOT_GAP_MAX, "normalize_rules sửa giá trị sai")
+	_check(Items.rules_preset({"by_rarity": Items.LOOT_PRESETS.balanced[1].duplicate()}) == "balanced", "nhận ra mẫu Cân bằng")
+
+
+## CR4-T3: chế độ "Khi nhặt" — 100 món rơi, tổng vàng / đá đúng, túi chỉ còn món Giữ.
+func _test_cr4_pickup() -> void:
+	var w := _cr4_world()
+	var p = w.profile
+	var rng := RngUtil.make(21)
+	w.set_loot_rules({"mode": "pickup", "by_rarity": {"white": "sell", "green": "sell", "blue": "salvage", "purple": "keep"},
+		"keep_plus": true, "keep_set": true, "keep_better": true, "keep_level_gap": -1})
+	var gold0: float = p.gold
+	var stones0: int = p.stones
+	var want_gold := 0
+	var want_stones := 0
+	var keep := 0
+	var rar := ["white", "green", "blue", "purple"]
+	for i in 100:
+		var it := Items.new_item(p, 3, rar[i % 4], rng, "ring")
+		var act := w.loot_decide(it)
+		if act == "sell":
+			want_gold += GameWorld.sell_price(it, p)
+		elif act == "salvage":
+			want_stones += Items.salvage_value(it, p)
+		else:
+			keep += 1
+		_cr4_drop(w, it)
+	_check(keep == 25 and is_equal_approx(p.gold, gold0 + want_gold), "tự bán: +%d vàng (%d)" % [want_gold, int(p.gold - gold0)])
+	_check(p.stones - stones0 == want_stones, "tự phân rã: +%d đá" % want_stones)
+	_check(p.inventory.size() == mini(25, ItemData.BAG_SIZE) and p.inventory.all(func(x): return x.rarity == "purple"), "túi chỉ có đồ Tím (%d món)" % p.inventory.size())
+	_check(int(w.loot_stats.sold) == 50 and int(w.loot_stats.salvaged) == 25, "thống kê phiên: bán 50, phân rã 25")
+	w.pickup_notes.clear()
+	for r2 in ["white", "white", "blue"]:
+		_cr4_drop(w, Items.new_item(p, 3, r2, rng, "ring"))
+	var sells: Array = w.pickup_notes.filter(func(n): return n.key == "auto_sell")
+	_check(sells.size() == 1 and w.pickup_notes.any(func(n): return n.key == "auto_salvage") and w.pickup_notes.size() == 2, "dòng nhặt đồ gộp Tự bán / Tự phân rã (2 món bán = 1 dòng)")
+	# Tắt → như cũ
+	p.inventory = []
+	var r := w.loot_rules()
+	r.mode = "off"
+	w.set_loot_rules(r)
+	_cr4_drop(w, Items.new_item(p, 3, "white", rng, "ring"))
+	_check(p.inventory.size() == 1, "chế độ Tắt: món vào túi như cũ")
+	# bật lần đầu khi bảng "giữ hết" → áp mẫu Cân bằng
+	p.loot_rules = {}
+	w.set_loot_rules({"mode": "pickup"})
+	_check(Items.rules_preset(w.loot_rules()) == "balanced", "bật lần đầu với bảng Giữ hết → mẫu Cân bằng")
+
+
+## CR4-T4: chế độ "Khi túi đầy".
+func _test_cr4_full() -> void:
+	var w := _cr4_world()
+	var p = w.profile
+	var rng := RngUtil.make(31)
+	w.set_loot_rules({"mode": "full", "by_rarity": {"white": "sell", "green": "keep", "blue": "keep", "purple": "keep"}, "keep_better": false})
+	_cr4_drop(w, Items.new_item(p, 3, "white", rng, "ring"))
+	_check(p.inventory.size() == 1, "túi còn chỗ → vào túi dù khớp Bán")
+	while p.inventory.size() < ItemData.BAG_SIZE:
+		p.inventory.append(Items.new_item(p, 3, "blue", rng, "boots"))
+	var gold0: float = p.gold
+	var w1 := Items.new_item(p, 3, "white", rng, "ring")
+	_cr4_drop(w, w1)
+	_check(is_equal_approx(p.gold, gold0 + GameWorld.sell_price(w1, p)) and p.inventory.size() == ItemData.BAG_SIZE, "túi đầy → món Trắng tự bán")
+	var stones0: int = p.stones
+	var g1 := Items.new_item(p, 3, "green", rng, "ring")
+	_cr4_drop(w, g1)
+	_check(p.stones == stones0 + Items.salvage_value(g1, p), "túi đầy + món Giữ → vẫn phân rã như EQ-09")
+
+
+## CR4-T5: save v30 → v31 và lưu / nạp lại.
+func _test_cr4_save() -> void:
+	var w := _cr4_world()
+	var p = w.profile
+	var rng := RngUtil.make(41)
+	var o := Items.create(900, 5, "orange", rng, "", "", "")
+	p.inventory.append(o)
+	var wh := Items.new_item(p, 5, "white", rng, "ring")
+	wh["locked"] = true
+	p.inventory.append(wh)
+	w.set_loot_rules({"mode": "pickup", "by_rarity": {"white": "sell", "green": "salvage", "blue": "keep", "purple": "keep"}})
+	var d: Dictionary = JSON.parse_string(JSON.stringify(p.to_dict()))
+	_check(int(d.version) >= 31, "save v31+")
+	var q := Profile.new()
+	_check(q.load_dict(d), "nạp save v31")
+	var qn := Items.normalize_rules(q.loot_rules)
+	_check(qn.mode == "pickup" and qn.by_rarity.green == "salvage", "quy tắc lưu qua save")
+	_check(Items.is_locked(q.inventory[Items.find_in_bag(q, int(wh.id))]), "cờ khoá lưu qua save")
+	_check(not Items.is_locked(q.inventory[Items.find_in_bag(q, 900)]), "save v31: đồ Cam chưa khoá giữ nguyên (không khoá lại)")
+	var old: Dictionary = JSON.parse_string(JSON.stringify(p.to_dict()))
+	old.version = 30
+	old.erase("loot_rules")
+	for it in old.inventory:
+		it.erase("locked")
+	var q2 := Profile.new()
+	_check(q2.load_dict(old), "nạp save v30")
+	_check(Items.normalize_rules(q2.loot_rules).mode == "off", "save cũ: tự động Tắt")
+	_check(Items.is_locked(q2.inventory[Items.find_in_bag(q2, 900)]) and not Items.is_locked(q2.inventory[Items.find_in_bag(q2, int(wh.id))]), "save cũ: đồ Cam tự khoá, đồ khác không")
+
+
+## CR4-T6: mua lại, áp dụng cho túi, thưởng nhiệm vụ không bị tự xử lý.
+func _test_cr4_buyback() -> void:
+	var w := _cr4_world()
+	var p = w.profile
+	var rng := RngUtil.make(51)
+	p.gold = 100000
+	for i in 12:
+		var it := Items.new_item(p, 3, "white", rng, "ring")
+		Items.add_item(p, it)
+		w.sell_item(int(it.id))
+	_check(w.buyback_list.size() == GameWorld.BUYBACK_MAX, "mua lại giữ tối đa 10 món")
+	var last: Dictionary = w.buyback_list[0]
+	var gold0: float = p.gold
+	_check(w.buyback(0).ok and Items.find_in_bag(p, int(last.item.id)) >= 0 and is_equal_approx(p.gold, gold0 - int(last.price)), "mua lại đúng giá đã bán")
+	while p.inventory.size() < ItemData.BAG_SIZE:
+		p.inventory.append(Items.new_item(p, 3, "blue", rng, "boots"))
+	_check(not w.buyback(0).ok, "túi đầy → không mua lại được")
+	# áp dụng cho túi
+	p.inventory = []
+	for r in ["white", "green", "blue", "purple"]:
+		p.inventory.append(Items.new_item(p, 3, r, rng, "ring"))
+	w.set_loot_rules({"mode": "off", "by_rarity": {"white": "sell", "green": "salvage", "blue": "keep", "purple": "keep"}, "keep_better": false})
+	var pv := w.loot_preview()
+	_check(pv.sell.size() == 1 and pv.salvage.size() == 1, "xem trước: bán 1, phân rã 1")
+	_check(w.loot_apply().ok and p.inventory.size() == 2, "Áp dụng cho túi chạy cả khi chế độ Tắt")
+	_check(not w.loot_apply().ok, "không còn món khớp → báo")
+	# thưởng nhiệm vụ / gift đi thẳng vào túi
+	w.set_loot_rules({"mode": "pickup", "by_rarity": {"white": "sell", "green": "sell", "blue": "sell", "purple": "sell"}, "keep_better": false})
+	var n0: int = p.inventory.size()
+	Items.add_item(p, Items.new_item(p, 3, "white", rng, "ring"))
+	_check(p.inventory.size() == n0 + 1, "thưởng (Items.add_item) không bị tự xử lý")
+
+
+## CR4-T7: Bàn Tay Vàng dạng Điểm Kim — bán đồ +50% vàng ở mọi đường bán.
+func _test_cr4_golden() -> void:
+	var w := _cr4_world("ban-tay-vang")
+	var p = w.profile
+	var rng := RngUtil.make(61)
+	var it := Items.new_item(p, 10, "blue", rng, "ring")
+	var base := GameWorld.sell_price(it)
+	p.evo = 0
+	_check(GameWorld.sell_price(it, p) == base, "chưa tiến hoá: giá gốc")
+	p.evo = 1
+	_check(GameWorld.sell_price(it, p) == int(round(base * 1.5)), "Điểm Kim: ×1,5 (%d → %d)" % [base, GameWorld.sell_price(it, p)])
+	Items.add_item(p, it)
+	var gold0: float = p.gold
+	w.sell_item(int(it.id))
+	_check(is_equal_approx(p.gold, gold0 + int(round(base * 1.5))), "bán trong túi áp Điểm Kim")
+	var tip = load("res://scripts/ui/item_tip.gd").card(w, it, "ĐANG XEM", {}, true)
+	_check(tip.find_child("PriceLine", true, false) != null, "thẻ đồ trong túi có dòng giá bán / phân rã")
+	tip.free()
+	var worn_tip = load("res://scripts/ui/item_tip.gd").card(w, it, "ĐANG MẶC")
+	_check(worn_tip.find_child("PriceLine", true, false) == null, "R4: thẻ ĐANG MẶC không hiện giá bán")
+	worn_tip.free()
+
+
+## PF-02 (docs/44 §7): phản ánh 08/11 "di chuyển hơi giật + vệt mờ phía trên màn hình".
+func _test_pf02() -> void:
+	var AL = load("res://scripts/view/atmos_layer.gd")
+	var sz := Vector2(1920, 1080)
+	var lim: float = AL.EDGE_BAND * 0.5
+	# tiền cảnh: mép trên (giữa / góc) và nửa trên hai bên bị loại; mép dưới + phần dưới hai bên được phép
+	_check(AL.fg_edge(Vector2(960, 10), sz) > lim and AL.fg_edge(Vector2(10, 10), sz) > lim and AL.fg_edge(Vector2(1910, 300), sz) > lim, "không có tiền cảnh ở mép trên / nửa trên hai bên")
+	_check(AL.fg_edge(Vector2(960, 1070), sz) <= lim and AL.fg_edge(Vector2(10, 900), sz) <= lim and AL.fg_edge(Vector2(1910, 1000), sz) <= lim, "tiền cảnh vẫn có ở mép dưới + phần dưới hai bên")
+	var no_band := true
+	for k in AL.THEMES:
+		if AL.THEMES[k].has("haze") or AL.THEMES[k].has("rays"):
+			no_band = false
+	var al: Control = AL.new()
+	_check(no_band and not al.has_method("_draw_haze") and not al.has_method("_draw_rays"), "bỏ dải sương cố định mép trên + tia nắng xiên")
+	al.free()
+	# tách quái theo lưới: mật độ thường = đúng như so mọi cặp; cụm rất dày → sau vài khung chồng lấn tương đương
+	for dense in [false, true]:
+		var w := GameWorld.new(_profile("tay-nhanh", 3), RngUtil.make(5))
+		w.enemies = []
+		var rng := RandomNumberGenerator.new()
+		rng.seed = 42
+		var spread := Vector2(260, 200) if dense else Vector2(1400, 1000)
+		for i in 90:
+			w.spawn_enemy(["wolf", "mushroom", "wisp"][i % 3], 3, Vector2(2000, 1600) + Vector2(rng.randf_range(-spread.x, spread.x), rng.randf_range(-spread.y, spread.y)))
+		w.enemies[5].dead = true
+		var ref: Array = []
+		for e in w.enemies:
+			ref.append({"pos": e.pos, "r": e.radius, "dead": e.dead, "boss": e.role == "boss"})
+		var frames := 6 if dense else 1
+		for f in frames:
+			_pf02_separate_ref(ref)
+			w._separate_enemies()
+		if not dense:
+			var worst := 0.0
+			for i in ref.size():
+				worst = maxf(worst, w.enemies[i].pos.distance_to(ref[i].pos))
+			_check(worst < 0.001, "mật độ thường: tách quái theo lưới = so mọi cặp (lệch %.4f px)" % worst)
+		else:
+			var ov_ref := _pf02_overlap(ref)
+			var mine: Array = []
+			for e in w.enemies:
+				mine.append({"pos": e.pos, "r": e.radius, "dead": e.dead})
+			var ov := _pf02_overlap(mine)
+			_check(ov <= ov_ref * 1.15 + 5.0, "cụm dày: chồng lấn sau 6 khung %.0f px ≈ so mọi cặp %.0f px" % [ov, ov_ref])
+	# mảng sáng nướng sẵn: cùng dải độ đậm với hình mờ cũ, phủ "over" lần lượt = công thức gộp
+	var WV = load("res://scripts/view/world_view.gd")
+	_check(is_equal_approx(WV.blob_falloff(0.0), 1.0) and is_equal_approx(WV.blob_falloff(0.4), 0.85) and is_equal_approx(WV.blob_falloff(0.7), 0.45) and WV.blob_falloff(1.0) == 0.0, "độ đậm mảng sáng theo bảng dừng gradient cũ")
+	var bg := Color(0.2, 0.5, 0.3)
+	var c1 := Color(1.0, 0.93, 0.7)
+	var c2 := Color(0.02, 0.05, 0.1)
+	var seq: Color = bg.lerp(c1, 0.13).lerp(c2, 0.26)
+	var acc: Color = WV.over(WV.over(Color(0, 0, 0, 0), c1, 0.13), c2, 0.26)
+	var one: Color = bg.lerp(Color(acc.r, acc.g, acc.b), acc.a)
+	_check(absf(one.r - seq.r) < 0.002 and absf(one.g - seq.g) < 0.002 and absf(one.b - seq.b) < 0.002, "gộp 2 mảng vào 1 ảnh cho cùng màu như vẽ lần lượt")
+
+
+## Bản so mọi cặp (trước PF-02) để đối chiếu.
+func _pf02_separate_ref(ref: Array) -> void:
+	for i in ref.size():
+		var a: Dictionary = ref[i]
+		if a.dead:
+			continue
+		for j in range(i + 1, ref.size()):
+			var b: Dictionary = ref[j]
+			if b.dead:
+				continue
+			var off: Vector2 = b.pos - a.pos
+			var d := off.length()
+			var min_d: float = a.r + b.r
+			if d >= min_d or d < 0.001:
+				continue
+			var push := off / d * ((min_d - d) / 2.0)
+			if not a.boss:
+				a.pos -= push
+			if not b.boss:
+				b.pos += push
+
+
+## Tổng độ chồng lấn (px) giữa các cặp quái còn sống.
+func _pf02_overlap(arr: Array) -> float:
+	var total := 0.0
+	for i in arr.size():
+		for j in range(i + 1, arr.size()):
+			if arr[i].dead or arr[j].dead:
+				continue
+			total += maxf(0.0, arr[i].r + arr[j].r - arr[i].pos.distance_to(arr[j].pos))
+	return total
+
+
+## CR4-T8: các sửa sau rà soát 09/11 (docs/CR-04 §11).
+func _test_cr4_review() -> void:
+	var w := _cr4_world()
+	var p = w.profile
+	var rng := RngUtil.make(71)
+	# R1: túi đầy + đồ Cam → không phân rã, nằm lại; dọn 1 ô → nhặt được
+	while p.inventory.size() < ItemData.BAG_SIZE:
+		p.inventory.append(Items.new_item(p, 3, "white", rng, "boots"))
+	var stones0: int = p.stones
+	var orange := Items.new_item(p, 5, "orange", rng)
+	_cr4_drop(w, orange)
+	_check(p.stones == stones0 and Items.find_in_bag(p, int(orange.id)) < 0, "R1: túi đầy, đồ Cam không bị phân rã")
+	var pk = w.pickups.filter(func(x): return x.kind == "item" and int(x.item.id) == int(orange.id))
+	_check(pk.size() == 1 and pk[0].blocked and pk[0].ttl > 60.0, "R1: đồ Cam nằm lại trên đất, không hết hạn sớm")
+	var white := Items.new_item(p, 3, "white", rng, "ring")
+	_cr4_drop(w, white)
+	_check(p.stones > stones0, "R1: đồ Trắng gặp túi đầy vẫn phân rã như EQ-09")
+	w.sell_item(int(p.inventory[0].id))
+	w._update_pickups(0.016)
+	_check(Items.find_in_bag(p, int(orange.id)) >= 0 and Items.is_locked(p.inventory[Items.find_in_bag(p, int(orange.id))]), "R1: dọn 1 ô → nhặt được đồ Cam (đã khoá)")
+	# R2, R3: trạng thái rê chuột / hỏi lại không sống qua đóng / mở, đổi món, quá giờ
+	p.inventory = []
+	var pu := Items.new_item(p, 5, "purple", rng, "gloves")
+	var gr := Items.new_item(p, 5, "green", rng, "boots")
+	Items.add_item(p, pu)
+	Items.add_item(p, gr)
+	var inv = load("res://scripts/ui/inventory_panel.gd").new()
+	inv.open(w)
+	inv._hover_id = int(gr.id)
+	inv.close()
+	inv.open(w)
+	_check(inv._hover_id == -1, "R2: mở lại Túi đồ xoá món rê chuột cũ")
+	inv._selected_id = int(pu.id)
+	inv.refresh()
+	(inv.find_child("SellButton", true, false) as Button).pressed.emit()
+	_check(inv._asking(int(pu.id), "sell"), "lần bấm 1 → đang hỏi lại")
+	inv._confirm.t = Time.get_ticks_msec() - inv.CONFIRM_MS - 10
+	_check(not inv._asking(int(pu.id), "sell"), "R3: hỏi lại tự huỷ sau %d ms" % inv.CONFIRM_MS)
+	inv._confirm = {"id": int(pu.id), "act": "sell", "t": Time.get_ticks_msec()}
+	inv.refresh()
+	var bag_btn: Button = null
+	for i in ItemData.BAG_SIZE:
+		var b := inv.find_child("Bag_%d" % i, true, false) as Button
+		if b != null and b.has_meta("cr4_item") and int(b.get_meta("cr4_item")) == int(gr.id):
+			bag_btn = b
+	_check(bag_btn != null, "ô túi gắn id món (meta cr4_item)")
+	if bag_btn != null:
+		bag_btn.pressed.emit()
+	_check(inv._confirm.is_empty(), "R3: chọn món khác → huỷ hỏi lại")
+	inv.free()
+	# R5: Thần Tài — phân rã 10% ra Tinh Hoa, lãnh địa +20% vàng; vẫn giữ +50% bán đồ (Q217)
+	var q = _cr4_world("ban-tay-vang").profile
+	q.evo = 2
+	var lucky := func(): return 0.0
+	var ess0: int = q.essence
+	var it := Items.new_item(q, 5, "white", rng, "ring")
+	Items.add_item(q, it)
+	var msg: String = Items.salvage(q, int(it.id), lucky).message
+	_check(q.essence == ess0 + 1 and msg.contains("Thần Tài"), "R5: Thần Tài phân rã ra 1 Thiên Phú Tinh Hoa")
+	q.evo = 1
+	ess0 = q.essence
+	it = Items.new_item(q, 5, "white", rng, "ring")
+	Items.add_item(q, it)
+	Items.salvage(q, int(it.id), lucky)
+	_check(q.essence == ess0, "R5: Điểm Kim chưa có Tinh Hoa")
+	var rg: Array = Explore.region_grids(q)[0]
+	for t in rg[1]:
+		if t.status == "owned":
+			q.buildings[Explore.tile_key("lumber", t, rg[0])] = 0.0
+			break
+	var g1: float = Explore.production_per_minute(q).gold
+	q.evo = 2
+	var g2: float = Explore.production_per_minute(q).gold
+	_check(g1 > 0.0 and is_equal_approx(g2, g1 * 1.2), "R5: Thần Tài lãnh địa +20%% vàng (%.1f → %.1f)" % [g1, g2])
+	_check(GameWorld.golden_seller(q), "Q217: Thần Tài vẫn bán đồ +50%")
+	# R6: cửa hàng làng có Mua lại
+	w.profile.inventory = []
+	var sold := Items.new_item(w.profile, 5, "green", rng, "boots")
+	Items.add_item(w.profile, sold)
+	w.sell_item(int(sold.id))
+	var shop = load("res://scripts/ui/shop_panel.gd").new()
+	shop.open(w)
+	(shop.find_child("Tab_sell", true, false) as Button).pressed.emit()
+	_check(shop.find_child("Buyback_0", true, false) != null, "R6: tab Bán đồ của cửa hàng có danh sách Mua lại")
+	shop.free()
+
+
+func _test_gn1() -> void:
+	# P1: phép biến dạng hình thang + phép ngược
+	var T = load("res://scripts/view/tilt.gd")
+	_check(T.g_of("off") == 0.0 and T.g_of("low") > 0.0 and T.g_of("mid") > T.g_of("low"), "nghiêng: Tắt = 0, Vừa > Nhẹ > 0")
+	var g: float = T.g_of("low")
+	var top_l: Vector2 = T.src_uv(Vector2(0, 0), g)
+	var bot_l: Vector2 = T.src_uv(Vector2(0, 1), g)
+	_check(top_l.is_equal_approx(Vector2.ZERO) and is_equal_approx(bot_l.x, 0.05) and is_equal_approx(bot_l.y, 1.0), "mép trên giữ nguyên bề ngang, mép dưới lấy 90% (k = 0,05)")
+	var worst := 0.0
+	for uv in [Vector2(0.1, 0.2), Vector2(0.5, 0.5), Vector2(0.9, 0.85), Vector2(0.3, 0.97)]:
+		worst = maxf(worst, (T.dst_uv(T.src_uv(uv, g), g) - uv).length())
+	_check(worst < 0.0001, "đổi ngược chuột: dst(src(p)) = p (sai %.6f)" % worst)
+	# vật ở xa (trên) nhỏ hơn vật ở gần (dưới): độ phóng ngang = d(v)
+	var s_top: float = (T.dst_uv(Vector2(0.6, 0.1), g).x - T.dst_uv(Vector2(0.5, 0.1), g).x)
+	var s_bot: float = (T.dst_uv(Vector2(0.6, 0.9), g).x - T.dst_uv(Vector2(0.5, 0.9), g).x)
+	_check(s_bot > s_top * 1.05, "phía xa nhỏ hơn phía gần (%.3f < %.3f)" % [s_top, s_bot])
+	_check(is_equal_approx(T.center_scale(0.0), 1.0) and T.center_scale(g) > 1.0, "camera bù độ phóng giữa màn hình")
+	var S = load("res://scripts/core/settings.gd")
+	_check(str(S.DEFAULTS.get("tilt", "")) == "low", "mặc định Phối cảnh: Nhẹ (Q218)")
+	# E2: cảnh trại vùng 1
+	var CD = load("res://scripts/view/camp_decor.gd")
+	var w := _region2_world("1-1", "kiem-khach", "tay-nhanh", 12)
+	var cd: Dictionary = CD.build(w)
+	var pal: Array = cd.items.filter(func(it): return it.id == "palisade")
+	var arena_pal: Array = pal.filter(func(it): return it.pos.distance_to(w.arena_pos) < w.arena_r + 60.0)
+	_check(arena_pal.size() >= 10, "đấu trường 1-1 có hàng rào cọc làm phông (%d đoạn)" % arena_pal.size())
+	_check(arena_pal.all(func(it): return it.pos.y < w.arena_pos.y), "rào đấu trường chỉ ở cung phía xa (mép trên)")
+	var camps: Array = cd.clear.filter(func(c): return c[0].distance_to(w.arena_pos) > 10.0)
+	_check(camps.size() >= 2, "có bãi trại rải trên map (%d)" % camps.size())
+	var far_ok := camps.all(func(c): return c[0].distance_to(w.safe_pos) > w.safe_r + 400.0 and w.portals.all(func(pt): return c[0].distance_to(pt.pos) > 250.0))
+	_check(far_ok, "bãi trại tránh làng và cổng dịch chuyển")
+	_check(cd.flat.size() > 0 and cd.flat.all(func(it): return it.id in CD.FLAT), "đồ vương vãi nằm ở lớp phẳng")
+	_check(str(CD.build(w).items) == str(cd.items), "cùng map ra cùng cảnh")
+	var trees := [{"pos": camps[0][0]}, {"pos": camps[0][0] + Vector2(2000, 0)}]
+	_check(CD.filter_trees(trees, cd.clear).size() == 1, "bỏ cây đè lên bãi trại")
+	# E3: nguồn sáng
+	var lights: Array = []
+	CD.lights_of(cd.items, lights)
+	_check(lights.size() >= 2, "đuốc / chòi canh đấu trường có quầng sáng (%d)" % lights.size())
+	var SL = load("res://scripts/view/sprite_lib.gd")
+	var miss: Array = []
+	for id in ["palisade", "banner-wolf", "weapon-rack", "debris-0", "debris-1", "debris-2"]:
+		if not SL.has_env(id):
+			miss.append(id)
+	_check(miss.is_empty(), "có hình HD bộ cảnh trại %s" % str(miss))
+	# GN-2: vùng 2–9 — mỗi vùng bộ cảnh riêng, tránh nước / dung nham / mép đảo / điểm dữ liệu map
+	var Ch4 = load("res://scripts/core/chapter4.gd")
+	var Ch7 = load("res://scripts/core/chapter7.gd")
+	for mid in ["2-3", "3-3", "4-2", "5-2", "6-3", "7-1", "8-2", "9-3"]:
+		w._load_map(mid)
+		var t: Dictionary = CD.theme(w)
+		var b: Dictionary = CD.build(w)
+		var walls: Array = b.items.filter(func(it): return it.id == t.wall)
+		var spots: Array = b.clear.filter(func(c): return w.map.arena == null or c[0].distance_to(w.arena_pos) > 10.0)
+		_check(walls.size() >= 3 and spots.size() >= (1 if mid == "4-2" else 2) and SL.has_env(t.wall) and SL.has_env(t.banner), "%s: bộ cảnh vùng (%s, %d bãi)" % [mid, t.wall, spots.size()])
+		var bad_spot := spots.filter(func(c): return not CD.spot_ok(w, c[0], CD.map_points(w.map)))
+		_check(bad_spot.is_empty(), "%s: bãi trại không đè nước / dung nham / mép đảo / điểm nhiệm vụ" % mid)
+		if mid == "4-2":
+			_check(spots.all(func(c): return not Ch4.in_water(w, c[0])), "4-2: bãi trại trên đất")
+		if mid == "7-1":
+			_check(spots.all(func(c): return Ch7.on_land_static(w.map, c[0])), "7-1: bãi trại trên đảo")
+		var has_arena_wall: bool = w.map.arena != null and walls.any(func(it): return it.pos.distance_to(w.arena_pos) < w.arena_r + 60.0)
+		_check(has_arena_wall == (w.map.arena != null and bool(t.arena)), "%s: phông đấu trường chỉ ở vùng có đấu trường vẽ chung" % mid)
+		for f in b.flat:
+			_check(f.id in CD.FLAT and SL.has_env(f.id), "%s: đồ vương vãi phẳng có hình" % mid)
+			break
+	w._load_map("6-3")
+	var lit: Array = []
+	CD.lights_of(CD.build(w).items.filter(func(it): return it.id != "watchtower"), lit)
+	_check(lit.is_empty(), "vùng 6 không đặt đuốc / lửa (lửa là cơ chế sưởi)")
+
+
+func _test_cr05() -> void:
+	var Hud = load("res://scripts/ui/hud.gd")
+	var Settings = load("res://scripts/core/settings.gd")
+	var box := Rect2(1680, 12, 228, 230)
+	var on_box := Rect2(1700, 100, 50, 90)
+	var near := Rect2(1600, 100, 70, 90)
+	var away := Rect2(900, 500, 50, 90)
+	_check(is_equal_approx(Hud.occlusion_alpha(box, on_box, false), Hud.OCCLUDE_A), "nhân vật dưới khung → khung mờ")
+	_check(is_equal_approx(Hud.occlusion_alpha(box, near, false), Hud.OCCLUDE_A), "sát mép khung (trong lề %d px) cũng mờ" % Hud.OCCLUDE_PAD)
+	_check(Hud.occlusion_alpha(box, away, false) == 1.0, "nhân vật ở xa → khung như cũ")
+	_check(Hud.occlusion_alpha(box, on_box, true) == 1.0, "rê chuột vào khung → hiện rõ để bấm / đọc")
+	_check(is_equal_approx(Hud.occlusion_alpha(box, away, false, 0.35), 0.35) and Hud.occlusion_alpha(box, Rect2(), false) == 1.0, "giữ độ mờ đang đánh boss; chưa có nhân vật thì không mờ")
+	_check(Settings.DEFAULTS.get("hud_minimap") == true and Settings.DEFAULTS.get("hud_quest") == true, "mặc định hiện cả 2 khung")
+	# HUD thật: nhân vật ở góc phải trên → bản đồ nhỏ mờ dần; tắt 2 khung → ẩn, nút vẫn còn, V hiện lại bản đồ nhỏ
+	var old_m = Settings.values.get("hud_minimap", true)
+	var old_q = Settings.values.get("hud_quest", true)
+	Settings.values["hud_minimap"] = true
+	Settings.values["hud_quest"] = true
+	var host := Control.new()
+	host.size = Vector2(1920, 1080)
+	get_root().add_child(host)
+	var hud = Hud.new()
+	host.add_child(hud)
+	if hud._minimap == null:
+		hud._ready()
+	hud.size = host.size
+	var w := _world("tay-nhanh")
+	hud.update_from(w)
+	var mm: Control = hud._minimap
+	var obj: Control = hud._obj
+	_check(mm.get_rect().encloses(Rect2(hud._btn_map.position, Vector2.ONE * Hud.TOGGLE_D)) and obj.get_rect().encloses(Rect2(hud._btn_quest.position, Vector2.ONE * Hud.TOGGLE_D)), "mỗi nút gắn trong góc khung của nó (la bàn / khung nhiệm vụ)")
+	hud.focus_rect = Rect2(mm.position + mm.size * 0.5, Vector2(40, 80))
+	for i in 30:
+		hud._apply_fade(0.05)
+	_check(mm.modulate.a < 0.5 and obj.modulate.a > 0.95, "nhân vật dưới bản đồ nhỏ: bản đồ mờ (%.2f), khung nhiệm vụ giữ nguyên" % mm.modulate.a)
+	hud.focus_rect = Rect2(obj.position + obj.size * 0.5, Vector2(40, 80))
+	for i in 60:
+		hud._apply_fade(0.05)
+	_check(mm.modulate.a > 0.95 and obj.modulate.a < 0.5, "đi xuống khung nhiệm vụ: bản đồ hiện lại, khung nhiệm vụ mờ")
+	Settings.values["hud_minimap"] = false
+	Settings.values["hud_quest"] = false
+	hud.update_from(w)
+	_check(not mm.visible and not obj.visible and not hud._map_name.visible and hud._btn_map.visible and not hud._btn_map.on, "tắt 2 khung: ẩn hẳn, nút vẫn còn (gạch chéo)")
+	_check(hud._btn_map.position.x + Hud.TOGGLE_D <= 1920.0 - 11.0 and hud._btn_map.position.y <= 12.0 and hud._btn_quest.position.y > hud._btn_map.position.y and hud._btn_quest.position.y - hud._btn_map.position.y < Hud.TOGGLE_D + 10.0, "2 khung ẩn → 2 nút sát góc phải, liền nhau")
+	Settings.values["hud_minimap"] = old_m
+	Settings.values["hud_quest"] = old_q
+	host.queue_free()
+
+
+## CR4-T9: pha sau CR-04 (TD-15…19, docs/CR-04 §12).
+func _test_cr4_phase2() -> void:
+	var w := _cr4_world()
+	var p = w.profile
+	var rng := RngUtil.make(81)
+	# U1: sắp xếp
+	for r in ["white", "purple", "green", "blue", "white"]:
+		p.inventory.append(Items.new_item(p, 5, r, rng))
+	var lk := Items.new_item(p, 5, "white", rng, "boots")
+	lk["locked"] = true
+	p.inventory.append(lk)
+	w.sort_bag("rarity")
+	_check(int(p.inventory[0].id) == int(lk.id) and p.inventory[1].rarity == "purple" and p.inventory[-1].rarity == "white", "U1: theo phẩm chất — món khoá đầu, Tím trước, Trắng cuối")
+	w.sort_bag("slot")
+	var slots: Array = p.inventory.slice(1).map(func(x): return ItemData.SLOT_ORDER.find(str(x.slot)))
+	var sorted_slots := slots.duplicate()
+	sorted_slots.sort()
+	_check(slots == sorted_slots, "U1: theo ô — đúng thứ tự ô (%s)" % str(slots))
+	w.sort_bag("power")
+	var pw: Array = p.inventory.slice(1).map(func(x): return w.power_if_equipped(x))
+	var ok_pw := true
+	for i in range(1, pw.size()):
+		if pw[i] > pw[i - 1]:
+			ok_pw = false
+	_check(ok_pw, "U1: theo Lực chiến — giảm dần")
+	# U2: giữ đồ bộ thông minh
+	p.inventory = []
+	var r2 := Items.default_rules()
+	r2.by_rarity = {"white": "sell", "green": "sell", "blue": "sell", "purple": "sell"}
+	r2.keep_better = false
+	var s_lo := Items.new_item(p, 3, "blue", rng, "boots", "frost_hunter")
+	var s_hi := Items.new_item(p, 8, "blue", rng, "boots", "frost_hunter")
+	var s_other := Items.new_item(p, 3, "blue", rng, "helm", "frost_hunter")
+	for it in [s_lo, s_hi, s_other]:
+		p.inventory.append(it)
+	_check(Items.decide(p, s_lo, r2) == "sell" and Items.decide(p, s_hi, r2) == "keep", "U2: 2 món bộ cùng ô — giữ món tốt hơn, bán món trùng")
+	_check(Items.decide(p, s_other, r2) == "keep", "U2: món bộ ô khác vẫn giữ")
+	var twin := s_hi.duplicate(true)
+	twin.id = 9999
+	p.inventory.append(twin)
+	_check([Items.decide(p, s_hi, r2), Items.decide(p, twin, r2)].count("keep") == 1, "U2: 2 món giống hệt — giữ đúng 1")
+	# U3: theo ô + dòng chỉ số
+	var r3 := Items.default_rules()
+	r3.by_slot.amulet = "sell"
+	var am := Items.new_item(p, 3, "blue", rng, "amulet")
+	_check(Items.decide(p, am, r3) == "sell", "U3: ô Bùa = Bán dù bảng phẩm chất Giữ")
+	r3.by_rarity.white = "sell"
+	r3.by_slot.ring = "keep"
+	_check(Items.decide(p, Items.new_item(p, 3, "white", rng, "ring"), r3) == "keep", "U3: ô Nhẫn = Giữ thắng bảng phẩm chất")
+	var crit_item := Items.new_item(p, 3, "white", rng, "boots")
+	crit_item.affixes = [{"stat": "crit", "value": 0.02}]
+	r3.keep_stats = ["crit"]
+	_check(Items.decide(p, crit_item, r3) == "keep", "U3: luôn giữ đồ có dòng Chí mạng")
+	var n3 := Items.normalize_rules({"by_slot": {"amulet": "burn", "ring": "salvage"}, "keep_stats": ["crit", "xyz", "crit"]})
+	_check(n3.by_slot.amulet == "rule" and n3.by_slot.ring == "salvage" and n3.keep_stats == ["crit"], "U3: normalize bỏ giá trị sai / trùng")
+	_check(Items.rules_advanced_count(n3) == 2, "U3: đếm quy tắc nâng cao")
+	# U4: khoá đồ đang mặc
+	_check(w.toggle_lock_worn().ok and w.worn_all_locked(), "U4: khoá mọi đồ đang mặc")
+	p.inventory = []
+	w.unequip("ring")
+	_check(Items.is_locked(p.inventory[0]), "U4: tháo ra vẫn giữ khoá")
+	w.equip(int(p.inventory[0].id))
+	w.toggle_lock_worn()
+	_check(not w.worn_all_locked() and not Items.is_locked(p.equipment.ring), "U4: bấm lần 2 mở khoá hết")
+	# U5: tóm tắt khi mở túi
+	w.loot_since_seen()
+	w.set_loot_rules({"mode": "pickup", "by_rarity": {"white": "sell", "green": "salvage", "blue": "keep", "purple": "keep"}, "keep_better": false})
+	_cr4_drop(w, Items.new_item(p, 3, "white", rng, "boots"))
+	_cr4_drop(w, Items.new_item(p, 3, "green", rng, "boots"))
+	var inv = load("res://scripts/ui/inventory_panel.gd").new()
+	inv.open(w)
+	var lt := inv.find_child("LootSummaryText", true, false) as Label
+	_check(lt != null and lt.text.contains("tự bán 1 món") and lt.text.contains("tự phân rã 1 món"), "U5: thẻ tóm tắt khi mở túi (%s)" % (lt.text if lt != null else "—"))
+	inv.close()
+	inv.open(w)
+	lt = inv.find_child("LootSummaryText", true, false) as Label
+	_check(lt != null and lt.text.contains("chưa xử lý"), "U5: mở lại ngay → chưa xử lý món nào")
+	# giao diện: Sắp xếp, Khoá đồ mặc, trang Nâng cao
+	_check(inv.find_child("SortBag", true, false) is MenuButton and inv.find_child("LockWorn", true, false) != null, "U1/U4: nút Sắp xếp + Khoá đồ mặc ở đầu túi")
+	inv._bottom = "auto"
+	inv.refresh()
+	(inv.find_child("LootAdvanced", true, false) as Button).pressed.emit()
+	_check(inv.find_child("LootSlot_amulet", true, false) != null and inv.find_child("LootStat_crit", true, false) != null, "U3: trang Nâng cao có 8 ô + dòng chỉ số")
+	(inv.find_child("LootSlot_amulet", true, false) as Button).pressed.emit()
+	(inv.find_child("LootStat_crit", true, false) as Button).pressed.emit()
+	var rr := w.loot_rules()
+	_check(rr.by_slot.amulet == "keep" and "crit" in rr.keep_stats, "U3: bấm ô Bùa → Giữ, bấm Chí mạng → luôn giữ (lưu vào hồ sơ)")
+	(inv.find_child("LootAdvBack", true, false) as Button).pressed.emit()
+	inv.refresh()
+	_check(inv.find_child("LootSlot_amulet", true, false) == null, "Quay lại trang chính")
+	inv.free()
+
+
+func _test_mu1() -> void:
+	var AM = load("res://scripts/audio/audio_manager.gd")
+	var MainS = load("res://scripts/main.gd")
+	var Settings = load("res://scripts/core/settings.gd")
+	var music: Array = MainS.REGION_MUSIC.values() + ["boss", "boss_final", "village", "core"]
+	var short_explore := []
+	for id in music:
+		var ok: bool = AM.has_stream(AM.MUSIC_DIR, id)
+		_check(ok, "có nhạc %s.ogg" % id)
+		if not ok:
+			continue
+		var s: AudioStream = load(AM.MUSIC_DIR + id + ".ogg")
+		_check(s is AudioStreamOggVorbis, "%s là OGG Vorbis" % id)
+		if not AM.is_loop(id) and s.get_length() < 75.0:
+			short_explore.append("%s %.0fs" % [id, s.get_length()])
+	_check(short_explore.is_empty(), "bài khám phá dài ≥ 75 giây (có đoạn, không vòng 30–40 giây): %s" % str(short_explore))
+	_check(AM.is_loop("village") and AM.is_loop("core") and AM.is_loop("boss") and AM.is_loop("boss_final") and not AM.is_loop("forest") and not AM.is_loop("heaven"),
+		"làng / hang / boss lặp liền, bài khám phá phát 1 lượt rồi nghỉ")
+	_check(is_equal_approx(AM.rest_seconds(0.0), 30.0) and is_equal_approx(AM.rest_seconds(1.0), 90.0), "nghỉ 30–90 giây")
+	var amb: Array = MainS.REGION_AMBIENT.values() + ["amb_cave", "amb_village"]
+	for id in amb:
+		_check(AM.has_stream(AM.AMBIENT_DIR, id), "có âm môi trường %s" % id)
+	_check(MainS.REGION_AMBIENT.size() == 9, "9 vùng có âm môi trường")
+	for id in ["st_levelup", "st_quest", "st_region", "st_boss", "st_victory"]:
+		var ok: bool = AM.has_stream(AM.STINGER_DIR, id)
+		_check(ok and load(AM.STINGER_DIR + id + ".ogg").get_length() < 8.0, "nhạc báo %s (ngắn < 8 giây)" % id)
+	_check(AM.SFX_BY_STINGER.get("levelup") == "st_levelup", "lên cấp: nhạc báo thay âm levelup cũ (không chồng 2 âm)")
+	_check(is_equal_approx(float(Settings.DEFAULTS.get("ambient", -1.0)), 0.7), "Cài đặt: âm lượng môi trường mặc định 70%")
+	var w := _world("tay-nhanh")
+	w.player.pos = w.safe_pos
+	_check(MainS.ambient_for(w) == "amb_village", "đứng trong làng: âm làng")
+	w.player.pos = w.safe_pos + Vector2(2000, 0)
+	_check(MainS.ambient_for(w) == "amb_forest", "ra rừng: âm rừng")
+	var src := FileAccess.get_file_as_string("res://scripts/main.gd")
+	_check(src.contains('audio.stinger("st_levelup")') and src.contains('audio.stinger("st_quest")') and src.contains('audio.stinger("st_region")') and src.contains('audio.ambient(ambient_for(world))'),
+		"main nối nhạc báo (lên cấp, nhiệm vụ, sang vùng) + âm môi trường")
+
+
+func _test_gn3() -> void:
+	# Q223: bộ đếm combo lớn
+	var CC = load("res://scripts/ui/combo_counter.gd")
+	var cc = CC.new()
+	cc._ready()
+	cc.set_combo(3, 0, 0.016)
+	_check(not cc.visible, "dưới 5 combo không hiện")
+	cc.set_combo(6, 1, 0.016)
+	_check(cc.visible and cc.pop_scale() > 1.2, "tăng combo → hiện + nảy (%.2f)" % cc.pop_scale())
+	for i in 20:
+		cc.set_combo(6, 1, 0.016)
+	_check(is_equal_approx(cc.pop_scale(), 1.0), "hết nảy sau %.2f giây" % CC.POP_TIME)
+	cc.set_combo(0, 0, 0.2)
+	_check(cc.visible, "đứt chuỗi → còn mờ dần, chưa tắt ngay")
+	cc.set_combo(0, 0, 0.5)
+	_check(not cc.visible, "mờ hết sau %.2f giây" % CC.FADE_TIME)
+	cc.free()
+	var S = load("res://scripts/core/settings.gd")
+	_check(str(S.DEFAULTS.get("combo_style", "")) == "big" and S.COMBO_STYLES.size() == 3, "Cài đặt Bộ đếm combo: Lớn (mặc định) / Nhỏ / Tắt")
+	# E5: tông nền mọi vùng
+	var WV = load("res://scripts/view/world_view.gd")
+	var miss: Array = []
+	for r in range(1, 10):
+		if not WV.REGION_DIM.has(r):
+			miss.append(r)
+	_check(miss.is_empty(), "tông nền có đủ 9 vùng %s" % str(miss))
+	_check(WV.REGION_DIM.values().all(func(c): return c.a > 0.0 and c.a <= 0.25), "tông nền nhẹ (độ đục ≤ 25%)")
+	# E1: nền đất mòn dưới mỗi bãi trại, ô đất có hình
+	var CD = load("res://scripts/view/camp_decor.gd")
+	var SL = load("res://scripts/view/sprite_lib.gd")
+	var w := _region2_world("1-1", "kiem-khach", "tay-nhanh", 12)
+	for mid in ["1-1", "3-1", "5-1", "8-1"]:
+		w._load_map(mid)
+		var b: Dictionary = CD.build(w)
+		var spots: int = b.clear.filter(func(c): return w.map.arena == null or c[0].distance_to(w.arena_pos) > 10.0).size()
+		_check(b.ground.size() == spots and b.ground.all(func(g): return SL.has_env(str(g[3]))), "%s: mỗi bãi trại có nền đất mòn (%d)" % [mid, spots])
+
+
+# ------------------------------------------------------------------ NL-1 (docs/47): tăng Lực chiến trang bị
+
+
+func _nl_world() -> GameWorld:
+	var w := _cr4_world()
+	var p = w.profile
+	p.level = 40
+	p.gold = 1000000.0
+	p.tinh_kim = 100
+	p.crystal = 100.0
+	p.essence = 500
+	p.void_cores = 20
+	p.stones = 200
+	p.gem_bag = {}
+	p.codex = {}
+	return w
+
+
+## NL1-T1: Khảm Ngọc Ngũ Hành (docs/47 §3.A).
+func _test_nl1_gems() -> void:
+	var w := _nl_world()
+	var p = w.profile
+	var rng := RngUtil.make(7)
+	for r in ItemData.RARITY_ORDER:
+		_check(int(Items.new_item(p, 10, r, rng).sockets) == int(GearData.SOCKETS[r]), "lỗ theo phẩm chất: %s" % r)
+	# chưa tới chương 2 → không rơi, không khảm
+	p.unlocked_maps = ["1-1", "1-2"]
+	_check(not Gear.unlocked(p, "gems") and Gear.roll_drop(p, "moc", "boss", false, rng).is_empty(), "chương 1: chưa mở, boss không rơi ngọc")
+	p.unlocked_maps.append("2-1")
+	_check(Gear.unlocked(p, "gems") and not Gear.unlocked(p, "ascend"), "tới vùng 2 → mở Khảm ngọc, chưa mở Thăng phẩm")
+	var got := Gear.roll_drop(p, "moc", "boss", false, rng)
+	_check(got.size() == 2 and got[0] == "moc:%d" % GearData.GEM_BOSS_LV, "boss: 1 viên cấp 3 cùng hệ + 1 viên cấp 1 (%s)" % str(got))
+	var field := 0
+	var wrong := 0
+	for i in 5000:
+		var g := Gear.roll_drop(p, "thuy", "field", false, rng)
+		field += g.size()
+		wrong += g.filter(func(k): return k != "thuy:1").size()
+	_check(field > 60 and field < 140 and wrong == 0, "quái thường ~2%% ra ngọc cấp 1 cùng hệ (%d / 5000)" % field)
+	# ghép
+	p.gem_bag = {"kim:1": 7}
+	_check(Gear.combine(p, "kim:1").ok and Gear.gem_count(p, "kim:1") == 4 and Gear.gem_count(p, "kim:2") == 1, "ghép 3 → 1")
+	_check(not Gear.combine(p, "kim:2").ok, "thiếu 3 viên → từ chối")
+	p.gem_bag = {"kim:1": 9}
+	var ca := Gear.combine_all(p)
+	_check(ca.ok and Gear.gem_count(p, "kim:3") == 1 and Gear.gem_count(p, "kim:1") == 0, "Ghép tất cả: 9 viên cấp 1 → 1 viên cấp 3")
+	# khảm vào vũ khí 2 lỗ (Tím)
+	var wpn := Items.new_item(p, 40, "purple", rng, "weapon")
+	p.equipment["weapon"] = wpn
+	w._refresh_stats()
+	var atk0 := float(w.stats.atk)
+	var cp0 := w.combat_power()
+	p.gem_bag = {"kim:5": 2, "moc:2": 1}
+	_check(w.gem_socket(int(wpn.id), "kim:5").ok, "khảm viên 1")
+	_check(float(w.stats.atk) > atk0 and w.combat_power() > cp0, "khảm Bạch Ngọc tăng Tấn công + Lực chiến")
+	_check(str(w.stats.get("seal", "")) == "", "1 viên chưa ấn hệ")
+	_check(w.gem_socket(int(wpn.id), "kim:5").ok and str(w.stats.seal) == "kim", "2 viên Kim → vũ khí ấn hệ Kim")
+	_check(not w.gem_socket(int(wpn.id), "moc:2").ok, "hết lỗ → từ chối")
+	# ấn hệ: Kim khắc Mộc +15% (không có Ngũ Hành Linh Căn)
+	var wolf := w.spawn_enemy("wolf", 10, w.player.pos + Vector2(400, 0))
+	_check(absf(w.element_bonus(wolf) - GearData.SEAL_BONUS) < 0.001, "ấn hệ Kim đánh quái Mộc: +15%% (%.3f)" % w.element_bonus(wolf))
+	# đục lỗ
+	var gold0 := float(p.gold)
+	_check(w.gem_punch(int(wpn.id)).ok and int(wpn.sockets) == 3 and float(p.gold) < gold0, "đục lỗ thứ 3")
+	_check(not Gear.punch(p, int(wpn.id)).ok, "tối đa 3 lỗ")
+	# tháo: ngọc không vỡ
+	_check(w.gem_unsocket(int(wpn.id), 0).ok and Gear.gem_count(p, "kim:5") == 1 and str(w.stats.seal) == "", "tháo ngọc về túi, mất ấn hệ")
+	# đồ phòng thủ: ngọc cộng kháng hệ
+	var helm := Items.new_item(p, 40, "blue", rng, "helm")
+	helm.gems = ["tho:4"]
+	var hs := Items.gem_stats(helm)
+	_check(absf(float(hs.get("res_tho", 0.0)) - 0.02) < 0.001 and float(hs.get("def", 0.0)) >= 13.0, "Hoàng Ngọc trên mũ: Phòng thủ + Kháng Thổ")
+	# bán / phân rã trả ngọc
+	helm["locked"] = false
+	p.inventory.append(helm)
+	_check(w.sell_item(int(helm.id)).ok and Gear.gem_count(p, "tho:4") == 1, "bán đồ: ngọc về Túi Ngọc")
+	var ring := Items.new_item(p, 40, "orange", rng, "ring", "", "")
+	ring.gems = ["hoa:3"]
+	ring["locked"] = false
+	p.inventory.append(ring)
+	var total0 := Gear.gem_total(p)
+	_check(Items.salvage(p, int(ring.id), rng).ok and Gear.gem_count(p, "hoa:3") >= 1 and Gear.gem_total(p) == total0 + 2, "phân rã đồ Cam: trả ngọc + 1 viên cấp 2")
+
+
+## NL1-T2: Tẩy Luyện (docs/47 §3.B).
+func _test_nl1_reforge() -> void:
+	var w := _nl_world()
+	var p = w.profile
+	var rng := RngUtil.make(11)
+	var it := Items.new_item(p, 30, "purple", rng, "armor")
+	p.inventory.append(it)
+	_check(not Gear.reforge(p, int(it.id), 0, "value", rng).ok, "chưa tới chương 3 → khoá")
+	p.unlocked_maps.append("3-1")
+	var old0: Dictionary = it.affixes[0].duplicate()
+	var c1 := Gear.reforge_cost(it, "value")
+	var gold0 := float(p.gold)
+	var cr0 := float(p.crystal)
+	var r := w.reforge(int(it.id), 0, "value")
+	_check(r.ok and str(r.new.stat) == str(old0.stat) and float(p.gold) == gold0 - c1.gold and float(p.crystal) == cr0 - c1.crystal, "luyện giá trị: giữ loại, trừ đúng chi phí")
+	_check(w.reforge_keep(int(it.id), false).ok and float(it.affixes[0].value) == float(old0.value), "giữ dòng cũ → không đổi")
+	_check(int(it.reforged) == 0, "dòng 0 thành dòng ✦ cố định")
+	_check(not Gear.reforge(p, int(it.id), 1, "value", rng).ok, "không tẩy được dòng khác (Q232)")
+	var c2 := Gear.reforge_cost(it, "value")
+	_check(c2.gold > c1.gold, "lần sau đắt hơn ×1,25 (%d → %d)" % [c1.gold, c2.gold])
+	var r2 := w.reforge(int(it.id), 0, "swap")
+	var others: Array = it.affixes.slice(1).map(func(a): return str(a.stat))
+	_check(r2.ok and str(r2.new.stat) != str(old0.stat) and not (str(r2.new.stat) in others), "đổi dòng: loại khác, không trùng dòng còn lại")
+	_check(w.reforge_keep(int(it.id), true).ok and str(it.affixes[0].stat) == str(r2.new.stat), "lấy dòng mới")
+	_check(not it.has("reforge_pending"), "đã chốt")
+	for k in 6:
+		it.reforges = k + 6
+	_check(Gear.reforge_mult(it) <= GearData.REFORGE_GROWTH_MAX, "chi phí tối đa ×3")
+	p.gold = 0.0
+	var tk0 := int(p.tinh_kim)
+	_check(not Gear.reforge(p, int(it.id), 0, "swap", rng).ok and int(p.tinh_kim) == tk0, "thiếu vàng → từ chối, không trừ")
+	var white := Items.new_item(p, 30, "white", rng, "boots")
+	p.inventory.append(white)
+	p.gold = 99999.0
+	_check(not Gear.reforge(p, int(white.id), 0, "value", rng).ok, "đồ không có dòng phụ → từ chối")
+
+
+## NL2-T1: Thăng Phẩm (docs/47 §3.C).
+func _test_nl2_ascend() -> void:
+	var w := _nl_world()
+	var p = w.profile
+	var rng := RngUtil.make(21)
+	p.unlocked_maps.append("4-1")
+	var it := Items.new_item(p, 30, "blue", rng, "gloves")
+	it.plus = 5
+	it.gems = ["kim:2"]
+	var aff0: Array = it.affixes.duplicate(true)
+	p.equipment["gloves"] = it
+	w._refresh_stats()
+	var cp0 := w.combat_power()
+	_check(Gear.ascend_blocker(p, it) != "", "không có nguyên liệu → khoá")
+	var low := Items.new_item(p, 20, "blue", rng, "gloves")
+	p.inventory.append(low)
+	_check(Gear.ascend_materials(p, it).is_empty(), "nguyên liệu thấp hơn quá 5 cấp không dùng được")
+	var mat := Items.new_item(p, 26, "blue", rng, "gloves")
+	mat.plus = 8
+	mat.gems = ["thuy:1"]
+	p.inventory.append(mat)
+	var r := w.ascend(int(it.id), int(mat.id))
+	_check(r.ok and str(it.rarity) == "purple" and it.affixes.size() == 3, "lên Tím, thêm 1 dòng (%s)" % r.message)
+	_check(str(it.affixes[0].stat) == str(aff0[0].stat) and float(it.affixes[1].value) == float(aff0[1].value), "giữ dòng cũ")
+	_check(int(it.plus) == 8 and it.gems == ["kim:2"] and int(it.sockets) == 2, "nhận +8 từ nguyên liệu, giữ ngọc, thêm lỗ")
+	_check(Items.find_in_bag(p, int(mat.id)) < 0 and Gear.gem_count(p, "thuy:1") == 1, "nguyên liệu bị tiêu, ngọc của nó về túi")
+	_check(w.combat_power() > cp0, "Lực chiến tăng")
+	_check(Gear.ascend_blocker(p, it) != "", "Tím không thăng tiếp (không lên Cam — Q233)")
+	var st := Items.new_item(p, 30, "purple", rng, "boots", "frost_hunter")
+	_check(Gear.ascend_blocker(p, st) != "", "đồ bộ không thăng phẩm")
+	var g := Items.new_item(p, 30, "green", rng, "boots")
+	var g2 := Items.new_item(p, 30, "green", rng, "boots")
+	g2["locked"] = true
+	p.inventory.append(g)
+	p.inventory.append(g2)
+	_check(Gear.ascend_blocker(p, g) != "", "món khoá không làm nguyên liệu")
+
+
+## NL2-T2: Luyện Cấp đồ Cam / đồ bộ (docs/47 §3.D).
+func _test_nl2_levelup() -> void:
+	var w := _nl_world()
+	var p = w.profile
+	var rng := RngUtil.make(31)
+	p.unlocked_maps.append("3-1")
+	var fang := Items.new_item(p, 6, "orange", rng, "", "", "wolf_fang")
+	p.equipment["weapon"] = fang
+	var normal := Items.new_item(p, 6, "purple", rng, "helm")
+	_check(Gear.levelup_blocker(p, normal) != "", "đồ thường không luyện cấp")
+	var roll0 := float(fang.affixes[0].value) / (float(ItemData.AFFIXES[fang.affixes[0].stat].a) + float(ItemData.AFFIXES[fang.affixes[0].stat].b) * 6)
+	var b0 := Items.base_value(fang)
+	_check(w.gear_levelup(int(fang.id)).ok and int(fang.level) == 11 and Items.base_value(fang) > b0, "Cam cấp 6 → 11, chỉ số gốc tăng")
+	var a: Dictionary = ItemData.AFFIXES[fang.affixes[0].stat]
+	var roll1 := float(fang.affixes[0].value) / (float(a.a) + float(a.b) * 11)
+	_check(absf(roll1 - roll0) < 0.0001, "dòng phụ giữ hệ số quay (%.3f)" % roll1)
+	p.level = 13
+	_check(w.gear_levelup(int(fang.id)).ok and int(fang.level) == 13, "không vượt cấp nhân vật")
+	_check(not Gear.levelup(p, int(fang.id)).ok, "bằng cấp nhân vật → khoá")
+	var st := Items.new_item(p, 5, "purple", rng, "boots", "frost_hunter")
+	p.inventory.append(st)
+	_check(w.gear_levelup(int(st.id)).ok and int(st.level) == 10, "đồ bộ luyện cấp được")
+
+
+## NL3-T1: Thức Tỉnh (docs/47 §3.E).
+func _test_nl3_awaken() -> void:
+	var w := _nl_world()
+	var p = w.profile
+	var rng := RngUtil.make(41)
+	var arm := Items.new_item(p, 40, "purple", rng, "armor")
+	arm.plus = 12
+	p.equipment["armor"] = arm
+	p.job3 = ""
+	_check(Gear.awaken_blocker(p, arm) != "", "chưa chuyển chức 3 → khoá")
+	p.job3 = "x"
+	var low := Items.new_item(p, 40, "purple", rng, "helm")
+	low.plus = 11
+	_check(Gear.awaken_blocker(p, low) != "", "dưới +12 → khoá")
+	var blue := Items.new_item(p, 40, "blue", rng, "helm")
+	blue.plus = 15
+	_check(Gear.awaken_blocker(p, blue) != "", "đồ Xanh dương → khoá")
+	var ess0 := int(p.essence)
+	var r := w.awaken(int(arm.id))
+	_check(r.ok and r.offer.size() == 3 and int(p.essence) == ess0 - 5, "mở: rút 3 dòng, −5 Tinh Hoa")
+	var pool := Gear.awaken_pool(p)
+	_check(r.offer.all(func(x): return x in pool) and "spin" in pool and not ("pet" in pool), "bể theo lớp Kiếm Khách (có Xoáy Kiếm, không có linh thú)")
+	_check(not w.awaken(int(arm.id)).ok, "phải chọn trước khi nâng")
+	_check(w.awaken_choose(int(arm.id), "boss").ok == ("boss" in r.offer), "chọn dòng trong lượt rút")
+	if not ("boss" in r.offer):
+		w.awaken_choose(int(arm.id), str(r.offer[0]))
+		arm.awaken.id = "boss"
+	_check(int(arm.awaken.tier) == 1, "bậc 1")
+	for i in 4:
+		w.awaken(int(arm.id))
+	_check(int(arm.awaken.tier) == 5 and not w.awaken(int(arm.id)).ok, "bậc tối đa 5 (Lõi Hư Vô từ bậc 4)")
+	_check(absf(float(w.stats.boss_dmg) - 0.06) < 0.001, "sát thương boss +6%% bậc 5 (%.3f)" % float(w.stats.boss_dmg))
+	# đổi dòng giữ bậc
+	var rr := w.awaken_reroll(int(arm.id))
+	_check(rr.ok and "boss" in rr.offer, "đổi dòng: lượt rút có cả dòng cũ")
+	var other: String = str(rr.offer.filter(func(x): return x != "boss")[0])
+	w.awaken_choose(int(arm.id), other)
+	_check(str(arm.awaken.id) == other and int(arm.awaken.tier) == 5, "đổi dòng giữ bậc 5")
+	# tối đa 4 món
+	var eq := {}
+	for i in 6:
+		var slot: String = ItemData.SLOT_ORDER[i]
+		var x := Items.new_item(p, 40, "purple", rng, slot)
+		x.awaken = {"id": "atk", "tier": 1 + (i % 3), "spent": 0, "offer": []}
+		eq[slot] = x
+	var act := Items.active_awakens(eq)
+	_check(act.size() == 4 and act[0].tier == 3, "tối đa 4 món hiệu lực, ưu tiên bậc cao")
+	var bonus := Items.equipment_bonus(eq)
+	var want := 0.0
+	for a in act:
+		want += Items.awaken_value("atk", a.tier)
+	_check(absf(float(bonus.atk_pct) - want) < 0.0001, "Tấn công % chỉ tính 4 món")
+	# sát thương boss thực tế
+	p.equipment["armor"].awaken = {"id": "boss", "tier": 5, "spent": 0, "offer": []}
+	w._refresh_stats()
+	var boss := w.spawn_enemy("boss", 40, w.player.pos + Vector2(60, 0))
+	boss.role = "boss"
+	boss.hp = 1e9
+	boss.max_hp = 1e9
+	w._rng = RngUtil.make(5)
+	var hp0 := float(boss.hp)
+	w._hit_enemy(boss, 1.0)
+	var d1 := hp0 - float(boss.hp)
+	p.equipment["armor"].awaken = {}
+	w._refresh_stats()
+	w._rng = RngUtil.make(5)
+	hp0 = float(boss.hp)
+	w._hit_enemy(boss, 1.0)
+	var d0 := hp0 - float(boss.hp)
+	_check(d1 > d0, "đòn lên boss mạnh hơn khi có Thức Tỉnh (%d > %d)" % [d1, d0])
+
+
+## NL3-T2: Bảo Giám, save v32, gợi ý tăng Lực chiến, Lực chiến món tách nguồn.
+func _test_nl3_codex() -> void:
+	var w := _nl_world()
+	var p = w.profile
+	var rng := RngUtil.make(51)
+	var st := Items.new_item(p, 20, "purple", rng, "boots", "frost_hunter")
+	Items.add_item(p, st)
+	_check(p.codex.has("s:frost_hunter:boots"), "nhặt đồ bộ → ghi danh")
+	var pts := Gear.codex_points(p)
+	Items.add_item(p, Items.new_item(p, 20, "purple", rng, "boots", "frost_hunter"))
+	_check(Gear.codex_points(p) == pts, "ghi danh 1 lần")
+	for slot in ["weapon", "helm", "armor", "gloves", "necklace"]:
+		Items.add_item(p, Items.new_item(p, 20, "purple", rng, slot, "frost_hunter"))
+	_check(Gear.codex_points(p) == 6 * GearData.CODEX_SET_PIECE + GearData.CODEX_SET_FULL, "đủ 6 ô của bộ → +6 (%d)" % Gear.codex_points(p))
+	for u in ["wolf_fang", "huyen_anh_mask"]:
+		Items.add_item(p, Items.new_item(p, 20, "orange", rng, "", "", u))
+	_check(Gear.codex_points(p) >= 28 and float(Gear.codex_bonus(p).max_hp_pct) > 0.0, "≥ 20 điểm → +1% HP")
+	w._refresh_stats()
+	var hp1 := int(w.stats.max_hp)
+	p.codex = {}
+	w._refresh_stats()
+	_check(int(w.stats.max_hp) < hp1, "thưởng Bảo Giám vào chỉ số")
+	Gear.gem_add(p, "hoa:7")
+	_check(p.codex.has("g:hoa:7"), "ngọc cấp 7 lần đầu → ghi danh")
+	var it := Items.new_item(p, 20, "blue", rng, "ring")
+	it.plus = 13
+	Items.codex_item(p, it)
+	_check(p.codex.has("p:ring:10") and p.codex.has("p:ring:13") and not p.codex.has("p:ring:15"), "mốc cường hoá +10 / +13")
+	_check(Gear.codex_max_points() > 300, "tổng điểm tối đa %d" % Gear.codex_max_points())
+	for k in Gear.codex_entries(p):
+		p.codex[k.key] = true
+	_check(Gear.codex_titles(p) == "Bảo Giám Sư" and "Bảo Giám Sư" in p.titles, "mốc 200: danh hiệu")
+	# save v32
+	p.gem_bag = {"kim:3": 2}
+	var wp := Items.new_item(p, 20, "purple", rng, "weapon")
+	wp.gems = ["kim:3"]
+	wp.reforged = 1
+	wp.reforges = 2
+	wp.awaken = {"id": "atk", "tier": 2, "spent": 15, "offer": []}
+	p.inventory.append(wp)
+	var d: Dictionary = p.to_dict()
+	_check(int(d.version) == 32, "save v32")
+	var q := Profile.new()
+	_check(q.load_dict(JSON.parse_string(JSON.stringify(d))), "nạp save v32")
+	var wq: Dictionary = q.inventory[Items.find_in_bag(q, int(wp.id))]
+	_check(wq.gems == ["kim:3"] and int(wq.reforged) == 1 and int(wq.reforges) == 2 and str(wq.awaken.id) == "atk" and int(wq.awaken.tier) == 2, "giữ ngọc / tẩy / thức tỉnh")
+	_check(int(q.gem_bag.get("kim:3", 0)) == 2 and q.codex.size() == p.codex.size(), "giữ Túi Ngọc + Bảo Giám")
+	# save cũ v31: món có lỗ theo phẩm chất, Bảo Giám ghi danh lại
+	var d31: Dictionary = d.duplicate(true)
+	d31.version = 31
+	d31.erase("codex")
+	d31.erase("gem_bag")
+	for x in d31.inventory:
+		x.erase("sockets")
+		x.erase("gems")
+	var q31 := Profile.new()
+	_check(q31.load_dict(JSON.parse_string(JSON.stringify(d31))), "nạp save v31")
+	var x31: Dictionary = q31.inventory[0]
+	_check(int(x31.sockets) == int(GearData.SOCKETS[x31.rarity]) and x31.gems.is_empty(), "save cũ: lỗ theo phẩm chất")
+	_check(q31.codex.has("s:frost_hunter:boots"), "save cũ: Bảo Giám ghi danh lại")
+	# gợi ý
+	var w2 := _nl_world()
+	var p2 = w2.profile
+	p2.unlocked_maps.append("2-1")
+	p2.equipment["weapon"] = Items.new_item(p2, 20, "purple", rng, "weapon")
+	p2.gem_bag = {"kim:1": 3}
+	var tips := w2.power_tips()
+	_check(tips.any(func(t): return t.tab == "gems" and int(t.id) == int(p2.equipment.weapon.id)), "gợi ý: lỗ trống + có ngọc")
+	_check(tips.any(func(t): return str(t.text).begins_with("Ghép")), "gợi ý: ghép ngọc")
+	_check(tips.any(func(t): return t.tab == "enhance"), "gợi ý: cường hoá được")
+	# Lực chiến món
+	var pp: Dictionary = p2.equipment.weapon
+	pp.plus = 5
+	pp.gems = ["kim:4"]
+	var parts := Items.item_power_parts(pp)
+	_check(int(parts.plus) > 0 and int(parts.gem) == 120 and int(parts.total) == int(parts.base) + int(parts.plus) + int(parts.affix) + int(parts.gem), "Lực chiến món tách nguồn (ngọc %d)" % int(parts.gem))
+
+
+func _test_gn4() -> void:
+	# P1-B: hình đứng thẳng — đường dọc của hình sau phép biến dạng vẫn dọc
+	var SL = load("res://scripts/view/sprite_lib.gd")
+	var T = load("res://scripts/view/tilt.gd")
+	var size := Vector2(1366, 768)
+	var g: float = T.g_of("mid")
+	SL.upright_begin(Transform2D.IDENTITY, size, g)
+	_check(absf(SL.upright_shear(Vector2(683, 300))) < 0.0001, "giữa màn hình không xô")
+	_check(SL.upright_shear(Vector2(100, 200)) > 0.0 and SL.upright_shear(Vector2(1266, 200)) < 0.0, "hai bên xô ngược chiều nhau")
+	var worst := 0.0
+	for feet in [Vector2(80, 160), Vector2(1280, 140), Vector2(300, 600), Vector2(1100, 700)]:
+		var sh: float = SL.upright_shear(feet)
+		var top: Vector2 = feet + Vector2(sh * -120.0, -120.0)  # điểm cao 120 px trên thân hình đã xô
+		var a: Vector2 = T.dst_uv(feet / size, g) * size
+		var b: Vector2 = T.dst_uv(top / size, g) * size
+		worst = maxf(worst, absf(b.x - a.x))
+	_check(worst < 1.5, "sau biến dạng thân hình cao 120 px lệch ngang < 1,5 px (%.2f)" % worst)
+	SL.upright_end()
+	_check(SL.upright_shear(Vector2(100, 200)) == 0.0, "ngoài lúc vẽ thế giới (giao diện) không xô")
+	SL.upright_begin(Transform2D.IDENTITY, size, 0.0)
+	_check(SL.upright_shear(Vector2(100, 200)) == 0.0, "tắt phối cảnh thì không xô")
+	SL.upright_end()
+	# E6: vách đá viền map
+	var TE = load("res://scripts/view/terrain_edge.gd")
+	var w := _region2_world("1-1", "kiem-khach", "tay-nhanh", 12)
+	_check(TE.margins(w) == Vector3(TE.MARGIN_TOP, TE.MARGIN_SIDE, TE.MARGIN_BOTTOM), "1-1: camera nhìn ra ngoài mép để thấy vách")
+	var ok_all := true
+	for mid in ["2-1", "3-1", "4-2", "5-1", "6-1", "8-1", "9-1"]:
+		w._load_map(mid)
+		ok_all = ok_all and TE.margins(w) != Vector3.ZERO and SL.has_env(TE.rock_of(w))
+	_check(ok_all, "vùng 2–6, 8, 9 có vách đá + hình mặt đá")
+	w._load_map("7-1")
+	_check(TE.margins(w) == Vector3.ZERO, "vùng 7 (đảo mây) không có vách viền")
+	# người chơi vẫn bị chặn ở mép map cũ (vách chỉ là hình)
+	w._load_map("1-1")
+	w.player.pos = Vector2(400, -50)
+	w.update(0.05, {"move": Vector2(0, -1), "aim": Vector2.ZERO, "attack": false, "skill": false, "talent": false, "dodge": false})
+	_check(w.player.pos.y >= 0.0, "không đi ra ngoài mép trên (y = %.1f)" % w.player.pos.y)

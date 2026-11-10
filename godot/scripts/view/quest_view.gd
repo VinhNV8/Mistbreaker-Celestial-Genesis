@@ -53,7 +53,18 @@ static func draw(ci: CanvasItem, w, view: Rect2, font: Font) -> void:
 	var txt := "%d m" % QuestLog.meters(pp, at)
 	if not bool(r.final):
 		txt += " · " + str(r.label)
-	_text(ci, font, txt, c + dir * 30.0 + Vector2(0, 5), 12, GOLD)
+	# VS-1 (docs/44): chữ dài căn giữa ở một điểm sẽ chìa ngược về phía nhân vật khi mũi tên chỉ ngang (chữ giữ cỡ khi
+	# camera zoom ra còn to hơn) → đặt MÉP GẦN của chữ ngay sau đầu mũi tên; vẫn chạm thân nhân vật thì đưa xuống dưới chân.
+	var tk: float = preload("res://scripts/core/view_scale.gd").text_k
+	var fs := roundi(12 * tk)
+	var tw := UiTheme.bold_font().get_string_size(txt, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
+	var th := float(fs)
+	var mid := tip + dir * 6.0 * tk + Vector2(dir.x * tw * 0.5, dir.y * th * 0.7)
+	var box := Rect2(mid - Vector2(tw * 0.5, th * 0.65), Vector2(tw, th * 1.3))
+	var body := Rect2(pp + Vector2(-24, -64), Vector2(48, 84))
+	if box.intersects(body):
+		mid = pp + Vector2(0, 26.0 + th)
+	_text(ci, font, txt, mid + Vector2(0, th * 0.35), 12, GOLD)
 
 
 ## Dấu trên đầu NPC: "!" vàng = mục tiêu bước chính đang làm hoặc có nhiệm vụ phụ mới; "?" vàng = nhiệm vụ phụ chờ trả.
@@ -122,7 +133,9 @@ static func _text(ci: CanvasItem, font: Font, s: String, pos: Vector2, size: int
 	if s == "":
 		return
 	var f := UiTheme.bold_font()
-	var w := 300.0
+	# VS-1 (docs/44): giữ cỡ chữ trên màn hình khi camera zoom ra.
+	size = roundi(size * preload("res://scripts/core/view_scale.gd").text_k)
+	var w := 300.0 * preload("res://scripts/core/view_scale.gd").text_k
 	var at := pos - Vector2(w / 2.0, 0)
 	ci.draw_string_outline(f, at, s, HORIZONTAL_ALIGNMENT_CENTER, w, size, 4, Color(0, 0, 0, 0.8))
 	ci.draw_string(f, at, s, HORIZONTAL_ALIGNMENT_CENTER, w, size, col)

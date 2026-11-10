@@ -53,3 +53,11 @@ Khi focus vào đánh quái, cần hiển thị là đang focus vào quái nào 
 - (Đợt 17 — [41](41-de-xuat-nhiem-vu.md), **done 05/11/2026**: đã nghiên cứu + đề xuất, chờ chủ dự án chọn đợt triển khai Q195–Q201) Nhiệm vụ - Người chơi đang đánh giá phần nhiệm vụ quá đơn điệu, quá ít, ngoài ra không thu hút mấy + với nhiệm vụ chưa rõ ràng.... -> Hãy nghiên cứu và đề xuất thay đổi cho tôi.
 
 Hiêu ứng đồ sau khi được nâng cấp -> Người chơi đánh giá nó xấu quá, không giống như game hiện đại bây giờ -> cần nghiên cứu và design lại. *(06/11/2026 → docs/43, EN-1: đã làm)*
+
+- (Đợt 18 — [44 §7](44-ty-le-khung-nhin-va-chieu-sau.md) PF-02, **done 08/11/2026**) Người chơi phản ánh: Khi di chuyển trên bản đồ thì hơi giật giật, ngoài ra - có vệt mờ mờ trên màn hình (phía trên)
+
+- (Đợt 19 — [CR-05](CR-05-hud-mo-khi-che-nhan-vat.md), **done 09/11/2026**) Bản đồ nhỏ, và Bảng nhiệm vụ nhỏ góc bên phải ở game play - ngươi chơi đang báo là khi nhân vật đi vào mép bản đồ, thì chỗ đó che mất nhân vật -> Người chơi mong muốn: Khi đi vào thì 2 chỗ đó bị mờ đi để nhìn rõ khung cảnh, nhân vật bên dưới. Khi không đi vào chỗ đó thì vẫn như hiện tại. Ngoài ra, người chơi muốn có icon ẩn/hiện bảng nhiệm vụ hoặc bản đồ nhỏ.
+
+- (Đợt 20 — [46](46-nghien-cuu-nhac-nen.md) MU-1, **done 09/11/2026**: nghiên cứu + bản nghe thử, chủ dự án "làm theo đề xuất" → đợt 1 đã làm (13 bài mới, nghỉ xen kẽ, âm môi trường, nhạc báo); đợt 2 tầng chiến đấu) Người chơi comment - tiếng nhạc trong game giả quá, không giống như game hiện tại -> hãy nghiên cứu và đề xuất cải thiện giúp tôi.
+
+- (Đợt 20 — [47](47-de-xuat-nang-luc-chien-trang-bi.md), **done 09/11/2026**: đề xuất → chủ dự án "triển khai theo đề xuất" → đã làm cả 6 đường, NL1-T1…NL3-T2) Người chơi nói - Ngoài việc nâng cấp đồ thì cần thêm các hình thức khác để nâng lực chiến cho đồ -> hãy đề xuất giải pháp giúp tôi.

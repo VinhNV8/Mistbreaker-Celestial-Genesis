@@ -4,7 +4,7 @@
 | --- | --- |
 | Ngày | 04/11/2026 |
 | Yêu cầu | Chủ dự án: "Hãy nghiên cứu https://www.pinterest.com/pin/1132655375024680289/, và design lại toàn bộ quái vật trong game giúp tôi (cần design thành agent skills thì hãy làm nhé)" |
-| Phạm vi | **85 quái / tinh anh / boss** của 9 vùng (mọi khoá `Monsters.DEFS` + mọi `elite_sprite`). **9 linh thú Triệu Hồi Sư** chỉ có bản duyệt, chưa đưa vào game (Q190). Không đụng nhân vật người chơi, NPC, hình / hiệu ứng kỹ năng ([keep-owner-art], [35 §8](35-de-xuat-giao-dien-moi.md)) |
+| Phạm vi | **85 quái / tinh anh / boss** của 9 vùng (mọi khoá `Monsters.DEFS` + mọi `elite_sprite`). **9 linh thú Triệu Hồi Sư** cũng vào game từ 09/11/2026 (Q190 duyệt). Không đụng nhân vật người chơi, NPC, hình / hiệu ứng kỹ năng ([keep-owner-art], [35 §8](35-de-xuat-giao-dien-moi.md)) |
 | Lộ trình | Đây là giai đoạn **G3 — Quái, boss (UI-47)** của [35 §4](35-de-xuat-giao-dien-moi.md), làm theo hướng B (HD vector, code vẽ) đã chọn ở Q176 |
 | Bản duyệt | [docs/design/monsters/](design/monsters/) — `vung-1.png` … `vung-9.png`, `vung-pet.png`: mỗi ô có hình pixel cũ (trái), HD idle (giữa), dải hoạt ảnh chạy / đánh / chết (phải), ý tưởng thiết kế (dưới) |
 | Trong game | `godot/assets/hd/sprites/<id>.png` + lớp phủ `manifest["hd"]["sprites"]` — bật / tắt ở Cài đặt → "Đồ hoạ HD" (tắt = về hình pixel cũ) |
@@ -165,6 +165,14 @@ Sinh từ `tools/art/hd/mon_catalog.py` (`python tools/art/hd/mon_build.py --doc
 
 Nhận xét khi xem trong game: cỡ quái HD tương đương bản pixel (D85); quái Hư Vô tím trên nền vực tím vẫn tách nền nhờ viền tối + viền sáng ngược; quái thường vùng 1 nhỏ dễ bị tán cây che (đã có làm mờ cây khi che, FX-1 §9.13).
 
+**Linh thú trong game (Q190, 09/11/2026)** — `md1_shot.gd --region=0 [--hd=0]` (đồng bằng 2-1): hàng trên 9 linh thú (Linh Hồ, Hoả Hồ, Sói Bóng, Tiểu Quỷ, Thạch Quỷ, Linh Ưng, Linh Hồn, Ấu Long, Kỳ Lân), hàng dưới quái cùng dáng (Sói Sương, Sói Băng, Thằn Lằn Lửa, Người Đá, Đại Bàng Mây, Đom Đóm Ma).
+
+| Pixel cũ | HD mới |
+| --- | --- |
+| ![](design/monsters/ingame/linh-thu-pixel.png) | ![](design/monsters/ingame/linh-thu-hd.png) |
+
+Phân biệt với quái: vòng chân màu linh thú (game vẽ) + họ màu khác quái cùng dáng — Sói Bóng tím than / Sói Sương xám, Thạch Quỷ xám vân lam / Người Đá sẫm vân lửa, Ấu Long có cánh + bờm vàng / Thằn Lằn Lửa. Cỡ bằng bản pixel (D85); Linh Hồ / Hoả Hồ / Linh Hồn nhỏ như bản pixel cũ.
+
 ## 6. Kỹ thuật
 
 ### 6.1 File
@@ -202,7 +210,7 @@ Không đổi code game: `SpriteLib` đã có lớp phủ HD (UI-40). Mục HD c
 
 | ID | Nội dung |
 | --- | --- |
-| MD1-T1 | Mọi khoá `Monsters.DEFS` + mọi `elite_sprite` có mục HD; cỡ logic HD = pixel; `size_mul` 0,6–4,5; ảnh 1 frame ≥ 90% cỡ hiển thị (không bị phóng mờ); texture nạp được, đủ 5 hàng hoạt ảnh không tràn ảnh; 9 linh thú KHÔNG có mục HD (Q190); tắt HD → về hình pixel |
+| MD1-T1 | Mọi khoá `Monsters.DEFS` + mọi `elite_sprite` có mục HD; cỡ logic HD = pixel; `size_mul` 0,6–4,5; ảnh 1 frame ≥ 90% cỡ hiển thị (không bị phóng mờ); texture nạp được, đủ 5 hàng hoạt ảnh không tràn ảnh; 9 linh thú có mục HD hợp lệ (Q190, từ 09/11); tắt HD → về hình pixel |
 | UI40-T1 | (có sẵn) lớp phủ HD, kích thước logic Sói Sương = pixel, mipmap + Linear |
 
 Kết quả 04/11/2026: MD1-T1 qua; **toàn bộ bộ test 217/217 qua** (`run_tests.gd`).
@@ -211,9 +219,9 @@ Kết quả 04/11/2026: MD1-T1 qua; **toàn bộ bộ test 217/217 qua** (`run_t
 
 | ID | Câu hỏi | Mặc định đang dùng |
 | --- | --- | --- |
-| Q190 | 9 linh thú Triệu Hồi Sư (Linh Hồ, Hoả Hồ, Sói Bóng, Tiểu Quỷ, Thạch Quỷ, Linh Ưng, Linh Hồn, Ấu Long, Kỳ Lân) là một phần kỹ năng — có thay bằng bản mới (ảnh `vung-pet.png`) không? | Chưa thay (giữ hình cũ) |
-| Q191 | Phong cách quái mới (§2) đã đúng ý chưa? Cần chỉnh gì: độ dày viền, độ đậm bóng, tỉ lệ đầu / người, độ to so với nhân vật? | Như ảnh duyệt |
-| Q192 | Sói Sương / Sói Chúa Hư Vô bản G0 (đã có trong game từ 03/11) cũng được vẽ lại theo bộ mới cho đồng bộ. Giữ bản mới hay quay về G0? | Bản mới |
+| Q190 | 9 linh thú Triệu Hồi Sư (Linh Hồ, Hoả Hồ, Sói Bóng, Tiểu Quỷ, Thạch Quỷ, Linh Ưng, Linh Hồn, Ấu Long, Kỳ Lân) là một phần kỹ năng — có thay bằng bản mới (ảnh `vung-pet.png`) không? | ✅ **Chủ dự án 09/11: thay** — `LIVE_EXCLUDE` rỗng, 9 linh thú vào lớp phủ HD; vòng chân màu linh thú giữ nguyên để phân biệt với quái |
+| Q191 | Phong cách quái mới (§2) đã đúng ý chưa? Cần chỉnh gì: độ dày viền, độ đậm bóng, tỉ lệ đầu / người, độ to so với nhân vật? | Như ảnh duyệt — 09/11 chủ dự án chốt làm chuẩn, chơi thử rồi báo chỉnh (tham số chung: viền 2,4, `grad`, BOOST 1,12, độ sáng mắt) |
+| Q192 | Sói Sương / Sói Chúa Hư Vô bản G0 (đã có trong game từ 03/11) cũng được vẽ lại theo bộ mới cho đồng bộ. Giữ bản mới hay quay về G0? | ✅ **Chủ dự án 09/11: giữ bản mới** (đồng bộ với 83 quái còn lại) |
 
 ## 9. Quyết định
 

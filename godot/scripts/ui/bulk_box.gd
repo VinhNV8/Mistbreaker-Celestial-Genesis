@@ -6,6 +6,7 @@ const UiTheme = preload("res://scripts/ui/ui_theme.gd")
 const ItemData = preload("res://scripts/data/items.gd")
 const Items = preload("res://scripts/core/items.gd")
 const GameWorld = preload("res://scripts/core/game_world.gd")
+const Ornate = preload("res://scripts/ui/ornate.gd")
 
 ## Trạng thái đang hỏi xác nhận, theo chế độ ("salvage" | "sell"). Đổi bộ lọc thì huỷ hỏi.
 static var confirming := {}
@@ -60,11 +61,11 @@ static func build(world, mode: String, refresh: Callable, width := 390.0) -> VBo
 	var items: Array = world.bulk_list()
 	var gain := 0
 	for it in items:
-		gain += Items.salvage_value(it, p) if mode == "salvage" else GameWorld.sell_price(it)
+		gain += Items.salvage_value(it, p) if mode == "salvage" else GameWorld.sell_price(it, p)
 	var unit := "đá" if mode == "salvage" else "vàng"
 	var verb := "Phân rã nhanh" if mode == "salvage" else "Bán nhanh"
 	if bool(confirming.get(mode, false)) and not items.is_empty():
-		col.add_child(UiTheme.label("%s %d món (+%d %s)? Không hoàn tác được." % [verb, items.size(), gain, unit], "", width))
+		col.add_child(UiTheme.label("%s %d món (+%s %s)? Không hoàn tác được." % [verb, items.size(), Ornate.group(gain), unit], "", width))
 		var row := UiTheme.hbox(8)
 		var yes := UiTheme.button("Đồng ý", true)
 		yes.name = "BulkConfirm"
@@ -84,7 +85,7 @@ static func build(world, mode: String, refresh: Callable, width := 390.0) -> VBo
 		col.add_child(row)
 	else:
 		confirming[mode] = false
-		var go := UiTheme.button("%s %d món (+%d %s)" % [verb, items.size(), gain, unit], true)
+		var go := UiTheme.button("%s %d món (+%s %s)" % [verb, items.size(), Ornate.group(gain), unit], true)
 		go.name = "BulkButton"
 		go.disabled = items.is_empty()
 		go.pressed.connect(func():

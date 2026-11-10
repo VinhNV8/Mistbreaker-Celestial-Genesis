@@ -14,6 +14,7 @@ const Items = preload("res://scripts/core/items.gd")
 const Monsters = preload("res://scripts/data/monsters.gd")
 const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
 const QuestView = preload("res://scripts/view/quest_view.gd")
+const ViewScale = preload("res://scripts/core/view_scale.gd")
 
 const HERO_SPRITE := "hero-kiem-khach"
 const Classes = preload("res://scripts/data/classes.gd")
@@ -34,6 +35,10 @@ const R7View = preload("res://scripts/view/region7_view.gd")
 const R8View = preload("res://scripts/view/region8_view.gd")
 const R9View = preload("res://scripts/view/region9_view.gd")
 const Ch7 = preload("res://scripts/core/chapter7.gd")
+## GN-1 E2 / E3 (docs/45): bộ cảnh trại / bãi chiến vùng 1 + nguồn sáng điểm.
+const CampDecor = preload("res://scripts/view/camp_decor.gd")
+## GN-4 E6 (docs/45 §9): vách đá viền map + thành hồ / hố.
+const TerrainEdge = preload("res://scripts/view/terrain_edge.gd")
 const HIT_FX_TIME := 0.25
 
 var world: GameWorld
@@ -42,9 +47,23 @@ var camera: Camera2D
 var _trees: Array = []
 var _fade_focus: Array = []  # §9.13: điểm cần thấy, cây che thì mờ (khung hiện tại)
 var _patches: Array = []
+## VS-1 B2 (docs/44): mảng sáng nắng / bóng râm lớn (300–800 px) trên nền.
+var _light: Array = []
+## PF-02 (docs/44 §7): mảng nắng / bóng râm + lớp hạ tông nướng sẵn thành 1 ảnh thấp (1 điểm ảnh = LIGHT_CELL px thế giới,
+## lọc Linear qua CanvasTexture) — trước đây vẽ 15–20 hình mờ cỡ 600–1600 px chồng nhau mỗi khung (tốn tô điểm ảnh GPU).
+const LIGHT_CELL := 40.0
+var _light_tex: CanvasTexture
+var _light_rect := Rect2()
 var _decor_map := ""
 ## M6: cảnh sa mạc [{pos, id, scale, flip}] (xương rồng, cọ quanh ốc đảo, cột di tích)
 var _desert: Array = []
+## GN-1 E2: cảnh trại (đứng, sắp theo chiều sâu) + đồ vương vãi phẳng (vẽ cùng nền).
+var _camp: Array = []
+var _camp_flat: Array = []
+## GN-3 E1: nền đất mòn dưới bãi trại.
+var _camp_ground: Array = []
+## GN-1 E3: lớp quầng sáng cộng (đuốc, đèn lồng, lửa trại) — con của WorldView, dưới sương mù chiến tranh.
+var _lamp_glow: Node2D
 var _font: Font
 var _art := false
 ## Theo dõi từng thực thể giữa các frame: vị trí cũ (để biết đang chạy), hướng, lúc đổi hoạt ảnh.
@@ -57,6 +76,10 @@ var _cast_watch: Array = []  # [world, hồi chiêu từng ô, id từng ô] c�
 var _fog_layer: FogLayer
 var _fx1_glow: Fx1Glow
 var _pa: Fx1Kit.Painter = Fx1Kit.Painter.new()
+## GN-1 P3 (docs/45): camera dẫn hướng — main đặt mỗi khung, cộng với rung.
+var cam_lead := Vector2.ZERO
+## GN-4 P1-B: hệ số nghiêng phối cảnh (main đặt) — SpriteLib dựng hình đứng thẳng bù lại.
+var tilt_g := 0.0
 ## FX-1 §9.8: rung camera (camera.offset — vị trí camera vẫn do main điều khiển) + khựng đòn (Engine.time_scale ngắn).
 var _shake_t := 0.0
 var _shake_amp := 0.0
@@ -154,6 +177,12 @@ func _ready() -> void:
 	_font = UiTheme.font()
 	_art = SpriteLib.has_sprite(HERO_SPRITE)
 	texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+	_lamp_glow = Node2D.new()
+	var lmat := CanvasItemMaterial.new()
+	lmat.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+	_lamp_glow.material = lmat
+	_lamp_glow.draw.connect(_draw_lamp_glow)
+	add_child(_lamp_glow)
 	_fog_layer = FogLayer.new()
 	add_child(_fog_layer)
 	_fx1_glow = Fx1Glow.new()
@@ -208,6 +237,9 @@ func _build_decor() -> void:
 				if pp.distance_to(safe) < world.safe_r + 80.0 or (world.map.arena != null and pp.distance_to(world.arena_pos) < world.arena_r + 60.0) or _near_portal(pp):
 					continue
 				_desert.append({"pos": pp, "id": "pillar-%d" % (rng.randi() % 2), "scale": 1.0 + rng.randf() * 0.5, "flip": false})
+	# GN-3 (docs/45 §8): xương rồng / cọ không mọc trong sân đấu trường (lọc sau khi sinh — không đổi chỗ các cây khác).
+	if world.map.arena != null:
+		_desert = _desert.filter(func(d): return d.pos.distance_to(world.arena_pos) >= world.arena_r + 40.0)
 	# HP-04: hang phụ — đá rải dày dọc 2 vách trên/dưới, lác đác giữa hang (chừa cửa hang, cổng, khu Chúa Hang).
 	if bool(world.map.get("cave", false)):
 		var rid: String = {3: "rock-desert", 5: "rock-lava", 6: "rock-ice"}.get(int(world.map.get("region", 1)), "rock")
@@ -220,6 +252,23 @@ func _build_decor() -> void:
 			_desert.append({"pos": rp, "id": "%s-%d" % [rid, rng.randi() % 2], "scale": (1.3 + rng.randf() * 0.8) if edge else (0.9 + rng.randf() * 0.4), "flip": rng.randf() < 0.5})
 	for i in roundi(160 * world.area_factor()):
 		_patches.append({"pos": Vector2(rng.randf() * size.x, rng.randf() * size.y), "r": 40.0 + rng.randf() * 110.0, "shade": rng.randf()})
+	# VS-1 B2: RNG riêng — không đổi cảnh cây / đá đã sinh của các map.
+	_light = []
+	var lr := RandomNumberGenerator.new()
+	lr.seed = hash(str(world.map_id) + "|light")
+	for i in roundi(size.x * size.y / 260000.0):
+		_light.append({"pos": Vector2(lr.randf() * size.x, lr.randf() * size.y), "r": 300.0 + lr.randf() * 500.0, "sun": lr.randf() < 0.45})
+	_bake_light(size)
+	# GN-1 E2: cảnh trại vùng 1 (chỉ hình HD) — RNG riêng; cây đè lên cảnh bị bỏ.
+	_camp = []
+	_camp_flat = []
+	_camp_ground = []
+	if SpriteLib.hd_enabled() and SpriteLib.has_env("palisade"):
+		var cd := CampDecor.build(world)
+		_camp = cd.items
+		_camp_flat = cd.flat
+		_camp_ground = cd.ground
+		_trees = CampDecor.filter_trees(_trees, cd.clear)
 
 
 ## MP-09: chừa chỗ quanh cổng dịch chuyển (không mọc cây / đá đè lên cổng).
@@ -278,19 +327,28 @@ func _update_shake(delta: float) -> void:
 	if _shake_t > 0.0:
 		_shake_t -= delta / maxf(0.05, Engine.time_scale)
 		var k := clampf(_shake_t / 0.3, 0.0, 1.0)
-		camera.offset = Vector2(randf_range(-1, 1), randf_range(-1, 1)) * _shake_amp * k
-	elif camera.offset != Vector2.ZERO:
-		camera.offset = Vector2.ZERO
+		camera.offset = cam_lead + Vector2(randf_range(-1, 1), randf_range(-1, 1)) * _shake_amp * k
+	else:
+		camera.offset = cam_lead
 		_shake_amp = 0.0
 
 
 func _view_rect() -> Rect2:
-	var size := get_viewport_rect().size
+	# VS-1: camera zoom ra → khung nhìn rộng hơn khung viewport (PF-01 chỉ vẽ trong khung nhìn).
+	var size := get_viewport_rect().size / (camera.zoom if camera else Vector2.ONE)
 	var center := camera.get_screen_center_position() if camera else world.player.pos
 	return Rect2(center - size / 2.0, size)
 
 
+## GN-4 P1-B (docs/45 §9): trong lúc vẽ thế giới, SpriteLib xô ngược từng hình quanh chân để sau lớp biến dạng phối cảnh
+## hình đứng thẳng (chân vẫn khớp nền).
 func _draw() -> void:
+	SpriteLib.upright_begin(get_canvas_transform(), get_viewport_rect().size, tilt_g)
+	_draw_world()
+	SpriteLib.upright_end()
+
+
+func _draw_world() -> void:
 	if world == null:
 		return
 	if _fog_layer.world != world:
@@ -307,15 +365,28 @@ func _draw() -> void:
 		return
 	var view := _view_rect().grow(120.0)
 	_draw_ground(view)
+	TerrainEdge.draw_border(self, world, view)
 	_draw_village_ground()
+	# GN-3 E1: nền đất mòn dưới bãi trại — 2 lớp (viền mờ + lõi) mép lượn
+	for g in _camp_ground:
+		if view.grow(float(g[1])).has_point(g[0]):
+			SpriteLib.fill_polygon(self, _ellipse_blob(g[0], float(g[1]) * 1.25, float(g[2]) * 1.25), str(g[3]), Color(1, 1, 1, 0.2))
+			SpriteLib.fill_polygon(self, _ellipse_blob(g[0], float(g[1]), float(g[2])), str(g[3]), Color(1, 1, 1, 0.5))
+	for d in _camp_flat:
+		if view.has_point(d.pos):
+			SpriteLib.draw_env(self, d.id, d.pos, Color.WHITE, float(d.scale), bool(d.flip))
 	R6View.draw_props(self, world, view, _art)
 	if world.map.arena != null:
-		_draw_arena()
+		if view.grow(world.arena_r + 40.0).has_point(world.arena_pos):
+			_draw_arena()
 		R5View.draw_arena(self, world, _art)
 		R7View.draw_arena(self, world, _art)
 		R8View.draw_arena(self, world, _art)
 		R9View.draw_arena(self, world, _art)
-	_draw_portals()
+	if _depth_on():
+		_draw_depth_ground(view)
+		_draw_shadows(view)
+	_draw_portals(view)
 	# FX-1 §9.12: vết cảnh báo kiểu tự nhiên (ghi ở khung trước) nằm DƯỚI quái / cây
 	Fx1.flush_ground(_pa, world)
 	if _art:
@@ -323,7 +394,9 @@ func _draw() -> void:
 	else:
 		_draw_village()
 		_draw_trees(view)
-	_draw_portal_labels()
+	_lamp_view = view
+	_lamp_glow.queue_redraw()
+	_draw_portal_labels(view)
 	_draw_pickups()
 	if not _art:
 		_draw_herbs_chests()
@@ -364,7 +437,7 @@ func _draw() -> void:
 			continue
 		SpriteLib.draw_env(self, "fx-hit-%d" % mini(2, int(f.t / HIT_FX_TIME * 3.0)), f.pos)
 	if not world.boss_unlocked():
-		_draw_gate()
+		_draw_gate(view)
 	_draw_desert_overlay(view)
 	R5View.draw_over(self, world, view, _art)
 	SK2View.draw(self, world)
@@ -429,11 +502,30 @@ func _draw_desert_overlay(view: Rect2) -> void:
 		return
 	var vis := Ch3.vision(world)
 	if Ch3.is_night(world):
+		# Fix 09/11: trước đây là 6 vòng draw_arc rời (dày 60px, alpha bậc thang) → lộ vành tròn quanh nhân vật,
+		# và ngoài vòng cuối lại sáng trở lại. Nay: 1 texture gradient tròn mượt + phủ kín phần ngoài.
 		var c := world.player.pos
 		var inner: float = 520.0 * vis
-		draw_rect(view, Color(0.02, 0.03, 0.08, 0.35))
-		for i in 6:
-			draw_arc(c, inner + i * 60.0, 0.0, TAU, 64, Color(0.02, 0.03, 0.08, 0.12 + i * 0.05), 60.0, false)
+		var outer: float = inner + 360.0
+		var night := Color(0.02, 0.03, 0.08)
+		draw_rect(view, Color(night, 0.35))
+		var ring := Color(night, 0.6)
+		var box := Rect2(c - Vector2(outer, outer), Vector2(outer, outer) * 2.0)
+		draw_texture_rect(_night_vignette(inner / outer), box, false, ring)
+		# phần màn hình nằm ngoài ô vuông gradient: tối đều bằng mép gradient
+		var vt := view.position.y
+		var vb := view.end.y
+		if box.position.y > vt:
+			draw_rect(Rect2(view.position.x, vt, view.size.x, box.position.y - vt), ring)
+		if box.end.y < vb:
+			draw_rect(Rect2(view.position.x, box.end.y, view.size.x, vb - box.end.y), ring)
+		var y0 := maxf(box.position.y, vt)
+		var y1 := minf(box.end.y, vb)
+		if y1 > y0:
+			if box.position.x > view.position.x:
+				draw_rect(Rect2(view.position.x, y0, box.position.x - view.position.x, y1 - y0), ring)
+			if box.end.x < view.end.x:
+				draw_rect(Rect2(box.end.x, y0, view.end.x - box.end.x, y1 - y0), ring)
 	if Ch3.storm_on(world):
 		draw_rect(view, Color(0.78, 0.55, 0.3, 0.38))
 		for i in 40:
@@ -467,10 +559,16 @@ func _draw_ground(view: Rect2) -> void:
 	var v: Vector2 = world.safe_pos
 	var path_end: float = world.arena_pos.x if world.map.arena != null else size.x
 	var path := Rect2(v.x, v.y - 45.0, path_end - v.x, 90.0)
-	var path_pts := PackedVector2Array([path.position, Vector2(path.end.x, path.position.y), path.end, Vector2(path.position.x, path.end.y)])
 	var path_tile := "tile-sand-red" if bool(world.map.get("desert", false)) and SpriteLib.has_env("tile-sand-red") else "tile-dirt"
-	if not (_art and SpriteLib.fill_polygon(self, path_pts, path_tile, Color(1, 1, 1, 0.55))):
-		draw_rect(path, Color(0.47, 0.39, 0.27, 0.22))
+	if _art and SpriteLib.hd_enabled() and SpriteLib.has_env(path_tile):
+		# GN-1 E1 (docs/45): lối mòn mép lượn + viền mờ (2 lớp) thay cho dải chữ nhật cứng.
+		if view.grow(80.0).intersects(path):
+			SpriteLib.fill_polygon(self, _path_points(v, path_end, 64.0), path_tile, Color(1, 1, 1, 0.22))
+			SpriteLib.fill_polygon(self, _path_points(v, path_end, 40.0), path_tile, Color(1, 1, 1, 0.6))
+	else:
+		var path_pts := PackedVector2Array([path.position, Vector2(path.end.x, path.position.y), path.end, Vector2(path.position.x, path.end.y)])
+		if not (_art and SpriteLib.fill_polygon(self, path_pts, path_tile, Color(1, 1, 1, 0.55))):
+			draw_rect(path, Color(0.47, 0.39, 0.27, 0.22))
 	# M7 (C4-10): nước đầm — map mặc định là nước thì phủ nước rồi vẽ cồn đất; ngược lại vẽ các hồ nước.
 	var wd = world.map.get("water", null)
 	if wd != null:
@@ -503,6 +601,8 @@ func _draw_ground(view: Rect2) -> void:
 	R8View.draw_ground(self, world, view, _art)
 	# M12: màu tầng, Cửa Tầng, bệ Ấn Hệ (region9_view.gd)
 	R9View.draw_ground(self, world, view, _art)
+	# GN-4 E6: thành hồ nước / hố dung nham / mặt đổ của cồn đất
+	TerrainEdge.draw_banks(self, world, view)
 	# M6: ốc đảo (C3-13) và bóng râm dưới tảng đá (C3-11)
 	for o in Ch3.oases(world):
 		var oc: Vector2 = o[0]
@@ -533,8 +633,191 @@ func _draw_ground(view: Rect2) -> void:
 		draw_line(Vector2(0, sz.y - 110), Vector2(sz.x, sz.y - 110), Color("#3b3242"), 4.0)
 
 
+## GN-1 E3 (docs/45): quầng sáng cộng của đuốc / đèn lồng / lửa trại — vũng sáng ấm trên nền quanh chân + quầng ở đầu lửa,
+## nhấp nháy nhẹ (lệch pha theo vị trí). Chỉ khi bật "Bóng đổ và ánh sáng nền" + hình HD.
+var _lamp_view := Rect2()
+
+
+func _draw_lamp_glow() -> void:
+	if world == null or not _depth_on() or world.travel_timer > 0.0:
+		return
+	var lights: Array = []
+	var view := _lamp_view.grow(200.0)
+	var near: Array = []
+	for d in _camp:
+		if view.has_point(d.pos):
+			near.append(d)
+	var c: Vector2 = world.safe_pos
+	if _hd_safe(Maps.safe_theme(world.map)):
+		for pr in Maps.safe_props(world.map):
+			if view.has_point(c + pr[0]):
+				near.append({"pos": c + pr[0], "id": pr[1], "scale": float(pr[2]), "flip": false})
+	CampDecor.lights_of(near, lights)
+	var blob := _soft_blob()
+	for l in lights:
+		var at: Vector2 = l[0]
+		var col: Color = l[1]
+		var k: float = l[2]
+		var feet: Vector2 = l[3]
+		var fl := 0.85 + 0.1 * sin(world.time * 7.3 + at.x * 0.05) + 0.05 * sin(world.time * 13.1 + at.y * 0.07)
+		var pool := Vector2(250.0, 120.0) * k
+		_lamp_glow.draw_texture_rect(blob, Rect2(feet - pool * 0.5 + Vector2(0, -6), pool), false, Color(col, 0.2 * fl))
+		var halo := 96.0 * k
+		_lamp_glow.draw_texture_rect(blob, Rect2(at - Vector2(halo, halo) * 0.5, Vector2(halo, halo)), false, Color(col, 0.34 * fl))
+
+
+## GN-3 E1: elip mép lượn (bán trục rx, ry) — cùng hình mỗi khung.
+func _ellipse_blob(c: Vector2, rx: float, ry: float) -> PackedVector2Array:
+	var pts := PackedVector2Array()
+	for i in 40:
+		var a := TAU * i / 40.0
+		var k := 1.0 + 0.08 * (0.6 * sin(3.0 * a + c.x * 0.01) + 0.4 * sin(5.0 * a + c.y * 0.01))
+		pts.append(c + Vector2(cos(a) * rx, sin(a) * ry) * k)
+	return pts
+
+
+## GN-1 E1: đa giác lối mòn từ v tới x = x_end, nửa bề rộng hw dao động ±18%, tâm lượn ±10 px (cùng hình mỗi khung).
+func _path_points(v: Vector2, x_end: float, hw: float) -> PackedVector2Array:
+	var top := PackedVector2Array()
+	var bot := PackedVector2Array()
+	var n := maxi(2, ceili((x_end - v.x) / 40.0))
+	for i in n + 1:
+		var x := lerpf(v.x, x_end, float(i) / n)
+		var cy := v.y + 10.0 * sin(x * 0.0041 + 0.7) + 4.0 * sin(x * 0.013)
+		var w := hw * (1.0 + 0.18 * sin(x * 0.0097 + 1.9))
+		top.append(Vector2(x, cy - w * (1.0 + 0.06 * sin(x * 0.031))))
+		bot.append(Vector2(x, cy + w * (1.0 + 0.06 * sin(x * 0.027 + 2.0))))
+	bot.reverse()
+	top.append_array(bot)
+	return top
+
+
 ## PF-01: đốm tròn mờ dần ra mép (alpha 1 ở tâm → 0 ở mép), dùng chung cho mọi mảng loang.
 static var _blob_tex: Texture2D
+static var _night_tex: Dictionary = {}
+
+
+## VS-1 (docs/44): bóng đổ + ánh sáng nền (chỉ khi dùng hình HD; tắt được ở Cài đặt → Hiển thị).
+func _depth_on() -> bool:
+	return _art and SpriteLib.hd_enabled() and bool(Settings.values.get("depth_fx", true))
+
+
+## Hướng sáng chung: nắng từ trên-trái → bóng đổ về dưới-phải.
+const SHADOW_DIR := Vector2(0.93, 0.36)
+## B3: lớp hạ tông nền (tối + bớt rực) để nhân vật / quái / cây nổi khỏi nền.
+const GROUND_DIM := Color(0.08, 0.09, 0.13, 0.16)
+## GN-1 E5 (docs/45): tông nền theo vùng — vùng 1 nâu-xám ấm, đậm hơn (bớt xanh rực, nhân vật / quái / cảnh nổi lên).
+## GN-3: vùng 2–9 — mỗi vùng tông riêng, nhẹ hơn vùng 1 (nền sáng như cát / tuyết / cẩm thạch hạ chói, nền tối giữ màu).
+const REGION_DIM := {1: Color(0.13, 0.1, 0.07, 0.22), 2: Color(0.12, 0.1, 0.06, 0.18), 3: Color(0.14, 0.08, 0.04, 0.16),
+	4: Color(0.04, 0.08, 0.07, 0.16), 5: Color(0.09, 0.04, 0.04, 0.14), 6: Color(0.1, 0.13, 0.2, 0.2),
+	7: Color(0.08, 0.1, 0.14, 0.14), 8: Color(0.06, 0.04, 0.1, 0.12), 9: Color(0.13, 0.11, 0.08, 0.18)}
+
+
+## B2 + B3: mảng nắng ấm / bóng râm lạnh cỡ lớn rồi phủ lớp hạ tông nền. Vẽ sau nền + khu an toàn + đấu trường,
+## trước bóng đổ, cổng, vết cảnh báo và mọi vật thể.
+func _draw_depth_ground(_view: Rect2) -> void:
+	if _light_tex != null:
+		draw_texture_rect(_light_tex, _light_rect, false)
+
+
+## Độ đậm của hình mờ `_soft_blob` theo khoảng cách chuẩn hoá d (0 = tâm, 1 = mép) — cùng bảng dừng của gradient.
+static func blob_falloff(d: float) -> float:
+	if d >= 1.0:
+		return 0.0
+	if d < 0.4:
+		return lerpf(1.0, 0.85, d / 0.4)
+	if d < 0.7:
+		return lerpf(0.85, 0.45, (d - 0.4) / 0.3)
+	return lerpf(0.45, 0.0, (d - 0.7) / 0.3)
+
+
+## Phủ màu c (độ đục a) lên điểm ảnh d theo kiểu "over" (không nhân sẵn alpha) — phủ lần lượt cho cùng kết quả như vẽ lần lượt.
+static func over(d: Color, c: Color, a: float) -> Color:
+	var oa := a + d.a * (1.0 - a)
+	if oa <= 0.0001:
+		return Color(0, 0, 0, 0)
+	var k := d.a * (1.0 - a)
+	return Color((c.r * a + d.r * k) / oa, (c.g * a + d.g * k) / oa, (c.b * a + d.b * k) / oa, oa)
+
+
+## B2 + B3: nướng `_light` (elip r × 0,8r, màu nắng / râm) rồi phủ GROUND_DIM lên toàn map — 1 lần mỗi map.
+func _bake_light(size: Vector2) -> void:
+	var dim: Color = GROUND_DIM if bool(world.map.get("cave", false)) else REGION_DIM.get(int(world.map.get("region", 1)), GROUND_DIM)
+	var w := ceili(size.x / LIGHT_CELL) + 1
+	var h := ceili(size.y / LIGHT_CELL) + 1
+	var buf := PackedColorArray()
+	buf.resize(w * h)
+	buf.fill(Color(0, 0, 0, 0))
+	for lp in _light:
+		var c: Vector2 = lp.pos
+		var rx: float = lp.r
+		var ry: float = lp.r * 0.8
+		var col := Color(1.0, 0.93, 0.7, 0.13) if lp.sun else Color(0.02, 0.05, 0.1, 0.26)
+		for y in range(maxi(0, floori((c.y - ry) / LIGHT_CELL)), mini(h, ceili((c.y + ry) / LIGHT_CELL) + 1)):
+			var dy := (y * LIGHT_CELL - c.y) / ry
+			for x in range(maxi(0, floori((c.x - rx) / LIGHT_CELL)), mini(w, ceili((c.x + rx) / LIGHT_CELL) + 1)):
+				var dx := (x * LIGHT_CELL - c.x) / rx
+				var f := blob_falloff(sqrt(dx * dx + dy * dy))
+				if f > 0.0:
+					buf[y * w + x] = over(buf[y * w + x], col, col.a * f)
+	var img := Image.create(w, h, false, Image.FORMAT_RGBA8)
+	for y in h:
+		for x in w:
+			img.set_pixel(x, y, over(buf[y * w + x], dim, dim.a))
+	_light_tex = CanvasTexture.new()
+	_light_tex.diffuse_texture = ImageTexture.create_from_image(img)
+	_light_tex.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	# điểm ảnh i nằm giữa ô → tâm ở i·LIGHT_CELL
+	_light_rect = Rect2(-Vector2.ONE * LIGHT_CELL * 0.5, Vector2(w, h) * LIGHT_CELL)
+
+
+## B1: bóng đổ — vệt tối sát chân (đọng bóng) + bóng kéo dài theo SHADOW_DIR, dài theo chiều cao vật.
+## Cây đứng sát nhau chồng bóng → nền rừng tối hơn, tự có "bóng râm dưới tán".
+func _draw_shadows(view: Rect2) -> void:
+	var blob := _soft_blob()
+	var ang := SHADOW_DIR.angle()
+	for t in _trees:
+		if view.has_point(t.pos):
+			var r: float = t.r
+			var tall := r >= 20.0 and str(world.map.get("decor", "forest")) in ["forest", ""]
+			_shadow_at(blob, ang, t.pos + Vector2(0, r * 0.6), r * 1.7, r * (3.4 if tall else 1.4))
+	var c: Vector2 = world.safe_pos
+	for b in _safe_buildings():
+		var at: Vector2 = c + b[0] + Vector2(0, 16)
+		if view.has_point(at):
+			var ext := SpriteLib.env_extent(str(b[1]))
+			if ext == Vector2.ZERO:
+				ext = Vector2(90, 80)
+			_shadow_at(blob, ang, at, ext.x * 0.9, ext.y * 0.8)
+	for list in [_desert, _camp]:
+		for d in list:
+			if view.has_point(d.pos):
+				var ext := SpriteLib.env_extent(str(d.id), float(d.scale))
+				if ext != Vector2.ZERO:
+					_shadow_at(blob, ang, d.pos, ext.x * 0.8, ext.y)
+	for e in world.enemies:
+		if not e.dead and _in_view(view, e.pos, e.radius):
+			_shadow_at(blob, ang, _feet(e.pos, e.radius), e.radius * 2.0, e.radius * 2.6, 0.8)
+	for a in world.allies:
+		if _in_view(view, a.pos, a.radius):
+			_shadow_at(blob, ang, _feet(a.pos, a.radius), a.radius * 2.0, a.radius * 2.6, 0.7)
+	for npc in world.npcs():
+		if view.has_point(npc.pos):
+			_shadow_at(blob, ang, npc.pos + Vector2(0, 2), 30.0, 52.0, 0.8)
+	var p = world.player
+	if p.dead_timer <= 0.0:
+		_shadow_at(blob, ang, _feet(p.pos, GameWorld.PLAYER_RADIUS), 32.0, 56.0, 0.85)
+
+
+## Một bóng: đế tròn dẹt (rộng w) + vệt kéo dài h·1,05 theo hướng sáng. a = độ đậm (vật nhỏ / động nhạt hơn).
+func _shadow_at(blob: Texture2D, ang: float, feet: Vector2, w: float, h: float, a := 1.0) -> void:
+	draw_texture_rect(blob, Rect2(feet - Vector2(w * 0.55, w * 0.2), Vector2(w * 1.1, w * 0.4)), false, Color(0, 0.02, 0.04, 0.30 * a))
+	# GN-1 E4 / C3 (docs/45): lõi tối hẹp sát chân (che khuất môi trường) — vật "đứng trên đất", không lơ lửng.
+	draw_texture_rect(blob, Rect2(feet - Vector2(w * 0.32, w * 0.09), Vector2(w * 0.64, w * 0.18)), false, Color(0, 0.01, 0.02, 0.34 * a))
+	var ln := h * 1.05
+	draw_set_transform(feet + SHADOW_DIR * ln * 0.4, ang, Vector2.ONE)
+	draw_texture_rect(blob, Rect2(-Vector2(ln * 0.5, w * 0.32), Vector2(ln, w * 0.64)), false, Color(0, 0.02, 0.05, 0.36 * a))
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
 static func _soft_blob() -> Texture2D:
@@ -551,6 +834,37 @@ static func _soft_blob() -> Texture2D:
 		t.height = 64
 		_blob_tex = t
 	return _blob_tex
+
+
+## Vignette đêm sa mạc: trong suốt tới bán kính `f` (tỉ lệ so với mép), rồi tối dần theo smoothstep tới mép (alpha 1,
+## góc ngoài vòng tròn giữ alpha 1). Cache theo f làm tròn 0.05 (f chỉ có vài giá trị: đêm / đêm + bão).
+static func _night_vignette(f: float) -> Texture2D:
+	var key := int(roundf(clampf(f, 0.0, 0.95) * 20.0))
+	if _night_tex.has(key):
+		return _night_tex[key]
+	var f0 := key / 20.0
+	var offs := PackedFloat32Array([0.0, f0])
+	var cols := PackedColorArray([Color(1, 1, 1, 0), Color(1, 1, 1, 0)])
+	for i in range(1, 9):
+		var t := i / 8.0
+		offs.append(f0 + (1.0 - f0) * t)
+		cols.append(Color(1, 1, 1, t * t * (3.0 - 2.0 * t)))
+	var g := Gradient.new()
+	g.offsets = offs
+	g.colors = cols
+	var tex := GradientTexture2D.new()
+	tex.gradient = g
+	tex.fill = GradientTexture2D.FILL_RADIAL
+	tex.fill_from = Vector2(0.5, 0.5)
+	tex.fill_to = Vector2(1.0, 0.5)
+	tex.width = 256
+	tex.height = 256
+	# project dùng filter nearest mặc định → phóng 256px lên ~1500px sẽ ra bậc thang; ép linear
+	var ct := CanvasTexture.new()
+	ct.diffuse_texture = tex
+	ct.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	_night_tex[key] = ct
+	return ct
 
 
 func _circle_points(c: Vector2, r: float, n := 48) -> PackedVector2Array:
@@ -597,6 +911,9 @@ func _draw_village_yard(c: Vector2, r: float, theme: Dictionary) -> void:
 	SpriteLib.fill_polygon(self, _blob_points(c, r + 34.0), tile, Color(1, 1, 1, 0.2))
 	SpriteLib.fill_polygon(self, _blob_points(c, r + 14.0), tile)
 	var plaza: String = str(theme.get("plaza", ""))
+	# GN-3 E1: trại vùng 1–2 chưa có sân lát → sân đá lát nhỏ giữa trại (như ảnh tham khảo)
+	if plaza == "" and world.map.safe.kind == "camp" and int(world.map.get("region", 1)) in [1, 2]:
+		plaza = "tile-plaza"
 	if plaza != "" and SpriteLib.has_env(plaza):
 		var pr_r := 66.0 if world.map.safe.kind == "village" else (r * 0.72 if world.map.safe.kind == "town" else 58.0)
 		SpriteLib.fill_polygon(self, _blob_points(c, pr_r, 0.04), plaza, Color(1, 1, 1, 0.92))
@@ -676,6 +993,10 @@ func _draw_arena() -> void:
 	var c: Vector2 = world.arena_pos
 	var r: float = world.arena_r
 	var arena_tile := "tile-sand-red" if bool(world.map.get("desert", false)) else ("tile-basalt" if str(world.map.get("decor", "")) == "volcano" else ("tile-ice" if str(world.map.get("decor", "")) == "tundra" else "tile-void"))
+	# GN-3 E1: viền mờ ngoài sân đấu trường (chuyển nền mềm, không còn mép tròn cứng) — chỉ hình HD + chiều sâu
+	if _art and _depth_on():
+		SpriteLib.fill_polygon(self, _blob_points(c, r + 46.0), arena_tile, Color(1, 1, 1, 0.16))
+		SpriteLib.fill_polygon(self, _blob_points(c, r + 20.0), arena_tile, Color(1, 1, 1, 0.3))
 	if not (_art and SpriteLib.fill_polygon(self, _circle_points(c, r, 64), arena_tile, Color(1, 1, 1, 0.85))):
 		draw_circle(c, r, Color("#251d33"))
 	var locked: bool = world.boss() != null
@@ -697,8 +1018,13 @@ func _draw_trees(view: Rect2) -> void:
 
 
 # ---------------------------------------------------------------- sắp xếp theo chiều sâu (AR-31, AR-32)
+## PF-02: decor của map đọc một lần mỗi khung (trước đây mỗi cây đọc lại tới 7 lần).
+var _decor_now := "forest"
+
+
 func _draw_sorted(view: Rect2) -> void:
 	_fade_focus = _occlusion_focus()
+	_decor_now = str(world.map.get("decor", "forest"))
 	var items: Array = []
 	for t in _trees:
 		if view.has_point(t.pos):
@@ -721,7 +1047,13 @@ func _draw_sorted(view: Rect2) -> void:
 				items.append([c.y + pr[0].y, _draw_env_scaled.bind(pr[1], c + pr[0], float(pr[2]), false)])
 		var posts := _village_fence()
 		for i in posts.size():
-			items.append([posts[i].pos.y, _draw_fence_post.bind(posts, i, theme)])
+			# PF-02: cọc (và thanh nối sang cọc kế) trong khung nhìn
+			if view.has_point(posts[i].pos) or view.has_point(posts[(i + 1) % posts.size()].pos):
+				items.append([posts[i].pos.y, _draw_fence_post.bind(posts, i, theme)])
+	# GN-1 E2: cảnh trại vùng 1
+	for d in _camp:
+		if view.has_point(d.pos):
+			items.append([d.pos.y, _draw_env_scaled.bind(d.id, d.pos, d.scale, d.flip)])
 	# M6: sa mạc
 	for d in _desert:
 		if view.has_point(d.pos):
@@ -762,9 +1094,15 @@ func _draw_sorted(view: Rect2) -> void:
 		if view.has_point(npc.pos):
 			items.append([npc.pos.y, _draw_npc.bind(npc.sprite, npc.pos, npc.name)])
 	items.append([world.player.pos.y, _draw_player_sprite])
-	items.sort_custom(func(a, b): return a[0] < b[0])
-	for it in items:
-		it[1].call()
+	# PF-02: sắp theo khoá số (sắp xếp gốc của PackedFloat64Array) thay cho sort_custom + lambda (~1 ms / 200 vật).
+	# khoá = y làm tròn 1/16 px × 65536 + chỉ số → cùng y giữ thứ tự thêm vào.
+	var keys := PackedFloat64Array()
+	keys.resize(items.size())
+	for i in items.size():
+		keys[i] = floorf(float(items[i][0]) * 16.0) * 65536.0 + float(i)
+	keys.sort()
+	for kf in keys:
+		items[int(fposmod(kf, 65536.0))][1].call()
 
 
 ## PF-01: điểm có nằm trong khung nhìn (nới theo bán kính — boss / quái to vẽ tràn ra ngoài bán kính va chạm).
@@ -822,7 +1160,16 @@ func _occlusion_focus() -> Array:
 ## hết che thì hiện lại dần (không bật / tắt đột ngột).
 func _tree_fade(t: Dictionary, id: String, base: Vector2, size_mul: float) -> float:
 	var target := 1.0
-	var e: Dictionary = SpriteLib.data().get("env", {}).get(id, {})
+	# PF-02: chỉ tính khung hình cây khi có điểm cần thấy ở gần phía sau gốc (đa số cây không che gì)
+	var near := false
+	for f in _fade_focus:
+		if f.y < base.y - 4.0 and base.y - f.y < 420.0 and absf(f.x - base.x) < 240.0:
+			near = true
+			break
+	var cur0: float = t.get("fade", 1.0)
+	if not near and cur0 >= 1.0:
+		return 1.0
+	var e: Dictionary = SpriteLib.data().get("env", {}).get(id, {}) if near else {}
 	if not e.is_empty():
 		var tex := SpriteLib.texture(e.path)
 		if tex != null:
@@ -841,7 +1188,7 @@ func _tree_fade(t: Dictionary, id: String, base: Vector2, size_mul: float) -> fl
 func _draw_tree_sprite(t: Dictionary) -> void:
 	var base: Vector2 = t.pos + Vector2(0, t.r * 0.6)
 	# M7: đầm lầy — cây chết, lau sậy, lá súng (trên nước), bụi.
-	if str(world.map.get("decor", "forest")) == "swamp":
+	if _decor_now == "swamp":
 		var wet := Ch4.in_water(world, t.pos)
 		var sid: String = ("lily" if wet else ["dead-tree-0", "reeds-0", "dead-tree-1", "reeds-1"][t.variant])
 		if not SpriteLib.has_env(sid):
@@ -849,32 +1196,32 @@ func _draw_tree_sprite(t: Dictionary) -> void:
 		SpriteLib.draw_env(self, sid, base, Color(1, 1, 1, _tree_fade(t, sid, base, 1.0 if t.r < 28.0 else 1.3)), 1.0 if t.r < 28.0 else 1.3, t.shade > 0.5)
 		return
 	# M8: núi lửa — đá dung nham, cây cháy, miệng phun.
-	if str(world.map.get("decor", "forest")) == "volcano":
+	if _decor_now == "volcano":
 		var did: String = R5View.decor_id(t.variant)
 		SpriteLib.draw_env(self, did, base, Color(1, 1, 1, _tree_fade(t, did, base, 1.0 if t.r < 28.0 else 1.4)), 1.0 if t.r < 28.0 else 1.4, t.shade > 0.5)
 		return
 	# M10: đảo bay — rừng treo, mây / cột Thiên Cung.
-	if str(world.map.get("decor", "forest")) in ["sky", "sky_ruins"]:
-		var did: String = R7View.decor_id(t.variant, str(world.map.decor) == "sky_ruins")
+	if _decor_now in ["sky", "sky_ruins"]:
+		var did: String = R7View.decor_id(t.variant, _decor_now == "sky_ruins")
 		SpriteLib.draw_env(self, did, base, Color(1, 1, 1, _tree_fade(t, did, base, 1.0 if t.r < 28.0 else 1.4)), 1.0 if t.r < 28.0 else 1.4, t.shade > 0.5)
 		return
 	# M12: Thiên Thê — cột ngọc, mây vàng.
-	if str(world.map.get("decor", "forest")) == "heaven":
+	if _decor_now == "heaven":
 		var did: String = R9View.decor_id(t.variant)
 		SpriteLib.draw_env(self, did, base, Color(1, 1, 1, _tree_fade(t, did, base, 1.0 if t.r < 28.0 else 1.3)), 1.0 if t.r < 28.0 else 1.3, t.shade > 0.5)
 		return
 	# M11: vực Hư Vô — cây chết, đá vụn.
-	if str(world.map.get("decor", "forest")) == "void":
+	if _decor_now == "void":
 		var vid: String = R8View.decor_id(t.variant)
 		SpriteLib.draw_env(self, vid, base, Color(0.7, 0.6, 0.85, _tree_fade(t, vid, base, 1.0 if t.r < 28.0 else 1.3)), 1.0 if t.r < 28.0 else 1.3, t.shade > 0.5)
 		return
 	# M9: băng nguyên — thông phủ tuyết, đá băng, gò tuyết.
-	if str(world.map.get("decor", "forest")) == "tundra":
+	if _decor_now == "tundra":
 		var did: String = R6View.decor_id(t.variant)
 		SpriteLib.draw_env(self, did, base, Color(1, 1, 1, _tree_fade(t, did, base, 1.0 if t.r < 28.0 else 1.4)), 1.0 if t.r < 28.0 else 1.4, t.shade > 0.5)
 		return
 	# M4.2: thảo nguyên — đá, cỏ cao, bụi thay cho cây rừng.
-	if str(world.map.get("decor", "forest")) == "plains":
+	if _decor_now == "plains":
 		var pid: String = ["rock-0", "tall-grass", "rock-1", "bush"][t.variant]
 		if not SpriteLib.has_env(pid):
 			pid = "bush"
@@ -1113,11 +1460,14 @@ func _draw_player_sprite() -> void:
 	if p.dead_timer <= 0.0:
 		# SN9-01: tên + dòng nhỏ chức nghiệp hiện tại (màu tím nhạt)
 		var pf = world.profile
-		_label(str(pf.name), p.pos + Vector2(0, -GameWorld.PLAYER_RADIUS - 56.0), Color(1, 1, 1, 0.9), 12, true)
+		# VS-1: khoảng cách giữa các dòng nhân text_k (chữ to ra khi camera zoom ra), mốc là đỉnh đầu (-R - 40).
+		var head := p.pos + Vector2(0, -GameWorld.PLAYER_RADIUS - 40.0)
+		var tk := ViewScale.text_k
+		_label(str(pf.name), head + Vector2(0, -16.0 * tk), Color(1, 1, 1, 0.9), 12, true)
 		# NV-C (docs/41): danh hiệu đang đeo (trang trí) trên tên
 		if str(pf.title) != "":
-			_label("« %s »" % pf.title, p.pos + Vector2(0, -GameWorld.PLAYER_RADIUS - 70.0), Color("#ffd257"), 10, true)
-		_label(Classes.title(str(pf.class_id), str(pf.job), str(pf.job2), str(pf.job3)), p.pos + Vector2(0, -GameWorld.PLAYER_RADIUS - 44.0), Color(0.85, 0.77, 1.0, 0.85), 10)
+			_label("« %s »" % pf.title, head + Vector2(0, -30.0 * tk), Color("#ffd257"), 10, true)
+		_label(Classes.title(str(pf.class_id), str(pf.job), str(pf.job2), str(pf.job3)), head + Vector2(0, -4.0 * tk), Color(0.85, 0.77, 1.0, 0.85), 10)
 	# SN-04 Pháp Thuẫn: vòng tím, dày theo lượng khiên còn lại
 	if p.shield > 0.0:
 		var k := clampf(p.shield / maxf(1.0, float(world.stats.max_hp) * GameWorld.BARRIER_PCT), 0.0, 1.0)
@@ -1407,14 +1757,14 @@ func _enemy_nameplate(e, at: Vector2) -> void:
 	elif gap <= -5:
 		lcol = Color(0.6, 0.6, 0.62)
 	var f := UiTheme.bold_font()
-	var fs := 12 if plain else 13
+	var fs := roundi((12 if plain else 13) * ViewScale.text_k)
 	var parts := [[tier + " · ", tcol], [str(e.name) + " · ", Color(0.95, 0.93, 0.88)], ["Lv%d" % int(e.level), lcol]]
 	if plain and mode != "always":
 		parts = [["Lv%d " % int(e.level), lcol], [str(e.name), Color(0.95, 0.93, 0.88)]]
 	var total := 0.0
 	for pt in parts:
 		total += f.get_string_size(pt[0], HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
-	var icon_w := 16.0
+	var icon_w := 16.0 * ViewScale.text_k
 	var rect := Rect2(at.x - (total + icon_w) / 2.0 - 2.0, at.y - fs - 1.0, total + icon_w + 4.0, fs + 5.0)
 	for k in 4:
 		var hit := false
@@ -1431,7 +1781,7 @@ func _enemy_nameplate(e, at: Vector2) -> void:
 	_plates.append(rect)
 	var x := at.x - (total + icon_w) / 2.0
 	var el: String = world.el_of(e)
-	ElementIcon.draw(self, Vector2(x + 6.0, at.y - fs * 0.35), el, 6.5, 0.95)
+	ElementIcon.draw(self, Vector2(x + 6.0 * ViewScale.text_k, at.y - fs * 0.35), el, 6.5 * ViewScale.text_k, 0.95)
 	x += icon_w
 	for pt in parts:
 		draw_string_outline(f, Vector2(x, at.y), pt[0], HORIZONTAL_ALIGNMENT_LEFT, -1, fs, 4, Color(0, 0, 0, 0.8))
@@ -1446,10 +1796,13 @@ func _flashed(e) -> bool:
 
 
 # ---------------------------------------------------------------- hình khối tạm (khi chưa có hình)
-func _draw_gate() -> void:
+func _draw_gate(view: Rect2) -> void:
 	if world.gate_x == INF:
 		return
 	var x: float = world.gate_x
+	# PF-02: ngoài khung nhìn thì bỏ qua (dải cao cả map + 14 đốm sương)
+	if x + 140.0 < view.position.x or x - 40.0 > view.end.x:
+		return
 	var h: float = world.world_size.y
 	var a := Color(0.47, 0.35, 0.78, 0.0)
 	var b := Color(0.47, 0.35, 0.78, 0.55)
@@ -1458,6 +1811,8 @@ func _draw_gate() -> void:
 	draw_polygon(PackedVector2Array([Vector2(x + 25, 0), Vector2(x + 140, 0), Vector2(x + 140, h), Vector2(x + 25, h)]), PackedColorArray([b, c, c, b]))
 	for i in 14:
 		var y := fposmod(i * 131.0 + world.time * 30.0, h)
+		if y < view.position.y - 60.0 or y > view.end.y + 60.0:
+			continue
 		draw_circle(Vector2(x + 30.0 + sin(world.time + i) * 20.0, y), 50.0, Color(0.75, 0.67, 1.0, 0.12))
 	_label("Sương mù Hư Vô", Vector2(x + 50.0, world.safe_pos.y - 70.0), Color("#e6dcff"), 15)
 
@@ -1531,9 +1886,12 @@ func _portal_style(pt: Dictionary) -> Dictionary:
 	return st
 
 
-func _draw_portals() -> void:
+## PF-02: chỉ vẽ cổng trong khung nhìn (map ×3 có nhiều cổng; trước đây vẽ hết ≈ 1,8 ms/khung).
+func _draw_portals(view: Rect2) -> void:
 	var t := world.time
 	for pt in world.portals:
+		if not view.grow(160.0).has_point(pt.pos):
+			continue
 		var st := _portal_style(pt)
 		var col: Color = st.col
 		var on: bool = st.open
@@ -1593,9 +1951,11 @@ func _draw_portals() -> void:
 
 
 ## Bảng tên cổng (vẽ sau cùng lớp thế giới để không bị cây che).
-func _draw_portal_labels() -> void:
+func _draw_portal_labels(view: Rect2) -> void:
 	var f := UiTheme.bold_font()
 	for pt in world.portals:
+		if not view.grow(200.0).has_point(pt.pos):
+			continue
 		var st := _portal_style(pt)
 		var col: Color = st.col
 		# Rà soát 01/11: Cổng Dịch Chuyển nằm giữa làng (NPC, nhân vật đứng gần) → bảng tên dưới cổng, không đè tên NPC.
@@ -1603,10 +1963,11 @@ func _draw_portal_labels() -> void:
 		var title: String = st.title
 		# Cổng Dịch Chuyển: bảng 1 dòng (gọn, ít đè tên NPC); dòng giải thích có ở bảng lục địa khi bước vào.
 		var sub: String = "" if pt.kind == "waypoint" else str(st.sub)
-		var tw := f.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, 14).x
-		var sw := _font.get_string_size(sub, HORIZONTAL_ALIGNMENT_LEFT, -1, 11).x
-		var w := maxf(tw, sw) + 28.0
-		var rect := Rect2(c - Vector2(w / 2.0, 14), Vector2(w, 34 if sub != "" else 22))
+		var k := ViewScale.text_k
+		var tw := f.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, roundi(14 * k)).x
+		var sw := _font.get_string_size(sub, HORIZONTAL_ALIGNMENT_LEFT, -1, roundi(11 * k)).x
+		var w := maxf(tw, sw) + 28.0 * k
+		var rect := Rect2(c - Vector2(w / 2.0, 14 * k), Vector2(w, (34 if sub != "" else 22) * k))
 		var sb := StyleBoxFlat.new()
 		sb.bg_color = Color(0.07, 0.05, 0.1, 0.82)
 		sb.set_corner_radius_all(8)
@@ -1615,9 +1976,9 @@ func _draw_portal_labels() -> void:
 		draw_style_box(sb, rect)
 		_diamond_at(Vector2(rect.position.x, rect.get_center().y), 4.0, col)
 		_diamond_at(Vector2(rect.end.x, rect.get_center().y), 4.0, col)
-		_label(title, c + Vector2(0, 2), col.lightened(0.25), 14, true)
+		_label(title, c + Vector2(0, 2 * k), col.lightened(0.25), 14, true)
 		if sub != "":
-			_label(sub, c + Vector2(0, 16), Color(0.88, 0.88, 0.9), 11)
+			_label(sub, c + Vector2(0, 16 * k), Color(0.88, 0.88, 0.9), 11)
 
 
 func _diamond_at(p: Vector2, s: float, col: Color) -> void:
@@ -1837,7 +2198,7 @@ func _draw_texts() -> void:
 	var f := UiTheme.bold_font()
 	for i in range(maxi(0, list.size() - FLOAT_MAX), list.size()):
 		var t = list[list.size() - 1 - (i - maxi(0, list.size() - FLOAT_MAX))]
-		var size := 19 if t.big else 15
+		var size := roundi((19 if t.big else 15) * ViewScale.text_k)
 		var c: Color = t.color
 		var w := f.get_string_size(t.text, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x + 6.0
 		var at: Vector2 = t.pos
@@ -1852,12 +2213,15 @@ func _draw_texts() -> void:
 				break
 			rect.position.y -= rect.size.y
 		placed.append(rect)
-		_label(t.text, Vector2(at.x, rect.end.y - 3.0), Color(c, minf(1.0, t.ttl * 2.0)), size, true)
+		_label(t.text, Vector2(at.x, rect.end.y - 3.0), Color(c, minf(1.0, t.ttl * 2.0)), size, true, true)
 
 
-func _label(text: String, pos: Vector2, color: Color, size: int, bold := false) -> void:
+func _label(text: String, pos: Vector2, color: Color, size: int, bold := false, scaled := false) -> void:
 	var f := UiTheme.bold_font() if bold else _font
-	var w := 400.0
+	# VS-1: chữ trong thế giới giữ cỡ trên màn hình khi camera zoom ra (_draw_texts đã nhân sẵn → scaled).
+	if not scaled:
+		size = roundi(size * ViewScale.text_k)
+	var w := 400.0 * ViewScale.text_k
 	var at := pos - Vector2(w / 2.0, 0)
 	draw_string_outline(f, at, text, HORIZONTAL_ALIGNMENT_CENTER, w, size, 4, Color(0, 0, 0, 0.75 * color.a))
 	draw_string(f, at, text, HORIZONTAL_ALIGNMENT_CENTER, w, size, color)
