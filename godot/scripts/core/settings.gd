@@ -79,4 +79,23 @@ static func apply() -> void:
 	AudioServer.set_bus_volume_db(_bus("SFX"), linear_to_db(maxf(0.0001, float(values.sfx))))
 	AudioServer.set_bus_volume_db(_bus("Ambient"), linear_to_db(maxf(0.0001, float(values.get("ambient", 0.7)))))
 	if DisplayServer.get_name() != "headless":
-		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN if values.fullscreen else DisplayServer.WINDOW_MODE_WINDOWED)
+		var mode := window_mode_change(_applied_fs, bool(values.fullscreen), DisplayServer.window_get_mode())
+		if mode >= 0:
+			DisplayServer.window_set_mode(mode)
+	_applied_fs = int(bool(values.fullscreen))
+
+
+## SN 10/11 (FS-01): apply() chạy sau MỌI set_value (nút ẩn / hiện bản đồ nhỏ, khung nhiệm vụ, thanh âm lượng…). Trước đây
+## nó luôn ép chế độ cửa sổ theo ô "Toàn màn hình" → cửa sổ đang phóng to / toàn màn hình bị thu nhỏ lại khi bấm các nút đó.
+## Giờ chỉ đổi chế độ cửa sổ khi ô "Toàn màn hình" thật sự đổi (hoặc lần đầu nạp mà ô đang bật).
+## prev: -1 = chưa áp lần nào, 0 / 1 = giá trị đã áp. Trả về chế độ cần đặt, -1 = giữ nguyên cửa sổ.
+static var _applied_fs := -1
+
+
+static func window_mode_change(prev: int, want: bool, cur_mode: int) -> int:
+	var cur_fs := cur_mode == DisplayServer.WINDOW_MODE_FULLSCREEN or cur_mode == DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN
+	if prev >= 0 and bool(prev) == want:
+		return -1
+	if want:
+		return -1 if cur_fs else DisplayServer.WINDOW_MODE_FULLSCREEN
+	return DisplayServer.WINDOW_MODE_WINDOWED if cur_fs else -1

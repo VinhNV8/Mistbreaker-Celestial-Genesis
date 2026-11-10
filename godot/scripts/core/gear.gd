@@ -630,14 +630,36 @@ static func codex_set_count(p, set_id: String) -> int:
 	return n
 
 
+## Tính thẳng từ khoá đã ghi danh (không dựng danh mục) + nhớ đệm theo số mục — GameWorld._derive gọi rất thường xuyên.
+static var _pts_cache := {}
+
+
 static func codex_points(p) -> int:
+	var key: int = p.get_instance_id()
+	var n: int = p.codex.size()
+	var hit: Array = _pts_cache.get(key, [])
+	if not hit.is_empty() and int(hit[0]) == n:
+		return int(hit[1])
 	var pts := 0
-	for e in codex_entries(p):
-		if e.have:
-			pts += int(e.points)
-	for set_id in ItemData.SETS:
-		if codex_set_count(p, set_id) >= GearData.CODEX_SET_FULL_N:
+	var per_set := {}
+	for k in p.codex:
+		var parts := str(k).split(":")
+		match parts[0]:
+			"s":
+				if ItemData.SETS.has(parts[1]):
+					pts += GearData.CODEX_SET_PIECE
+					per_set[parts[1]] = int(per_set.get(parts[1], 0)) + 1
+			"u":
+				if ItemData.UNIQUES.has(parts[1]):
+					pts += GearData.CODEX_UNIQUE
+			"p":
+				pts += int(GearData.CODEX_PLUS.get(int(parts[2]), 0)) if parts.size() > 2 else 0
+			"g":
+				pts += int(GearData.CODEX_GEM.get(int(parts[2]), 0)) if parts.size() > 2 else 0
+	for s in per_set:
+		if int(per_set[s]) >= GearData.CODEX_SET_FULL_N:
 			pts += GearData.CODEX_SET_FULL
+	_pts_cache[key] = [n, pts]
 	return pts
 
 

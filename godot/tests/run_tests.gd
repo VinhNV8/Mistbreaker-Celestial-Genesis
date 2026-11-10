@@ -307,7 +307,7 @@ func _init() -> void:
 	_run("VS1-T1 tỷ lệ khung nhìn (docs/44): zoom camera + cỡ giao diện theo độ phân giải, Tầm nhìn, chữ thế giới giữ cỡ, cài đặt mới", _test_vs1)
 	_run("PF02-T1 giật khi đi + vệt mờ mép trên (docs/44 §7): tiền cảnh không ở mép trên, bỏ dải sương / tia nắng, tách quái theo lưới = so mọi cặp, nướng mảng sáng", _test_pf02)
 	_run("CR05-T1 bản đồ nhỏ / khung nhiệm vụ mờ khi che nhân vật + nút ẩn / hiện (Spec_Notes 09/11)", _test_cr05)
-	_run("MU1-T1 nhạc nền thế hệ 2 (docs/46): đủ 13 bài OGG stereo, âm môi trường theo vùng, nhạc báo, nghỉ xen kẽ, bài lặp", _test_mu1)
+	_run("MU1-T1 nhạc nền thế hệ 2 (docs/46): đủ 13 bài OGG stereo, âm môi trường theo vùng, nhạc báo, nghỉ xen kẽ, bài lặp, tầng chiến đấu (đợt 2)", _test_mu1)
 	_run("GN1-T1 góc nhìn + cảnh trại (docs/45): nghiêng phối cảnh + đổi ngược chuột, cảnh trại vùng 1–9 (rào / tường phía xa, bãi trại theo vùng, tránh nước / dung nham / mép đảo / cầu, đồ vương vãi), nguồn sáng", _test_gn1)
 	_run("GN3-T1 bộ đếm combo lớn (Q223), tông nền 9 vùng (E5), nền đất mòn bãi trại (E1) — docs/45 §8", _test_gn3)
 	_run("GN4-T1 hình đứng thẳng dưới phối cảnh (P1-B) + vách đá viền map (E6) — docs/45 §9", _test_gn4)
@@ -327,6 +327,7 @@ func _init() -> void:
 	_run("NL2-T2 luyện cấp: chỉ Cam / đồ bộ, +5 tối đa cấp nhân vật, dòng phụ giữ hệ số quay", _test_nl2_levelup)
 	_run("NL3-T1 thức tỉnh: sau chuyển chức 3, Tím / Cam +12, chọn 1 trong 3, bậc 1→5, ≤ 4 món hiệu lực, đổi dòng giữ bậc, sát thương boss", _test_nl3_awaken)
 	_run("NL3-T2 Bảo Giám + save v32 + gợi ý tăng Lực chiến + Lực chiến món tách nguồn", _test_nl3_codex)
+	_run("FS01-T1 bấm nút HUD / đổi âm lượng không thoát toàn màn hình (Spec_Notes 10/11)", _test_fs01)
 	print("")
 	if _failed.is_empty():
 		print("TẤT CẢ %d TEST QUA" % _total)
@@ -2353,7 +2354,14 @@ func _test_m42_balance() -> void:
 			sum += x
 		return sum / arr.size()
 	var class_avg := {}
+	# Chạy riêng vài lớp khi dò lỗi: -- --only=TL-B2 --classes=ho-ve,trieu-hoi-su
+	var only_classes: Array = []
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--classes="):
+			only_classes = Array(arg.substr(10).split(","))
 	for class_id in Classes.ORDER:
+		if not only_classes.is_empty() and not (class_id in only_classes):
+			continue
 		var by_rank := {}
 		var all: Array = []
 		var lines := PackedStringArray()
@@ -11913,6 +11921,21 @@ func _test_mu1() -> void:
 	for id in ["st_levelup", "st_quest", "st_region", "st_boss", "st_victory"]:
 		var ok: bool = AM.has_stream(AM.STINGER_DIR, id)
 		_check(ok and load(AM.STINGER_DIR + id + ".ogg").get_length() < 8.0, "nhạc báo %s (ngắn < 8 giây)" % id)
+	# S4 (đợt 2): tầng chiến đấu — mỗi bài khám phá + hang có <id>_combat.ogg dài đúng bằng bài chính (phát đồng bộ)
+	var layer_bad := []
+	for id in MainS.REGION_MUSIC.values() + ["core"]:
+		var lid: String = id + AM.COMBAT_SUFFIX
+		if not AM.has_stream(AM.MUSIC_DIR, lid):
+			layer_bad.append(lid + " thiếu")
+			continue
+		var a: float = load(AM.MUSIC_DIR + id + ".ogg").get_length()
+		var b: float = load(AM.MUSIC_DIR + lid + ".ogg").get_length()
+		if absf(a - b) > 0.05:
+			layer_bad.append("%s %.2f≠%.2f" % [lid, b, a])
+	_check(layer_bad.is_empty(), "tầng chiến đấu đủ 10 bài, cùng độ dài bài chính: %s" % str(layer_bad))
+	_check(not AM.has_stream(AM.MUSIC_DIR, "village" + AM.COMBAT_SUFFIX) and not AM.has_stream(AM.MUSIC_DIR, "boss" + AM.COMBAT_SUFFIX), "làng / boss không có tầng chiến đấu")
+	_check(is_equal_approx(AM.layer_db(1.0), 0.0) and AM.layer_db(0.0) < -70.0, "mức tầng 0 → câm, 1 → 0 dB")
+	_check(FileAccess.get_file_as_string("res://scripts/main.gd").contains("audio.set_combat(world.in_combat())"), "main báo trạng thái giao tranh cho nhạc mỗi khung")
 	_check(AM.SFX_BY_STINGER.get("levelup") == "st_levelup", "lên cấp: nhạc báo thay âm levelup cũ (không chồng 2 âm)")
 	_check(is_equal_approx(float(Settings.DEFAULTS.get("ambient", -1.0)), 0.7), "Cài đặt: âm lượng môi trường mặc định 70%")
 	var w := _world("tay-nhanh")
@@ -12334,3 +12357,17 @@ func _test_gn4() -> void:
 	w.player.pos = Vector2(400, -50)
 	w.update(0.05, {"move": Vector2(0, -1), "aim": Vector2.ZERO, "attack": false, "skill": false, "talent": false, "dodge": false})
 	_check(w.player.pos.y >= 0.0, "không đi ra ngoài mép trên (y = %.1f)" % w.player.pos.y)
+
+
+func _test_fs01() -> void:
+	var S = load("res://scripts/core/settings.gd")
+	var FS := DisplayServer.WINDOW_MODE_FULLSCREEN
+	var WIN := DisplayServer.WINDOW_MODE_WINDOWED
+	var MAX := DisplayServer.WINDOW_MODE_MAXIMIZED
+	_check(S.window_mode_change(1, true, FS) == -1 and S.window_mode_change(0, false, FS) == -1 and S.window_mode_change(0, false, MAX) == -1,
+		"ô Toàn màn hình không đổi → không đụng cửa sổ (đang toàn màn hình / phóng to vẫn giữ)")
+	_check(S.window_mode_change(0, true, WIN) == FS and S.window_mode_change(1, false, FS) == WIN, "bật / tắt ô Toàn màn hình → đổi chế độ cửa sổ")
+	_check(S.window_mode_change(-1, true, WIN) == FS and S.window_mode_change(-1, false, MAX) == -1 and S.window_mode_change(-1, false, WIN) == -1,
+		"lần đầu nạp: ô bật → toàn màn hình; ô tắt → giữ cửa sổ như lúc mở")
+	_check(S.window_mode_change(1, false, MAX) == -1 and S.window_mode_change(0, true, DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN) == -1,
+		"tắt ô khi cửa sổ không còn toàn màn hình / bật khi đã toàn màn hình → giữ nguyên")

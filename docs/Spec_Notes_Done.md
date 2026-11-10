@@ -61,3 +61,5 @@ Hiêu ứng đồ sau khi được nâng cấp -> Người chơi đánh giá nó
 - (Đợt 20 — [46](46-nghien-cuu-nhac-nen.md) MU-1, **done 09/11/2026**: nghiên cứu + bản nghe thử, chủ dự án "làm theo đề xuất" → đợt 1 đã làm (13 bài mới, nghỉ xen kẽ, âm môi trường, nhạc báo); đợt 2 tầng chiến đấu) Người chơi comment - tiếng nhạc trong game giả quá, không giống như game hiện tại -> hãy nghiên cứu và đề xuất cải thiện giúp tôi.
 
 - (Đợt 20 — [47](47-de-xuat-nang-luc-chien-trang-bi.md), **done 09/11/2026**: đề xuất → chủ dự án "triển khai theo đề xuất" → đã làm cả 6 đường, NL1-T1…NL3-T2) Người chơi nói - Ngoài việc nâng cấp đồ thì cần thêm các hình thức khác để nâng lực chiến cho đồ -> hãy đề xuất giải pháp giúp tôi.
+
+- (Đợt 21 — sửa lỗi HM-06 / D94, **done 10/11/2026**) Người chơi phản ánh - Đang full màn hình -> nhấn icon thu nhỏ bản đồ, nhiệm vụ, cài đặt âm thanh... thì bị thu nhỏ lại.

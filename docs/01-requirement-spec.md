@@ -139,6 +139,7 @@ Cột **Trạng thái**: ✅ đã làm và có test tự động · 🟡 đã l�
 | --- | --- | --- | --- |
 | HM-01…03 | Nhân vật đi vào dưới (hoặc sát 12 px) bản đồ nhỏ / khung nhiệm vụ → khung đó mờ dần còn 22%, đi ra hiện lại; rê chuột vào khung → rõ để bấm; giữ mức mờ khi đánh boss (R1) | CR05-T1 | ✅ |
 | HM-04…05 | 2 nút ẩn / hiện (bản đồ nhỏ, khung nhiệm vụ) cạnh trái la bàn, nhớ trong Cài đặt; bản đồ ẩn thì nút về góc phải; V hiện lại bản đồ nhỏ đang ẩn | CR05-T1 | ✅ |
+| HM-06 | Đang toàn màn hình (hoặc cửa sổ phóng to) → bấm nút ẩn / hiện bản đồ nhỏ, khung nhiệm vụ, kéo âm lượng hay đổi bất kỳ cài đặt nào khác **không làm cửa sổ thu nhỏ lại**; chỉ ô "Toàn màn hình" mới đổi chế độ cửa sổ (Spec_Notes 10/11) | FS01-T1 + chụp cửa sổ thật (toàn màn hình / phóng to giữ nguyên) | ✅ |
 
 ### 3.11. Nhạc nền và âm môi trường (MU, [46](46-nghien-cuu-nhac-nen.md))
 
@@ -150,7 +151,7 @@ Cột **Trạng thái**: ✅ đã làm và có test tự động · 🟡 đã l�
 | MU-02 | Bài khám phá phát 1 lượt rồi nghỉ 30–90 giây (chỉ còn âm môi trường), mờ vào lại; làng / hang / boss lặp liền | MU1-T1 | ✅ |
 | MU-03 | Âm môi trường theo vùng (gió, chim, côn trùng, nước, dung nham…), làng và hang riêng; thanh âm lượng "Âm thanh môi trường" trong Cài đặt | MU1-T1 | ✅ |
 | MU-04 | Nhạc báo: lên cấp, hoàn thành nhiệm vụ, sang vùng mới, gặp boss, chiến thắng; nhạc nền tự hạ khi nhạc báo phát | MU1-T1 | ✅ |
-| MU-05 | Tầng nhạc chiến đấu khi đánh quái thường (đợt 2, Q227) | — | ⬜ |
+| MU-05 | Tầng nhạc chiến đấu khi đánh quái thường (đợt 2): bài khám phá + hang có tầng trống / dây nảy / kèn chạy đồng bộ, đánh → dâng ~1,5 giây, hết đánh → lắng ~4 giây; đang nghỉ mà vào trận thì nhạc vào luôn | MU1-T1, `tests/mu1_play.gd` | ✅ |
 
 ### 3.12. Thêm cách tăng Lực chiến cho trang bị (NL, [47](47-de-xuat-nang-luc-chien-trang-bi.md))
 

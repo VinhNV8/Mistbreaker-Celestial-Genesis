@@ -71,7 +71,9 @@ Ra OGG Vorbis stereo 44,1 kHz: `godot/assets/audio/music/<id>.ogg`, `stinger/<id
 | `boss` | Trận boss | 140 · Rê thứ | nhị dồn, taiko, kèn, chiêng | liền |
 | `boss_final` | Boss vùng 7–9 | 156 · Rê Hijaz | nhị dồn, taiko, hợp xướng | liền |
 
-Phát trong game: `scripts/audio/audio_manager.gd` (nghỉ 30–90 giây sau mỗi lượt bài khám phá, âm môi trường bus "Ambient", nhạc báo hạ nhạc nền 8 dB); chọn bài / âm môi trường ở `main.gd` `_music_for`, `ambient_for`.
+**Tầng chiến đấu (S4)**: 9 bài khám phá + `core` có thêm `<id>_combat.ogg` (taiko, trống khung, dây nảy, kèn trầm) — sinh từ cùng kế hoạch ô nhịp nên dài đúng bằng bài chính; danh sách `LAYER_IDS`, độ to `LAYER_DB`. Sinh riêng: `python tools/audio/songs2.py forest_combat`.
+
+Phát trong game: `scripts/audio/audio_manager.gd` (nghỉ 30–90 giây sau mỗi lượt bài khám phá, âm môi trường bus "Ambient", nhạc báo hạ nhạc nền 8 dB, tầng chiến đấu đồng bộ dâng khi `GameWorld.in_combat()`); chọn bài / âm môi trường ở `main.gd` `_music_for`, `ambient_for`.
 
 ## Sửa, thêm âm
 

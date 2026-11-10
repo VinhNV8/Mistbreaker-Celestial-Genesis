@@ -5,6 +5,9 @@ extends Node
 ##   S2 bài khám phá phát 1 lượt rồi nghỉ REST_MIN…REST_MAX giây (chỉ còn âm môi trường) rồi vào lại; LOOP_IDS lặp liền;
 ##   S3 âm môi trường theo vùng (bus "Ambient", luôn lặp, đổi thì mờ chéo);
 ##   S5 nhạc báo (stinger) — nhạc nền hạ DUCK_DB trong lúc phát; gặp boss tự phát "st_boss".
+##   S4 (đợt 2) tầng chiến đấu — bài có file <id>_combat.ogg phát cùng bài chính trong 1 AudioStreamSynchronized
+##   (cùng nhịp, cùng độ dài); set_combat(true) → tầng dâng lên trong COMBAT_IN giây, hết đánh → lắng trong COMBAT_OUT;
+##   đang nghỉ (S2) mà vào trận → bài vào luôn.
 
 const Settings = preload("res://scripts/core/settings.gd")
 const SFX_DIR := "res://assets/audio/sfx/"
@@ -24,6 +27,11 @@ const SWITCH_FADE := 0.6
 const DUCK_DB := -8.0
 ## Âm sfx được nhạc báo thay (đã có nhạc báo thì không phát sfx trùng ý).
 const SFX_BY_STINGER := {"levelup": "st_levelup"}
+## S4: tầng chiến đấu — hậu tố file, thời gian dâng / lắng (giây), mờ vào bài khi vào trận lúc đang nghỉ.
+const COMBAT_SUFFIX := "_combat"
+const COMBAT_IN := 1.5
+const COMBAT_OUT := 4.0
+const COMBAT_WAKE_FADE := 1.5
 const VOICES := 10
 ## Cùng một âm không phát lại trong khoảng này (giây) — tránh rè khi trúng nhiều quái một lúc.
 const MIN_GAP := 0.05
@@ -50,6 +58,10 @@ var _ambient_old: AudioStreamPlayer
 var _ambient_id := ""
 var _stinger: AudioStreamPlayer
 var _stinger_id := ""
+## S4: đang chiến đấu (main.gd gán mỗi khung qua set_combat), mức tầng chiến đấu hiện tại 0…1, bài hiện tại có tầng không.
+var _combat_on := false
+var combat_level := 0.0
+var _layered := false
 
 
 func _ready() -> void:
@@ -145,6 +157,16 @@ func music(id: String) -> void:
 func _start_pending() -> void:
 	_switching = false
 	var s := _ogg(MUSIC_DIR, _pending, is_loop(_pending)) if _pending != "" else null
+	# S4: có tầng chiến đấu → phát đồng bộ 2 file, tầng ở mức combat_level
+	_layered = false
+	if s != null and has_stream(MUSIC_DIR, _pending + COMBAT_SUFFIX):
+		var sync := AudioStreamSynchronized.new()
+		sync.stream_count = 2
+		sync.set_sync_stream(0, s)
+		sync.set_sync_stream(1, _ogg(MUSIC_DIR, _pending + COMBAT_SUFFIX, is_loop(_pending)))
+		sync.set_sync_stream_volume(1, layer_db(combat_level))
+		s = sync
+		_layered = true
 	_pending = ""
 	_music.stream = s
 	if s != null:
@@ -157,6 +179,20 @@ func _start_pending() -> void:
 
 func current_music() -> String:
 	return _music_id
+
+
+## S4: main.gd gọi mỗi khung với GameWorld.in_combat().
+func set_combat(on: bool) -> void:
+	_combat_on = on
+
+
+func has_combat_layer() -> bool:
+	return _layered
+
+
+## S4: mức tầng (0…1) → dB của luồng tầng trong AudioStreamSynchronized.
+static func layer_db(level: float) -> float:
+	return linear_to_db(maxf(0.0001, level))
 
 
 ## S5: phát nhạc báo (nhạc nền hạ DUCK_DB trong lúc phát). Không có file → bỏ qua.
@@ -214,12 +250,21 @@ func step(delta: float) -> void:
 			_fade = 0.0
 		elif rest_left >= 0.0:
 			rest_left -= delta
+			# S4: đang nghỉ mà vào trận → bài (có tầng chiến đấu) vào luôn
+			var wake := _combat_on and _layered
+			if wake:
+				rest_left = -1.0
 			if rest_left < 0.0:
+				rest_left = -1.0
 				_fade = 0.0
 				_fade_to = 1.0
-				_fade_speed = 1.0 / FADE_IN_BACK
+				_fade_speed = 1.0 / (COMBAT_WAKE_FADE if wake else FADE_IN_BACK)
 				_music.play()
 	_fade = move_toward(_fade, _fade_to, delta * _fade_speed)
 	var duck_to := db_to_linear(DUCK_DB) if _stinger.playing else 1.0
 	_duck = move_toward(_duck, duck_to, delta * 4.0)
 	_music.volume_db = linear_to_db(maxf(0.0001, _fade * _duck))
+	# S4: tầng chiến đấu dâng / lắng
+	combat_level = move_toward(combat_level, 1.0 if _combat_on else 0.0, delta / (COMBAT_IN if _combat_on else COMBAT_OUT))
+	if _layered and _music.stream is AudioStreamSynchronized:
+		(_music.stream as AudioStreamSynchronized).set_sync_stream_volume(1, layer_db(combat_level))

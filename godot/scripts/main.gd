@@ -482,6 +482,8 @@ func _process(delta: float) -> void:
 	for id in world.sfx:
 		audio.play(str(id))
 	world.sfx.clear()
+	# MU-1 S4: tầng chiến đấu của bài khám phá dâng lên khi đang giao tranh
+	audio.set_combat(world.in_combat())
 	audio.music(_music_for(world))
 	audio.ambient(ambient_for(world))
 	_save_timer += delta

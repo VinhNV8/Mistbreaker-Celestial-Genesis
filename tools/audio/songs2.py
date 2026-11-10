@@ -4,7 +4,7 @@
     python tools/audio/songs2.py forest st_boss  # chỉ các id này
     python tools/audio/songs2.py --list          # liệt kê id
 
-Ra: godot/assets/audio/music/<id>.ogg, godot/assets/audio/stinger/<id>.ogg, godot/assets/audio/ambient/<id>.ogg.
+Ra: godot/assets/audio/music/<id>.ogg (+ <id>_combat.ogg — tầng chiến đấu S4 của bài khám phá / hang), godot/assets/audio/stinger/<id>.ogg, godot/assets/audio/ambient/<id>.ogg.
 Cần numpy + soundfile (pip install numpy soundfile).
 
 Mỗi bài = dữ liệu ở SONGS: nhịp, chủ âm, vòng hợp âm (ký hiệu La Mã theo chủ âm) cho từng đoạn, 2 câu giai điệu soạn tay
@@ -135,14 +135,7 @@ def render_song(sid):
     melA, la = parse(spec["melA"])
     melB, lb = parse(spec["melB"])
     assert abs(la - 32) < 1e-6 and abs(lb - 32) < 1e-6, (sid, la, lb)
-    plan = []  # (đoạn, hợp âm, ô thứ mấy trong đoạn)
-    for sec in form:
-        key = {"A2": "A", "C": "A", "O": "I"}.get(sec, sec)
-        prog = spec["prog"][key].split()
-        if sec == "O":
-            prog = prog[:3] + [prog[0]]
-        for k, ch in enumerate(prog):
-            plan.append((sec, ch, k))
+    plan = song_plan(spec)  # (đoạn, hợp âm, ô thứ mấy trong đoạn)
     loop = spec.get("loop", False)
     total = len(plan) * bar
     mix = I.Mix(total + (0.0 if loop else 4.5), loop=loop)
@@ -295,6 +288,69 @@ def render_song(sid):
         n = out.shape[1]
         f = int(2.5 * SR)
         out[:, n - f:] *= np.linspace(1, 0, f) ** 2
+    return out
+
+
+# ------------------------------------------------------------------ tầng chiến đấu (S4, đợt 2)
+## Bài có tầng chiến đấu: bài khám phá + hang. File <id>_combat.ogg dài đúng bằng bài chính, cùng nhịp / hợp âm
+## (dựng từ cùng kế hoạch ô nhịp) — AudioManager phát 2 file đồng bộ (AudioStreamSynchronized) và chỉ đổi âm lượng tầng.
+LAYER_IDS = ["forest", "core", "plains", "desert", "swamp", "volcano", "tundra", "sky", "void", "heaven"]
+LAYER_DB = -21.0
+
+
+def song_plan(spec):
+    form = spec.get("form", "I A B C A2 O").split()
+    plan = []
+    for sec in form:
+        key = {"A2": "A", "C": "A", "O": "I"}.get(sec, sec)
+        prog = spec["prog"][key].split()
+        if sec == "O":
+            prog = prog[:3] + [prog[0]]
+        for k, ch in enumerate(prog):
+            plan.append((sec, ch, k))
+    return plan
+
+
+def render_layer(sid):
+    """Tầng chiến đấu: taiko + trống khung dồn, dây nảy chạy, kèn trầm dâng mỗi 2 ô; nhẹ ở dạo đầu / kết."""
+    spec = SONGS[sid]
+    I.RNG = np.random.default_rng(sum(map(ord, sid)) + 77)
+    beat = 60.0 / spec["bpm"]
+    bar = beat * 4
+    plan = song_plan(spec)
+    loop = spec.get("loop", False)
+    mix = I.Mix(len(plan) * bar + (0.0 if loop else 4.5), loop=loop)
+    fast = spec["bpm"] < 96  # nhịp chậm → dây nảy 16 phần cho có lực, nhịp nhanh → 8 phần
+    for b, (sec, ch, k) in enumerate(plan):
+        t0 = b * bar
+        r, tri = chord_of(spec, ch)
+        quiet = sec in ("I", "O")
+        g = 0.55 if quiet else (0.8 if sec == "C" else 1.0)
+        # trống
+        hits = [(0, 1.0, True), (2, 0.85, True)] if quiet else [(0, 1.0, True), (1.5, 0.6, False), (2, 0.9, True), (2.75, 0.5, False), (3.5, 0.75, False)]
+        if sec in ("B", "A2") and k % 2 == 1:
+            hits += [(3.25, 0.5, False), (3.75, 0.6, False)]
+        for pos, v, big in hits:
+            mix.add("drum", t0 + pos * beat, I.taiko(v * g, big), p=-0.15 if big else 0.25, send=0.3)
+        if not quiet:
+            for i in range(8):
+                if i % 2 == 1:
+                    mix.add("drum", t0 + i * beat / 2, I.frame_drum(0.35 * g), p=0.35, send=0.2)
+        # dây nảy
+        cell = [r, r + 7, r + 12, r + 7]
+        n = 16 if fast else 8
+        for i in range(n):
+            st = 4.0 / n
+            mix.add("spic", t0 + i * st * beat, I.spiccato(cell[i % 4] - 12 if i % 4 == 0 else cell[i % 4], (1.0 if i % (n // 4) == 0 else 0.6) * g),
+                    p=-0.4 + 0.8 * (i % 2), send=0.2)
+        # kèn trầm dâng mỗi 2 ô
+        if not quiet and k % 2 == 0:
+            mix.add("brass", t0, I.brass(r - 12, bar * 1.9, 0.8 * g), send=0.3)
+    out = mix.render(rt60=spec.get("rt60", 2.8) * 0.8, loop=loop, target_db=LAYER_DB - (1.0 if sid in ("core", "void") else 0.0))
+    if not loop:
+        nn = out.shape[1]
+        f = int(2.5 * SR)
+        out[:, nn - f:] *= np.linspace(1, 0, f) ** 2
     return out
 
 
@@ -508,6 +564,9 @@ def job(item):
     t0 = time.time()
     if kind == "music":
         st, sub = render_song(sid), "music"
+    elif kind == "layer":
+        st, sub = render_layer(sid), "music"
+        sid = sid + "_combat"
     elif kind == "stinger":
         st, sub = STINGERS[sid](), "stinger"
     else:
@@ -519,14 +578,15 @@ def job(item):
 
 
 def main():
-    items = [("music", k) for k in SONGS] + [("stinger", k) for k in STINGERS] + [("ambient", k) for k in AMBIENTS]
+    items = ([("music", k) for k in SONGS] + [("layer", k) for k in LAYER_IDS] + [("stinger", k) for k in STINGERS]
+             + [("ambient", k) for k in AMBIENTS])
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     if "--list" in sys.argv:
         for kind, sid in items:
-            print(kind, sid)
+            print(kind, sid + ("_combat" if kind == "layer" else ""))
         return
     if args:
-        items = [it for it in items if it[1] in args]
+        items = [it for it in items if it[1] in args or (it[0] == "layer" and it[1] + "_combat" in args)]
     procs = max(1, min(len(items), (os.cpu_count() or 2) - 1, 6))
     with Pool(procs) as pool:
         for line in pool.imap_unordered(job, items):

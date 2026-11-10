@@ -5,7 +5,7 @@
 | Ngày | 09/11/2026 |
 | Yêu cầu | [Spec_Notes](Spec_Notes.md): *"Người chơi comment — tiếng nhạc trong game giả quá, không giống như game hiện tại → hãy nghiên cứu và đề xuất cải thiện giúp tôi."* |
 | Bản nghe thử | Bản thử 09/11 (`mu1-forest`, `mu1-boss`, công cụ `music2.py`) đã được thay bằng bản trong game: `godot/assets/audio/music/*.ogg` (13 bài), `stinger/*.ogg` (5), `ambient/*.ogg` (11). Công cụ: `tools/audio/songs2.py` + `inst2.py` |
-| Trạng thái | ✅ **Đợt 1 đã làm 09/11/2026** — chủ dự án: "làm theo đề xuất" (Q224–Q228 theo cột Đề xuất §8). Kết quả §9. Còn đợt 2: S4 tầng chiến đấu. |
+| Trạng thái | ✅ **Đợt 1 đã làm 09/11/2026** — chủ dự án: "làm theo đề xuất" (Q224–Q228 theo cột Đề xuất §8), kết quả §9. ✅ **Đợt 2 (S4 tầng chiến đấu) đã làm 10/11/2026** — §10. |
 
 ## 1. Hiện trạng (đo từ file)
 
@@ -147,5 +147,20 @@ Dung lượng: nhạc 17 MB + nhạc báo / môi trường ~7 MB (cũ: 13 WAV mo
 
 ### 9.3. Còn lại
 
-- Đợt 2 — S4 tầng chiến đấu (Q227).
+- ~~Đợt 2 — S4 tầng chiến đấu (Q227)~~ → đã làm 10/11, §10.
 - Nốt dài của đàn nhị / kèn vẫn có thể lộ là tổng hợp (§6). Nếu người chơi còn chê, thay riêng các bài quan trọng (chủ đề `heaven`, `boss_final`) bằng hướng D, hệ thống phát giữ nguyên.
+
+## 10. Đợt 2 — tầng chiến đấu (S4, 10/11/2026)
+
+Chủ dự án: "triển khai đợt 2".
+
+| Phần | Cách làm |
+| --- | --- |
+| File | 10 bài có tầng: 9 bài khám phá + `core` (hang có quái). `music/<id>_combat.ogg` sinh bằng `songs2.py` `render_layer` từ **cùng kế hoạch ô nhịp** với bài chính (`song_plan`) → cùng nhịp, cùng hợp âm, cùng độ dài (sai số < 0,05 giây). Nội dung: taiko lớn đầu phách 1 & 3 + taiko nhỏ nghịch phách, trống khung móc, dây nảy chạy (16 phần khi nhịp < 96, 8 phần khi nhanh hơn) trên chủ âm – quãng 5 của hợp âm, kèn trầm dâng mỗi 2 ô; nhẹ ở dạo đầu / kết. RMS −21 dB (hang / hư vô −22) — nằm dưới bài chính ~3 dB, cộng lại ~−16 dB khi đánh. |
+| Phát | `AudioManager._start_pending`: bài có tầng → `AudioStreamSynchronized` 2 luồng (bài chính + tầng), luồng tầng ở `layer_db(combat_level)`. `set_combat(on)` — `main.gd` gọi mỗi khung với `GameWorld.in_combat()` (đánh / bị đánh trong 3 giây gần nhất). `step()`: `combat_level` dâng tới 1 trong `COMBAT_IN` 1,5 giây, lắng về 0 trong `COMBAT_OUT` 4 giây (tổng ~7 giây sau đòn cuối), đặt lại âm lượng luồng tầng mỗi khung — không cắt bài, không lệch nhịp. |
+| Khi đang nghỉ (S2) | Vào trận → bài (có tầng) vào luôn, mờ vào 1,5 giây, không chờ hết khoảng nghỉ. |
+| Không có tầng | Làng (khu an toàn), boss / boss cuối (bài boss đã dồn sẵn). |
+
+Kiểm tra: MU1-T1 (đủ 10 tầng, cùng độ dài bài chính, làng / boss không có tầng, `layer_db`, main nối `set_combat`); `tests/mu1_play.gd` (forest phát dạng đồng bộ, tầng câm khi chưa đánh, dâng đủ sau ~1,5 giây, lắng dần khi hết đánh, đang nghỉ vào trận thì bài vào luôn). Dung lượng thêm ~11 MB.
+
+**Cần nghe thử trong game**: độ to của tầng so với bài chính (đổi `LAYER_DB` trong `songs2.py`), tốc độ dâng / lắng (`COMBAT_IN` / `COMBAT_OUT` trong `audio_manager.gd`).

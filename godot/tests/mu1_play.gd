@@ -30,12 +30,27 @@ func _run() -> void:
 	am.music("forest")
 	am.ambient("amb_forest")
 	await _frames(60)
-	_check(am._music.playing and am._music.stream is AudioStreamOggVorbis and not am._music.stream.loop, "forest phát, không lặp trong file")
+	_check(am._music.playing and am.has_combat_layer() and am._music.stream is AudioStreamSynchronized
+		and not am._music.stream.get_sync_stream(0).loop, "forest phát (kèm tầng chiến đấu đồng bộ), không lặp trong file")
+	var sync: AudioStreamSynchronized = am._music.stream
+	_check(sync.get_sync_stream_volume(1) < -60.0, "chưa đánh: tầng chiến đấu câm (%.0f dB)" % sync.get_sync_stream_volume(1))
+	am.set_combat(true)
+	await create_timer(1.8).timeout
+	_check(am.combat_level > 0.99 and sync.get_sync_stream_volume(1) > -0.5, "vào trận: tầng dâng lên đủ trong ~1,5 giây (%.2f)" % am.combat_level)
+	am.set_combat(false)
+	await create_timer(1.0).timeout
+	_check(am.combat_level < 0.85 and am.combat_level > 0.6, "hết đánh: tầng lắng dần (sau 1 giây còn %.2f)" % am.combat_level)
 	_check(am._ambient.playing and am._ambient.stream.loop, "âm rừng phát, lặp")
 	# tua tới cuối bài → hết lượt → nghỉ
 	am._music.seek(am._music.stream.get_length() - 0.1)
 	await _frames(30)
 	_check(not am._music.playing and am.rest_left >= 0.0 and am.rest_left <= 90.0, "hết lượt: đang nghỉ (còn %.1f giây)" % am.rest_left)
+	am.set_combat(true)
+	await _frames(5)
+	_check(am._music.playing and am.rest_left < 0.0, "đang nghỉ mà vào trận: bài vào luôn (không chờ hết nghỉ)")
+	am.set_combat(false)
+	am._music.seek(am._music.stream.get_length() - 0.1)
+	await _frames(30)
 	am.rest_left = 0.05
 	await _frames(20)
 	_check(am._music.playing, "hết nghỉ: bài vào lại")
@@ -43,7 +58,7 @@ func _run() -> void:
 	await _frames(2)
 	_check(am.current_stinger() == "st_boss", "vào trận boss: nhạc báo st_boss")
 	await _frames(60)
-	_check(am._music.playing and am._music.stream.loop and am._duck < 0.7, "boss lặp liền, nhạc nền đang hạ khi nhạc báo phát (%.2f)" % am._duck)
+	_check(am._music.playing and not am.has_combat_layer() and am._music.stream.loop and am._duck < 0.7, "boss lặp liền, nhạc nền đang hạ khi nhạc báo phát (%.2f)" % am._duck)
 	am.ambient("amb_cave")
 	await create_timer(1.8).timeout
 	_check(am.current_ambient() == "amb_cave" and am._ambient.playing and not am._ambient_old.playing, "đổi âm môi trường: mờ chéo xong")

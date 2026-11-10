@@ -1,1 +1,0 @@
-Người chơi phản ánh - Đang full màn hình -> nhấn icon thu nhỏ bản đồ, nhiệm vụ, cài đặt âm thanh... thì bị thu nhỏ lại.
