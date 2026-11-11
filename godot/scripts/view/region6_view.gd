@@ -171,13 +171,11 @@ static func draw_over(ci: CanvasItem, world, view: Rect2, _art: bool) -> void:
 	# viền băng giá theo tầng
 	if st.frost > 0:
 		var a3: float = 0.06 * st.frost
-		for i in 4:
-			ci.draw_rect(view.grow(-i * 22.0), Color(0.75, 0.9, 1.0, a3 * (1.0 - i * 0.22)), false, 22.0)
+		SpriteLib.edge_glow(ci, view, 88.0, Color(0.75, 0.9, 1.0), a3 * 2.0)
 	# Ám Khí: viền tím khi sắp / đang mất kiểm soát; vòng tối quanh người chơi khi Ám Hoá
 	if st.lost_t > 0.0 or st.dark_warn >= 0.0:
 		var a4: float = 0.25 + 0.1 * sin(t * 10.0)
-		for i in 4:
-			ci.draw_rect(view.grow(-i * 26.0), Color(0.35, 0.1, 0.55, a4 * (1.0 - i * 0.2)), false, 26.0)
+		SpriteLib.edge_glow(ci, view, 104.0, Color(0.35, 0.1, 0.55), a4 * 2.0)
 	if st.lost_t > 0.0 or st.ascend_t > 0.0:
 		ci.draw_arc(c, 34.0 + 3.0 * sin(t * 8.0), 0.0, TAU, 32, Color(0.6, 0.25, 0.95, 0.8), 3.0, true)
 

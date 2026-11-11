@@ -57,17 +57,41 @@ func _level_block(lv: int, rank_color: Color) -> Control:
 	return box
 
 
-## Một cột trong khung vẽ, tiêu đề vàng; nội dung pixel bên trong giữ Nearest.
+## TL-UI (Spec_Notes 10/11: "có thêm thiên phú → bị vỡ khung layout - che khuất màn hình"): bảng không bao giờ cao hơn
+## màn hình — 3 cột cao cố định theo màn hình, nội dung dài cuộn trong từng cột (tiêu đề cột đứng yên).
+const MARGIN := 24.0
+## Phần ngoài 3 cột: thanh tiêu đề chung + hàng Thiên phú phụ + viền bảng.
+const CHROME_H := 300.0
+const COL_MIN_H := 220.0
+const COL_MAX_H := 470.0
+
+
+## Chiều cao 3 cột theo màn hình hiện tại.
+func _col_height() -> float:
+	var vh := get_viewport_rect().size.y if is_inside_tree() else 768.0
+	return clampf(vh - 2.0 * MARGIN - CHROME_H, COL_MIN_H, COL_MAX_H)
+
+
+## Một cột trong khung vẽ, tiêu đề vàng; nội dung pixel bên trong giữ Nearest. Nội dung cuộn dọc khi dài.
 func _column(parent: Control, title: String, name_: String) -> VBoxContainer:
 	var frame := UiTheme.panel(Ornate.panel_style(20))
 	frame.name = name_
 	Ornate.linear(frame)
 	frame.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var wrap := UiTheme.vbox(6)
+	frame.add_child(wrap)
+	wrap.add_child(UiTheme.strong(title, 19, Color("#f3d27a")))
+	var scroll := ScrollContainer.new()
+	scroll.name = "Scroll"
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.custom_minimum_size = Vector2(W + 14.0, _col_height() - 48.0)
+	wrap.add_child(scroll)
 	var col := UiTheme.vbox(8)
 	col.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	col.custom_minimum_size.x = W
-	frame.add_child(col)
-	col.add_child(UiTheme.strong(title, 19, Color("#f3d27a")))
+	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(col)
 	parent.add_child(frame)
 	return col
 

@@ -185,4 +185,6 @@ Code: `view/terrain_edge.gd` (`margins`, `draw_border`, `draw_banks`), `main._fi
 
 Hiệu năng (`perf_walk --map=1-1 --mobs`, xen kẽ 2 lượt): bật phối cảnh + đứng thẳng 56,9 / 57,0 khung/giây, tắt 57,5 / 58,2 — chênh trong nhiễu đo.
 
-Còn lại: bậc / cầu có va chạm (khi làm lại map); chủ dự án chọn mức Phối cảnh Nhẹ / Vừa sau khi chơi thử.
+Chốt 10/11/2026 (chủ dự án: "triển khai như bạn đề xuất"): mặc định **Phối cảnh = Nhẹ** (Vừa / Tắt vẫn chọn được trong Cài đặt), **Bộ đếm combo = Lớn** (Nhỏ = dòng UI-54 cũ, Tắt). Bậc / dốc / cầu có chặn va chạm để đợt làm lại map.
+
+Còn lại: bậc / cầu có va chạm (khi làm lại map).

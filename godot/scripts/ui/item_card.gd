@@ -23,7 +23,10 @@ const TEXT_DIM := Color("#b9ab8c")
 const AFFIX_COL := Color("#9ec8ff")
 const STAT_ICON := {"atk": "stat-atk", "max_hp": "stat-hp", "def": "stat-def", "crit": "stat-crit", "crit_dmg": "stat-critdmg",
 	"atk_speed": "stat-aspd", "move_speed": "stat-move", "res_kim": "stat-res", "res_moc": "stat-res", "res_thuy": "stat-res",
-	"res_hoa": "stat-res", "res_tho": "stat-res"}
+	"res_hoa": "stat-res", "res_tho": "stat-res",
+	# HR-1: dòng hồi phục dùng lại icon HP / Hồi MP
+	"hp_on_kill": "stat-hp", "hp_regen": "stat-hp", "leech_hp": "stat-hp",
+	"mp_on_kill": "stat-regen", "mp_on_hit": "stat-regen", "leech_mp": "stat-regen", "mp_regen_pct": "stat-regen"}
 const TIER_LABEL := ["Thường", "Tốt", "Hiếm", "Sử thi", "Huyền thoại"]
 
 
@@ -201,6 +204,40 @@ static func _row(icon: Texture2D, text: String, col: Color, fs := 14, width := 0
 	return h
 
 
+## GC-1: 1 dòng lỗ ngọc trên thẻ đồ — key "" = lỗ trống.
+static func gem_row(key: String, slot: String, width: float) -> HBoxContainer:
+	var h := UiTheme.hbox(6)
+	h.name = "GemRow"
+	h.set_meta("gem_row", key)
+	h.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var ic := UiTheme.icon_rect(SpriteLib.icon(Gear.gem_icon_id(key) if key != "" else "gem-socket"), 20)
+	ic.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	ic.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	h.add_child(ic)
+	if key == "":
+		var el := UiTheme.label("Lỗ trống — khảm ở Lò Rèn (tab Khảm ngọc)")
+		el.add_theme_font_size_override("font_size", UiTheme.fs(12))
+		el.add_theme_color_override("font_color", Color(TEXT_DIM, 0.75))
+		h.add_child(el)
+		return h
+	var pr := Items.gem_parse(key)
+	var nl := UiTheme.label(Gear.gem_name(key))
+	nl.add_theme_font_override("font", UiTheme.bold_font())
+	nl.add_theme_font_size_override("font_size", UiTheme.fs(13))
+	nl.add_theme_color_override("font_color", Color(str(Monsters.ELEMENT_HEX.get(pr[0], "#e8dcc4"))).lightened(0.1))
+	nl.custom_minimum_size.x = 118.0
+	h.add_child(nl)
+	var gv := Items.gem_value(str(pr[0]), int(pr[1]), slot)
+	var parts := PackedStringArray()
+	for k in gv:
+		parts.append(Items.stat_text(k, gv[k]))
+	var sl := UiTheme.label(", ".join(parts), "", maxf(0.0, width - 170.0))
+	sl.add_theme_font_size_override("font_size", UiTheme.fs(13))
+	sl.add_theme_color_override("font_color", UiTheme.GOOD)
+	h.add_child(sl)
+	return h
+
+
 static func _chip(text: String, col: Color) -> PanelContainer:
 	var pc := PanelContainer.new()
 	pc.add_theme_stylebox_override("panel", UiTheme.box(Color(col.darkened(0.55), 0.85), 8, 1, Color(col, 0.8), 3))
@@ -292,26 +329,19 @@ static func build(item: Dictionary, width: float, header := "", p = null, diff: 
 			var af: Dictionary = item.affixes[i]
 			# NL-1: dòng đã tẩy luyện có ✦
 			v.add_child(_row(stat_icon(str(af.stat)), ("✦ " if i == rf else "") + Items.stat_text(af.stat, af.value), AFFIX_COL, 14, width))
-	# --- NL-1 (docs/47 §5): lỗ ngọc (ô tròn màu hệ, lỗ trống mờ)
+	# --- NL-1 (docs/47 §5) + GC-1 (Spec_Notes 10/11: "thuộc tính của đá sau khi gắn → section riêng, từng dòng tương ứng
+	# với đá, có icon nhỏ"): mục NGỌC KHẢM riêng — mỗi lỗ 1 dòng: icon ngọc · tên (màu hệ) · chỉ số viên đó; lỗ trống mờ.
 	if int(item.get("sockets", 0)) > 0:
-		var gr := UiTheme.hbox(4)
-		gr.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		var gems: Array = item.get("gems", [])
+		v.add_child(Divider.new())
+		var gh := UiTheme.label("NGỌC KHẢM  %d/%d" % [gems.size(), int(item.sockets)])
+		gh.name = "GemHead"
+		gh.add_theme_font_override("font", UiTheme.bold_font())
+		gh.add_theme_font_size_override("font_size", UiTheme.fs(11))
+		gh.add_theme_color_override("font_color", UiTheme.GOLD)
+		v.add_child(gh)
 		for i in int(item.sockets):
-			var key := str(gems[i]) if i < gems.size() else ""
-			var ic := UiTheme.icon_rect(SpriteLib.icon(Gear.gem_icon_id(key) if key != "" else "gem-socket"), 22)
-			ic.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			gr.add_child(ic)
-		var gs := Items.gem_stats(item)
-		var parts := PackedStringArray()
-		for k in gs:
-			parts.append(Items.stat_text(k, gs[k]))
-		var gml := UiTheme.label(", ".join(parts) if not parts.is_empty() else "Lỗ ngọc trống", "", width - 100.0)
-		gml.add_theme_font_size_override("font_size", UiTheme.fs(12))
-		gml.add_theme_color_override("font_color", UiTheme.GOOD if not parts.is_empty() else TEXT_DIM)
-		gml.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		gr.add_child(gml)
-		v.add_child(gr)
+			v.add_child(gem_row(str(gems[i]) if i < gems.size() else "", str(item.slot), width))
 		if str(item.slot) == "weapon":
 			var seal := Items.weapon_seal({"weapon": item})
 			if seal != "":

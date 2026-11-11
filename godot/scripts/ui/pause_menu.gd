@@ -208,8 +208,11 @@ func _tab_access() -> void:
 
 
 func _tab_controls() -> void:
+	# AF-1 (docs/48): cách Tự đánh (Z) dùng kỹ năng.
+	_choices("Tự đánh: kỹ năng", "auto_skills", preload("res://scripts/data/auto_tactics.gd").MODES, "AutoSk_", str(Settings.values.get("auto_skills", "smart")))
+	_box.add_child(UiTheme.label("Thông minh: chiêu diện rộng khi có đàn quái, chiêu mạnh cho tinh anh, khiên khi máu thấp, mỗi nhịp 1 chiêu. Tiết kiệm MP: chỉ dùng khi đáng. Xả hết: dùng ngay khi hồi chiêu.", "Small", 540))
 	var sc := ScrollContainer.new()
-	sc.custom_minimum_size = Vector2(540, 330)
+	sc.custom_minimum_size = Vector2(540, 270)
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	var grid := GridContainer.new()
 	grid.columns = 4

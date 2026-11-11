@@ -178,6 +178,33 @@ Cột **Trạng thái**: ✅ đã làm và có test tự động · 🟡 đã l�
 | CS-07 | Mở màn chọn sẵn nhân vật chơi gần nhất; chưa có nhân vật → Vào game / Xoá tắt; đủ 5 → Tạo mới tắt | CR06-T1 | ✅ |
 | CS-08…09 | Mở game (hoặc "Về màn hình chính") → đã có nhân vật thì vào thẳng màn Chọn nhân vật, nhân vật chơi cuối hiện sẵn; chưa có → màn tiêu đề; màn chọn có Màn tiêu đề / Cài đặt / Thoát game (góp ý người chơi 10/11) | CR06-T1 | ✅ |
 
+### 3.14. Tự đánh thông minh và lời chào quay lại (AF, WB, [48](48-tu-danh-thong-minh-va-loi-chao.md))
+
+*(Spec_Notes 10/11: "tự đánh đang ra toàn bộ skills cùng 1 lúc"; "chọn nhân vật xong vào lại game cần có lời chào") — chủ dự án "triển khai đi em".*
+
+| Mã | Yêu cầu | Tiêu chí nghiệm thu | Trạng thái |
+| --- | --- | --- | --- |
+| AF-01 | Tự đánh tung **1 chiêu mỗi nhịp** (Thông minh 0,45 giây, Tiết kiệm MP 0,8 giây), chọn theo điểm tình huống, không xả mọi chiêu vừa hồi | AF1-T1 | ✅ |
+| AF-02 | Chiến thuật theo loại kỹ năng (đủ 70 kỹ năng): diện rộng cần ≥ 2 quái (1 quái chỉ khi trâu), chiêu đặt điểm nhắm vào giữa đàn, lao để áp sát, chiêu mạnh / tối thượng để dành cho tinh anh hoặc đàn đông, quái thường sắp chết chỉ đánh thường | AF1-T1 | ✅ |
+| AF-03 | Dùng cả kỹ năng không gây sát thương: buff khi có đàn / tinh anh, khiên khi HP < 50% hoặc bị vây, gọi linh thú khi vào trận và không gọi lại khi còn sống | AF1-T1 | ✅ |
+| AF-04 | Giữ MP dự trữ (Thông minh 30%, Tiết kiệm 50%) cho chiêu phòng thủ / tối thượng; tự uống bình máu < 35% HP, bình MP < 12% MP khi đang đánh | AF1-T1 | ✅ |
+| AF-05 | Cài đặt → Điều khiển "Tự đánh: kỹ năng": Thông minh (mặc định) / Tiết kiệm MP / Xả hết (cách cũ); mẹo ở bảng Trợ giúp | AF1-T1 + ảnh | ✅ |
+| WB-01 | Vào lại game với nhân vật cũ → thẻ chào giữa màn hình (game dừng tới khi bấm Vào game): chào theo buổi + tên, lớp, cấp; đã vắng bao lâu ("lâu rồi mới gặp" khi ≥ 3 ngày); nơi dừng + nhiệm vụ chính đang làm; lãnh địa thu hoạch khi vắng mặt; việc nên làm ngay (uỷ thác, điểm tiềm năng, Điểm Kỹ Năng, tăng Lực chiến). Nhân vật mới không hiện | WB1-T1 + ảnh | ✅ |
+
+### 3.15. MP, bình thuốc, bảng Thiên phú, ngọc trên thẻ đồ, dòng hồi trên trang bị (MP, PT, UI-TL1, GC, HR, [49](49-mp-binh-thuoc-va-giao-dien.md))
+
+*(Spec_Notes 10/11, 4 ý: bảng Thiên phú vỡ khung khi có thêm Thiên phú; chỉ số ngọc thành mục riêng từng viên; thời gian hồi bình lâu quá; MP quá ít) — chủ dự án "Em tiếp tục triển khai", làm 10/11/2026.*
+
+| Mã | Yêu cầu | Tiêu chí nghiệm thu | Trạng thái |
+| --- | --- | --- | --- |
+| UI-TL1 | Bảng Thiên phú không bao giờ cao hơn màn hình: 3 cột cao cố định theo màn hình, nội dung dài cuộn trong từng cột, hàng Thiên phú phụ + Cộng hưởng luôn hiện | UI-TL1 + ảnh (Đạo Tặc + 2 Thiên phú phụ: 958 → 701 px) | ✅ |
+| GC-01 | Thẻ đồ: mục **NGỌC KHẢM n/m** riêng, mỗi lỗ 1 dòng — icon ngọc nhỏ, tên màu theo hệ, chỉ số của viên đó; lỗ trống ghi "khảm ở Lò Rèn"; Lò Rèn → Khảm ngọc dùng chung dòng này + "Tổng ngọc" | UI-TL1 + ảnh | ✅ |
+| PT-01 | Thời gian hồi bình máu 8 → 5 giây, bình MP 8 → 3 giây (giữ lượng hồi 35% / 40%); so sánh Lost Ark / Diablo IV / Path of Exile ở 49 §C | MP1-T1, SN10-T2 | ✅ |
+| MP-01 | MP gốc lớp vật lý: Kiếm Khách / Thợ Săn 25 → 55 (mỗi cấp +3,5 / +4), Hộ Vệ 25 → 40 (+3) — đủ ≥ 1 lượt xả chiêu ở cấp 30; số chỉnh 11/11 theo TL-B (chênh lớp 24% ≤ 25%) | MP1-T1, CS-T2, TL-B | ✅ |
+| MP-02 | Đánh thường trúng quái hồi MP theo lớp (chỉ Thợ Săn +1; 1 lần mỗi lượt đánh); cộng thêm dòng trang bị "MP mỗi đòn đánh" (HR-03); trang Chỉ số hiện "+N/đòn" | MP1-T1 | ✅ |
+| MP-03 | Ngoài giao tranh (3 giây không đánh / bị đánh) hồi MP ×3, mọi lớp | MP1-T1 | ✅ |
+| HR-01…11 | Dòng hồi HP / MP trên trang bị (nhóm hồi phục, 7 dòng): HP / MP khi hạ quái, MP mỗi đòn (Vũ khí, Găng, Nhẫn…), **Hút HP** (Vũ khí, Găng, Nhẫn) / **Hút MP** (Vũ khí, Nhẫn), HP mỗi giây (Mũ, Áo, Giày, Bùa), +% Hồi MP (Dây chuyền, Bùa, Mũ); mỗi món tối đa 1 dòng; chỉ đồ Xanh dương+, 25% mỗi món; "khi hạ quái" không tính boss / quái hiếm / quái do boss gọi / Chúa Hang; trần HP mỗi giây 1%, hút HP (dòng phụ + Thức Tỉnh) 3% / giây, hút MP 3% / giây; Tẩy luyện / Thăng phẩm giữ luật; Túi → Tự động có nút "Dòng hồi phục" | HR1-T1 + ảnh | ✅ |
+
 ## 4. Yêu cầu phi chức năng
 
 | Mã | Yêu cầu |
@@ -237,6 +264,8 @@ Cho 3–5 người chơi thử từ đầu tới khi hạ boss, không hướng 
 - Phong cách đồ hoạ: pixel art, 2.5D anime hay 3D low-poly?
 - Sau playtest: có giữ tốc độ hồi Đuốc 2 phút cho bản chính không?
 - Q237 (CR-06): hình nhân vật to ở màn Chọn nhân vật đang là pixel art của sheet phóng ×4 — có cần tranh toàn thân vẽ tay cho 5 lớp không (chủ dự án cung cấp / duyệt; không tự vẽ lại nhân vật)?
+- Q238–Q241 (10/11, [49](49-mp-binh-thuoc-va-giao-dien.md) §E): số MP gốc lớp vật lý, thời gian hồi bình, hồi MP ngoài giao tranh ×3, MP mỗi đòn — đã áp; 11/11 chỉnh Q238 (Hộ Vệ MP gốc 40) và Q241 (chỉ Thợ Săn +1 MP / đòn) theo TL-B, chủ dự án chọn "giảm đánh thường hồi MP". Theo dõi khi playtest.
+- ~~Q242–Q247~~ đã chốt 11/11/2026 — [49 §G](49-mp-binh-thuoc-va-giao-dien.md) §G.6–G.7: có 5 dòng hồi; **Q243 đổi thành có** (Hút HP / Hút MP, trần 3% / giây, tính chung nhóm hồi, giữ dòng Thức Tỉnh); 1 dòng / món; không tính boss; trần HP mỗi giây 1%; Xanh dương+ 25%.
 - ~~Q229–Q236~~ đã trả lời 09/11/2026 ("triển khai theo đề xuất") — [47 §8](47-de-xuat-nang-luc-chien-trang-bi.md); Q235 (chỉnh độ khó chương 7–9) theo dõi khi chơi thử.
 - ~~Q224–Q228~~ đã trả lời 09/11/2026 ("làm theo đề xuất") — [46 §8](46-nghien-cuu-nhac-nen.md).
 - ~~Q180–Q183~~ đã trả lời 03/11/2026 — [36 §8](36-thiet-ke-lai-vfx-ky-nang.md).

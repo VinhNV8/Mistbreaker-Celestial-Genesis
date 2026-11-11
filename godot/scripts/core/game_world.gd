@@ -14,6 +14,7 @@ const Awakening = preload("res://scripts/core/awakening.gd")
 const Monsters = preload("res://scripts/data/monsters.gd")
 const Items = preload("res://scripts/core/items.gd")
 const Gear = preload("res://scripts/core/gear.gd")
+const AutoFight = preload("res://scripts/core/auto_fight.gd")
 const GearData = preload("res://scripts/data/gear_data.gd")
 ## NV (docs/41): uỷ thác hằng ngày + nhiệm vụ phụ.
 const Quests = preload("res://scripts/core/quests.gd")
@@ -86,7 +87,8 @@ const FANG_MUL := 1.6
 
 # --- MVP M2: Thiên phú (docs/03-mvp-spec.md, mục 4)
 ## TL-S2: bình máu, thảo dược.
-const POTION_CD := 8.0
+## PT-1 (docs/49): bình máu 8 → 5 giây (Lost Ark 10 giây / 30%; giữ 35% tức thì).
+const POTION_CD := 5.0
 const POTION_HEAL := 0.35
 ## SN12-01 (Spec_Notes đợt 12, chủ dự án 01/11: "bỏ giới hạn đi giống MP"): bình máu không giới hạn số mang theo
 ## (trước: tối đa 5). Thảo dược đủ 2 là tự chế 1 bình.
@@ -94,7 +96,8 @@ const POTION_HEAL := 0.35
 ## (chủ dự án 30/10: "không muốn có hạn chế").
 ## Mua ở cửa hàng làng; rơi từ quái thường 3%, tinh anh 25%, boss / boss hiếm chắc chắn 1 bình (RNG riêng, không đổi
 ## chuỗi số ngẫu nhiên của trận đánh).
-const MP_POTION_CD := 8.0
+## PT-1 (docs/49, Spec_Notes 10/11 "hồi bình lâu quá"): bình MP 8 → 3 giây.
+const MP_POTION_CD := 3.0
 const MP_POTION_RESTORE := 0.4
 const MP_DROP_FIELD := 0.03
 const MP_DROP_ELITE := 0.25
@@ -108,6 +111,8 @@ const CHEST_OPEN_R := 24.0
 const CHEST_SENSE_R := 300.0
 ## Chân Không Biết Mỏi: "không giao chiến" = 3 giây không đánh, không trúng đòn.
 const OUT_OF_COMBAT := 3.0
+## MP-1 (docs/49): ngoài giao tranh (OUT_OF_COMBAT giây không đánh / bị đánh) hồi MP ×3.
+const MP_OOC_MULT := Stats.MP_OOC_MULT
 const LIFESTEAL := 0.08
 ## SN-05: phép diện rộng của Pháp Sư hút máu 50%.
 const AOE_LIFESTEAL := 0.5
@@ -616,6 +621,11 @@ var _swap_timer := SWAP_PERIOD
 var debug_now := -1.0
 ## C1-33: tự đánh (phím Z).
 var auto_fight := false
+## AF-1 (docs/48): kiểu Tự đánh dùng kỹ năng — "smart" (mặc định) / "save" (tiết kiệm MP) / "full" (xả hết, cách cũ).
+## main.gd chép từ Cài đặt "auto_skills". _auto_skill_at: giây lần tự ra chiêu gần nhất; _auto_cast {kỹ năng: giây}.
+var auto_mode := "smart"
+var _auto_skill_at := -99.0
+var _auto_cast := {}
 ## C1-40: id âm thanh phát trong khung hình này (main.gd chuyển cho AudioManager rồi xoá).
 var sfx: Array = []
 var combo := 0
@@ -710,6 +720,11 @@ var hover_pos := Vector2.INF
 var _rng: Callable
 var _aim := Vector2.ZERO
 var _last_combat := -99.0
+## HR-1 (docs/49 §G): "ngân sách" hút HP / MP còn lại trong giây hiện tại (trần ItemData.LEECH_*_CAP / giây).
+var _leech_hp_left := 0.0
+var _leech_mp_left := 0.0
+## MP-1: lượt đánh thường (player.hits) đã hồi MP.
+var _mp_hit_tag := -1
 var _super_slash := false
 var _element_switch_at := -99.0
 var _face_lock := 0.0
@@ -1326,7 +1341,8 @@ func update(dt: float, input: Dictionary) -> void:
 	decoys = decoys.filter(func(dc): return dc.ttl > 0.0)
 	_update_whirls(dt)
 	_update_player_effects(dt, input)
-	p.mp = minf(float(stats.max_mp), p.mp + float(stats.mp_regen) * Classes2.bond_regen(self) * dt)
+	p.mp = minf(float(stats.max_mp), p.mp + float(stats.mp_regen) * Classes2.bond_regen(self) * (MP_OOC_MULT if time - _last_combat > OUT_OF_COMBAT else 1.0) * dt)
+	_update_recover(dt)
 	p.talent_cd -= dt
 	p.potion_cd -= dt
 	p.mp_potion_cd -= dt
@@ -2635,12 +2651,46 @@ func _derive_gear(bonus: Dictionary, st: Dictionary) -> void:
 	for k in ["boss_dmg", "skill_dmg", "lifesteal", "counter_dmg"]:
 		st[k] = float(bonus.get(k, 0.0))
 	st["seal"] = str(bonus.get("seal", ""))
+	# HR-1 (docs/49 §G): dòng phụ hồi phục.
+	var flat: Dictionary = bonus.get("flat", {})
+	st.lifesteal = float(st.lifesteal) + float(flat.get("leech_hp", 0.0))
+	st["leech_mp"] = float(flat.get("leech_mp", 0.0))
+	st["hp_regen"] = float(flat.get("hp_regen", 0.0))
+	st["hp_on_kill"] = float(flat.get("hp_on_kill", 0.0))
+	st["mp_on_kill"] = float(flat.get("mp_on_kill", 0.0))
+	st["mp_hit"] = float(st.get("mp_hit", 0.0)) + float(flat.get("mp_on_hit", 0.0))
+	st.mp_regen = float(st.mp_regen) * (1.0 + float(flat.get("mp_regen_pct", 0.0)))
 	var atk_cp := float(st.atk) * 10.0
 	var extra := atk_cp * (0.5 * float(st.boss_dmg) + 0.5 * float(st.skill_dmg) + 0.4 * float(st.counter_dmg))
-	extra += float(st.max_hp) * 6.0 * float(st.lifesteal)
+	extra += float(st.max_hp) * 6.0 * float(bonus.get("lifesteal", 0.0))
+	for k in ["leech_hp", "leech_mp", "hp_regen", "hp_on_kill", "mp_on_kill", "mp_on_hit", "mp_regen_pct"]:
+		extra += float(flat.get(k, 0.0)) * float(Items.STAT_POWER.get(k, 0.0))
 	if st.seal != "":
 		extra += atk_cp * GearData.SEAL_BONUS * 0.2
 	st["cp_extra"] = extra
+
+
+## HR-1: mỗi khung — nạp lại ngân sách hút (tối đa trần / giây) + HP mỗi giây từ dòng phụ (trần 1% HP tối đa / giây).
+func _update_recover(dt: float) -> void:
+	var mh := float(stats.max_hp)
+	var mm := float(stats.max_mp)
+	_leech_hp_left = minf(mh * ItemData.LEECH_HP_CAP, _leech_hp_left + mh * ItemData.LEECH_HP_CAP * dt)
+	_leech_mp_left = minf(mm * ItemData.LEECH_MP_CAP, _leech_mp_left + mm * ItemData.LEECH_MP_CAP * dt)
+	var rg := float(stats.get("hp_regen", 0.0))
+	if rg > 0.0 and player.hp > 0.0 and player.dead_timer <= 0.0:
+		player.hp = minf(mh, player.hp + minf(rg, mh * ItemData.HP_REGEN_CAP) * dt)
+
+
+## HR-1: "khi hạ quái" — không tính boss, quái hiếm, quái do boss gọi ra, Chúa Hang, boss Cổng (HR-08).
+func _kill_recover(e: Enemy) -> void:
+	if e.role in ItemData.NO_KILL_RECOVER_ROLES or e.cave_boss or e.gate_boss:
+		return
+	var hk := float(stats.get("hp_on_kill", 0.0))
+	var mk := float(stats.get("mp_on_kill", 0.0))
+	if hk > 0.0 and player.hp > 0.0:
+		player.hp = minf(float(stats.max_hp), player.hp + hk * Chapters.heal_mult(self))
+	if mk > 0.0:
+		player.mp = minf(float(stats.max_mp), player.mp + mk)
 
 
 ## Long Mạch Đàn đã xây xong (TL-S7).
@@ -3068,6 +3118,10 @@ func _hit_enemy(e: Enemy, skill_mul: float, force_crit := false, aoe := false) -
 	_sword_flow_hit()
 	var dmg := maxi(1, int(round(raw)))
 	_last_combat = time
+	# MP-1 (docs/49): đánh thường trúng hồi MP — 1 lần mỗi lượt đánh (chém trúng nhiều quái vẫn tính 1).
+	if sid == "" and int(player.hits) != _mp_hit_tag and float(stats.get("mp_hit", 0.0)) > 0.0:
+		_mp_hit_tag = int(player.hits)
+		player.mp = minf(float(stats.max_mp), player.mp + float(stats.mp_hit))
 	# CB-30: bị đánh từ xa → Truy kích (và bắt đầu đuổi ngay nếu đang đi lang thang).
 	if e.role != "boss" and e.role != "rare" and e.pos.distance_to(player.pos) > RUSH_MIN_DIST:
 		e.rush_timer = RUSH_TIME
@@ -3075,9 +3129,15 @@ func _hit_enemy(e: Enemy, skill_mul: float, force_crit := false, aoe := false) -
 			e.state = "chase"
 	combo += 1
 	_combo_timer = COMBO_TIMEOUT
-	# NL-1: Thức Tỉnh "Hút máu".
+	# NL-1: Thức Tỉnh "Hút máu" + HR-1 dòng phụ "Hút HP" (chung trần 3% HP / giây); HR-1 "Hút MP" (trần 3% MP / giây).
 	if float(stats.get("lifesteal", 0.0)) > 0.0:
-		player.hp = minf(float(stats.max_hp), player.hp + dmg * float(stats.lifesteal) * (AOE_LIFESTEAL if aoe else 1.0) * Chapters.heal_mult(self))
+		var lh := minf(dmg * float(stats.lifesteal) * (AOE_LIFESTEAL if aoe else 1.0) * Chapters.heal_mult(self), _leech_hp_left)
+		_leech_hp_left -= lh
+		player.hp = minf(float(stats.max_hp), player.hp + lh)
+	if float(stats.get("leech_mp", 0.0)) > 0.0:
+		var lm := minf(dmg * float(stats.leech_mp) * (AOE_LIFESTEAL if aoe else 1.0), _leech_mp_left)
+		_leech_mp_left -= lm
+		player.mp = minf(float(stats.max_mp), player.mp + lm)
 	# Hấp Huyết: 8% sát thương thành máu.
 	if has_talent("hap-huyet"):
 		# TP13 Huyết Chiến Thần (Huyết Chiến + Hấp Huyết): HP < 30% → hút máu ×2.
@@ -3215,6 +3275,7 @@ func _kill_enemy(e: Enemy) -> void:
 			_damage_player(e.atk, 0.8)
 		return
 	profile.kills += 1
+	_kill_recover(e)
 	if e.role == "quest":
 		quest_event("kill_quest")
 	if int(map.get("region", 1)) == 2 and int(profile.quest.ch2) == 2:
@@ -5294,15 +5355,16 @@ func _auto_input(input: Dictionary) -> Dictionary:
 		out.move = Vector2.ZERO if gap < 50.0 else dir
 	out.aim = target.pos
 	out.attack = true
-	for i in Classes.SKILL_SLOTS:
-		var key := "skill_%d" % (i + 1)
-		var sk: Dictionary = slot_skill(i)
-		if sk.is_empty() or not skill_unlocked(sk):
-			continue
-		var useful: bool = sk.mul > 0.0 and gap < (380.0 if is_ranged() else 160.0)
-		if useful and player.skill_cds[i] <= 0.0 and player.mp >= float(sk.mp) + 10.0:
-			out[key] = true
-			break
+	# AF-1 (docs/48): chọn 1 chiêu hợp tình huống mỗi nhịp thay vì xả mọi kỹ năng vừa hồi xong.
+	var busy := player.dodge_time > 0.0 or player.dash_time > 0.0 or player.stun_timer > 0.0
+	var pick := {} if busy else AutoFight.choose(self, target, gap, auto_mode)
+	if not pick.is_empty():
+		out["skill_%d" % (int(pick.slot) + 1)] = true
+		if pick.aim != null:
+			out.aim = pick.aim
+		_auto_skill_at = time
+		_auto_cast[str(pick.id)] = time
+	out.merge(AutoFight.potions(self, gap < AUTO_RANGE), true)
 	return out
 
 

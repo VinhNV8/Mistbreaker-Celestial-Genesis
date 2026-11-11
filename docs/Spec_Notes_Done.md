@@ -63,3 +63,17 @@ Hiêu ứng đồ sau khi được nâng cấp -> Người chơi đánh giá nó
 - (Đợt 20 — [47](47-de-xuat-nang-luc-chien-trang-bi.md), **done 09/11/2026**: đề xuất → chủ dự án "triển khai theo đề xuất" → đã làm cả 6 đường, NL1-T1…NL3-T2) Người chơi nói - Ngoài việc nâng cấp đồ thì cần thêm các hình thức khác để nâng lực chiến cho đồ -> hãy đề xuất giải pháp giúp tôi.
 
 - (Đợt 21 — sửa lỗi HM-06 / D94, **done 10/11/2026**) Người chơi phản ánh - Đang full màn hình -> nhấn icon thu nhỏ bản đồ, nhiệm vụ, cài đặt âm thanh... thì bị thu nhỏ lại.
+
+- (Đợt 21 — [48](48-tu-danh-thong-minh-va-loi-chao.md), **done 10/11/2026**: AF-1, test AF1-T1) Người chơi có phản ánh - Chế độ tự động đánh đang chưa được tối ưu -> nhất là phần ra skills -> đang ra toàn bộ skills cùng 1 lúc -> cần nghiên cứu kỹ lại chế độ tự đánh thông minh hơn -> Check và đề xuất giải pháp
+
+- (Đợt 21 — [48 §B](48-tu-danh-thong-minh-va-loi-chao.md), **done 10/11/2026**: WB-1, test WB1-T1) Khi người chơi chọn nhân vật xong và back lại game -> thì cần có lời chào người chơi quay lại chứ nhỉ?
+
+- (Đợt 22 — [49](49-mp-binh-thuoc-va-giao-dien.md) §A, **done 10/11/2026**: UI-TL1, test UI-TL1) Màn hình Thiên phú -> Trường hợp có thêm thiên phú -> bị vỡ khung layout - che khuất màn hình -> cần check design lại cho phù hợp.
+
+- (Đợt 22 — [49](49-mp-binh-thuoc-va-giao-dien.md) §B, **done 10/11/2026**: GC-1, test UI-TL1) Các thuộc tính của đá sau khi gắn vào trang bị -> nên thành section riêng và từng dòng tương ứng với đá (có icon nhỏ của đá) để xem chi tiết - Vì người chơi thấy khó theo dõ thông tin
+
+- (Đợt 22 — [49](49-mp-binh-thuoc-va-giao-dien.md) §C, **done 10/11/2026**: PT-1, test MP1-T1; Q239 áp mặc định) Khi người chơi sử dụng HP/MP -> Thời gian hồi lại để sử dụng lần tiếp theo lâu quá -> Hãy research các game hiện đại ngày nay -> đề xuất phương án phù hợp.
+
+- (Đợt 22 — [49](49-mp-binh-thuoc-va-giao-dien.md) §D, **done 10/11/2026**: MP-1, test MP1-T1; Q238, Q240, Q241 áp mặc định) Lượng MP của nhân vật quá ít -> ra vài chiêu đã hết rồi -> Cần nghiên cứu giải pháp phù hợp cân bằng.
+
+- (Đợt 22 — [49 §G](49-mp-binh-thuoc-va-giao-dien.md), **done 11/11/2026**: HR-1, test HR1-T1; Q242–Q247 chốt 11/11, Q243 đổi thành có Hút HP / MP) Đồ tấn không - Có nên có các dòng như hồi HP/MP không? hãy đề xuất giải pháp thoe game hiện đại ngày nay.

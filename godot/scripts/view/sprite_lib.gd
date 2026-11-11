@@ -356,3 +356,24 @@ static func _night_vignette(f: float) -> Texture2D:
 	ct.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	_night_tex[key] = ct
 	return ct
+
+
+## Viền màu mượt quanh mép `r` (dày `w`): alpha `a` ở mép → 0 ở trong, 4 hình thang vát góc (không chồng nhau ở góc).
+## Fix 10/11: thay kiểu 4 khung draw_rect chồng nhau alpha bậc thang (viền băng giá / Ám Khí vùng 6) từng lộ vành vuông.
+static func edge_glow(ci: CanvasItem, r: Rect2, w: float, col: Color, a: float) -> void:
+	w = minf(w, minf(r.size.x, r.size.y) * 0.5)
+	var on := Color(col, clampf(a, 0.0, 1.0))
+	var off := Color(col, 0.0)
+	var p0 := r.position
+	var p1 := Vector2(r.end.x, r.position.y)
+	var p2 := r.end
+	var p3 := Vector2(r.position.x, r.end.y)
+	var q0 := p0 + Vector2(w, w)
+	var q1 := p1 + Vector2(-w, w)
+	var q2 := p2 - Vector2(w, w)
+	var q3 := p3 + Vector2(w, -w)
+	var cs := PackedColorArray([on, on, off, off])
+	ci.draw_polygon(PackedVector2Array([p0, p1, q1, q0]), cs)
+	ci.draw_polygon(PackedVector2Array([p1, p2, q2, q1]), cs)
+	ci.draw_polygon(PackedVector2Array([p2, p3, q3, q2]), cs)
+	ci.draw_polygon(PackedVector2Array([p3, p0, q0, q3]), cs)

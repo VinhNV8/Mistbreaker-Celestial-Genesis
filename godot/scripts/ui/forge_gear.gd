@@ -10,6 +10,7 @@ const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
 const Monsters = preload("res://scripts/data/monsters.gd")
 const W = preload("res://scripts/ui/shop_widgets.gd")
 const UiTheme = preload("res://scripts/ui/ui_theme.gd")
+const ItemCard = preload("res://scripts/ui/item_card.gd")
 
 const CENTER_W := 380.0
 const SIDE_W := 300.0
@@ -151,15 +152,18 @@ static func gems(fp, body: HBoxContainer, p) -> void:
 		if int(item.sockets) == 0:
 			row.add_child(UiTheme.label("Món này chưa có lỗ.", "Muted"))
 		col.add_child(row)
-		# chỉ số ngọc
+		# GC-1 (Spec_Notes 10/11): chỉ số từng viên — mỗi viên 1 dòng (cùng kiểu thẻ đồ), rồi tổng
 		var gs := Items.gem_stats(item)
 		if not gs.is_empty():
-			var parts := PackedStringArray()
-			for k in gs:
-				parts.append(Items.stat_text(k, gs[k]))
-			var gl := UiTheme.label("Ngọc đang cho: " + ", ".join(parts), "", CENTER_W)
-			gl.add_theme_color_override("font_color", UiTheme.GOOD)
-			col.add_child(gl)
+			for g in item.gems:
+				col.add_child(ItemCard.gem_row(str(g), str(item.slot), CENTER_W))
+			if item.gems.size() > 1:
+				var parts := PackedStringArray()
+				for k in gs:
+					parts.append(Items.stat_text(k, gs[k]))
+				var gl := UiTheme.label("Tổng ngọc: " + ", ".join(parts), "Small", CENTER_W)
+				gl.add_theme_color_override("font_color", UiTheme.GOOD)
+				col.add_child(gl)
 		if item.slot == "weapon":
 			var seal := Items.weapon_seal({"weapon": item})
 			if seal != "":

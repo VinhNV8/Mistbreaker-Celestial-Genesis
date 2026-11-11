@@ -27,7 +27,7 @@ static func create(id: int, level: int, rarity: String, rng: Callable, slot := "
 		slot = ItemData.UNIQUES[unique].slot
 	if slot == "":
 		slot = ItemData.SLOT_ORDER[int(float(rng.call()) * ItemData.SLOT_ORDER.size()) % ItemData.SLOT_ORDER.size()]
-	var pool := RngUtil.shuffle(ItemData.AFFIXES.keys().filter(func(k): return slot in ItemData.AFFIXES[k].get("slots", [slot])), rng)
+	var pool := RngUtil.shuffle(ItemData.AFFIXES.keys().filter(func(k): return slot in ItemData.AFFIXES[k].get("slots", [slot]) and not is_recover(k)), rng)
 	var affixes: Array = []
 	var count: int = ItemData.RARITIES[rarity].affixes
 	for i in count:
@@ -35,6 +35,7 @@ static func create(id: int, level: int, rarity: String, rng: Callable, slot := "
 		var a: Dictionary = ItemData.AFFIXES[stat]
 		var value: float = (a.a + a.b * level) * (0.8 + float(rng.call()) * 0.4)
 		affixes.append({"stat": stat, "value": value})
+	_roll_recover(affixes, slot, level, rarity)
 	return {
 		"id": id,
 		"slot": slot,
@@ -51,6 +52,32 @@ static func create(id: int, level: int, rarity: String, rng: Callable, slot := "
 		"reforges": 0,
 		"awaken": {},
 	}
+
+
+## HR-1: dòng thuộc nhóm hồi phục.
+static func is_recover(stat: String) -> bool:
+	return str(ItemData.AFFIXES.get(stat, {}).get("group", "")) == "recover"
+
+
+static func recover_stats(slot: String) -> Array:
+	return ItemData.AFFIXES.keys().filter(func(k): return is_recover(k) and slot in ItemData.AFFIXES[k].get("slots", []))
+
+
+## HR-1 (docs/49 §G): bước quay riêng sau các dòng thường — RNG riêng (gieo từ chính các dòng vừa quay) nên chuỗi
+## ngẫu nhiên chính không đổi. Đồ Xanh dương+: 25% thay dòng cuối bằng 1 dòng hồi phục hợp ô.
+static func _roll_recover(affixes: Array, slot: String, level: int, rarity: String) -> void:
+	if not (rarity in ItemData.RECOVER_RARITIES) or affixes.size() < 2:
+		return
+	var opts := recover_stats(slot)
+	if opts.is_empty():
+		return
+	var r := RandomNumberGenerator.new()
+	r.seed = hash("%s|%d|%s|%s" % [slot, level, rarity, str(affixes)])
+	if r.randf() >= ItemData.RECOVER_CHANCE:
+		return
+	var stat: String = opts[r.randi() % opts.size()]
+	var a: Dictionary = ItemData.AFFIXES[stat]
+	affixes[affixes.size() - 1] = {"stat": stat, "value": (float(a.a) + float(a.b) * level) * (0.8 + r.randf() * 0.4)}
 
 
 ## Sinh đồ và cấp id tăng dần từ hồ sơ.
@@ -270,7 +297,10 @@ static func combat_power(stats: Dictionary) -> int:
 
 
 ## NL-1 (docs/47 §5): Lực chiến của một nhóm chỉ số phẳng (cùng trọng số combat_power; kháng / tốc chạy không tính).
-const STAT_POWER := {"atk": 10.0, "max_hp": 1.0, "def": 8.0, "crit": 1000.0, "crit_dmg": 300.0, "atk_speed": 800.0}
+const STAT_POWER := {"atk": 10.0, "max_hp": 1.0, "def": 8.0, "crit": 1000.0, "crit_dmg": 300.0, "atk_speed": 800.0,
+	# HR-1 (docs/49 §G.5): dòng hồi phục — gần Lực chiến dòng Tấn công cùng cấp
+	"hp_on_kill": 3.0, "mp_on_kill": 4.0, "mp_on_hit": 30.0, "hp_regen": 15.0, "mp_regen_pct": 400.0,
+	"leech_hp": 5000.0, "leech_mp": 3000.0}
 
 
 static func stats_power(st: Dictionary) -> int:

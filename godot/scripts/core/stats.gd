@@ -32,20 +32,22 @@ const GROW := {
 	"trieu-hoi-su": {"int": 2.5, "wis": 2.5, "vit": 1.0},
 }
 ## Phần gốc theo cấp + đặc tính lớp (docs/26 mục 2.2, 3.1).
+## MP-1 (docs/49, Spec_Notes 10/11 "MP quá ít, ra vài chiêu đã hết"): 3 lớp vật lý MP gốc 25 → 55, mỗi cấp +3,5 / +4;
+## mp_hit: MP hồi mỗi lượt đánh thường trúng (kiểu "đánh thường tích nội lực" của ARPG hiện đại) — lớp phép = 0.
 ## hp0/hpg, atkg, defg, mp0/mpg: gốc cấp 1 / mỗi cấp; atkx: Tấn công gốc mỗi cấp cộng thêm từ cấp 31 (cân bằng: Hộ Vệ mạnh dần,
 ## Thợ Săn chậm lại; xem thêm LATE_ATK từ cấp 81). aspd: tốc đánh gốc. crit/crit_dmg/eva/pen/skill: cộng thêm của lớp.
 ## atk: Tấn công mỗi điểm thuộc tính. hp_vit: HP mỗi VIT. def_mult: Phòng thủ × (Hộ Vệ +30%). cc: kháng hiệu ứng.
 const CLASS := {
-	"kiem-khach": {"hp0": 50.0, "hpg": 20.0, "atkg": 3.0, "defg": 1.2, "mp0": 25.0, "mpg": 2.0, "aspd": 1.0, "move": 265.0,
+	"kiem-khach": {"hp0": 50.0, "hpg": 20.0, "atkg": 3.0, "defg": 1.2, "mp0": 55.0, "mpg": 3.5, "mp_hit": 0.0, "aspd": 1.0, "move": 265.0,
 		"crit": 0.05, "crit_dmg": 0.2, "eva": 0.10, "eva_cap": EVASION_CAP, "pen": 0.0, "skill": 0.0, "def_mult": 1.0, "cc": 0.0,
 		"hp_vit": 5.0, "atk": {"str": 0.6}},
-	"tho-san": {"hp0": 30.0, "hpg": 22.0, "atkg": 5.6, "atkx": -1.2, "defg": 1.0, "mp0": 25.0, "mpg": 3.0, "aspd": 1.0, "move": 250.0,
+	"tho-san": {"hp0": 30.0, "hpg": 22.0, "atkg": 5.6, "atkx": -1.2, "defg": 1.0, "mp0": 55.0, "mpg": 4.0, "mp_hit": 1.0, "aspd": 1.0, "move": 250.0,
 		"crit": 0.15, "crit_dmg": 0.0, "eva": 0.0, "eva_cap": 0.4, "pen": 0.10, "skill": 0.0, "def_mult": 1.0, "cc": 0.0,
 		"hp_vit": 5.0, "atk": {"dex": 0.25, "agi": 0.2, "str": 0.1}},
 	"phap-su": {"hp0": 35.0, "hpg": 24.0, "atkg": 4.0, "defg": 0.85, "mp0": 50.0, "mpg": 12.0, "aspd": 0.95, "move": 220.0,
 		"crit": 0.0, "crit_dmg": 0.0, "eva": 0.0, "eva_cap": EVASION_CAP, "pen": 0.15, "skill": 0.2, "def_mult": 1.0, "cc": 0.0,
 		"hp_vit": 5.0, "atk": {"int": 0.45}},
-	"ho-ve": {"hp0": 0.0, "hpg": 16.0, "atkg": 8.0, "atkx": 2.8, "defg": 1.6, "mp0": 25.0, "mpg": 2.4, "aspd": 0.9, "move": 210.0,
+	"ho-ve": {"hp0": 0.0, "hpg": 16.0, "atkg": 8.0, "atkx": 2.8, "defg": 1.6, "mp0": 40.0, "mpg": 3.0, "mp_hit": 0.0, "aspd": 0.9, "move": 210.0,
 		"crit": 0.0, "crit_dmg": 0.0, "eva": 0.0, "eva_cap": EVASION_CAP, "pen": 0.0, "skill": 0.0, "def_mult": 1.3, "cc": 0.25,
 		"hp_vit": 6.0, "atk": {"str": 0.55, "vit": 0.12}},
 	"trieu-hoi-su": {"hp0": 25.0, "hpg": 25.0, "atkg": 5.6, "atkx": 0.6, "defg": 1.3, "mp0": 30.0, "mpg": 10.0, "aspd": 1.0, "move": 220.0,
@@ -67,6 +69,8 @@ const LUK_CRIT := 0.0015
 const LUK_DROP := 0.001
 const BASE_CRIT := 0.03
 const BASE_REGEN := 3.0
+## MP-1 (docs/49): ngoài giao tranh hồi MP ×3.
+const MP_OOC_MULT := 3.0
 ## Riêng lớp: WIS của Triệu Hồi Sư +0,3% HP linh thú; WIS của Hộ Vệ +0,1% kháng hiệu ứng (trần 60%).
 const SUMMONER_WIS_PET := 0.003
 const GUARD_WIS_CC := 0.001
@@ -184,6 +188,7 @@ static func derive(level: int, pts: Dictionary, talent: String, bonus := {}, tal
 		"uniques": bonus.get("uniques", []),
 		"max_mp": int(round(float(c.mp0) + float(c.mpg) * lv + a.int * INT_MP)),
 		"mp_regen": BASE_REGEN + a.wis * WIS_REGEN,
+		"mp_hit": float(c.get("mp_hit", 0.0)),
 		"skill_mul": 1.0 + a.int * INT_SKILL + float(c.skill),
 		"drop_bonus": minf(DROP_CAP, a.luk * LUK_DROP),
 		"evasion": minf(float(c.eva_cap), float(c.eva) + a.agi * AGI_EVA),

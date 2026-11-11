@@ -250,4 +250,6 @@ Chủ dự án: *"hãy triển khai theo đề xuất"* → làm hết P1–P3, 
 - Món đồ thêm `sockets, gems, reforged, reforges, awaken`; profile thêm `gem_bag, codex`; **save v32**.
 - Ngọc rơi dùng `_loot_rng` (RNG rơi đồ riêng) → không đổi chuỗi `_r()` của trận đánh, test cân bằng cũ giữ nguyên.
 - Icon ngọc: `tools/art/hd/gem_icons.py --apply` (5 hệ × 3 kiểu cắt + lỗ trống).
+- Hiệu năng: `Gear.codex_points` tính thẳng từ khoá đã ghi danh và nhớ đệm theo số mục — `GameWorld._derive` gọi nó mỗi lần tính chỉ số (bot so sánh đồ gọi rất nhiều). Bản đầu dựng lại cả danh mục mỗi lần làm bộ test đầy đủ chậm tới mức kẹt ở TL-B2.
+- Bộ test đầy đủ 10/11/2026: **247/247 qua** (~85 phút).
 - Test: `run_tests.gd --only=NL` (NL1-T1, NL1-T2, NL2-T1, NL2-T2, NL3-T1, NL3-T2); ảnh: `tests/nl1_shot.gd --dir=<thư mục>` (cần cửa sổ).

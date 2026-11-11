@@ -8,6 +8,7 @@ const Config = preload("res://scripts/core/config.gd")
 const Talents = preload("res://scripts/data/talents.gd")
 const Classes = preload("res://scripts/data/classes.gd")
 const Stats = preload("res://scripts/core/stats.gd")
+const ItemData = preload("res://scripts/data/items.gd")
 const SpriteLib = preload("res://scripts/view/sprite_lib.gd")
 const Ornate = preload("res://scripts/ui/ornate.gd")
 
@@ -104,6 +105,31 @@ static func per_point_lines(class_id: String, key: String) -> PackedStringArray:
 			if atk <= 0.0:
 				parts.append("Không tăng Tấn công của lớp này")
 	return parts
+
+
+## HR-1: tóm tắt hồi HP từ trang bị cho trang Chỉ số.
+static func _recover_hp_text(s: Dictionary) -> String:
+	var parts := PackedStringArray()
+	if float(s.get("hp_regen", 0.0)) > 0.0:
+		parts.append("%.1f/giây" % minf(float(s.hp_regen), float(s.max_hp) * ItemData.HP_REGEN_CAP))
+	if float(s.get("hp_on_kill", 0.0)) > 0.0:
+		parts.append("+%d/quái" % roundi(float(s.hp_on_kill)))
+	if float(s.get("lifesteal", 0.0)) > 0.0:
+		parts.append("hút %.1f%%" % (float(s.lifesteal) * 100.0))
+	return " · ".join(parts) if not parts.is_empty() else "—"
+
+
+static func _recover_hp_tip(s: Dictionary) -> String:
+	return "Từ trang bị: HP mỗi giây (tối đa %d%% HP tối đa / giây), HP khi hạ quái (không tính boss, quái hiếm, quái do boss gọi ra, Chúa Hang), hút HP theo sát thương (dòng phụ + Thức Tỉnh, tối đa %d%% HP / giây; Thiên phú Hấp Huyết tính riêng)." % [roundi(ItemData.HP_REGEN_CAP * 100.0), roundi(ItemData.LEECH_HP_CAP * 100.0)]
+
+
+static func _recover_mp_tip(s: Dictionary) -> String:
+	var parts := PackedStringArray()
+	if float(s.get("mp_on_kill", 0.0)) > 0.0:
+		parts.append("+%d MP khi hạ quái" % roundi(float(s.mp_on_kill)))
+	if float(s.get("leech_mp", 0.0)) > 0.0:
+		parts.append("hút %.1f%% sát thương thành MP (tối đa %d%% MP / giây)" % [float(s.leech_mp) * 100.0, roundi(ItemData.LEECH_MP_CAP * 100.0)])
+	return (" Trang bị: " + ", ".join(parts) + ".") if not parts.is_empty() else ""
 
 
 static func _n(v: float) -> String:
@@ -353,7 +379,12 @@ static func build_side(world) -> VBoxContainer:
 		["stat-aspd", "Tốc đánh", "%d%% · %.2f đòn/giây" % [roundi(s.atk_speed * 100.0), hits],
 			"Đánh thường: %.2f đòn/giây (%.2f giây mỗi đòn; gốc %.2f giây ÷ tốc đánh). Mỗi AGI +%s%% tốc đánh, trần ×%.1f." % [hits, 1.0 / hits, interval, _n(Stats.AGI_SPEED * 100.0), Stats.SPEED_CAP]], ["stat-crit", "Tỉ lệ chí mạng", "%.1f%%" % (s.crit * 100.0)],
 		["stat-critdmg", "ST chí mạng", "×%.2f" % (1.0 + s.crit_dmg)], ["stat-eva", "Né tránh", "%.1f%%" % (s.evasion * 100.0)],
-		["stat-regen", "Hồi MP", "%.2f/giây" % s.mp_regen], ["stat-skill", "ST kỹ năng", "+%.1f%%" % ((s.skill_mul - 1.0) * 100.0)],
+		["stat-regen", "Hồi MP", ("%.2f/giây · +%d/đòn" % [s.mp_regen, roundi(float(s.get("mp_hit", 0.0)))]) if float(s.get("mp_hit", 0.0)) > 0.0 else "%.2f/giây" % s.mp_regen,
+			"Hồi MP mỗi giây (gốc 3 + WIS × %s); ngoài giao tranh hồi ×%d.%s" % [_n(Stats.WIS_REGEN), int(Stats.MP_OOC_MULT),
+			(" Đánh thường trúng quái: +%d MP mỗi lượt đánh." % roundi(float(s.mp_hit))) if float(s.get("mp_hit", 0.0)) > 0.0 else ""]
+			+ _recover_mp_tip(s)],
+		# HR-1 (docs/49 §G): hồi HP từ trang bị — mỗi giây, khi hạ quái, hút HP
+		["stat-hp", "Hồi HP", _recover_hp_text(s), _recover_hp_tip(s)], ["stat-skill", "ST kỹ năng", "+%.1f%%" % ((s.skill_mul - 1.0) * 100.0)],
 		["stat-drop", "Rơi đồ", "+%.1f%%" % (s.drop_bonus * 100.0)],
 		["stat-dex", "Xuyên giáp", "%.1f%%" % (float(s.get("armor_pen", 0.0)) * 100.0), "Bỏ qua phần trăm Phòng thủ của quái. Sát thương vào thanh Phá Thế +%.1f%%." % (float(s.get("poise_bonus", 0.0)) * 100.0)],
 		["stat-move", "Tốc chạy", "%d" % roundi(float(s.move_speed))],

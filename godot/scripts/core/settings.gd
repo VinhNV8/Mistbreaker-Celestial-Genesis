@@ -10,7 +10,9 @@ const DEFAULTS := {"master": 0.8, "music": 0.6, "sfx": 0.8, "fullscreen": false,
 	"nameplates": "smart", "low_hp_warn": true, "colorblind": false, "keybinds": {},
 	"view_range": "mid", "ui_scale": 0.0, "quest_compact": false, "depth_fx": true,
 	"tilt": "low", "hud_minimap": true, "hud_quest": true, "ambient": 0.7,
-	"combo_style": "big"}
+	"combo_style": "big", "auto_skills": "smart"}
+## AF-1 (docs/48): auto_skills — Tự đánh dùng kỹ năng "smart" (Thông minh, mặc định) / "save" (Tiết kiệm MP) /
+## "full" (Xả hết — cách cũ). main.gd chép sang GameWorld.auto_mode mỗi khung.
 ## VS-1 (docs/44): view_range — Tầm nhìn "near" / "mid" / "far"; ui_scale — cỡ giao diện (0 = tự động theo độ phân giải);
 ## quest_compact — khung nhiệm vụ HUD thu gọn (chuột phải vào khung); depth_fx — bóng đổ + ánh sáng nền (chiều sâu bản đồ).
 ## MU-1 (docs/46): ambient — âm lượng âm thanh môi trường (bus "Ambient").

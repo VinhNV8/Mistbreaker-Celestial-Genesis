@@ -41,9 +41,29 @@ const AFFIXES := {
 	"res_thuy": {"name": "Kháng Thủy", "a": 0.03, "b": 0.002, "slots": RES_SLOTS},
 	"res_hoa": {"name": "Kháng Hỏa", "a": 0.03, "b": 0.002, "slots": RES_SLOTS},
 	"res_tho": {"name": "Kháng Thổ", "a": 0.03, "b": 0.002, "slots": RES_SLOTS},
+	# HR-1 (docs/49 §G, Spec_Notes 10/11 "đồ tấn công có nên có dòng hồi HP/MP"): nhóm hồi phục — KHÔNG nằm trong bể quay
+	# thường (giữ nguyên kết quả xáo cũ); quay ở bước riêng Items._roll_recover, tối đa 1 dòng / món, từ Xanh dương.
+	"hp_on_kill": {"name": "HP khi hạ quái", "a": 4.0, "b": 1.2, "slots": ["weapon", "gloves", "ring"], "group": "recover"},
+	"mp_on_kill": {"name": "MP khi hạ quái", "a": 2.0, "b": 0.12, "slots": ["weapon", "gloves", "ring", "necklace"], "group": "recover"},
+	"mp_on_hit": {"name": "MP mỗi đòn đánh", "a": 1.0, "b": 0.03, "slots": ["weapon", "gloves"], "group": "recover"},
+	"leech_hp": {"name": "Hút HP", "a": 0.003, "b": 0.00008, "slots": ["weapon", "gloves", "ring"], "group": "recover"},
+	"leech_mp": {"name": "Hút MP", "a": 0.002, "b": 0.00005, "slots": ["weapon", "ring"], "group": "recover"},
+	"hp_regen": {"name": "HP mỗi giây", "a": 0.6, "b": 0.1, "slots": ["helm", "armor", "boots", "amulet"], "group": "recover"},
+	"mp_regen_pct": {"name": "Hồi MP", "a": 0.08, "b": 0.001, "slots": ["necklace", "amulet", "helm"], "group": "recover"},
 }
 ## Chỉ số hiển thị dạng phần trăm.
-const PERCENT_STATS := ["crit", "crit_dmg", "atk_speed", "res_kim", "res_moc", "res_thuy", "res_hoa", "res_tho"]
+const PERCENT_STATS := ["crit", "crit_dmg", "atk_speed", "res_kim", "res_moc", "res_thuy", "res_hoa", "res_tho",
+	"leech_hp", "leech_mp", "mp_regen_pct"]
+## HR-1: dòng hồi phục — phẩm chất tối thiểu (≥ 2 dòng phụ), tỉ lệ 1 dòng thường được thay bằng dòng hồi.
+const RECOVER_RARITIES := ["blue", "purple", "orange"]
+const RECOVER_CHANCE := 0.25
+## HR-1 trần: hút HP từ trang bị (dòng phụ + Thức Tỉnh, không tính Hấp Huyết) và hút MP tối đa 3% / giây;
+## HP mỗi giây từ dòng phụ tối đa 1% HP tối đa / giây.
+const LEECH_HP_CAP := 0.03
+const LEECH_MP_CAP := 0.03
+const HP_REGEN_CAP := 0.01
+## HR-1 "khi hạ quái" không tính các vai này (boss, quái hiếm, quái do boss / quái hiếm gọi ra…) — cộng Chúa Hang, boss Cổng.
+const NO_KILL_RECOVER_ROLES := ["boss", "rare", "rareMinion", "bossMinion", "bossClone", "summon", "anchor"]
 
 ## 3.5: tỉ lệ lên từ +n → +n+1, chỉ số mảng = n.
 const ENHANCE_RATES := [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.25, 0.2]

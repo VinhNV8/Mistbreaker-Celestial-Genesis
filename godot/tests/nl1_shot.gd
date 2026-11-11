@@ -122,4 +122,15 @@ func _run() -> void:
 		pc.add_child(ItemCard.build(it, 300.0, "ĐANG MẶC", p))
 		row.add_child(pc)
 	await _shot("nl1-the-do")
+	# HR-1 (docs/49 §G): thẻ đồ có dòng hồi phục
+	for c in row.get_children():
+		c.queue_free()
+	var rings := {"weapon": ["leech_hp", 0.0065], "armor": ["hp_regen", 6.4], "ring": ["mp_on_kill", 8.8]}
+	for it in [wp, p.equipment.armor, p.equipment.ring]:
+		var pair: Array = rings[str(it.slot)]
+		it.affixes[it.affixes.size() - 1] = {"stat": pair[0], "value": pair[1]}
+		var pc2 := PanelContainer.new()
+		pc2.add_child(ItemCard.build(it, 300.0, "ĐANG MẶC", p))
+		row.add_child(pc2)
+	await _shot("hr1-the-do-dong-hoi")
 	quit()

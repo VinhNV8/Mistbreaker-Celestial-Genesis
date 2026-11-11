@@ -288,10 +288,18 @@ static func reforge_blocker(p, item: Dictionary, idx: int, mode: String) -> Stri
 	return ""
 
 
+## HR-1: tối đa 1 dòng hồi phục / món (HR-06) — được đổi sang dòng hồi khi chính dòng đang tẩy là dòng hồi, hoặc món chưa có
+## dòng hồi; chỉ đồ Xanh dương+ (HR-10). idx < 0 = thêm dòng (Thăng phẩm).
 static func _swap_pool(item: Dictionary, idx: int) -> Array:
 	var used: Array = item.affixes.map(func(a): return str(a.stat))
 	var slot := str(item.slot)
-	return ItemData.AFFIXES.keys().filter(func(k): return not (k in used) and slot in ItemData.AFFIXES[k].get("slots", [slot]))
+	var has_rec := false
+	for i in item.affixes.size():
+		if i != idx and Items.is_recover(str(item.affixes[i].stat)):
+			has_rec = true
+	var rec_ok := not has_rec and str(item.rarity) in ItemData.RECOVER_RARITIES
+	return ItemData.AFFIXES.keys().filter(func(k): return not (k in used) and slot in ItemData.AFFIXES[k].get("slots", [slot]) \
+		and (rec_ok or not Items.is_recover(k)))
 
 
 static func affix_roll(stat: String, level: int, rng: Callable) -> float:

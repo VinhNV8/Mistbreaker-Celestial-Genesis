@@ -248,7 +248,23 @@ static func build_advanced(world, refresh: Callable, width := 390.0) -> VBoxCont
 	ag.columns = 4
 	ag.add_theme_constant_override("h_separation", 4)
 	ag.add_theme_constant_override("v_separation", 4)
+	# HR-1 (docs/49 §G): 7 dòng hồi phục gộp 1 nút "Dòng hồi phục" (bật = giữ món có bất kỳ dòng hồi nào) — lưới giữ 4 hàng
+	var rec: Array = ItemData.AFFIXES.keys().filter(func(k): return Items.is_recover(k))
+	var rec_on: bool = rec.all(func(k): return k in r.keep_stats)
+	var rb := _seg("Dòng hồi phục", rec_on, UiTheme.GOOD)
+	rb.name = "LootStat_recover"
+	rb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	rb.tooltip_text = "Giữ đồ có dòng hồi phục: " + ", ".join(rec.map(func(k): return str(ItemData.AFFIXES[k].name)))
+	rb.pressed.connect(func():
+		var nr: Dictionary = world.loot_rules()
+		for k in rec:
+			nr.keep_stats.erase(k)
+			if not rec_on:
+				nr.keep_stats.append(k)
+		_save_rules(world, nr, refresh))
 	for st in ItemData.AFFIXES:
+		if Items.is_recover(st):
+			continue
 		var on: bool = st in r.keep_stats
 		var b := _seg(str(ItemData.AFFIXES[st].name).replace("Sát thương chí mạng", "ST chí mạng"), on, UiTheme.GOOD)
 		b.name = "LootStat_" + st
@@ -263,6 +279,7 @@ static func build_advanced(world, refresh: Callable, width := 390.0) -> VBoxCont
 				nr.keep_stats.append(key)
 			_save_rules(world, nr, refresh))
 		ag.add_child(b)
+	ag.add_child(rb)
 	col.add_child(ag)
 	return col
 

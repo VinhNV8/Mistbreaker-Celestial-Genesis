@@ -17,6 +17,8 @@ const InventoryPanel = preload("res://scripts/ui/inventory_panel.gd")
 const TalentPanel = preload("res://scripts/ui/talent_panel.gd")
 const SkillPanel = preload("res://scripts/ui/skill_panel.gd")
 const HelpPanel = preload("res://scripts/ui/help_panel.gd")
+const WelcomePanel = preload("res://scripts/ui/welcome_panel.gd")
+const Welcome = preload("res://scripts/core/welcome.gd")
 ## NV-A (docs/41): Sổ nhiệm vụ (O) + chỉ đường nhiệm vụ.
 const QuestPanel = preload("res://scripts/ui/quest_panel.gd")
 const QuestLog = preload("res://scripts/core/quest_log.gd")
@@ -88,6 +90,8 @@ var talent_panel: TalentPanel
 var skill_panel: SkillPanel
 ## UI-17: bảng Trợ giúp (F1 / H).
 var help_panel: HelpPanel
+## WB-1 (docs/48 §B): thẻ chào khi vào lại game.
+var welcome_panel: WelcomePanel
 var quest_panel: QuestPanel
 var world_panel: WorldMapPanel
 ## Smoke test gắn bot vào đây để thay cho bàn phím/chuột.
@@ -176,6 +180,8 @@ func _ready() -> void:
 	_vignette.stretch_mode = TextureRect.STRETCH_SCALE
 	_vignette.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_vignette.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Fix 10/11: filter mặc định của project là nearest → texture 256px phóng toàn màn hình ra bậc thang mờ
+	_vignette.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	_fx.add_child(_vignette)
 	_freeze_tint = ColorRect.new()
 	_freeze_tint.color = Color(0.47, 0.67, 1.0, 0.12)
@@ -439,7 +445,7 @@ func _open_forge(tab := "") -> void:
 
 
 func _panels() -> Array:
-	return [map_panel, inventory_panel, talent_panel, world_panel, shop_panel, forge_panel, job2_panel, job3_panel, divine_panel, skill_panel, help_panel, sub_panel, quest_panel]
+	return [map_panel, inventory_panel, talent_panel, world_panel, shop_panel, forge_panel, job2_panel, job3_panel, divine_panel, skill_panel, help_panel, sub_panel, quest_panel, welcome_panel]
 
 
 func _any_panel_open() -> bool:
@@ -461,6 +467,7 @@ func _process(delta: float) -> void:
 	else:
 		_dialog_cool -= delta
 	var paused := _victory != null or _any_panel_open() or dialog.is_open() or _dialog_cool > 0.0 or _pause != null
+	world.auto_mode = str(Settings.values.get("auto_skills", "smart"))
 	if not paused:
 		world.update(dt, bot.call(world) if bot.is_valid() else _read_input())
 	for ev in world.drain_events():
@@ -782,6 +789,8 @@ func _on_continue() -> void:
 	var p := SaveSystem.load_profile()
 	if p == null:
 		return
+	# WB-1: thời gian vắng thật (apply_offline cắt theo giới hạn lãnh địa).
+	var away := maxf(0.0, _now() - float(p.last_seen)) if float(p.last_seen) > 0.0 else 0.0
 	var off := SaveSystem.apply_offline(p, _now())
 	_start_world(p)
 	if float(off.get("exp", 0.0)) >= 1.0:
@@ -791,6 +800,10 @@ func _on_continue() -> void:
 		hud.log_message(
 			"Lãnh địa thu hoạch khi bạn vắng mặt: +%d gỗ, +%d vàng, +%d Đuốc." % [int(off.wood), int(off.gold), off.torches], "good"
 		)
+	# WB-1 (Spec_Notes 10/11: "chọn nhân vật xong vào lại game cần có lời chào"): thẻ chào, game dừng tới khi bấm Vào game.
+	if not bot.is_valid():
+		var hour := int(Time.get_datetime_dict_from_system().hour)
+		welcome_panel.show_welcome(world, Welcome.build(world, away, off if float(off.seconds) > 60.0 else {}, hour))
 
 
 func _start_world(p: Profile) -> void:
@@ -814,6 +827,8 @@ func _start_world(p: Profile) -> void:
 	_ui.add_child(skill_panel)
 	help_panel = HelpPanel.new()
 	_ui.add_child(help_panel)
+	welcome_panel = WelcomePanel.new()
+	_ui.add_child(welcome_panel)
 	quest_panel = QuestPanel.new()
 	_ui.add_child(quest_panel)
 	quest_panel.guide_requested.connect(_on_quest_guide)
